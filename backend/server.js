@@ -345,6 +345,104 @@ Reglas:
     });
   }
 });
+app.post("/analyze-body", upload.single("image"), async (req, res) => {
+  try {
+    const { weight, height, gender, goal } = req.body;
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({
+        error: "Falta GEMINI_API_KEY en el backend.",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        error: "No se recibió ninguna imagen.",
+      });
+    }
+
+    if (!req.file.mimetype.startsWith("image/")) {
+      return res.status(400).json({
+        error: "El archivo debe ser una imagen.",
+      });
+    }
+
+    const base64Image = req.file.buffer.toString("base64");
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          inlineData: {
+            mimeType: req.file.mimetype,
+            data: base64Image,
+          },
+        },
+        {
+          text: `
+Eres un asistente de progreso físico dentro de NutriCoach iA.
+
+Analiza visualmente la foto de cuerpo completo y devuelve una ESTIMACIÓN APROXIMADA, no médica.
+
+Datos del usuario:
+Peso: ${weight || "no indicado"} kg
+Altura: ${height || "no indicada"} cm
+Sexo: ${gender || "no indicado"}
+Objetivo: ${goal || "no indicado"}
+
+Responde SOLO con JSON válido. No uses markdown.
+
+Formato exacto:
+{
+  "body_fat_range": "18-22%",
+  "confidence": "media",
+  "visual_changes": "descripción breve de cambios físicos visibles o estado actual",
+  "recommendation": "recomendación breve para la próxima semana"
+}
+
+Reglas:
+- body_fat_range debe ser un rango aproximado, nunca un número exacto.
+- confidence debe ser: "baja", "media" o "alta".
+- No hagas diagnóstico médico.
+- No menciones partes íntimas ni detalles sensibles.
+- Si la foto no permite estimar, usa body_fat_range: "No estimable" y confidence: "baja".
+- Sé prudente y claro.
+          `,
+        },
+      ],
+    });
+
+    const rawText = response?.text || "";
+    console.log("Respuesta body scan Gemini:", rawText);
+
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+
+    if (!jsonMatch) {
+      return res.status(500).json({
+        error: "La IA no devolvió un JSON válido.",
+      });
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    return res.json({
+      body_fat_range: parsed.body_fat_range || "No estimable",
+      confidence: parsed.confidence || "baja",
+      visual_changes:
+        parsed.visual_changes ||
+        "No se pudieron detectar cambios visuales con suficiente claridad.",
+      recommendation:
+        parsed.recommendation ||
+        "Mantén constancia con dieta, entrenamiento y check-ins semanales.",
+    });
+  } catch (error) {
+    console.error("ERROR ANALIZANDO CUERPO:", error);
+
+    return res.status(500).json({
+      error: "Error analizando progreso físico.",
+    });
+  }
+});
 
 app.use((error, req, res, next) => {
   if (error.code === "LIMIT_FILE_SIZE") {
