@@ -17,7 +17,9 @@ import { supabase } from "../lib/supabase";
 
 const PROFILE_KEY = "nutricoach_profile";
 const PROGRESS_KEY = "nutricoach_diet_progress";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL =
+  import.meta.env.VITE_API_URL?.trim() ||
+  "https://nutricoach-backend-frlc.onrender.com";
 
 export function MealPlan() {
   const navigate = useNavigate();
