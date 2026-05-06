@@ -1,35 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, UserRound, LogOut, ChevronDown } from "lucide-react";
+import { ArrowLeft, Save, UserRound } from "lucide-react";
 import BottomNav from "../components/BottomNav";
+import { supabase } from "../services/supabaseClient";
+import { useAuth } from "../context/AuthContext";
 
 const PROFILE_KEY = "nutricoach_profile";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const savedProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || null;
 
   const [form, setForm] = useState({
-    name: savedProfile?.name || "",
-    age: savedProfile?.age || "",
-    weight: savedProfile?.weight || "",
-    height: savedProfile?.height || "",
-    gender: savedProfile?.gender || "male",
-    activity: savedProfile?.activity || "moderate",
-    goal: savedProfile?.goal || "perder_grasa",
+    name: savedProfile?.name || savedProfile?.nombre || "",
+    age: savedProfile?.age || savedProfile?.edad || "",
+    weight: savedProfile?.weight || savedProfile?.peso || "",
+    height: savedProfile?.height || savedProfile?.altura || "",
+    gender: savedProfile?.gender || savedProfile?.genero || "male",
+    activity: savedProfile?.activity || savedProfile?.actividad || "moderate",
+    goal: savedProfile?.goal || savedProfile?.objetivo || "perder_grasa",
   });
 
   const [saved, setSaved] = useState(false);
-
-  const handleLogout = () => {
-    if (window.confirm("¿Estás seguro de cerrar sesión?")) {
-      localStorage.removeItem(PROFILE_KEY);
-      navigate("/");
-    }
-  };
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const calculateGoals = () => {
@@ -37,82 +38,207 @@ export function ProfileSetup() {
     const height = Number(form.height);
     const age = Number(form.age);
 
-    let bmr = form.gender === "male"
+    let bmr =
+      form.gender === "male"
         ? 10 * weight + 6.25 * height - 5 * age + 5
         : 10 * weight + 6.25 * height - 5 * age - 161;
 
-    const activityMap = { low: 1.2, moderate: 1.55, high: 1.75 };
+    const activityMap = {
+      low: 1.2,
+      moderate: 1.55,
+      high: 1.75,
+    };
+
     let calories = bmr * activityMap[form.activity];
 
     if (form.goal === "perder_grasa") calories -= 350;
     if (form.goal === "ganar_musculo") calories += 250;
 
+    const protein = weight * 2;
+    const fat = weight * 0.8;
+    const carbs = (calories - protein * 4 - fat * 9) / 4;
+
     return {
       calories: Math.max(1200, Math.round(calories)),
-      protein: Math.round(weight * 2),
-      carbs: Math.max(80, Math.round((calories - (weight * 2 * 4) - (weight * 0.8 * 9)) / 4)),
-      fat: Math.round(weight * 0.8),
+      protein: Math.round(protein),
+      carbs: Math.max(80, Math.round(carbs)),
+      fat: Math.round(fat),
     };
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const profile = { ...form, goals: calculateGoals(), updatedAt: new Date().toISOString() };
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-    setSaved(true);
-    setTimeout(() => navigate("/dashboard"), 900);
+
+    if (!user) {
+      alert("Usuario no autenticado");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const goals = calculateGoals();
+
+      const localProfile = {
+        name: form.name,
+        age: Number(form.age),
+        weight: Number(form.weight),
+        height: Number(form.height),
+        gender: form.gender,
+        activity: form.activity,
+        goal: form.goal,
+        goals,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const supabaseProfile = {
+        id: user.id,
+        nombre: form.name,
+        edad: Number(form.age),
+        peso: Number(form.weight),
+        altura: Number(form.height),
+        genero: form.gender,
+        actividad: form.activity,
+        objetivo: form.goal,
+      };
+
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile));
+
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(supabaseProfile, { onConflict: "id" });
+
+      if (error) {
+        console.error("Error Supabase:", error);
+        alert("Error guardando perfil en Supabase");
+        return;
+      }
+
+      setSaved(true);
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 900);
+    } catch (error) {
+      console.error("Error general:", error);
+      alert("Error inesperado guardando el perfil");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <section className="min-h-screen bg-[#06130d] px-4 py-8 pb-28 text-white font-mono uppercase">
+    <section className="min-h-screen bg-[#06130d] px-4 py-8 pb-28 text-white">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between">
-          <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 border border-emerald-500/40 bg-white/5 px-6 py-3 font-bold text-emerald-300 hover:bg-emerald-500 hover:text-[#06130d] transition-all">
-            <ArrowLeft size={18} /> DASHBOARD
-          </button>
-          <button onClick={handleLogout} className="flex items-center gap-2 border border-red-500/40 bg-red-500/10 px-6 py-3 font-bold text-red-400 hover:bg-red-500 hover:text-white transition-all">
-            <LogOut size={18} /> LOGOUT
-          </button>
-        </div>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mb-6 flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 font-bold text-emerald-300 transition hover:bg-white/15"
+        >
+          <ArrowLeft size={20} />
+          Volver al dashboard
+        </button>
 
-        <div className="border-2 border-emerald-500/20 bg-white/5 p-8 shadow-[8px_8px_0px_0px_rgba(16,185,129,0.1)]">
-          <div className="mb-10 flex items-center gap-6 border-b border-white/10 pb-8">
-            <div className="flex h-16 w-16 items-center justify-center border-2 border-emerald-500 text-emerald-400">
-              <UserRound size={32} />
+        <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div className="mb-8 flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-400/20 text-emerald-300">
+              <UserRound size={30} />
             </div>
+
             <div>
-              <p className="text-xs font-black tracking-[0.4em] text-emerald-500">System.Setup</p>
-              <h1 className="text-4xl font-black tracking-tighter">Tu Perfil</h1>
+              <p className="text-sm font-bold uppercase tracking-[0.3em] text-emerald-400">
+                NutriCoach iA
+              </p>
+              <h1 className="text-3xl font-black">Configura tu perfil</h1>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-8">
-            <Input label="Nombre de Usuario" name="name" value={form.name} onChange={handleChange} />
-            <div className="grid gap-6 md:grid-cols-3">
-              <Input label="Edad" name="age" type="number" value={form.age} onChange={handleChange} required />
-              <Input label="Peso (kg)" name="weight" type="number" value={form.weight} onChange={handleChange} required />
-              <Input label="Altura (cm)" name="height" type="number" value={form.height} onChange={handleChange} required />
+          <form onSubmit={handleSubmit} className="grid gap-5">
+            <Input
+              label="Nombre"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Alexis"
+              required
+            />
+
+            <div className="grid gap-5 md:grid-cols-3">
+              <Input
+                label="Edad"
+                name="age"
+                type="number"
+                value={form.age}
+                onChange={handleChange}
+                required
+              />
+
+              <Input
+                label="Peso (kg)"
+                name="weight"
+                type="number"
+                value={form.weight}
+                onChange={handleChange}
+                required
+              />
+
+              <Input
+                label="Altura (cm)"
+                name="height"
+                type="number"
+                value={form.height}
+                onChange={handleChange}
+                required
+              />
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              <Select label="Sexo" name="gender" value={form.gender} onChange={handleChange}>
-                <option value="male">HOMBRE</option>
-                <option value="female">MUJER</option>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <Select
+                label="Sexo"
+                name="gender"
+                value={form.gender}
+                onChange={handleChange}
+              >
+                <option value="hombre">Hombre</option>
+                <option value="mujer">Mujer</option>
               </Select>
-              <Select label="Actividad" name="activity" value={form.activity} onChange={handleChange}>
-                <option value="low">BAJA</option>
-                <option value="moderate">MODERADA</option>
-                <option value="high">ALTA</option>
+
+              <Select
+                label="Actividad"
+                name="activity"
+                value={form.activity}
+                onChange={handleChange}
+              >
+                <option value="baja">Baja</option>
+                <option value="moderada">Moderada</option>
+                <option value="alta">Alta</option>
               </Select>
             </div>
-            <Select label="Objetivo" name="goal" value={form.goal} onChange={handleChange}>
-              <option value="perder_grasa">PERDER GRASA</option>
-              <option value="ganar_musculo">GANAR MÚSCULO</option>
-              <option value="mantener_peso">MANTENER PESO</option>
+
+            <Select
+              label="Objetivo principal"
+              name="goal"
+              value={form.goal}
+              onChange={handleChange}
+            >
+              <option value="perder_grasa">Perder grasa</option>
+              <option value="ganar_musculo">Ganar músculo</option>
+              <option value="mantener_peso">Mantener peso</option>
             </Select>
 
-            <button type="submit" className="mt-4 flex items-center justify-center gap-3 border-2 border-emerald-500 bg-emerald-500 py-6 text-xl font-black text-[#06130d] hover:bg-transparent hover:text-emerald-500 transition-all">
-              <Save size={24} /> GUARDAR CONFIGURACIÓN
+            <button
+              type="submit"
+              disabled={saving}
+              className="mt-3 flex items-center justify-center gap-2 rounded-3xl bg-emerald-500 px-6 py-4 text-lg font-black text-white shadow-xl shadow-emerald-500/20 transition hover:bg-emerald-400 disabled:opacity-60"
+            >
+              <Save size={22} />
+              {saving ? "Guardando..." : "Guardar perfil"}
             </button>
+
+            {saved && (
+              <p className="rounded-2xl bg-green-400/10 p-4 text-center font-bold text-green-300">
+                ✅ Perfil guardado
+              </p>
+            )}
           </form>
         </div>
       </div>
@@ -123,11 +249,11 @@ export function ProfileSetup() {
 
 function Input({ label, ...props }) {
   return (
-    <label className="block">
-      <p className="mb-2 text-xs font-bold tracking-widest text-emerald-500/60">{label}</p>
-      <input 
-        {...props} 
-        className="w-full rounded-none border border-white/20 bg-black/40 px-5 py-4 font-bold text-white outline-none focus:border-emerald-500 transition-colors" 
+    <label>
+      <p className="mb-2 font-bold text-white/80">{label}</p>
+      <input
+        {...props}
+        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 font-semibold text-white outline-none placeholder:text-white/30 focus:border-emerald-400"
       />
     </label>
   );
@@ -135,19 +261,14 @@ function Input({ label, ...props }) {
 
 function Select({ label, children, ...props }) {
   return (
-    <label className="block">
-      <p className="mb-2 text-xs font-bold tracking-widest text-emerald-500/60">{label}</p>
-      <div className="relative">
-        <select 
-          {...props} 
-          className="w-full appearance-none rounded-none border border-white/20 bg-black/40 px-5 py-4 font-bold text-white outline-none focus:border-emerald-500 transition-colors"
-        >
-          {children}
-        </select>
-        <div className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-emerald-500">
-          <ChevronDown size={20} />
-        </div>
-      </div>
+    <label>
+      <p className="mb-2 font-bold text-white/80">{label}</p>
+      <select
+        {...props}
+        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 font-semibold text-white outline-none focus:border-emerald-400"
+      >
+        {children}
+      </select>
     </label>
   );
 }
