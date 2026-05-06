@@ -9,6 +9,7 @@ import {
   Trash2,
   CalendarDays,
   Camera,
+  ChevronRight,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 
@@ -43,62 +44,60 @@ export function Meals() {
   };
 
   const clearMeals = () => {
-    setMeals([]);
-    localStorage.removeItem(STORAGE_KEY);
+    if (window.confirm("¿BORRAR TODO EL HISTORIAL?")) {
+      setMeals([]);
+      localStorage.removeItem(STORAGE_KEY);
+    }
   };
 
   return (
-    <section className="min-h-screen bg-[#06130d] px-4 py-8 pb-28 text-white">
-      <div className="mx-auto max-w-6xl">
-        {/* BOTÓN VOLVER */}
+    <section className="min-h-screen bg-[#060b13] px-4 py-8 pb-32 text-slate-200 font-sans tracking-tight">
+      <div className="mx-auto max-w-5xl">
+        
+        {/* BOTÓN VOLVER - TOTALMENTE CUADRADO */}
         <button
           onClick={() => navigate("/dashboard")}
-          className="mb-6 flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 font-bold text-emerald-300 transition hover:bg-white/15"
+          className="mb-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400/70 hover:text-emerald-400 transition-all"
         >
-          <ArrowLeft size={20} />
-          Volver al dashboard
+          <ArrowLeft size={16} /> [ Volver al dashboard ]
         </button>
 
-        {/* HEADER */}
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-bold uppercase tracking-[0.3em] text-emerald-400">
-            NutriCoach iA
+        {/* HEADER CON GRADIENTE */}
+        <div className="mb-10 border-l-2 border-emerald-500 pl-6">
+          <p className="mb-1 text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500/60">
+            System.Database_
           </p>
-
-          <h1 className="text-4xl font-black md:text-5xl">
-            Historial de comidas
+          <h1 className="text-4xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-emerald-500/50 md:text-5xl">
+            Historial de Comidas
           </h1>
-
-          <p className="mt-3 text-white/60">
-            Aquí verás todas las comidas guardadas desde el análisis con IA.
-          </p>
         </div>
 
-        {/* RESUMEN */}
-        <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Summary icon={<Flame />} title="Calorías" value={`${totals.calories} kcal`} />
-          <Summary icon={<Beef />} title="Proteínas" value={`${totals.protein} g`} />
-          <Summary icon={<Wheat />} title="Carbs" value={`${totals.carbs} g`} />
-          <Summary icon={<Droplets />} title="Grasas" value={`${totals.fat} g`} />
+        {/* RESUMEN - TARJETAS CUADRADAS */}
+        <div className="mb-10 grid gap-1 grid-cols-2 md:grid-cols-4">
+          <Summary icon={<Flame size={18} />} title="Calorías" value={totals.calories} unit="kcal" />
+          <Summary icon={<Beef size={18} />} title="Proteínas" value={totals.protein} unit="g" />
+          <Summary icon={<Wheat size={18} />} title="Carbs" value={totals.carbs} unit="g" />
+          <Summary icon={<Droplets size={18} />} title="Grasas" value={totals.fat} unit="g" />
         </div>
 
-        {/* LISTA */}
-        <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 backdrop-blur">
-          <div className="mb-6 flex items-center justify-between">
+        {/* CONTENEDOR DE LISTA - SIN ROUNDED */}
+        <div className="relative border border-white/10 bg-[#ffffff03] p-8 backdrop-blur-2xl shadow-2xl">
+          <div className="absolute top-0 left-0 h-[2px] w-20 bg-emerald-500"></div>
+          
+          <div className="mb-10 flex items-center justify-between border-b border-white/5 pb-6">
             <div>
-              <h2 className="text-2xl font-black">Comidas guardadas</h2>
-              <p className="text-white/50">
-                Total: {meals.length} comida(s)
+              <h2 className="text-xl font-black uppercase tracking-tight text-white font-mono">Registros_Guardados</h2>
+              <p className="text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest mt-1">
+                Count: {meals.length}
               </p>
             </div>
 
             {meals.length > 0 && (
               <button
                 onClick={clearMeals}
-                className="flex items-center gap-2 rounded-2xl bg-red-500/10 px-4 py-3 font-bold text-red-300 hover:bg-red-500/20"
+                className="text-[10px] font-black uppercase tracking-widest text-red-500/50 hover:text-red-400 transition-all"
               >
-                <Trash2 size={18} />
-                Limpiar historial
+                [ Limpiar_Historial ]
               </button>
             )}
           </div>
@@ -106,7 +105,7 @@ export function Meals() {
           {meals.length === 0 ? (
             <Empty onClick={() => navigate("/foto-comida")} />
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               {meals.map((meal) => (
                 <MealCard
                   key={meal.id}
@@ -124,57 +123,66 @@ export function Meals() {
   );
 }
 
-/* COMPONENTES */
+/* COMPONENTES CUADRADOS */
 
-function Summary({ icon, title, value }) {
+function Summary({ icon, title, value, unit }) {
   return (
-    <div className="rounded-3xl bg-white/10 p-5">
-      <div className="mb-3 text-emerald-300">{icon}</div>
-      <p className="text-sm text-white/50">{title}</p>
-      <p className="text-xl font-black">{value}</p>
+    <div className="border border-white/5 bg-white/[0.03] p-6 backdrop-blur-xl transition-all hover:bg-emerald-500/5 hover:border-emerald-500/30">
+      <div className="mb-3 text-emerald-500/50">{icon}</div>
+      <p className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-1">{title}</p>
+      <div className="flex items-baseline gap-1">
+        <p className="text-xl font-black text-white leading-none">{value}</p>
+        <p className="text-[9px] font-bold text-emerald-500/40 uppercase">{unit}</p>
+      </div>
     </div>
   );
 }
 
 function MealCard({ meal, onDelete }) {
-  const date = new Date(meal.createdAt).toLocaleString("es-ES");
+  const date = new Date(meal.createdAt).toLocaleDateString("es-ES", {
+    day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
+  });
 
   return (
-    <div className="rounded-[2rem] bg-white/5 p-5 border border-white/10">
-      <div className="flex justify-between">
-        <div>
-          <p className="text-xs text-emerald-300 font-bold uppercase">
-            {meal.mealType} · {date}
-          </p>
+    <div className="relative border border-white/10 bg-white/[0.01] p-6 transition-all hover:border-white/20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-4">
+            <span className="text-[9px] font-black text-emerald-400 border border-emerald-500/30 px-2 py-1 uppercase tracking-tighter">
+              {meal.mealType}
+            </span>
+            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
+              DATE: {date}
+            </span>
+          </div>
 
-          <h3 className="mt-2 text-2xl font-black">
-            {meal.food || "Comida"}
+          <h3 className="mt-4 text-2xl font-black uppercase tracking-tight text-white font-mono">
+            {meal.food || "Unknown_Entry"}
           </h3>
-
-          <p className="text-white/50 text-sm">
-            Objetivo: {formatGoal(meal.goal)}
-          </p>
         </div>
 
         <button
           onClick={onDelete}
-          className="flex items-center gap-2 rounded-xl bg-red-500/10 px-3 py-2 text-red-300 hover:bg-red-500/20"
+          className="text-[9px] font-bold uppercase tracking-widest text-white/20 hover:text-red-400 transition-all"
         >
-          <Trash2 size={16} />
-          Eliminar
+          [ Borrar ]
         </button>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Mini title="Calorías" value={`${meal.calories} kcal`} />
-        <Mini title="Proteínas" value={`${meal.protein} g`} />
-        <Mini title="Carbs" value={`${meal.carbs} g`} />
-        <Mini title="Grasas" value={`${meal.fat} g`} />
+      {/* MINI MACROS CUADRADOS */}
+      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/5 pt-6">
+        <Mini title="Calories" value={meal.calories} unit="kcal" />
+        <Mini title="Protein" value={meal.protein} unit="g" />
+        <Mini title="Carbs" value={meal.carbs} unit="g" />
+        <Mini title="Fat" value={meal.fat} unit="g" />
       </div>
 
-      <div className="mt-4 bg-white/10 p-4 rounded-2xl">
-        <p className="text-emerald-300 text-sm font-bold">Recomendación</p>
-        <p className="text-white/60 text-sm mt-1">
+      {/* RECOMENDACIÓN IA ESTILO TÉCNICO */}
+      <div className="mt-6 border-l-2 border-emerald-500/30 bg-emerald-500/[0.02] p-4">
+        <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+          Análisis_IA <ChevronRight size={10} />
+        </p>
+        <p className="text-xs font-medium text-slate-400 leading-relaxed italic">
           {meal.recommendation}
         </p>
       </div>
@@ -182,38 +190,38 @@ function MealCard({ meal, onDelete }) {
   );
 }
 
-function Mini({ title, value }) {
+function Mini({ title, value, unit }) {
   return (
-    <div className="bg-white/10 p-3 rounded-xl">
-      <p className="text-xs text-white/40">{title}</p>
-      <p className="font-bold">{value}</p>
+    <div>
+      <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">{title}</p>
+      <p className="text-sm font-black text-white">{value}<span className="ml-1 text-emerald-500/40 text-[9px]">{unit}</span></p>
     </div>
   );
 }
 
 function Empty({ onClick }) {
   return (
-    <div className="text-center py-16">
-      <CalendarDays size={40} className="mx-auto text-emerald-300 mb-4" />
-      <h3 className="text-xl font-black">No hay comidas guardadas</h3>
-      <p className="text-white/50 mt-2">
-        Analiza tu primera comida para empezar.
-      </p>
+    <div className="text-center py-20">
+      <div className="inline-flex h-16 w-16 items-center justify-center border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 mb-6">
+        <CalendarDays size={32} />
+      </div>
+      <h3 className="text-lg font-black uppercase tracking-tight text-white">Base de datos vacía</h3>
+      <p className="text-xs font-medium text-slate-500 mt-2 mb-10 uppercase tracking-widest">Inicia análisis de sensor_</p>
 
       <button
         onClick={onClick}
-        className="mt-5 bg-emerald-500 px-5 py-3 rounded-2xl font-bold"
+        className="inline-flex items-center gap-3 border border-emerald-500 bg-emerald-500/10 px-10 py-5 text-xs font-black uppercase tracking-[0.3em] text-emerald-500 transition-all hover:bg-emerald-500 hover:text-[#060b13]"
       >
-        <Camera size={18} className="inline mr-2" />
-        Analizar comida
+        <Camera size={16} />
+        Nuevo Análisis
       </button>
     </div>
   );
 }
 
 function formatGoal(goal) {
-  if (goal === "perder_grasa") return "Perder grasa";
-  if (goal === "ganar_musculo") return "Ganar músculo";
-  if (goal === "mantener_peso") return "Mantener";
-  return "No definido";
+  if (goal === "perder_grasa") return "Fat_Loss";
+  if (goal === "ganar_musculo") return "Muscle_Gain";
+  if (goal === "mantener_peso") return "Maintain";
+  return "General";
 }
