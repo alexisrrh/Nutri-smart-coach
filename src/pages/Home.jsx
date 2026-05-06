@@ -44,15 +44,15 @@ export function Home() {
         </nav>
 
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:py-24">
-          <div className="flex flex-col items-start text-left">
-            <div className="mb-5 inline-flex items-center gap-2 border-l-4 border-emerald-500 bg-emerald-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400 sm:px-4 sm:text-[11px]">
+          <div className="flex flex-col items-start text-center">
+            <div className="mb-5 inline-flex items-center gap-2  border-l-4 border-emerald-500 bg-emerald-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400 sm:px-4 sm:text-[11px]">
               <Zap size={14} className="fill-current" />
               TU TRANSFORMACIÓN COMIENZA AQUÍ
             </div>
 
-            <h1 className="text-5xl font-black leading-[0.85] tracking-tighter italic uppercase sm:text-7xl md:text-9xl">
+            <h1 className="text-5xl font-black leading-[0.85] tracking-tighter italic uppercase text-center sm:text-7xl md:text-9xl">
               DOMINA <br />
-              <span className="text-emerald-500">TU CUERPO</span>
+              <span className="text-emerald-500 text-center">TU CUERPO</span>
             </h1>
 
            
