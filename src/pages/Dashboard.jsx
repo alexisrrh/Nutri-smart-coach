@@ -81,15 +81,15 @@ export function Dashboard() {
   }, [checkins]);
 
   return (
-   <section className="relative min-h-screen bg-[#08120f] px-4 pt-5 pb-48 text-white font-sans uppercase tracking-tight sm:px-6 sm:pt-6 sm:pb-52">
+    <section className="relative min-h-screen bg-[#08120f] px-3 pt-4 pb-36 text-white font-sans uppercase tracking-tight sm:px-6 sm:pt-6 sm:pb-52">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%),radial-gradient(circle_at_bottom_left,#4361ee12,transparent_40%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       <div className="relative z-10 mx-auto max-w-7xl">
-        <header className="mb-6 flex items-center justify-between border-b border-white/10 pb-5 sm:mb-10 sm:pb-6">
+        <header className="mb-4 flex items-center justify-between border-b border-white/10 pb-4 sm:mb-10 sm:pb-6">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex h-11 w-11 items-center justify-center bg-emerald-500 text-[#050a09] shadow-[0_0_25px_#10b98155] sm:h-12 sm:w-12">
-              <Zap size={22} className="fill-current" />
+            <div className="flex h-10 w-10 items-center justify-center bg-emerald-500 text-[#050a09] shadow-[0_0_25px_#10b98155] sm:h-12 sm:w-12">
+              <Zap size={21} className="fill-current" />
             </div>
 
             <div>
@@ -106,40 +106,40 @@ export function Dashboard() {
 
           <button
             onClick={() => navigate("/perfil")}
-            className="border border-white/10 bg-white/5 p-3 transition-all hover:bg-emerald-500 hover:text-[#050a09]"
+            className="border border-white/10 bg-white/5 p-2.5 transition-all hover:bg-emerald-500 hover:text-[#050a09] sm:p-3"
           >
-            <Settings size={20} />
+            <Settings size={19} />
           </button>
         </header>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_350px] lg:gap-6">
-          <div className="space-y-5 sm:space-y-6">
-            <section className="relative overflow-hidden border border-white/10 bg-[#0d1714] p-5 sm:p-8">
-              <div className="absolute right-0 top-0 h-40 w-40 bg-emerald-500/10 blur-3xl" />
+        <div className="grid gap-4 lg:grid-cols-[1fr_350px] lg:gap-6">
+          <div className="space-y-4 sm:space-y-6">
+            <section className="relative overflow-hidden border border-white/10 bg-[#0d1714] p-4 sm:p-8">
+              <div className="absolute right-0 top-0 h-36 w-36 bg-emerald-500/10 blur-3xl sm:h-40 sm:w-40" />
 
               <div className="relative z-10">
-                <div className="mb-5 inline-flex items-center gap-2 border border-emerald-500/30 bg-[#08120f] px-3 py-1 text-[9px] font-black text-emerald-400 sm:mb-6 sm:text-[10px]">
+                <div className="mb-4 inline-flex items-center gap-2 border border-emerald-500/30 bg-[#08120f] px-3 py-1 text-[9px] font-black text-emerald-400 sm:mb-6 sm:text-[10px]">
                   <Activity size={12} /> STATUS: OPTIMIZANDO
                 </div>
 
-                <h1 className="mb-4 text-4xl font-black italic leading-[0.85] sm:text-5xl md:text-7xl">
+                <h1 className="mb-3 text-3xl font-black italic leading-[0.85] sm:mb-4 sm:text-5xl md:text-7xl">
                   HOLA, <br />
                   <span className="text-emerald-500">
                     {profile?.name || profile?.nombre || "USUARIO"}
                   </span>
                 </h1>
 
-                <div className="mt-7 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4">
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4">
                   <button
                     onClick={() => navigate("/foto-comida")}
-                    className="flex items-center justify-center gap-3 bg-emerald-500 py-4 text-sm font-black text-[#050a09] shadow-[0_15px_30px_#10b98122] transition-all hover:bg-white sm:py-5"
+                    className="flex items-center justify-center gap-3 bg-emerald-500 py-3 text-xs font-black text-[#050a09] shadow-[0_15px_30px_#10b98122] transition-all hover:bg-white sm:py-5 sm:text-sm"
                   >
-                    <Camera size={20} /> ESCANEAR COMIDA
+                    <Camera size={19} /> ESCANEAR COMIDA
                   </button>
 
                   <button
                     onClick={() => navigate("/plan-comidas")}
-                    className="flex items-center justify-center gap-3 border border-white/10 bg-white/5 py-4 text-sm font-black transition-all hover:bg-white hover:text-[#050a09] sm:py-5"
+                    className="flex items-center justify-center gap-3 border border-white/10 bg-white/5 py-3 text-xs font-black transition-all hover:bg-white hover:text-[#050a09] sm:py-5 sm:text-sm"
                   >
                     <Utensils size={18} /> DIETA SEMANAL
                   </button>
@@ -147,7 +147,7 @@ export function Dashboard() {
               </div>
             </section>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <MacroBlock
                 label="CALORÍAS"
                 current={totals.calories}
@@ -173,24 +173,24 @@ export function Dashboard() {
               />
             </div>
 
-            <section className="flex flex-col gap-5 border border-white/10 border-l-4 border-l-blue-500 bg-[#0d1714] p-5 sm:p-8 md:flex-row md:items-center md:justify-between">
+            <section className="flex flex-col gap-4 border border-white/10 border-l-4 border-l-blue-500 bg-[#0d1714] p-4 sm:p-8 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4 sm:gap-6">
                 <div
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center border-2 sm:h-16 sm:w-16 ${
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center border-2 sm:h-16 sm:w-16 ${
                     hasCheckinThisWeek
                       ? "border-emerald-500 text-emerald-500"
                       : "border-blue-500 text-blue-500 animate-pulse"
                   }`}
                 >
-                  <ScanLine size={30} />
+                  <ScanLine size={28} />
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-black italic uppercase sm:text-xl">
+                  <h3 className="text-base font-black italic uppercase sm:text-xl">
                     Progreso Visual
                   </h3>
 
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/45 sm:text-[10px]">
+                  <p className="text-[8px] font-bold uppercase tracking-widest text-white/45 sm:text-[10px]">
                     {hasCheckinThisWeek
                       ? "Check-in semanal completado"
                       : "Pendiente: realiza tu check-in semanal"}
@@ -200,7 +200,7 @@ export function Dashboard() {
 
               <button
                 onClick={() => navigate("/checkin")}
-                className={`px-6 py-4 text-[10px] font-black tracking-[0.2em] transition-all sm:px-8 sm:text-[11px] ${
+                className={`px-5 py-3 text-[9px] font-black tracking-[0.2em] transition-all sm:px-8 sm:py-4 sm:text-[11px] ${
                   hasCheckinThisWeek
                     ? "border border-white/10 bg-white/5 text-white/55 hover:text-white"
                     : "bg-blue-500 text-white hover:bg-white hover:text-blue-500"
@@ -211,10 +211,10 @@ export function Dashboard() {
             </section>
           </div>
 
-          <aside className="grid gap-5 sm:grid-cols-2 lg:block lg:space-y-6">
-            <div className="bg-emerald-500 p-6 text-[#050a09] sm:p-8">
-              <div className="mb-4 flex items-start justify-between text-[#050a09]/45">
-                <Trophy size={32} />
+          <aside className="grid gap-4 sm:grid-cols-2 lg:block lg:space-y-6">
+            <div className="bg-emerald-500 p-5 text-[#050a09] sm:p-8">
+              <div className="mb-3 flex items-start justify-between text-[#050a09]/45 sm:mb-4">
+                <Trophy size={30} />
                 <TrendingUp size={20} />
               </div>
 
@@ -223,7 +223,7 @@ export function Dashboard() {
               </p>
 
               <div className="flex items-baseline gap-1">
-                <h2 className="text-7xl font-black italic leading-none sm:text-8xl">
+                <h2 className="text-6xl font-black italic leading-none sm:text-8xl">
                   {nutritionScore}
                 </h2>
 
@@ -231,17 +231,17 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="space-y-5 border border-white/10 bg-[#0d1714] p-5 sm:p-6">
-              <h3 className="text-[10px] font-black italic tracking-[0.35em] text-emerald-500 sm:text-xs sm:tracking-[0.4em]">
+            <div className="space-y-4 border border-white/10 bg-[#0d1714] p-4 sm:space-y-5 sm:p-6">
+              <h3 className="text-[10px] font-black italic tracking-[0.3em] text-emerald-500 sm:text-xs sm:tracking-[0.4em]">
                 ÚLTIMAS COMIDAS
               </h3>
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {lastMeals.length > 0 ? (
                   lastMeals.map((meal, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between border border-white/5 bg-[#08120f] p-4"
+                      className="flex items-center justify-between border border-white/5 bg-[#08120f] p-3 sm:p-4"
                     >
                       <div>
                         <p className="text-[9px] font-black text-emerald-500">
@@ -259,7 +259,7 @@ export function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="border border-dashed border-white/10 py-4 text-center text-[10px] text-white/25">
+                  <p className="border border-dashed border-white/10 py-3 text-center text-[10px] text-white/25 sm:py-4">
                     SIN DATOS HOY
                   </p>
                 )}
@@ -275,12 +275,12 @@ export function Dashboard() {
           </aside>
         </div>
 
-       <section className="mt-5 mb-10 flex items-center gap-5 border border-emerald-500/20 bg-emerald-500/8 p-5 sm:mt-6 sm:mb-14 sm:gap-6 sm:p-8">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-emerald-500 text-[#050a09] sm:h-12 sm:w-12">
-            <Sparkles size={24} />
+        <section className="mt-4 mb-8 flex items-center gap-4 border border-emerald-500/20 bg-emerald-500/8 p-4 sm:mt-6 sm:mb-14 sm:gap-6 sm:p-8">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-emerald-500 text-[#050a09] sm:h-12 sm:w-12">
+            <Sparkles size={23} />
           </div>
 
-          <p className="text-xs font-black italic leading-tight tracking-wide text-white/75 sm:text-sm">
+          <p className="text-[10px] font-black italic leading-tight tracking-wide text-white/75 sm:text-sm">
             "{getSmartTip(totals, goals, todayMeals.length)}"
           </p>
         </section>
@@ -295,17 +295,17 @@ function MacroBlock({ label, current, goal, unit, color }) {
   const percentage = Math.min(100, Math.round((current / goal) * 100));
 
   return (
-    <div className="group border border-white/10 bg-[#0d1714] p-3 sm:p-6">
-      <p className="mb-3 text-[8px] font-black tracking-[0.18em] text-white/35 sm:mb-4 sm:text-[10px] sm:tracking-[0.3em]">
+    <div className="group border border-white/10 bg-[#0d1714] p-2.5 sm:p-6">
+      <p className="mb-2 text-[7px] font-black tracking-[0.12em] text-white/35 sm:mb-4 sm:text-[10px] sm:tracking-[0.3em]">
         {label}
       </p>
 
-      <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:gap-1">
-        <span className="text-2xl font-black italic leading-none sm:text-4xl">
+      <div className="mb-3 flex flex-col sm:mb-4 sm:flex-row sm:items-baseline sm:gap-1">
+        <span className="text-xl font-black italic leading-none sm:text-4xl">
           {Math.round(current)}
         </span>
 
-        <span className="text-[8px] font-bold uppercase text-white/30 sm:text-[10px]">
+        <span className="text-[7px] font-bold uppercase text-white/30 sm:text-[10px]">
           {unit} / {goal}
         </span>
       </div>
@@ -325,7 +325,7 @@ function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#0d1714]/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-lg items-center justify-around py-3 sm:py-4">
+      <div className="mx-auto flex max-w-lg items-center justify-around py-2 sm:py-4">
         <NavItem
           icon={<HomeIcon size={20} />}
           label="Inicio"
