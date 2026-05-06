@@ -2,24 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera,
-  Flame,
-  Beef,
-  Wheat,
-  Droplets,
-  CalendarDays,
   Trophy,
-  ArrowRight,
-  UserRound,
   Utensils,
   ScanLine,
   Sparkles,
   Settings,
   Activity,
-  ChevronRight,
   Zap,
   Home as HomeIcon,
   BarChart3,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 
 const MEALS_KEY = "nutricoach_meals";
@@ -78,139 +70,217 @@ export function Dashboard() {
   );
 
   const lastMeals = todayMeals.slice(0, 3);
-  
-  // Lógica de Check-in Semanal
+
   const hasCheckinThisWeek = useMemo(() => {
     return checkins.some((item) => {
       if (!item.createdAt) return false;
       const now = new Date();
       const checkDate = new Date(item.createdAt);
-      return (now - checkDate) <= 7 * 24 * 60 * 60 * 1000;
+      return now - checkDate <= 7 * 24 * 60 * 60 * 1000;
     });
   }, [checkins]);
 
   return (
-    <section className="relative min-h-screen bg-[#050a09] px-4 py-6 pb-32 text-white font-sans uppercase tracking-tight">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98110,transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:40px_40px]" />
+   <section className="relative min-h-screen bg-[#08120f] px-4 pt-5 pb-48 text-white font-sans uppercase tracking-tight sm:px-6 sm:pt-6 sm:pb-52">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%),radial-gradient(circle_at_bottom_left,#4361ee12,transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       <div className="relative z-10 mx-auto max-w-7xl">
-        {/* Header */}
-        <header className="mb-10 flex items-center justify-between border-b border-white/10 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 bg-emerald-500 flex items-center justify-center text-[#050a09] shadow-[0_0_25px_#10b98155]">
-              <Zap size={24} className="fill-current" />
+        <header className="mb-6 flex items-center justify-between border-b border-white/10 pb-5 sm:mb-10 sm:pb-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex h-11 w-11 items-center justify-center bg-emerald-500 text-[#050a09] shadow-[0_0_25px_#10b98155] sm:h-12 sm:w-12">
+              <Zap size={22} className="fill-current" />
             </div>
+
             <div>
-              <p className="text-2xl font-black italic tracking-tighter leading-none">
+              <p className="text-lg font-black italic leading-none tracking-tighter sm:text-2xl">
                 Nutri <span className="text-emerald-500">Smart</span> Coach
               </p>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
-                Sistema: <span className="text-emerald-500 font-black text-nowrap">Operativo</span>
+
+              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/35 sm:text-[10px] sm:tracking-[0.4em]">
+                Sistema:{" "}
+                <span className="text-emerald-500 font-black">Operativo</span>
               </p>
             </div>
           </div>
-          <button onClick={() => navigate("/perfil")} className="border border-white/10 bg-white/5 p-3 hover:bg-emerald-500 hover:text-[#050a09] transition-all">
+
+          <button
+            onClick={() => navigate("/perfil")}
+            className="border border-white/10 bg-white/5 p-3 transition-all hover:bg-emerald-500 hover:text-[#050a09]"
+          >
             <Settings size={20} />
           </button>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-          <div className="space-y-6">
-            {/* Hero Section */}
-            <section className="border border-white/10 bg-[#0d1412] p-8 relative overflow-hidden">
+        <div className="grid gap-5 lg:grid-cols-[1fr_350px] lg:gap-6">
+          <div className="space-y-5 sm:space-y-6">
+            <section className="relative overflow-hidden border border-white/10 bg-[#0d1714] p-5 sm:p-8">
+              <div className="absolute right-0 top-0 h-40 w-40 bg-emerald-500/10 blur-3xl" />
+
               <div className="relative z-10">
-                <div className="mb-6 inline-flex items-center gap-2 bg-[#050a09] border border-emerald-500/30 px-3 py-1 text-[10px] font-black text-emerald-400">
+                <div className="mb-5 inline-flex items-center gap-2 border border-emerald-500/30 bg-[#08120f] px-3 py-1 text-[9px] font-black text-emerald-400 sm:mb-6 sm:text-[10px]">
                   <Activity size={12} /> STATUS: OPTIMIZANDO
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black italic leading-[0.85] mb-4">
+
+                <h1 className="mb-4 text-4xl font-black italic leading-[0.85] sm:text-5xl md:text-7xl">
                   HOLA, <br />
-                  <span className="text-emerald-500">{profile?.name || "USUARIO"}</span>
+                  <span className="text-emerald-500">
+                    {profile?.name || profile?.nombre || "USUARIO"}
+                  </span>
                 </h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-                  <button onClick={() => navigate("/foto-comida")} className="flex items-center justify-center gap-3 bg-emerald-500 py-5 font-black text-[#050a09] hover:bg-white transition-all shadow-[0_15px_30px_#10b98122]">
+
+                <div className="mt-7 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4">
+                  <button
+                    onClick={() => navigate("/foto-comida")}
+                    className="flex items-center justify-center gap-3 bg-emerald-500 py-4 text-sm font-black text-[#050a09] shadow-[0_15px_30px_#10b98122] transition-all hover:bg-white sm:py-5"
+                  >
                     <Camera size={20} /> ESCANEAR COMIDA
                   </button>
-                  <button onClick={() => navigate("/plan-comidas")} className="flex items-center justify-center gap-3 border border-white/10 bg-white/5 py-5 font-black hover:bg-white hover:text-[#050a09] transition-all text-sm">
+
+                  <button
+                    onClick={() => navigate("/plan-comidas")}
+                    className="flex items-center justify-center gap-3 border border-white/10 bg-white/5 py-4 text-sm font-black transition-all hover:bg-white hover:text-[#050a09] sm:py-5"
+                  >
                     <Utensils size={18} /> DIETA SEMANAL
                   </button>
                 </div>
               </div>
             </section>
 
-            {/* Macros Grid */}
-            <div className="grid gap-4 md:grid-cols-3">
-               <MacroBlock label="CALORÍAS" current={totals.calories} goal={goals.calories} unit="KCAL" color="bg-emerald-500" />
-               <MacroBlock label="PROTEÍNA" current={totals.protein} goal={goals.protein} unit="G" color="bg-blue-400" />
-               <MacroBlock label="CARBOS" current={totals.carbs} goal={goals.carbs} unit="G" color="bg-amber-400" />
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              <MacroBlock
+                label="CALORÍAS"
+                current={totals.calories}
+                goal={goals.calories}
+                unit="KCAL"
+                color="bg-emerald-500"
+              />
+
+              <MacroBlock
+                label="PROTEÍNA"
+                current={totals.protein}
+                goal={goals.protein}
+                unit="G"
+                color="bg-blue-400"
+              />
+
+              <MacroBlock
+                label="CARBOS"
+                current={totals.carbs}
+                goal={goals.carbs}
+                unit="G"
+                color="bg-amber-400"
+              />
             </div>
 
-            {/* PANEL DE CHECK-IN SEMANAL (REINTEGRADO) */}
-            <section className="border border-white/10 bg-[#0d1412] p-8 flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-l-blue-500">
-              <div className="flex items-center gap-6">
-                <div className={`h-16 w-16 flex items-center justify-center border-2 ${hasCheckinThisWeek ? 'border-emerald-500 text-emerald-500' : 'border-blue-500 text-blue-500 animate-pulse'}`}>
-                  <ScanLine size={32} />
+            <section className="flex flex-col gap-5 border border-white/10 border-l-4 border-l-blue-500 bg-[#0d1714] p-5 sm:p-8 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center border-2 sm:h-16 sm:w-16 ${
+                    hasCheckinThisWeek
+                      ? "border-emerald-500 text-emerald-500"
+                      : "border-blue-500 text-blue-500 animate-pulse"
+                  }`}
+                >
+                  <ScanLine size={30} />
                 </div>
+
                 <div>
-                  <h3 className="text-xl font-black italic uppercase">Progreso Visual</h3>
-                  <p className="text-[10px] font-bold text-white/40 tracking-widest uppercase">
-                    {hasCheckinThisWeek ? "Check-in semanal completado" : "Pendiente: Realiza tu check-in semanal"}
+                  <h3 className="text-lg font-black italic uppercase sm:text-xl">
+                    Progreso Visual
+                  </h3>
+
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/45 sm:text-[10px]">
+                    {hasCheckinThisWeek
+                      ? "Check-in semanal completado"
+                      : "Pendiente: realiza tu check-in semanal"}
                   </p>
                 </div>
               </div>
-              <button 
+
+              <button
                 onClick={() => navigate("/checkin")}
-                className={`px-8 py-4 font-black text-[11px] tracking-[0.2em] transition-all ${hasCheckinThisWeek ? 'bg-white/5 border border-white/10 text-white/50 hover:text-white' : 'bg-blue-500 text-white hover:bg-white hover:text-blue-500'}`}
+                className={`px-6 py-4 text-[10px] font-black tracking-[0.2em] transition-all sm:px-8 sm:text-[11px] ${
+                  hasCheckinThisWeek
+                    ? "border border-white/10 bg-white/5 text-white/55 hover:text-white"
+                    : "bg-blue-500 text-white hover:bg-white hover:text-blue-500"
+                }`}
               >
                 {hasCheckinThisWeek ? "VER EVOLUCIÓN" : "REGISTRAR AHORA"}
               </button>
             </section>
           </div>
 
-          {/* Sidebar */}
-          <aside className="space-y-6">
-            <div className="bg-emerald-500 p-8 text-[#050a09]">
-              <div className="flex justify-between items-start mb-4 text-[#050a09]/40">
+          <aside className="grid gap-5 sm:grid-cols-2 lg:block lg:space-y-6">
+            <div className="bg-emerald-500 p-6 text-[#050a09] sm:p-8">
+              <div className="mb-4 flex items-start justify-between text-[#050a09]/45">
                 <Trophy size={32} />
                 <TrendingUp size={20} />
               </div>
-              <p className="text-xs font-black tracking-[0.3em] opacity-60">SCORE NUTRICIONAL</p>
+
+              <p className="text-[10px] font-black tracking-[0.3em] opacity-60 sm:text-xs">
+                SCORE NUTRICIONAL
+              </p>
+
               <div className="flex items-baseline gap-1">
-                <h2 className="text-8xl font-black italic leading-none">{nutritionScore}</h2>
+                <h2 className="text-7xl font-black italic leading-none sm:text-8xl">
+                  {nutritionScore}
+                </h2>
+
                 <span className="text-xl font-black">/10</span>
               </div>
             </div>
 
-            <div className="border border-white/10 bg-[#0d1412] p-6 space-y-6">
-              <h3 className="text-xs font-black tracking-[0.4em] text-emerald-500 italic">ÚLTIMAS COMIDAS</h3>
+            <div className="space-y-5 border border-white/10 bg-[#0d1714] p-5 sm:p-6">
+              <h3 className="text-[10px] font-black italic tracking-[0.35em] text-emerald-500 sm:text-xs sm:tracking-[0.4em]">
+                ÚLTIMAS COMIDAS
+              </h3>
+
               <div className="space-y-3">
                 {lastMeals.length > 0 ? (
                   lastMeals.map((meal, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-[#050a09] border border-white/5 p-4">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between border border-white/5 bg-[#08120f] p-4"
+                    >
                       <div>
-                        <p className="text-[9px] font-black text-emerald-500">{meal.mealType || "INGESTA"}</p>
-                        <p className="text-xs font-black italic">{meal.food.substring(0, 15)}...</p>
+                        <p className="text-[9px] font-black text-emerald-500">
+                          {meal.mealType || "INGESTA"}
+                        </p>
+
+                        <p className="text-xs font-black italic">
+                          {(meal.food || "Comida").substring(0, 15)}...
+                        </p>
                       </div>
-                      <p className="text-lg font-black italic">{Math.round(meal.calories)}</p>
+
+                      <p className="text-lg font-black italic">
+                        {Math.round(meal.calories || 0)}
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-[10px] text-white/20 py-4 text-center border border-dashed border-white/10">SIN DATOS HOY</p>
+                  <p className="border border-dashed border-white/10 py-4 text-center text-[10px] text-white/25">
+                    SIN DATOS HOY
+                  </p>
                 )}
               </div>
-              <button onClick={() => navigate("/comidas")} className="w-full py-3 text-[10px] font-black tracking-[0.3em] border border-white/10 hover:bg-white hover:text-[#050a09] transition-all">
+
+              <button
+                onClick={() => navigate("/comidas")}
+                className="w-full border border-white/10 py-3 text-[10px] font-black tracking-[0.3em] transition-all hover:bg-white hover:text-[#050a09]"
+              >
                 HISTORIAL COMPLETO
               </button>
             </div>
           </aside>
         </div>
 
-        {/* Footer IA */}
-        <section className="mt-6 border border-emerald-500/20 bg-emerald-500/5 p-8 flex items-center gap-6">
-          <div className="h-12 w-12 shrink-0 flex items-center justify-center bg-emerald-500 text-[#050a09]">
+       <section className="mt-5 mb-10 flex items-center gap-5 border border-emerald-500/20 bg-emerald-500/8 p-5 sm:mt-6 sm:mb-14 sm:gap-6 sm:p-8">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-emerald-500 text-[#050a09] sm:h-12 sm:w-12">
             <Sparkles size={24} />
           </div>
-          <p className="text-sm font-black italic leading-tight text-white/70 tracking-wide">
+
+          <p className="text-xs font-black italic leading-tight tracking-wide text-white/75 sm:text-sm">
             "{getSmartTip(totals, goals, todayMeals.length)}"
           </p>
         </section>
@@ -221,18 +291,30 @@ export function Dashboard() {
   );
 }
 
-// Subcomponentes
 function MacroBlock({ label, current, goal, unit, color }) {
   const percentage = Math.min(100, Math.round((current / goal) * 100));
+
   return (
-    <div className="border border-white/10 bg-[#0d1412] p-6 group">
-      <p className="text-[10px] font-black tracking-[0.3em] text-white/30 mb-4">{label}</p>
-      <div className="flex items-baseline gap-1 mb-4">
-        <span className="text-4xl font-black italic leading-none">{Math.round(current)}</span>
-        <span className="text-[10px] font-bold text-white/20 uppercase">{unit} / {goal}</span>
+    <div className="group border border-white/10 bg-[#0d1714] p-3 sm:p-6">
+      <p className="mb-3 text-[8px] font-black tracking-[0.18em] text-white/35 sm:mb-4 sm:text-[10px] sm:tracking-[0.3em]">
+        {label}
+      </p>
+
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:gap-1">
+        <span className="text-2xl font-black italic leading-none sm:text-4xl">
+          {Math.round(current)}
+        </span>
+
+        <span className="text-[8px] font-bold uppercase text-white/30 sm:text-[10px]">
+          {unit} / {goal}
+        </span>
       </div>
+
       <div className="h-1 w-full bg-white/5">
-        <div className={`h-full ${color} transition-all duration-1000 shadow-[0_0_8px_current]`} style={{ width: `${percentage}%` }} />
+        <div
+          className={`h-full ${color} shadow-[0_0_8px_current] transition-all duration-1000`}
+          style={{ width: `${percentage}%` }}
+        />
       </div>
     </div>
   );
@@ -240,13 +322,34 @@ function MacroBlock({ label, current, goal, unit, color }) {
 
 function BottomNav() {
   const navigate = useNavigate();
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#0d1412]/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-lg items-center justify-around py-4">
-        <NavItem icon={<HomeIcon size={20} />} label="Inicio" onClick={() => navigate("/")} />
-        <NavItem icon={<Camera size={20} />} label="Escanear" active onClick={() => navigate("/foto-comida")} />
-        <NavItem icon={<Utensils size={20} />} label="Dieta" onClick={() => navigate("/plan-comidas")} />
-        <NavItem icon={<BarChart3 size={20} />} label="Progreso" onClick={() => navigate("/checkin")} />
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#0d1714]/95 backdrop-blur-md">
+      <div className="mx-auto flex max-w-lg items-center justify-around py-3 sm:py-4">
+        <NavItem
+          icon={<HomeIcon size={20} />}
+          label="Inicio"
+          onClick={() => navigate("/")}
+        />
+
+        <NavItem
+          icon={<Camera size={20} />}
+          label="Escanear"
+          active
+          onClick={() => navigate("/foto-comida")}
+        />
+
+        <NavItem
+          icon={<Utensils size={20} />}
+          label="Dieta"
+          onClick={() => navigate("/plan-comidas")}
+        />
+
+        <NavItem
+          icon={<BarChart3 size={20} />}
+          label="Progreso"
+          onClick={() => navigate("/checkin")}
+        />
       </div>
     </nav>
   );
@@ -254,16 +357,36 @@ function BottomNav() {
 
 function NavItem({ icon, label, active = false, onClick }) {
   return (
-    <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all ${active ? "text-emerald-500" : "text-white/30 hover:text-white"}`}>
-      <div className={`p-1 ${active ? "bg-emerald-500/10 border border-emerald-500/50" : ""}`}>{icon}</div>
-      <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 transition-all ${
+        active ? "text-emerald-500" : "text-white/35 hover:text-white"
+      }`}
+    >
+      <div
+        className={`p-1 ${
+          active ? "border border-emerald-500/50 bg-emerald-500/10" : ""
+        }`}
+      >
+        {icon}
+      </div>
+
+      <span className="text-[8px] font-black uppercase tracking-widest sm:text-[9px]">
+        {label}
+      </span>
     </button>
   );
 }
 
 function getSmartTip(totals, goals, mealCount) {
-  if (mealCount === 0) return "SISTEMA LISTO. ESCANEA TU COMIDA PARA INICIAR EL PROCESAMIENTO.";
-  if (totals.protein < goals.protein * 0.5) return "DÉFICIT PROTEICO DETECTADO. PRIORIZA PROTEÍNA MAGRA EN TU SIGUIENTE INGESTA.";
-  if (totals.calories > goals.calories) return "LÍMITE CALÓRICO EXCEDIDO. SE RECOMIENDA MODERACIÓN.";
+  if (mealCount === 0)
+    return "SISTEMA LISTO. ESCANEA TU COMIDA PARA INICIAR EL PROCESAMIENTO.";
+
+  if (totals.protein < goals.protein * 0.5)
+    return "DÉFICIT PROTEICO DETECTADO. PRIORIZA PROTEÍNA MAGRA EN TU SIGUIENTE INGESTA.";
+
+  if (totals.calories > goals.calories)
+    return "LÍMITE CALÓRICO EXCEDIDO. SE RECOMIENDA MODERACIÓN.";
+
   return "BALANCE ÓPTIMO. SIGUE LAS MÉTRICAS PARA MAXIMIZAR RESULTADOS.";
 }
