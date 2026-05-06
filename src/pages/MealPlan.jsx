@@ -161,17 +161,17 @@ export function MealPlan() {
         controller.abort();
       }, 120000);
 
-      const response = await fetch(`${API_URL}/generate-diet`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          profile,
-          preferences: form,
-        }),
-        signal: controller.signal,
-      });
+ const response = await fetch(`${API_URL}/generate-diet`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    profile,
+    preferences: form,
+  }),
+  signal: controller.signal,
+});
 
       clearTimeout(timeout);
 

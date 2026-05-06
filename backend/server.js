@@ -14,7 +14,7 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5175",
-      "https://nutri-coach-ia.vercel.app"
+      "https://nutri-coach-ia.vercel.app",
     ],
     credentials: true,
   })
@@ -56,7 +56,7 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
 
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        error: "Falta GEMINI_API_KEY en el .env del backend.",
+        error: "Falta GEMINI_API_KEY en el backend.",
       });
     }
 
@@ -92,29 +92,11 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
             },
             {
               text: `
-Eres un nutricionista profesional dentro de una app llamada NutriCoach iA.
+Eres un asistente nutricional dentro de una app llamada NutriCoach iA.
 
-Crea una dieta semanal completa de lunes a domingo.
+Analiza la comida de la imagen y devuelve una estimación nutricional útil.
 
-Datos del usuario:
-Edad: ${profile.age}
-Peso: ${profile.weight} kg
-Altura: ${profile.height} cm
-Sexo: ${profile.gender}
-Actividad: ${profile.activity}
-Objetivo: ${profile.goal}
-Calorías objetivo: ${profile.goals?.calories}
-Proteínas objetivo: ${profile.goals?.protein} g
-Carbohidratos objetivo: ${profile.goals?.carbs} g
-Grasas objetivo: ${profile.goals?.fat} g
-
-Preferencias:
-Comidas al día: ${preferences?.mealsPerDay}
-Tipo de dieta: ${preferences?.dietStyle}
-Presupuesto: ${preferences?.budget}
-Nivel de cocina: ${preferences?.cookingLevel}
-Alimentos que no le gustan: ${preferences?.dislikedFoods || "ninguno"}
-Alergias/restricciones: ${preferences?.allergies || "ninguna"}
+Objetivo del usuario: ${goal}
 
 Responde SOLO con JSON válido.
 No uses markdown.
@@ -122,50 +104,25 @@ No uses texto fuera del JSON.
 
 Formato exacto:
 {
-  "week": [
-    {
-      "day": "Lunes",
-      "meals": [
-        {
-          "time": "08:00",
-          "name": "Desayuno",
-          "food": "Avena con yogur griego y plátano",
-          "ingredients": [
-            {
-              "name": "avena",
-              "quantity": "60 g"
-            },
-            {
-              "name": "yogur griego",
-              "quantity": "200 g"
-            },
-            {
-              "name": "plátano",
-              "quantity": "1 unidad"
-            }
-          ],
-          "calories": 520,
-          "protein": 35,
-          "carbs": 65,
-          "fat": 12
-        }
-      ]
-    }
-  ]
+  "food": "nombre aproximado y útil de la comida",
+  "calories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0,
+  "recommendation": "recomendación breve según la comida y objetivo",
+  "score": "good"
 }
 
 Reglas:
-- Incluye lunes, martes, miércoles, jueves, viernes, sábado y domingo.
-- Incluye exactamente el número de comidas al día indicado por el usuario.
-- Cada comida debe incluir ingredients con name y quantity.
-- Las cantidades deben ser claras: gramos, ml, unidades, cucharadas o latas.
-- Usa comidas realistas, económicas y fáciles de preparar.
-- Usa alimentos fáciles de conseguir en España.
-- Adapta la dieta al objetivo del usuario.
-- No incluyas suplementos como obligatorio.
-- Evita alimentos indicados como no gustados o restringidos.
+- Si no puedes identificar la comida, usa "Comida no identificada".
+- Prioriza nombres comunes y útiles.
+- No inventes comidas raras.
 - calories, protein, carbs y fat deben ser números.
-`
+- calories en kcal.
+- protein, carbs y fat en gramos.
+- score debe ser exactamente: "excellent", "good" o "bad".
+- Los valores son estimaciones aproximadas.
+              `,
             },
           ],
         });
@@ -194,10 +151,9 @@ Reglas:
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
-
     const allowedScores = ["excellent", "good", "bad"];
 
-    const result = {
+    return res.json({
       food: parsed.food || parsed.food_name || "Comida no identificada",
       calories: Number(parsed.calories) || 0,
       protein: Number(parsed.protein) || 0,
@@ -207,9 +163,7 @@ Reglas:
         parsed.recommendation ||
         "Estimación aproximada. Para mayor precisión, pesa los alimentos.",
       score: allowedScores.includes(parsed.score) ? parsed.score : "good",
-    };
-
-    return res.json(result);
+    });
   } catch (error) {
     console.error("ERROR GEMINI:", error);
 
@@ -229,14 +183,14 @@ Reglas:
     }
 
     return res.status(500).json({
-      error: "Error analizando imagen con Gemini.",
+      error: message || "Error analizando imagen con Gemini.",
     });
   }
 });
 
 app.post("/generate-diet", async (req, res) => {
   try {
-    const { profile } = req.body;
+    const { profile, preferences } = req.body;
 
     if (!profile) {
       return res.status(400).json({
@@ -246,7 +200,7 @@ app.post("/generate-diet", async (req, res) => {
 
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        error: "Falta GEMINI_API_KEY en el .env del backend.",
+        error: "Falta GEMINI_API_KEY en el backend.",
       });
     }
 
@@ -271,6 +225,14 @@ Proteínas objetivo: ${profile.goals?.protein} g
 Carbohidratos objetivo: ${profile.goals?.carbs} g
 Grasas objetivo: ${profile.goals?.fat} g
 
+Preferencias:
+Comidas al día: ${preferences?.mealsPerDay || 4}
+Tipo de dieta: ${preferences?.dietStyle || "equilibrada"}
+Presupuesto: ${preferences?.budget || "medio"}
+Nivel de cocina: ${preferences?.cookingLevel || "basico"}
+Alimentos que no le gustan: ${preferences?.dislikedFoods || "ninguno"}
+Alergias/restricciones: ${preferences?.allergies || "ninguna"}
+
 Responde SOLO con JSON válido.
 No uses markdown.
 No uses texto fuera del JSON.
@@ -284,11 +246,11 @@ Formato exacto:
         {
           "time": "08:00",
           "name": "Desayuno",
-          "food": "Tortilla de 2 huevos con avena y fruta",
-          "calories": 450,
-          "protein": 30,
-          "carbs": 45,
-          "fat": 15
+          "food": "Avena con yogur griego y plátano",
+          "calories": 520,
+          "protein": 35,
+          "carbs": 65,
+          "fat": 12
         }
       ]
     }
@@ -297,12 +259,13 @@ Formato exacto:
 
 Reglas:
 - Incluye lunes, martes, miércoles, jueves, viernes, sábado y domingo.
+- Incluye exactamente el número de comidas al día indicado.
 - Usa comidas realistas, económicas y fáciles de preparar.
-- Incluye 4 comidas por día.
+- Usa alimentos fáciles de conseguir en España.
 - Adapta la dieta al objetivo del usuario.
-- calories, protein, carbs y fat deben ser números.
-- Las comidas deben ser fáciles de conseguir en España.
 - No incluyas suplementos como obligatorio.
+- Evita alimentos indicados como no gustados o restringidos.
+- calories, protein, carbs y fat deben ser números.
           `,
         },
       ],
@@ -320,6 +283,12 @@ Reglas:
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
+
+    if (!parsed.week || !Array.isArray(parsed.week)) {
+      return res.status(500).json({
+        error: "La IA no devolvió una dieta semanal válida.",
+      });
+    }
 
     return res.json(parsed);
   } catch (error) {
@@ -341,10 +310,11 @@ Reglas:
     }
 
     return res.status(500).json({
-      error: "Error generando dieta con IA.",
+      error: message || "Error generando dieta con IA.",
     });
   }
 });
+
 app.post("/analyze-body", upload.single("image"), async (req, res) => {
   try {
     const { weight, height, gender, goal } = req.body;
@@ -439,7 +409,7 @@ Reglas:
     console.error("ERROR ANALIZANDO CUERPO:", error);
 
     return res.status(500).json({
-      error: "Error analizando progreso físico.",
+      error: error?.message || "Error analizando progreso físico.",
     });
   }
 });
@@ -452,7 +422,7 @@ app.use((error, req, res, next) => {
   }
 
   return res.status(500).json({
-    error: "Error inesperado en el servidor.",
+    error: error?.message || "Error inesperado en el servidor.",
   });
 });
 
