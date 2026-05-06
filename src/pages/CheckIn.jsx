@@ -15,8 +15,9 @@ import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabase";
 
 const PROFILE_KEY = "nutricoach_profile";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
+const API_URL =
+  import.meta.env.VITE_API_URL?.trim() ||
+  "https://nutricoach-backend-frlc.onrender.com";
 export function CheckIn() {
   const navigate = useNavigate();
 
