@@ -55,11 +55,7 @@ export function Home() {
               <span className="text-emerald-500">TU CUERPO</span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-base font-bold leading-tight text-white/65 uppercase tracking-tight sm:mt-8 sm:text-xl">
-              La tecnología más avanzada para{" "}
-              <span className="text-white">hackear tu nutrición</span>. Analiza
-              tus platos en segundos y alcanza tu mejor versión física.
-            </p>
+           
 
             <div className="mt-8 flex w-full flex-col gap-4 sm:mt-12 sm:w-auto sm:flex-row">
               <Link

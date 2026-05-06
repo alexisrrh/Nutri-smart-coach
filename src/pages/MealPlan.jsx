@@ -11,6 +11,8 @@ import {
   RefreshCcw,
   ShoppingBasket,
   Clock,
+  Printer,
+  Share2,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabase";
@@ -103,7 +105,6 @@ export function MealPlan() {
 
   const toggleMeal = (day, index) => {
     const key = `${day}-${index}`;
-
     const updatedProgress = {
       ...progress,
       [key]: !progress[key],
@@ -118,9 +119,7 @@ export function MealPlan() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      throw new Error("No hay usuario autenticado.");
-    }
+    if (!user) throw new Error("No hay usuario autenticado.");
 
     const { data, error } = await supabase
       .from("weekly_diets")
@@ -222,9 +221,7 @@ export function MealPlan() {
         .delete()
         .eq("id", dietId);
 
-      if (error) {
-        console.error("Error eliminando dieta:", error);
-      }
+      if (error) console.error("Error eliminando dieta:", error);
     }
 
     localStorage.removeItem(PROGRESS_KEY);
@@ -239,13 +236,31 @@ export function MealPlan() {
     setStep("form");
   };
 
+  const shareDiet = async () => {
+    const text = buildShareText(plan);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Mi dieta semanal - NutriSmart Coach",
+          text,
+        });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert("Dieta copiada al portapapeles.");
+      }
+    } catch (error) {
+      console.error("Error compartiendo dieta:", error);
+    }
+  };
+
   return (
     <section className="relative min-h-screen bg-[#08120f] px-3 pt-4 pb-32 text-white font-sans uppercase tracking-tight sm:px-6 sm:pt-6 sm:pb-40">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%),radial-gradient(circle_at_bottom_left,#4361ee12,transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="screen-bg pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%),radial-gradient(circle_at_bottom_left,#4361ee12,transparent_40%)]" />
+      <div className="screen-bg pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <header className="mb-4 flex items-center justify-between border-b border-white/10 pb-4 sm:mb-6 sm:pb-6">
+      <div className="relative z-10 mx-auto max-w-6xl print:max-w-none">
+        <header className="no-print mb-4 flex items-center justify-between border-b border-white/10 pb-4 sm:mb-6 sm:pb-6">
           <button
             onClick={() => navigate("/dashboard")}
             className="flex items-center gap-2 border border-white/10 bg-white/5 px-4 py-2.5 text-[10px] font-black text-emerald-400 transition hover:bg-emerald-500 hover:text-[#06130d] sm:px-5 sm:py-3"
@@ -265,23 +280,22 @@ export function MealPlan() {
           )}
         </header>
 
-        <div className="mb-5">
-          <p className="mb-1 text-[10px] font-black tracking-[0.3em] text-emerald-400">
+        <div className="mb-5 print-header">
+          <p className="mb-1 text-[10px] font-black tracking-[0.3em] text-emerald-400 print:text-emerald-700">
             NUTRISMART COACH
           </p>
 
-          <h1 className="text-3xl font-black italic leading-none sm:text-5xl">
+          <h1 className="text-3xl font-black italic leading-none sm:text-5xl print:text-3xl print:text-black">
             Dieta personalizada
           </h1>
 
-          <p className="mt-2 max-w-2xl text-xs normal-case leading-5 text-white/55 sm:text-sm">
-            Genera una dieta semanal con comidas, porciones, ingredientes y lista
-            de compra optimizada.
+          <p className="mt-2 max-w-2xl text-xs normal-case leading-5 text-white/55 sm:text-sm print:text-black">
+            Dieta semanal con comidas, porciones, ingredientes y lista de compra.
           </p>
         </div>
 
         {!profile && (
-          <div className="mb-4 border border-yellow-400/20 bg-yellow-400/10 p-4">
+          <div className="no-print mb-4 border border-yellow-400/20 bg-yellow-400/10 p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="text-yellow-300" />
 
@@ -307,7 +321,7 @@ export function MealPlan() {
         )}
 
         {error && (
-          <div className="mb-4 border border-red-400/20 bg-red-500/10 p-4 text-xs font-bold normal-case text-red-300">
+          <div className="no-print mb-4 border border-red-400/20 bg-red-500/10 p-4 text-xs font-bold normal-case text-red-300">
             {error}
           </div>
         )}
@@ -324,12 +338,14 @@ export function MealPlan() {
               </h2>
 
               <p className="mt-3 text-sm font-semibold normal-case opacity-80">
-                Personalizamos solo cuando quieres crear tu dieta, sin llenar la
-                app de preguntas innecesarias.
+                Personalizamos solo cuando quieres crear tu dieta.
               </p>
 
               <div className="mt-5 grid gap-2">
-                <InfoPill label="Objetivo" value={formatGoal(profile?.goal || profile?.objetivo)} />
+                <InfoPill
+                  label="Objetivo"
+                  value={formatGoal(profile?.goal || profile?.objetivo)}
+                />
                 <InfoPill
                   label="Calorías"
                   value={`${profile?.goals?.calories || 1800} kcal`}
@@ -445,97 +461,249 @@ export function MealPlan() {
         )}
 
         {step === "result" && (
-          <div>
+          <div className="print-area">
             {usedFallback && (
-              <div className="mb-4 border border-yellow-400/20 bg-yellow-400/10 p-4 text-yellow-100">
+              <div className="no-print mb-4 border border-yellow-400/20 bg-yellow-400/10 p-4 text-yellow-100">
                 <p className="font-black">Dieta rápida generada</p>
 
                 <p className="mt-1 text-xs normal-case text-white/60">
-                  La IA tardó demasiado o falló, así que se creó un plan base
-                  completo.
+                  La IA tardó demasiado o falló, así que se creó un plan base.
                 </p>
               </div>
             )}
 
-            <div className="mb-4 grid grid-cols-4 gap-2">
-              <SummaryCard
-                icon={<Flame size={17} />}
-                title="Kcal"
-                value={Math.round(totals.calories)}
-              />
-              <SummaryCard
-                icon={<Beef size={17} />}
-                title="Prot"
-                value={`${Math.round(totals.protein)}g`}
-              />
-              <SummaryCard
-                icon={<Wheat size={17} />}
-                title="Carb"
-                value={`${Math.round(totals.carbs)}g`}
-              />
-              <SummaryCard
-                icon={<Droplets size={17} />}
-                title="Grasa"
-                value={`${Math.round(totals.fat)}g`}
-              />
-            </div>
-
-            <div className="mb-4 border border-white/10 bg-[#0d1714] p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl font-black italic">
-                    Tu dieta semanal
-                  </h2>
-
-                  <p className="mt-1 text-xs normal-case text-white/50">
-                    {view === "diet"
-                      ? "Elige un día y marca las comidas completadas."
-                      : "Lista semanal con cantidades totales."}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setView(view === "diet" ? "shopping" : "diet")}
-                  className="flex shrink-0 items-center gap-2 border border-white/10 bg-white/5 px-3 py-3 text-[9px] font-black text-emerald-400 transition hover:bg-emerald-500 hover:text-[#06130d]"
-                >
-                  <ShoppingBasket size={17} />
-                  {view === "diet" ? "Compra" : "Dieta"}
-                </button>
+            <div className="screen-only">
+              <div className="no-print mb-4 grid grid-cols-4 gap-2">
+                <SummaryCard
+                  icon={<Flame size={17} />}
+                  title="Kcal"
+                  value={Math.round(totals.calories)}
+                />
+                <SummaryCard
+                  icon={<Beef size={17} />}
+                  title="Prot"
+                  value={`${Math.round(totals.protein)}g`}
+                />
+                <SummaryCard
+                  icon={<Wheat size={17} />}
+                  title="Carb"
+                  value={`${Math.round(totals.carbs)}g`}
+                />
+                <SummaryCard
+                  icon={<Droplets size={17} />}
+                  title="Grasa"
+                  value={`${Math.round(totals.fat)}g`}
+                />
               </div>
 
-              {view === "diet" && (
-                <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-                  {plan.map((day, index) => (
-                    <button
-                      key={day.day}
-                      onClick={() => setActiveDay(index)}
-                      className={`whitespace-nowrap px-4 py-3 text-[10px] font-black transition ${
-                        activeDay === index
-                          ? "bg-emerald-500 text-[#06130d]"
-                          : "border border-white/10 bg-white/5 text-white/60 hover:text-white"
-                      }`}
-                    >
-                      {day.day}
-                    </button>
-                  ))}
+              <div className="no-print mb-4 border border-white/10 bg-[#0d1714] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-black italic">
+                      Tu dieta semanal
+                    </h2>
+
+                    <p className="mt-1 text-xs normal-case text-white/50">
+                      {view === "diet"
+                        ? "Elige un día y marca tus comidas."
+                        : "Lista semanal con cantidades totales."}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setView(view === "diet" ? "shopping" : "diet")
+                    }
+                    className="flex shrink-0 items-center gap-2 border border-white/10 bg-white/5 px-3 py-3 text-[9px] font-black text-emerald-400 transition hover:bg-emerald-500 hover:text-[#06130d]"
+                  >
+                    <ShoppingBasket size={17} />
+                    {view === "diet" ? "Compra" : "Dieta"}
+                  </button>
                 </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center justify-center gap-2 border border-white/10 bg-white/5 px-3 py-3 text-[9px] font-black text-white/70 hover:bg-emerald-500 hover:text-[#06130d]"
+                  >
+                    <Printer size={16} />
+                    Imprimir / PDF
+                  </button>
+
+                  <button
+                    onClick={shareDiet}
+                    className="flex items-center justify-center gap-2 border border-white/10 bg-white/5 px-3 py-3 text-[9px] font-black text-white/70 hover:bg-emerald-500 hover:text-[#06130d]"
+                  >
+                    <Share2 size={16} />
+                    Compartir
+                  </button>
+                </div>
+
+                {view === "diet" && (
+                  <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                    {plan.map((day, index) => (
+                      <button
+                        key={day.day}
+                        onClick={() => setActiveDay(index)}
+                        className={`whitespace-nowrap px-4 py-3 text-[10px] font-black transition ${
+                          activeDay === index
+                            ? "bg-emerald-500 text-[#06130d]"
+                            : "border border-white/10 bg-white/5 text-white/60 hover:text-white"
+                        }`}
+                      >
+                        {day.day}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {view === "diet" && activeDayData && (
+                <DayCard
+                  day={activeDayData}
+                  progress={progress}
+                  toggleMeal={toggleMeal}
+                />
               )}
+
+              {view === "shopping" && <ShoppingList plan={plan} />}
             </div>
 
-            {view === "diet" && activeDayData && (
-              <DayCard
-                day={activeDayData}
-                progress={progress}
-                toggleMeal={toggleMeal}
-              />
-            )}
-
-            {view === "shopping" && <ShoppingList plan={plan} />}
+            <div className="print-only">
+              <PrintableDiet plan={plan} />
+              <PrintableShoppingList plan={plan} />
+            </div>
           </div>
         )}
       </div>
 
       <BottomNav />
+
+      <style>{`
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 14mm;
+          }
+
+          body {
+            background: white !important;
+            color: black !important;
+            font-family: Arial, sans-serif !important;
+          }
+
+          .no-print,
+          nav,
+          button,
+          .screen-bg {
+            display: none !important;
+          }
+
+          section {
+            background: white !important;
+            color: black !important;
+            padding: 0 !important;
+          }
+
+          .print-header {
+            border-bottom: 2px solid #111 !important;
+            padding-bottom: 10px !important;
+            margin-bottom: 16px !important;
+          }
+
+          .print-header h1 {
+            color: black !important;
+            font-size: 28px !important;
+            line-height: 1.1 !important;
+          }
+
+          .print-header p {
+            color: #111 !important;
+          }
+
+          .print-area {
+            display: block !important;
+            color: black !important;
+            background: white !important;
+          }
+
+          .print-only {
+            display: block !important;
+          }
+
+          .screen-only {
+            display: none !important;
+          }
+
+          .print-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            border: 1px solid #d1d5db !important;
+            padding: 10px !important;
+            margin-bottom: 10px !important;
+            background: white !important;
+            color: black !important;
+          }
+
+          .print-title {
+            font-size: 20px !important;
+            font-weight: 900 !important;
+            margin: 0 0 10px 0 !important;
+            color: black !important;
+            text-transform: uppercase !important;
+          }
+
+          .print-subtitle {
+            font-size: 15px !important;
+            font-weight: 900 !important;
+            color: #047857 !important;
+            margin: 0 0 8px 0 !important;
+            text-transform: uppercase !important;
+          }
+
+          .print-line {
+            font-size: 12px !important;
+            line-height: 1.35 !important;
+            color: black !important;
+            margin: 3px 0 !important;
+          }
+
+          .print-muted {
+            color: #374151 !important;
+            font-size: 11px !important;
+          }
+
+          .print-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+
+          .print-shopping-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+          }
+
+          .print-page-break {
+            page-break-before: always;
+            margin-top: 20px !important;
+          }
+        }
+
+        @media screen {
+          .print-only {
+            display: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -663,10 +831,26 @@ function MealItem({ meal, day, index, progress, toggleMeal }) {
         </div>
 
         <div className="grid grid-cols-4 gap-2">
-          <MiniMacro icon={<Flame size={14} />} title="Kcal" value={meal.calories || 0} />
-          <MiniMacro icon={<Beef size={14} />} title="Prot" value={`${meal.protein || 0}g`} />
-          <MiniMacro icon={<Wheat size={14} />} title="Carb" value={`${meal.carbs || 0}g`} />
-          <MiniMacro icon={<Droplets size={14} />} title="Grasa" value={`${meal.fat || 0}g`} />
+          <MiniMacro
+            icon={<Flame size={14} />}
+            title="Kcal"
+            value={meal.calories || 0}
+          />
+          <MiniMacro
+            icon={<Beef size={14} />}
+            title="Prot"
+            value={`${meal.protein || 0}g`}
+          />
+          <MiniMacro
+            icon={<Wheat size={14} />}
+            title="Carb"
+            value={`${meal.carbs || 0}g`}
+          />
+          <MiniMacro
+            icon={<Droplets size={14} />}
+            title="Grasa"
+            value={`${meal.fat || 0}g`}
+          />
         </div>
       </div>
     </div>
@@ -701,6 +885,61 @@ function ShoppingList({ plan }) {
             <span className="shrink-0 text-right text-xs font-black normal-case text-emerald-400">
               {item.amount}
             </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrintableDiet({ plan }) {
+  return (
+    <div>
+      <h2 className="print-title">Dieta semanal</h2>
+
+      <div className="print-grid">
+        {plan.map((day) => (
+          <div key={day.day} className="print-card">
+            <h3 className="print-subtitle">{day.day}</h3>
+
+            {day.meals?.map((meal, index) => (
+              <div key={index} style={{ marginBottom: 8 }}>
+                <p className="print-line">
+                  <strong>
+                    {meal.time} · {meal.name}
+                  </strong>
+                </p>
+                <p className="print-line">{meal.food}</p>
+                <p className="print-line print-muted">
+                  Porciones: {meal.details || "No especificado"}
+                </p>
+                <p className="print-line">
+                  {meal.calories || 0} kcal · {meal.protein || 0}g proteína ·{" "}
+                  {meal.carbs || 0}g carbs · {meal.fat || 0}g grasas
+                </p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrintableShoppingList({ plan }) {
+  const items = buildShoppingList(plan);
+
+  return (
+    <div className="print-page-break">
+      <h2 className="print-title">Lista de compra semanal</h2>
+
+      <div className="print-shopping-grid">
+        {items.map((item) => (
+          <div key={item.name} className="print-card">
+            <p className="print-line">
+              <strong>{item.name}</strong>
+            </p>
+            <p className="print-line">{item.amount}</p>
           </div>
         ))}
       </div>
@@ -798,19 +1037,13 @@ function formatTotalAmount(item) {
   const parts = [];
 
   if (item.grams > 0) {
-    if (item.grams >= 1000) {
-      parts.push(`${(item.grams / 1000).toFixed(1)} kg`);
-    } else {
-      parts.push(`${Math.round(item.grams)}g`);
-    }
+    if (item.grams >= 1000) parts.push(`${(item.grams / 1000).toFixed(1)} kg`);
+    else parts.push(`${Math.round(item.grams)}g`);
   }
 
   if (item.ml > 0) {
-    if (item.ml >= 1000) {
-      parts.push(`${(item.ml / 1000).toFixed(1)} L`);
-    } else {
-      parts.push(`${Math.round(item.ml)}ml`);
-    }
+    if (item.ml >= 1000) parts.push(`${(item.ml / 1000).toFixed(1)} L`);
+    else parts.push(`${Math.round(item.ml)}ml`);
   }
 
   if (item.units > 0) parts.push(`${Math.round(item.units)} unidades`);
@@ -822,6 +1055,31 @@ function formatTotalAmount(item) {
   }
 
   return parts.join(" + ") || "cantidad semanal";
+}
+
+function buildShareText(plan) {
+  const dietText = plan
+    .map((day) => {
+      const meals = day.meals
+        ?.map(
+          (meal) =>
+            `${meal.time} - ${meal.name}: ${meal.food}\nPorciones: ${
+              meal.details || "No especificado"
+            }\nMacros: ${meal.calories || 0} kcal | ${
+              meal.protein || 0
+            }g proteína | ${meal.carbs || 0}g carbs | ${meal.fat || 0}g grasas`
+        )
+        .join("\n\n");
+
+      return `${day.day}\n${meals}`;
+    })
+    .join("\n\n----------------\n\n");
+
+  const shopping = buildShoppingList(plan)
+    .map((item) => `- ${item.name}: ${item.amount}`)
+    .join("\n");
+
+  return `NUTRISMART COACH\n\nDIETA SEMANAL\n\n${dietText}\n\nLISTA DE COMPRA\n${shopping}`;
 }
 
 function getMealIngredients(meal) {
@@ -883,7 +1141,11 @@ function inferIngredientsFromFood(food = "") {
     ];
   }
 
-  if (text.includes("pescado") || text.includes("merluza") || text.includes("salmón")) {
+  if (
+    text.includes("pescado") ||
+    text.includes("merluza") ||
+    text.includes("salmón")
+  ) {
     return [
       { name: "Pescado", amount: "180g" },
       { name: "Patata cocida", amount: "200g" },
@@ -1041,25 +1303,160 @@ function createFastPlan(profile = {}, preferences = {}) {
 
   const plans = {
     perder_grasa: [
-      meal("08:00", "Desayuno", "Tortilla de claras con fruta", 350, 32, 30, 9, "4 claras de huevo, 1 huevo entero, 1 plátano"),
-      meal("13:30", "Almuerzo", "Pollo con verduras y arroz pequeño", 520, 48, 45, 14, "180g pechuga de pollo, 70g arroz, 200g verduras"),
-      meal("18:00", "Merienda", "Yogur griego natural con frutos rojos", 220, 20, 20, 5, "200g yogur griego, 80g frutos rojos"),
-      meal("21:00", "Cena", "Pescado blanco con ensalada y patata cocida", 430, 42, 35, 10, "180g pescado blanco, 200g patata cocida, 1 plato ensalada"),
-      meal("23:00", "Extra", "Queso fresco batido", 160, 18, 10, 3, "200g queso fresco batido"),
+      meal(
+        "08:00",
+        "Desayuno",
+        "Tortilla de claras con fruta",
+        350,
+        32,
+        30,
+        9,
+        "4 claras de huevo, 1 huevo entero, 1 plátano"
+      ),
+      meal(
+        "13:30",
+        "Almuerzo",
+        "Pollo con verduras y arroz pequeño",
+        520,
+        48,
+        45,
+        14,
+        "180g pechuga de pollo, 70g arroz, 200g verduras"
+      ),
+      meal(
+        "18:00",
+        "Merienda",
+        "Yogur griego natural con frutos rojos",
+        220,
+        20,
+        20,
+        5,
+        "200g yogur griego, 80g frutos rojos"
+      ),
+      meal(
+        "21:00",
+        "Cena",
+        "Pescado blanco con ensalada y patata cocida",
+        430,
+        42,
+        35,
+        10,
+        "180g pescado blanco, 200g patata cocida, 1 plato ensalada"
+      ),
+      meal(
+        "23:00",
+        "Extra",
+        "Queso fresco batido",
+        160,
+        18,
+        10,
+        3,
+        "200g queso fresco batido"
+      ),
     ],
     ganar_musculo: [
-      meal("08:00", "Desayuno", "Avena con leche, plátano y 2 huevos", 620, 35, 80, 18, "80g avena, 250ml leche, 1 plátano, 2 huevos"),
-      meal("13:30", "Almuerzo", "Pollo con arroz, aguacate y verduras", 780, 55, 85, 22, "220g pollo, 100g arroz, 80g aguacate, 200g verduras"),
-      meal("18:00", "Merienda", "Yogur griego con frutos secos", 420, 28, 30, 20, "250g yogur griego, 30g frutos secos"),
-      meal("21:00", "Cena", "Salmón con patata y ensalada", 650, 50, 45, 24, "200g salmón, 250g patata, 1 plato ensalada"),
-      meal("23:00", "Extra", "Requesón o yogur alto en proteína", 250, 25, 15, 8, "200g requesón o yogur alto en proteína"),
+      meal(
+        "08:00",
+        "Desayuno",
+        "Avena con leche, plátano y 2 huevos",
+        620,
+        35,
+        80,
+        18,
+        "80g avena, 250ml leche, 1 plátano, 2 huevos"
+      ),
+      meal(
+        "13:30",
+        "Almuerzo",
+        "Pollo con arroz, aguacate y verduras",
+        780,
+        55,
+        85,
+        22,
+        "220g pollo, 100g arroz, 80g aguacate, 200g verduras"
+      ),
+      meal(
+        "18:00",
+        "Merienda",
+        "Yogur griego con frutos secos",
+        420,
+        28,
+        30,
+        20,
+        "250g yogur griego, 30g frutos secos"
+      ),
+      meal(
+        "21:00",
+        "Cena",
+        "Salmón con patata y ensalada",
+        650,
+        50,
+        45,
+        24,
+        "200g salmón, 250g patata, 1 plato ensalada"
+      ),
+      meal(
+        "23:00",
+        "Extra",
+        "Requesón o yogur alto en proteína",
+        250,
+        25,
+        15,
+        8,
+        "200g requesón o yogur alto en proteína"
+      ),
     ],
     mantener_peso: [
-      meal("08:00", "Desayuno", "Avena con yogur y fruta", 450, 25, 60, 12, "60g avena, 200g yogur natural, 1 pieza fruta"),
-      meal("13:30", "Almuerzo", "Pavo con arroz y verduras", 620, 45, 70, 16, "180g pavo, 90g arroz, 200g verduras"),
-      meal("18:00", "Merienda", "Tostada integral con queso fresco", 300, 18, 35, 10, "2 rebanadas pan integral, 80g queso fresco"),
-      meal("21:00", "Cena", "Huevos con ensalada y pan integral", 480, 38, 30, 20, "3 huevos, 1 plato ensalada, 1 rebanada pan integral"),
-      meal("23:00", "Extra", "Yogur natural", 160, 12, 15, 5, "200g yogur natural"),
+      meal(
+        "08:00",
+        "Desayuno",
+        "Avena con yogur y fruta",
+        450,
+        25,
+        60,
+        12,
+        "60g avena, 200g yogur natural, 1 pieza fruta"
+      ),
+      meal(
+        "13:30",
+        "Almuerzo",
+        "Pavo con arroz y verduras",
+        620,
+        45,
+        70,
+        16,
+        "180g pavo, 90g arroz, 200g verduras"
+      ),
+      meal(
+        "18:00",
+        "Merienda",
+        "Tostada integral con queso fresco",
+        300,
+        18,
+        35,
+        10,
+        "2 rebanadas pan integral, 80g queso fresco"
+      ),
+      meal(
+        "21:00",
+        "Cena",
+        "Huevos con ensalada y pan integral",
+        480,
+        38,
+        30,
+        20,
+        "3 huevos, 1 plato ensalada, 1 rebanada pan integral"
+      ),
+      meal(
+        "23:00",
+        "Extra",
+        "Yogur natural",
+        160,
+        12,
+        15,
+        5,
+        "200g yogur natural"
+      ),
     ],
   };
 
