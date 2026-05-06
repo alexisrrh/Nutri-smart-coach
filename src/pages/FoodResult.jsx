@@ -1,5 +1,15 @@
-import { useEffect, useState } from "react";
-import { Apple, Beef, Flame, Wheat, Droplets, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Apple,
+  Beef,
+  Flame,
+  Wheat,
+  Droplets,
+  Sparkles,
+  CheckCircle2,
+  ShieldCheck,
+  Utensils,
+} from "lucide-react";
 
 const STORAGE_KEY = "nutricoach_meals";
 
@@ -16,6 +26,8 @@ export default function FoodResult({ result, loading, goal }) {
     result?.recommendation ||
     "Estimación aproximada. Para mayor precisión, pesa los alimentos.";
   const score = result?.score || "good";
+
+  const scoreData = useMemo(() => getScoreData(score), [score]);
 
   useEffect(() => {
     if (!result) return;
@@ -37,19 +49,16 @@ export default function FoodResult({ result, loading, goal }) {
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify([newMeal, ...existing]));
-
     setSaved(true);
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 2500);
+    const timer = setTimeout(() => setSaved(false), 2500);
+    return () => clearTimeout(timer);
   }, [result]);
 
   const updateLastMealType = (newType) => {
     setMealType(newType);
 
     const existing = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
     if (existing.length === 0) return;
 
     const updatedMeals = existing.map((meal, index) =>
@@ -61,15 +70,24 @@ export default function FoodResult({ result, loading, goal }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-[500px] items-center justify-center rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-        <div className="text-center">
-          <div className="mx-auto mb-5 h-16 w-16 animate-pulse rounded-full bg-emerald-400/30" />
-          <h2 className="text-2xl font-black text-white">
-            Analizando tu comida...
-          </h2>
-          <p className="mt-3 text-white/50">
-            NutriCoach está calculando calorías y macros.
-          </p>
+      <div className="relative min-h-[560px] overflow-hidden border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_92%,94%_100%,0_100%)]">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="grid min-h-[510px] place-items-center">
+          <div className="text-center">
+            <div className="mx-auto mb-6 grid h-24 w-24 animate-pulse place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
+              <Sparkles size={40} />
+            </div>
+            <h2 className="text-3xl font-black text-white">
+              Analizando tu comida
+            </h2>
+            <p className="mx-auto mt-3 max-w-sm text-white/50">
+              NutriCoach está estimando calorías, macros y recomendación según
+              tu objetivo.
+            </p>
+            <div className="mx-auto mt-6 h-1 w-56 overflow-hidden bg-white/10">
+              <div className="h-full w-1/2 animate-pulse bg-gradient-to-r from-emerald-400 to-lime-300" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -77,121 +95,201 @@ export default function FoodResult({ result, loading, goal }) {
 
   if (!result) {
     return (
-      <div className="flex min-h-[500px] items-center justify-center rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-        <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-300">
-            <Apple size={34} />
+      <div className="relative min-h-[560px] overflow-hidden border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_92%,94%_100%,0_100%)]">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/15 blur-3xl" />
+        <div className="grid min-h-[510px] place-items-center">
+          <div className="text-center">
+            <div className="mx-auto mb-6 grid h-24 w-24 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
+              <Apple size={42} />
+            </div>
+
+            <h2 className="text-3xl font-black text-white">
+              Resultado nutricional
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-sm text-white/50">
+              Cuando subas una imagen, aquí aparecerá el análisis nutricional
+              completo.
+            </p>
           </div>
-
-          <h2 className="text-2xl font-black text-white">
-            Resultado nutricional
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-sm text-white/50">
-            Cuando subas una imagen, aquí aparecerá el análisis completo.
-          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/20 text-emerald-300">
-          <Sparkles size={24} />
+    <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_94%,94%_100%,0_100%)]">
+      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
+      <div className="absolute -bottom-24 left-10 h-72 w-72 rounded-full bg-lime-300/10 blur-3xl" />
+
+      <div className="relative">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
+              <Sparkles size={24} />
+            </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
+                Análisis IA
+              </p>
+              <h2 className="text-2xl font-black text-white">Resultado</h2>
+            </div>
+          </div>
+
+          {saved && (
+            <div className="hidden items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-sm font-black text-emerald-300 sm:flex">
+              <CheckCircle2 size={17} />
+              Guardado
+            </div>
+          )}
         </div>
 
-        <div>
-          <h2 className="text-xl font-black text-white">
-            Resultado del análisis
-          </h2>
-          <p className="text-sm text-white/50">Guardado automáticamente.</p>
+        <div className="relative mb-6 overflow-hidden bg-gradient-to-br from-emerald-400 via-lime-300 to-green-400 p-6 text-[#03110a] shadow-[0_25px_80px_#22c55e30] [clip-path:polygon(0_0,100%_0,100%_84%,92%_100%,0_100%)]">
+          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/35 blur-3xl" />
+
+          <div className="relative">
+            <p className="text-xs font-black uppercase tracking-[0.28em] opacity-70">
+              Comida detectada
+            </p>
+
+            <h3 className="mt-3 text-4xl font-black leading-tight">{food}</h3>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <ScoreBadge scoreData={scoreData} />
+              <span className="rounded-full bg-black/10 px-4 py-2 text-sm font-black">
+                Objetivo: {formatGoal(goal)}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="mb-6 rounded-[2rem] bg-gradient-to-br from-emerald-500 to-lime-400 p-6 text-[#06130d]">
-        <p className="text-sm font-black uppercase tracking-[0.25em] opacity-70">
-          Comida detectada
-        </p>
+        <div className="mb-6 grid grid-cols-2 gap-3">
+          <MacroPanel
+            icon={<Flame size={22} />}
+            title="Calorías"
+            value={calories}
+            unit="kcal"
+          />
+          <MacroPanel
+            icon={<Beef size={22} />}
+            title="Proteína"
+            value={protein}
+            unit="g"
+          />
+          <MacroPanel
+            icon={<Wheat size={22} />}
+            title="Carbs"
+            value={carbs}
+            unit="g"
+          />
+          <MacroPanel
+            icon={<Droplets size={22} />}
+            title="Grasas"
+            value={fat}
+            unit="g"
+          />
+        </div>
 
-        <h3 className="mt-2 text-3xl font-black">{food}</h3>
+        <div className="mb-6 border-l border-emerald-300/30 bg-white/[0.045] p-5">
+          <div className="mb-3 flex items-center gap-2 text-emerald-300">
+            <ShieldCheck size={20} />
+            <p className="text-xs font-black uppercase tracking-[0.25em]">
+              Recomendación
+            </p>
+          </div>
 
-        <ScoreBadge score={score} />
-      </div>
+          <p className="leading-7 text-white/70">{recommendation}</p>
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <MacroCard icon={<Flame size={24} />} title="Calorías" value={`${calories} kcal`} />
-        <MacroCard icon={<Beef size={24} />} title="Proteínas" value={`${protein} g`} />
-        <MacroCard icon={<Wheat size={24} />} title="Carbs" value={`${carbs} g`} />
-        <MacroCard icon={<Droplets size={24} />} title="Grasas" value={`${fat} g`} />
-      </div>
+        <div className="grid gap-4">
+          <label>
+            <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-white/45">
+              Tipo de comida
+            </p>
 
-      <div className="mt-6 rounded-3xl bg-white/10 p-5">
-        <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
-          Recomendación
-        </p>
-        <p className="text-white/70">{recommendation}</p>
-      </div>
+            <div className="relative">
+              <Utensils className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-emerald-300" size={20} />
 
-      <div className="mt-6">
-        <p className="mb-2 font-bold text-white/80">Tipo de comida:</p>
+              <select
+                value={mealType}
+                onChange={(e) => updateLastMealType(e.target.value)}
+                className="w-full appearance-none border border-white/10 bg-white/[0.04] px-12 py-4 font-black text-white outline-none transition focus:border-emerald-300/50"
+              >
+                <option className="bg-[#020617]" value="desayuno">
+                  Desayuno
+                </option>
+                <option className="bg-[#020617]" value="almuerzo">
+                  Almuerzo
+                </option>
+                <option className="bg-[#020617]" value="cena">
+                  Cena
+                </option>
+                <option className="bg-[#020617]" value="snack">
+                  Snack
+                </option>
+              </select>
+            </div>
+          </label>
 
-        <select
-          value={mealType}
-          onChange={(e) => updateLastMealType(e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-[#06130d] p-3 font-semibold text-white outline-none focus:border-emerald-400"
-        >
-          <option value="desayuno">Desayuno</option>
-          <option value="almuerzo">Almuerzo</option>
-          <option value="cena">Cena</option>
-          <option value="snack">Snack</option>
-        </select>
+          {saved && (
+            <div className="flex items-center justify-center gap-2 border border-emerald-300/20 bg-emerald-300/10 p-4 font-black text-emerald-300">
+              <CheckCircle2 size={20} />
+              Comida guardada automáticamente
+            </div>
+          )}
 
-        {saved && (
-          <p className="mt-3 rounded-2xl bg-green-400/10 p-3 text-center font-bold text-green-300">
-            ✅ Comida guardada automáticamente
+          <p className="text-xs leading-5 text-white/35">
+            * Los valores son aproximados. Para mayor precisión, pesa los
+            alimentos y registra porciones reales.
           </p>
-        )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MacroPanel({ icon, title, value, unit }) {
+  return (
+    <div className="border border-white/10 bg-white/[0.04] p-4 transition hover:border-emerald-300/25 hover:bg-white/[0.07]">
+      <div className="mb-3 flex items-center gap-3 text-emerald-300">
+        {icon}
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-white/40">
+          {title}
+        </p>
       </div>
 
-      <p className="mt-5 text-xs text-white/40">
-        * Los valores son aproximados. Para mayor precisión, se recomienda pesar
-        los alimentos.
+      <p className="text-3xl font-black text-white">
+        {Math.round(value)}
+        <span className="ml-1 text-sm text-white/40">{unit}</span>
       </p>
     </div>
   );
 }
 
-function MacroCard({ icon, title, value }) {
+function ScoreBadge({ scoreData }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-4">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-emerald-300">
-        {icon}
-      </div>
-      <p className="text-sm text-white/50">{title}</p>
-      <p className="mt-1 text-xl font-black text-white">{value}</p>
-    </div>
+    <span className="rounded-full bg-black/10 px-4 py-2 text-sm font-black">
+      {scoreData.label}
+    </span>
   );
 }
 
-function ScoreBadge({ score }) {
-  let text = "Aceptable";
-  let style = "bg-yellow-100 text-yellow-700";
-
+function getScoreData(score) {
   if (score === "excellent") {
-    text = "Excelente para tu objetivo";
-    style = "bg-green-100 text-green-700";
+    return { label: "Excelente para tu objetivo" };
   }
 
   if (score === "bad") {
-    text = "No recomendado";
-    style = "bg-red-100 text-red-700";
+    return { label: "No recomendado" };
   }
 
-  return (
-    <span className={`mt-4 inline-block rounded-xl px-4 py-2 text-sm font-black ${style}`}>
-      {text}
-    </span>
-  );
+  return { label: "Aceptable" };
+}
+
+function formatGoal(goal) {
+  if (goal === "perder_grasa") return "Perder grasa";
+  if (goal === "ganar_musculo") return "Ganar músculo";
+  if (goal === "mantener_peso") return "Mantener peso";
+  return "No definido";
 }

@@ -12,179 +12,154 @@ import {
 
 export function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#06130d] text-white">
-      <section className="relative px-6 py-8 md:px-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#00e68a33,transparent_35%),radial-gradient(circle_at_bottom_left,#84cc1630,transparent_35%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:70px_70px]" />
+    <main className="min-h-screen overflow-hidden bg-[#050a09] text-white font-sans">
+      <section className="relative px-6 py-8 md:px-12 lg:px-24">
+        {/* Luces de fondo sutiles */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,#4361ee12,transparent_40%),radial-gradient(circle_at_20%_80%,#00e68a08,transparent_40%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:50px_50px]" />
 
-        <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between">
+        <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between border-b border-white/10 pb-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-400 text-[#06130d]">
-              <Sparkles size={24} />
+            <div className="flex h-10 w-10 items-center justify-center bg-emerald-500 shadow-[0_0_20px_#10b98144]">
+              <Sparkles size={20} className="text-[#050a09]" />
             </div>
-            <p className="text-xl font-black">NutriCoach iA</p>
+            <p className="text-xl font-black tracking-tighter uppercase italic">
+              Nutri <span className="text-emerald-500">Smart</span> Coach
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="hidden rounded-2xl px-5 py-3 font-bold text-white/70 transition hover:text-white md:block"
-            >
-              Iniciar sesión
+          <div className="flex items-center gap-6">
+            <Link to="/login" className="hidden md:block text-[11px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white transition">
+              Iniciar Sesión
             </Link>
-
-            <Link
-              to="/registro"
-              className="rounded-2xl bg-white px-5 py-3 font-black text-[#06130d] transition hover:bg-emerald-200"
-            >
-              Crear cuenta
+            <Link to="/registro" className="bg-white px-6 py-2 text-[11px] font-black text-[#050a09] uppercase tracking-[0.2em] hover:bg-emerald-500 transition">
+              Empezar Ahora
             </Link>
           </div>
         </nav>
 
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 py-20 md:grid-cols-2 md:py-28">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-bold text-emerald-300">
-              <Zap size={16} />
-              Nutrición con IA, simple y rápida
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 py-16 lg:grid-cols-[1.2fr_0.8fr] lg:py-24">
+          {/* TEXTO DE VENTAS (HERO) */}
+          <div className="flex flex-col items-start text-left">
+            <div className="mb-6 inline-flex items-center gap-2 bg-emerald-500/10 border-l-4 border-emerald-500 px-4 py-2 text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400">
+              <Zap size={14} className="fill-current" />
+              TU TRANSFORMACIÓN COMIENZA AQUÍ
             </div>
 
-            <h1 className="max-w-3xl text-5xl font-black leading-tight md:text-7xl">
-              Calcula calorías con una foto de tu comida
+            <h1 className="text-7xl font-black leading-[0.85] tracking-tighter md:text-9xl italic uppercase">
+              DOMINA <br /> 
+              <span className="text-emerald-500">TU CUERPO</span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-white/65">
-              Analiza tus platos, guarda tus comidas, crea dietas semanales con
-              IA y sigue tu progreso desde una experiencia sencilla.
+            <p className="mt-8 max-w-lg text-xl font-bold leading-tight text-white/60 uppercase tracking-tight">
+              La tecnología más avanzada para <span className="text-white">hackear tu nutrición</span>. Analiza tus platos en segundos y alcanza tu mejor versión física.
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-12 flex flex-col gap-4 sm:flex-row w-full sm:w-auto">
               <Link
                 to="/registro"
-                className="flex items-center justify-center gap-2 rounded-3xl bg-emerald-400 px-7 py-4 text-lg font-black text-[#06130d] shadow-2xl shadow-emerald-400/20 transition hover:scale-[1.02] hover:bg-emerald-300"
+                className="inline-flex items-center justify-center gap-4 bg-emerald-500 px-12 py-6 text-base font-black uppercase tracking-widest text-[#050a09] hover:bg-white transition-all shadow-[0_20px_40px_#10b98133] group"
               >
-                Empezar gratis
-                <ArrowRight size={22} />
-              </Link>
-
-              <Link
-                to="/login"
-                className="flex items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/10 px-7 py-4 text-lg font-black text-white backdrop-blur transition hover:bg-white/15"
-              >
-                Ya tengo cuenta
+                  INICIAR ANALISIS
+                <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <MiniTrust icon={<ShieldCheck />} text="Datos seguros" />
-              <MiniTrust icon={<Clock />} text="Rápido de usar" />
-              <MiniTrust icon={<Sparkles />} text="IA personalizada" />
+            <div className="mt-16 grid grid-cols-3 gap-8 border-t border-white/5 pt-8 w-full">
+              <div className="flex flex-col gap-1">
+                <span className="text-2xl font-black italic">100%</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 text-nowrap">Precisión IA</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-2xl font-black italic">24/7</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 text-nowrap">Coach Inteligente</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-2xl font-black italic">GRATIS</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 text-nowrap">Prueba Inicial</span>
+              </div>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -inset-6 rounded-[3rem] bg-emerald-400/20 blur-3xl" />
-
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur">
-              <div className="rounded-[2rem] bg-[#081b12] p-5">
-                <div className="mb-5 flex items-center justify-between">
+          {/* TARJETA DE ANÁLISIS (MÁS CLARA) */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-blue-600 rounded-sm opacity-10 blur-xl group-hover:opacity-30 transition duration-1000"></div>
+            <div className="relative border border-white/10 bg-[#0d1412] p-1">
+              <div className="bg-[#050a09] p-6 border border-white/5">
+                <div className="mb-6 flex items-center justify-between border-b border-white/5 pb-4">
                   <div>
-                    <p className="text-sm font-black uppercase tracking-[0.25em] text-emerald-300">
-                      Análisis IA
-                    </p>
-                    <h2 className="mt-1 text-2xl font-black">
-                      Plato detectado
-                    </h2>
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500">Sistema.Visión_IA</p>
+                    <h2 className="text-2xl font-black tracking-tight uppercase italic text-white">Análisis en Vivo</h2>
                   </div>
-
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400 text-[#06130d]">
-                    <Camera size={25} />
+                  <div className="h-10 w-10 border border-white/20 flex items-center justify-center text-emerald-500 bg-white/5">
+                    <Camera size={18} />
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-3xl">
+                <div className="relative mb-8 h-72 overflow-hidden border border-white/10 bg-[#121a17]">
                   <img
                     src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80"
-                    alt="Comida saludable"
-                    className="h-72 w-full object-cover"
+                    alt="Nutrición"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+                  {/* Línea de Escaneo Láser más visible */}
+                  <div className="absolute inset-x-0 top-0 h-[2px] bg-emerald-400 shadow-[0_0_15px_#4ade80] animate-[scan_2.5s_ease-in-out_infinite] z-20" />
+                  
+                  {/* Overlay degradado ajustado para no oscurecer demasiado la comida */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050a09] via-transparent to-transparent opacity-40" />
                 </div>
 
-                <div className="mt-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-lime-400 p-5 text-[#06130d]">
-                  <p className="text-sm font-black uppercase tracking-[0.2em] opacity-70">
-                    Resultado
-                  </p>
-                  <h3 className="mt-1 text-3xl font-black">
-                    Bowl de pollo y arroz
-                  </h3>
-                </div>
-
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <Macro title="Calorías" value="620 kcal" />
-                  <Macro title="Proteína" value="45 g" />
-                  <Macro title="Carbs" value="70 g" />
-                  <Macro title="Grasas" value="16 g" />
+                <div className="grid grid-cols-2 gap-2">
+                  <DashboardMacro title="Calorías" value="1230" unit="kcal" color="bg-emerald-500" pct="60%" />
+                  <DashboardMacro title="Proteína" value="100" unit="g" color="bg-blue-400" pct="85%" />
+                  <DashboardMacro title="Carbohidratos" value="145" unit="g" color="bg-amber-400" pct="45%" />
+                  <DashboardMacro title="Grasas" value="42" unit="g" color="bg-rose-500" pct="30%" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto grid max-w-7xl gap-5 pb-16 md:grid-cols-4">
-          <Feature
-            icon={<Camera />}
-            title="Foto de comida"
-            text="Sube una foto y recibe una estimación nutricional."
-          />
-          <Feature
-            icon={<Utensils />}
-            title="Dieta semanal"
-            text="Crea planes personalizados según tu objetivo."
-          />
-          <Feature
-            icon={<LineChart />}
-            title="Progreso"
-            text="Registra comidas, peso y seguimiento semanal."
-          />
-          <Feature
-            icon={<Sparkles />}
-            title="IA práctica"
-            text="Recomendaciones simples, claras y accionables."
-          />
+        {/* MENÚ INFERIOR (ESTILO DASHBOARD) */}
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-2 md:grid-cols-4 border border-white/10 bg-[#0a0f0e] shadow-2xl">
+          <DashboardTab icon={<Camera size={18}/>} title="Analizar" active={true} />
+          <DashboardTab icon={<Utensils size={18}/>} title="Dietas" />
+          <DashboardTab icon={<LineChart size={18}/>} title="Progreso" />
+          <DashboardTab icon={<Sparkles size={18}/>} title="Coach IA" />
         </div>
       </section>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes scan {
+          0%, 100% { top: 0%; opacity: 0; }
+          10%, 90% { opacity: 1; }
+          50% { top: 100%; }
+        }
+      `}} />
     </main>
   );
 }
 
-function Feature({ icon, title, text }) {
+function DashboardMacro({ title, value, unit, color, pct }) {
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur transition hover:-translate-y-1 hover:bg-white/15">
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300">
-        {icon}
+    <div className="bg-white/[0.03] p-4 border border-white/[0.05] hover:bg-white/[0.07] transition-colors">
+      <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/30">{title}</p>
+      <div className="flex items-baseline gap-1 mt-1">
+        <span className="text-2xl font-black italic tracking-tighter">{value}</span>
+        <span className="text-[10px] text-white/20 uppercase font-black tracking-widest">{unit}</span>
       </div>
-      <h3 className="text-xl font-black">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-white/55">{text}</p>
+      <div className="mt-4 h-[2px] w-full bg-white/5">
+        <div className={`h-full ${color} opacity-80 shadow-[0_0_8px_current]`} style={{ width: pct }} />
+      </div>
     </div>
   );
 }
 
-function Macro({ title, value }) {
+function DashboardTab({ icon, title, active = false }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/40">
-        {title}
-      </p>
-      <p className="mt-1 text-xl font-black">{value}</p>
-    </div>
-  );
-}
-
-function MiniTrust({ icon, text }) {
-  return (
-    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white/70">
-      <span className="text-emerald-300">{icon}</span>
-      {text}
+    <div className={`flex flex-col md:flex-row items-center justify-center gap-3 p-8 transition-all cursor-pointer border-r border-white/5 last:border-none ${active ? 'bg-emerald-500 text-[#050a09]' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}>
+      <span className={active ? 'text-[#050a09]' : 'text-emerald-400 group-hover:text-emerald-300'}>{icon}</span>
+      <span className="text-[10px] font-black uppercase tracking-[0.3em]">{title}</span>
     </div>
   );
 }
