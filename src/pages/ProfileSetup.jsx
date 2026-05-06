@@ -1,243 +1,142 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, UserRound } from "lucide-react";
+import { ArrowLeft, Save, UserRound, LogOut, ChevronDown } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import { supabase } from "../services/supabaseClient";
-import { useAuth } from "../context/AuthContext";
 
 const PROFILE_KEY = "nutricoach_profile";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-
   const savedProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || null;
 
   const [form, setForm] = useState({
-    name: savedProfile?.name || savedProfile?.nombre || "",
-    age: savedProfile?.age || savedProfile?.edad || "",
-    weight: savedProfile?.weight || savedProfile?.peso || "",
-    height: savedProfile?.height || savedProfile?.altura || "",
-    gender: savedProfile?.gender || savedProfile?.genero || "male",
-    activity: savedProfile?.activity || savedProfile?.actividad || "moderate",
-    goal: savedProfile?.goal || savedProfile?.objetivo || "perder_grasa",
+    name: savedProfile?.name || "",
+    age: savedProfile?.age || "",
+    weight: savedProfile?.weight || "",
+    height: savedProfile?.height || "",
+    gender: savedProfile?.gender || "male",
+    activity: savedProfile?.activity || "moderate",
+    goal: savedProfile?.goal || "perder_grasa",
   });
 
   const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+  const handleLogout = () => {
+    if (window.confirm("¿CONFIRMAR CIERRE DE SESIÓN?")) {
+      localStorage.removeItem(PROFILE_KEY);
+      navigate("/");
+    }
   };
 
-  const calculateGoals = () => {
-    const weight = Number(form.weight);
-    const height = Number(form.height);
-    const age = Number(form.age);
-
-    let bmr =
-      form.gender === "male"
-        ? 10 * weight + 6.25 * height - 5 * age + 5
-        : 10 * weight + 6.25 * height - 5 * age - 161;
-
-    const activityMap = {
-      low: 1.2,
-      moderate: 1.55,
-      high: 1.75,
-    };
-
-    let calories = bmr * activityMap[form.activity];
-
-    if (form.goal === "perder_grasa") calories -= 350;
-    if (form.goal === "ganar_musculo") calories += 250;
-
-    const protein = weight * 2;
-    const fat = weight * 0.8;
-    const carbs = (calories - protein * 4 - fat * 9) / 4;
-
-    return {
-      calories: Math.max(1200, Math.round(calories)),
-      protein: Math.round(protein),
-      carbs: Math.max(80, Math.round(carbs)),
-      fat: Math.round(fat),
-    };
+  const handleChange = (name, value) => {
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!user) {
-      alert("Usuario no autenticado");
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const goals = calculateGoals();
-
-      const localProfile = {
-        name: form.name,
-        age: Number(form.age),
-        weight: Number(form.weight),
-        height: Number(form.height),
-        gender: form.gender,
-        activity: form.activity,
-        goal: form.goal,
-        goals,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const supabaseProfile = {
-        id: user.id,
-        nombre: form.name,
-        edad: Number(form.age),
-        peso: Number(form.weight),
-        altura: Number(form.height),
-        genero: form.gender,
-        actividad: form.activity,
-        objetivo: form.goal,
-      };
-
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile));
-
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(supabaseProfile, { onConflict: "id" });
-
-      if (error) {
-        console.error("Error Supabase:", error);
-        alert("Error guardando perfil en Supabase");
-        return;
-      }
-
-      setSaved(true);
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 900);
-    } catch (error) {
-      console.error("Error general:", error);
-      alert("Error inesperado guardando el perfil");
-    } finally {
-      setSaving(false);
-    }
+    localStorage.setItem(PROFILE_KEY, JSON.stringify({ ...form, updatedAt: new Date().toISOString() }));
+    setSaved(true);
+    setTimeout(() => navigate("/dashboard"), 900);
   };
 
   return (
-    <section className="min-h-screen bg-[#06130d] px-4 py-8 pb-28 text-white">
-      <div className="mx-auto max-w-3xl">
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="mb-6 flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 font-bold text-emerald-300 transition hover:bg-white/15"
-        >
-          <ArrowLeft size={20} />
-          Volver al dashboard
-        </button>
+    <section className="min-h-screen bg-[#060b13] px-4 py-8 pb-32 text-slate-200 tracking-tight font-sans">
+      <div className="mx-auto max-w-2xl">
+        
+        {/* HEADER ESTILO HOME */}
+        <div className="mb-10 flex items-center justify-between border-b border-white/5 pb-6">
+          <button 
+            onClick={() => navigate("/dashboard")} 
+            className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400/70 hover:text-emerald-400 transition-all"
+          >
+            <ArrowLeft size={16} /> Volver al dashboard
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="text-xs font-bold uppercase tracking-widest text-red-500/50 hover:text-red-400 transition-all"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
 
-        <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-400/20 text-emerald-300">
-              <UserRound size={30} />
+        <div className="relative border border-white/10 bg-[#ffffff03] p-10 backdrop-blur-2xl shadow-2xl rounded-sm">
+          {/* Acento visual del home */}
+          <div className="absolute top-0 left-0 h-[2px] w-20 bg-gradient-to-r from-emerald-500 to-transparent"></div>
+          
+          <div className="mb-12">
+            <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <UserRound size={28} />
             </div>
-
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.3em] text-emerald-400">
-                NutriCoach iA
-              </p>
-              <h1 className="text-3xl font-black">Configura tu perfil</h1>
-            </div>
+            
+            {/* Título con gradiente como el home */}
+            <h1 className="text-4xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-emerald-500/50">
+              Perfil Personal
+            </h1>
+            <p className="mt-2 text-sm font-medium text-emerald-500/60 uppercase tracking-widest">
+              Configuración de usuario_
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-5">
-            <Input
-              label="Nombre"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Alexis"
-              required
+          <form onSubmit={handleSubmit} className="space-y-10">
+            <Input 
+              label="Nombre y Apellido" 
+              name="name" 
+              value={form.name} 
+              onChange={(e) => handleChange("name", e.target.value)} 
+              placeholder="EJ. DANIEL DAVID"
+            />
+            
+            <div className="grid gap-8 md:grid-cols-3">
+              <Input label="Edad" name="age" type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} required />
+              <Input label="Peso (kg)" name="weight" type="number" value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} required />
+              <Input label="Altura (cm)" name="height" type="number" value={form.height} onChange={(e) => handleChange("height", e.target.value)} required />
+            </div>
+
+            <div className="grid gap-8 md:grid-cols-2">
+              <CustomSelect 
+                label="Género" 
+                value={form.gender} 
+                options={[ {id: "male", label: "HOMBRE"}, {id: "female", label: "MUJER"} ]}
+                onChange={(val) => handleChange("gender", val)}
+              />
+              <CustomSelect 
+                label="Nivel de Actividad" 
+                value={form.activity} 
+                options={[ 
+                  {id: "low", label: "SEDENTARIO"}, 
+                  {id: "moderate", label: "MODERADA (3-5 DÍAS)"}, 
+                  {id: "high", label: "ALTA (ATLETA)"} 
+                ]}
+                onChange={(val) => handleChange("activity", val)}
+              />
+            </div>
+
+            <CustomSelect 
+              label="Objetivo Fitness" 
+              value={form.goal} 
+              options={[ 
+                {id: "perder_grasa", label: "PERDER GRASA"}, 
+                {id: "ganar_musculo", label: "GANAR MÚSCULO"}, 
+                {id: "mantener_peso", label: "MANTENER PESO"} 
+              ]}
+              onChange={(val) => handleChange("goal", val)}
             />
 
-            <div className="grid gap-5 md:grid-cols-3">
-              <Input
-                label="Edad"
-                name="age"
-                type="number"
-                value={form.age}
-                onChange={handleChange}
-                required
-              />
-
-              <Input
-                label="Peso (kg)"
-                name="weight"
-                type="number"
-                value={form.weight}
-                onChange={handleChange}
-                required
-              />
-
-              <Input
-                label="Altura (cm)"
-                name="height"
-                type="number"
-                value={form.height}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <Select
-                label="Sexo"
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-              >
-                <option value="hombre">Hombre</option>
-                <option value="mujer">Mujer</option>
-              </Select>
-
-              <Select
-                label="Actividad"
-                name="activity"
-                value={form.activity}
-                onChange={handleChange}
-              >
-                <option value="baja">Baja</option>
-                <option value="moderada">Moderada</option>
-                <option value="alta">Alta</option>
-              </Select>
-            </div>
-
-            <Select
-              label="Objetivo principal"
-              name="goal"
-              value={form.goal}
-              onChange={handleChange}
+            {/* Botón con el estilo de "Comenzar" del Home */}
+            <button 
+              type="submit" 
+              className="group relative w-full overflow-hidden border border-emerald-500/50 bg-emerald-500/10 py-5 text-sm font-black uppercase tracking-[0.4em] text-emerald-400 transition-all hover:bg-emerald-500 hover:text-black hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
             >
-              <option value="perder_grasa">Perder grasa</option>
-              <option value="ganar_musculo">Ganar músculo</option>
-              <option value="mantener_peso">Mantener peso</option>
-            </Select>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="mt-3 flex items-center justify-center gap-2 rounded-3xl bg-emerald-500 px-6 py-4 text-lg font-black text-white shadow-xl shadow-emerald-500/20 transition hover:bg-emerald-400 disabled:opacity-60"
-            >
-              <Save size={22} />
-              {saving ? "Guardando..." : "Guardar perfil"}
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                <Save size={18} />
+                Guardar Cambios
+              </div>
             </button>
 
             {saved && (
-              <p className="rounded-2xl bg-green-400/10 p-4 text-center font-bold text-green-300">
-                ✅ Perfil guardado
-              </p>
+              <div className="text-center text-xs font-black uppercase tracking-widest text-emerald-400 animate-pulse">
+                PERFIL ACTUALIZADO CON ÉXITO_
+              </div>
             )}
           </form>
         </div>
@@ -247,28 +146,55 @@ export function ProfileSetup() {
   );
 }
 
-function Input({ label, ...props }) {
+function CustomSelect({ label, value, options, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  const selectedOption = options.find(opt => opt.id === value);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <label>
-      <p className="mb-2 font-bold text-white/80">{label}</p>
-      <input
-        {...props}
-        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 font-semibold text-white outline-none placeholder:text-white/30 focus:border-emerald-400"
-      />
-    </label>
+    <div className="relative group" ref={containerRef}>
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-focus-within:text-emerald-500 transition-colors">{label}</p>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between border-b py-3 cursor-pointer transition-all ${isOpen ? 'border-emerald-500 bg-white/5' : 'border-white/10 hover:border-white/30'}`}
+      >
+        <span className="font-bold text-white text-sm uppercase">{selectedOption?.label}</span>
+        <ChevronDown size={16} className={`text-emerald-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-[#0d141f] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl animate-in fade-in slide-in-from-top-2">
+          {options.map((opt) => (
+            <div 
+              key={opt.id}
+              onClick={() => { onChange(opt.id); setIsOpen(false); }}
+              className={`px-5 py-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-emerald-500 hover:text-black transition-all ${value === opt.id ? 'text-emerald-400 bg-white/5' : 'text-slate-400'}`}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function Select({ label, children, ...props }) {
+function Input({ label, ...props }) {
   return (
-    <label>
-      <p className="mb-2 font-bold text-white/80">{label}</p>
-      <select
-        {...props}
-        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 font-semibold text-white outline-none focus:border-emerald-400"
-      >
-        {children}
-      </select>
-    </label>
+    <div className="group">
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/30 group-focus-within:text-emerald-500 transition-colors">{label}</p>
+      <input 
+        {...props} 
+        className="w-full border-b border-white/10 bg-transparent py-3 font-bold text-white text-sm outline-none focus:border-emerald-500 transition-all placeholder:text-white/5" 
+      />
+    </div>
   );
 }
