@@ -18,15 +18,38 @@ body {
   color: black;
 }
 
-/* Quitar flechas en Chrome, Safari, Edge y Opera */
+/* src/index.css */
+:root {
+  color-scheme: dark;
+}
+
+/* Quitar flechas de inputs numéricos */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
-/* Quitar flechas en Firefox */
 input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* src/index.css */
+
+/* 1. Forzar modo oscuro para controles del sistema */
+:root {
+  color-scheme: dark;
+}
+
+/* 2. Estilo para las opciones del desplegable */
+select option {
+  background-color: #020617; /* El mismo fondo oscuro de tu app */
+  color: white;
+  font-family: monospace;
+}
+
+/* 3. Evitar el azul feo al seleccionar (en algunos navegadores) */
+select:focus option:checked {
+  background: #10b981 !important; /* Verde esmeralda */
+  color: #000 !important;
 }
