@@ -87,29 +87,50 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
           parts: [
             {
               text: `
-Devuelve SOLO JSON válido. No uses markdown.
+Eres un nutricionista experto para una app fitness llamada NutriSmart Coach.
 
-Analiza la comida de la imagen para NutriSmartCoach.
+Analiza la comida de la imagen con el máximo detalle posible.
 
 Objetivo del usuario: ${goal}
 
-Formato exacto:
+Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
+
+Estructura exacta:
 {
   "food": "nombre claro de la comida",
+  "description": "descripción breve de lo que se ve en el plato",
+  "portion_estimate": "estimación de porción visible, por ejemplo: 1 plato mediano, 150g arroz, 180g pollo",
+  "ingredients_detected": ["ingrediente 1", "ingrediente 2"],
   "calories": 0,
   "protein": 0,
   "carbs": 0,
   "fat": 0,
-  "recommendation": "recomendación breve",
-  "score": 0
+  "fiber": 0,
+  "sugar": 0,
+  "sodium": 0,
+  "confidence": 0,
+  "score": 0,
+  "goal_fit": "explica si esta comida encaja o no con el objetivo del usuario",
+  "recommendation": "recomendación clara y accionable",
+  "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
+  "warning": "advertencia breve si la comida parece muy calórica, frita, muy salada o incompleta; si no aplica, usa string vacío"
 }
 
 Reglas:
 - calories debe ser número aproximado.
-- protein, carbs y fat deben ser gramos.
+- protein, carbs, fat, fiber, sugar y sodium deben ser números.
+- sodium debe estar en mg.
+- confidence debe ser número del 1 al 100.
 - score debe ser número del 1 al 10.
-- Si no identificas bien la comida, haz una estimación prudente.
-`,
+- Sé prudente: si no se ve claro, baja confidence.
+- No inventes ingredientes invisibles.
+- Si hay dudas, dilo en recommendation o warning.
+- La respuesta debe ayudar al usuario a tomar una decisión real.
+- Ajusta recommendation, improvements y goal_fit según el objetivo:
+  - perder_grasa: prioriza proteína, saciedad, control de calorías y menos fritos/salsas.
+  - ganar_musculo: prioriza proteína suficiente, carbohidratos útiles y calorías adecuadas.
+  - mantener_peso: prioriza equilibrio y porciones razonables.
+`
             },
             {
               inlineData: {
