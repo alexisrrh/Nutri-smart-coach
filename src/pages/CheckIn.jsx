@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  AlertCircle,
   ArrowLeft,
   Camera,
-  Save,
-  ImagePlus,
-  Scale,
-  TrendingDown,
-  TrendingUp,
-  Sparkles,
-  AlertCircle,
-  ScanLine,
-  Activity,
+  CheckCircle2,
   ChevronRight,
   History,
+  ImagePlus,
+  LogOut,
+  Save,
+  Scale,
   ShieldCheck,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabase";
@@ -33,46 +33,59 @@ export function CheckIn() {
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [weight, setWeight] = useState("");
-  const [note, setNote] = useState("");
+  const [form, setForm] = useState({
+    weight: "",
+    waist: "",
+    chest: "",
+    hips: "",
+    notes: "",
+  });
 
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadData = async () => {
-      const savedProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || null;
-      setProfile(savedProfile);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setError("Necesitas iniciar sesión para guardar tu progreso.");
-        return;
-      }
-
-      setUser(user);
-
-      const { data, error } = await supabase
-        .from("progress_logs")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error(error);
-        setError("No se pudo cargar tu historial de progreso.");
-        return;
-      }
-
-      setHistory(data || []);
-    };
-
     loadData();
   }, []);
+
+  async function loadData() {
+    setLoadingHistory(true);
+    setError("");
+
+    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+    setProfile(savedProfile);
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setError("Necesitas iniciar sesión para guardar tu progreso.");
+      setLoadingHistory(false);
+      return;
+    }
+
+    setUser(user);
+
+    const { data, error } = await supabase
+      .from("checkins")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error cargando checkins:", error);
+      setError("No se pudo cargar tu historial de progreso.");
+      setLoadingHistory(false);
+      return;
+    }
+
+    setHistory(data || []);
+    setLoadingHistory(false);
+  }
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];
@@ -80,15 +93,19 @@ export function CheckIn() {
   const weightDiff = useMemo(() => {
     if (!lastCheckin || !previousCheckin) return null;
 
-    const current = Number(lastCheckin.weight || lastCheckin.peso || 0);
-    const previous = Number(previousCheckin.weight || previousCheckin.peso || 0);
+    const current = Number(lastCheckin.weight || 0);
+    const previous = Number(previousCheckin.weight || 0);
 
     if (!current || !previous) return null;
 
     return Number((current - previous).toFixed(1));
   }, [lastCheckin, previousCheckin]);
 
-  const handlePhoto = (e) => {
+  function handleChange(name, value) {
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handlePhoto(e) {
     const selectedFile = e.target.files?.[0];
 
     if (!selectedFile) return;
@@ -106,54 +123,9 @@ export function CheckIn() {
     setError("");
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
-  };
+  }
 
-  const uploadPhotoToSupabase = async () => {
-    if (!file || !user) {
-      throw new Error("Falta la foto o el usuario.");
-    }
-
-    const extension = file.name.split(".").pop() || "jpg";
-    const filePath = `${user.id}/${Date.now()}.${extension}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("checkins")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage.from("checkins").getPublicUrl(filePath);
-
-    return data.publicUrl;
-  };
-
-  const analyzeBody = async () => {
-    const formData = new FormData();
-
-    formData.append("image", file);
-    formData.append("weight", weight);
-    formData.append("height", profile?.height || "");
-    formData.append("gender", profile?.gender || "");
-    formData.append("goal", profile?.goal || "");
-
-    const response = await fetch(`${API_URL}/analyze-body`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "No se pudo analizar la foto.");
-    }
-
-    return data;
-  };
-
-  const saveCheckIn = async () => {
+  async function saveCheckIn() {
     setError("");
     setMessage("");
 
@@ -167,7 +139,7 @@ export function CheckIn() {
       return;
     }
 
-    if (!weight) {
+    if (!form.weight) {
       setError("Introduce tu peso actual.");
       return;
     }
@@ -175,150 +147,100 @@ export function CheckIn() {
     try {
       setLoading(true);
 
-      const photoUrl = await uploadPhotoToSupabase();
-      const analysis = await analyzeBody();
+      const formData = new FormData();
+      formData.append("user_id", user.id);
+      formData.append("image", file);
+      formData.append("weight", form.weight);
+      formData.append("waist", form.waist);
+      formData.append("chest", form.chest);
+      formData.append("hips", form.hips);
+      formData.append("notes", form.notes);
 
-      const newLog = {
-        user_id: user.id,
-        peso: Number(weight),
-        note,
-        photo_url: photoUrl,
-        body_fat_range: analysis.body_fat_range,
-        confidence: analysis.confidence,
-        visual_changes: analysis.visual_changes,
-        recommendation: analysis.recommendation,
-      };
+      const response = await fetch(`${API_URL}/checkins`, {
+        method: "POST",
+        body: formData,
+      });
 
-      const { data, error } = await supabase
-        .from("progress_logs")
-        .insert(newLog)
-        .select()
-        .single();
+      const data = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(data.error || data.detail || "No se pudo guardar.");
+      }
 
-      setHistory([data, ...history]);
+      setHistory((prev) => [data.checkin, ...prev]);
       setFile(null);
       setPreview(null);
-      setWeight("");
-      setNote("");
-      setMessage("Check-in semanal guardado correctamente.");
+      setForm({
+        weight: "",
+        waist: "",
+        chest: "",
+        hips: "",
+        notes: "",
+      });
+      setMessage("Check-in guardado correctamente.");
     } catch (err) {
       console.error(err);
       setError(err.message || "No se pudo guardar el check-in.");
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    localStorage.removeItem(PROFILE_KEY);
+    navigate("/");
+  }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#02040a] px-4 py-6 pb-32 text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,#22c55e2c,transparent_28%),radial-gradient(circle_at_80%_20%,#bef26416,transparent_24%),radial-gradient(circle_at_50%_100%,#14b8a61a,transparent_32%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+    <section className="relative min-h-screen overflow-hidden bg-[#06110c] px-3 pb-28 pt-4 text-white font-sans">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_38%),radial-gradient(circle_at_bottom_left,#22c55e12,transparent_35%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:42px_42px]" />
 
-      <div className="relative z-10 mx-auto max-w-7xl">
-        <header className="mb-8 flex items-center justify-between">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-3">
+        <header className="flex items-center justify-between border-b border-white/10 pb-3">
           <button
             onClick={() => navigate("/dashboard")}
-            className="group rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 font-black text-white/80 backdrop-blur-xl transition hover:border-emerald-300/40 hover:text-emerald-200"
+            className="flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:bg-[#10b981] hover:text-[#06110c]"
           >
-            <span className="flex items-center gap-2">
-              <ArrowLeft size={18} />
-              Dashboard
-            </span>
+            <ArrowLeft size={15} />
+            Dashboard
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center bg-emerald-400 text-[#02040a] shadow-[0_0_45px_#34d39955] [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
-              <ScanLine size={23} />
-            </div>
-
-            <div className="hidden text-right sm:block">
-              <p className="text-lg font-black">Body Scan</p>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/35">
-                Weekly progress
-              </p>
-            </div>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-red-400/70"
+          >
+            <LogOut size={14} />
+            Salir
+          </button>
         </header>
 
-        <section className="mb-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] p-7 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_92%,94%_100%,0_100%)] md:p-9">
-            <div className="absolute -right-28 -top-28 h-80 w-80 rounded-full bg-emerald-400/20 blur-3xl" />
-            <div className="absolute -bottom-28 left-10 h-80 w-80 rounded-full bg-lime-300/10 blur-3xl" />
+        <section className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+          <HeroCompact
+            lastCheckin={lastCheckin}
+            weightDiff={weightDiff}
+            profile={profile}
+          />
 
-            <div className="relative">
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-sm font-black text-emerald-300">
-                <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_#86efac]" />
-                Análisis visual con IA
-              </div>
-
-              <h1 className="max-w-4xl text-5xl font-black leading-[0.9] tracking-tight md:text-7xl">
-                Tu progreso físico, semana a semana.
-              </h1>
-
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/58">
-                Sube una foto corporal, registra tu peso y deja que NutriCoach
-                estime tu progreso visual con IA.
-              </p>
-
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
-                <MetricLine
-                  icon={<Scale />}
-                  label="Peso"
-                  value={lastCheckin?.peso || lastCheckin?.weight || "-"}
-                  detail="kg"
-                />
-
-                <MetricLine
-                  icon={
-                    weightDiff !== null && weightDiff <= 0 ? (
-                      <TrendingDown />
-                    ) : (
-                      <TrendingUp />
-                    )
-                  }
-                  label="Cambio"
-                  value={
-                    weightDiff === null
-                      ? "-"
-                      : `${weightDiff > 0 ? "+" : ""}${weightDiff}`
-                  }
-                  detail="kg"
-                />
-
-                <MetricLine
-                  icon={<Sparkles />}
-                  label="Grasa"
-                  value={lastCheckin?.body_fat_range || "-"}
-                  detail="aprox."
-                />
-              </div>
-            </div>
-          </div>
-
-          <LatestPanel lastCheckin={lastCheckin} weightDiff={weightDiff} />
+          <CheckInForm
+            preview={preview}
+            handlePhoto={handlePhoto}
+            form={form}
+            handleChange={handleChange}
+            saveCheckIn={saveCheckIn}
+            loading={loading}
+          />
         </section>
 
-        <Notice />
+        {loading && <SavingLoader loading={loading} />}
 
         {error && <Alert type="error" text={error} />}
         {message && <Alert type="success" text={message} />}
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <BodyScanForm
-            preview={preview}
-            handlePhoto={handlePhoto}
-            weight={weight}
-            setWeight={setWeight}
-            note={note}
-            setNote={setNote}
-            saveCheckIn={saveCheckIn}
-            loading={loading}
-          />
+        <Notice />
 
-          <HistoryPanel history={history} />
-        </section>
+        <HistoryPanel history={history} loading={loadingHistory} />
       </div>
 
       <BottomNav />
@@ -326,259 +248,357 @@ export function CheckIn() {
   );
 }
 
-function BodyScanForm({
+function HeroCompact({ lastCheckin, weightDiff, profile }) {
+  return (
+    <div className="relative overflow-hidden border border-white/10 bg-[#091710] p-4 shadow-2xl shadow-black/20 [clip-path:polygon(0_0,100%_0,100%_94%,96%_100%,0_100%)]">
+      <div className="absolute -right-14 -top-14 h-44 w-44 bg-[#10b981]/12 blur-3xl" />
+
+      <div className="relative">
+        <div className="mb-3 inline-flex items-center gap-2 border border-[#10b981]/25 bg-[#0d2218] px-3 py-1.5 text-[9px] font-black uppercase tracking-wide text-[#10b981]">
+          <Sparkles size={12} />
+          Weekly Body Check
+        </div>
+
+        <h1 className="text-3xl font-black uppercase italic leading-[0.9] tracking-tight sm:text-5xl">
+          Controla tu <br />
+          <span className="text-[#10b981]">progreso</span>
+        </h1>
+
+        <p className="mt-3 text-xs normal-case leading-5 text-slate-400">
+          Sube una foto semanal, registra tu peso y guarda tu evolución real.
+        </p>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <MetricBox
+            icon={<Scale size={15} />}
+            label="Peso"
+            value={lastCheckin?.weight || profile?.weight || "-"}
+            detail="kg"
+          />
+
+          <MetricBox
+            icon={
+              weightDiff !== null && weightDiff <= 0 ? (
+                <TrendingDown size={15} />
+              ) : (
+                <TrendingUp size={15} />
+              )
+            }
+            label="Cambio"
+            value={
+              weightDiff === null
+                ? "-"
+                : `${weightDiff > 0 ? "+" : ""}${weightDiff}`
+            }
+            detail="kg"
+          />
+
+          <MetricBox
+            icon={<Camera size={15} />}
+            label="Registros"
+            value={lastCheckin ? "Activo" : "Nuevo"}
+            detail="scan"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CheckInForm({
   preview,
   handlePhoto,
-  weight,
-  setWeight,
-  note,
-  setNote,
+  form,
+  handleChange,
   saveCheckIn,
   loading,
 }) {
   return (
-    <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_94%,94%_100%,0_100%)]">
-      <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
+    <div className="relative overflow-hidden border border-white/10 bg-[#091710] shadow-2xl shadow-black/20 [clip-path:polygon(0_0,100%_0,100%_96%,96%_100%,0_100%)]">
+      <div className="absolute -right-14 -top-14 h-44 w-44 bg-[#10b981]/12 blur-3xl" />
 
-      <div className="relative p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
-            <Camera />
+      <div className="relative p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+              <Camera size={20} />
+            </div>
+
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
+                Nuevo check-in
+              </p>
+              <h2 className="text-xl font-black uppercase italic">Body Scan</h2>
+            </div>
           </div>
 
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
-              Nuevo registro
-            </p>
-            <h2 className="text-3xl font-black">Body Scan</h2>
-          </div>
+          <span className="border border-white/10 bg-[#0d2218] px-3 py-1 text-[9px] font-black text-slate-400">
+            Máx 4MB
+          </span>
         </div>
 
-        <label className="group relative grid min-h-[470px] cursor-pointer place-items-center overflow-hidden border border-dashed border-emerald-300/30 bg-white/[0.035] text-center transition hover:border-emerald-300/60 hover:bg-emerald-300/5">
-          {preview ? (
-            <>
-              <img
-                src={preview}
-                alt="Vista previa check-in"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#02040a]/92 via-[#02040a]/20 to-transparent" />
-              <div className="relative z-10 self-end p-6">
-                <p className="text-2xl font-black">Foto lista para analizar</p>
-                <p className="mt-2 text-sm text-white/60">
-                  Toca aquí para cambiar la imagen.
+        <div className="grid gap-3 sm:grid-cols-[0.9fr_1.1fr]">
+          <label className="group relative grid min-h-[220px] cursor-pointer place-items-center overflow-hidden border border-dashed border-[#10b981]/35 bg-white/[0.035] text-center transition hover:border-[#10b981]/70 hover:bg-[#10b981]/5">
+            {preview ? (
+              <>
+                <img
+                  src={preview}
+                  alt="Vista previa check-in"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/92 via-[#06110c]/20 to-transparent" />
+                <div className="relative z-10 self-end p-4">
+                  <p className="text-lg font-black uppercase italic">
+                    Foto lista
+                  </p>
+                  <p className="mt-1 text-xs normal-case text-white/60">
+                    Toca para cambiar.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="p-4">
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+                  <ImagePlus size={30} />
+                </div>
+
+                <p className="text-xl font-black uppercase italic">
+                  Sube tu foto
+                </p>
+
+                <p className="mx-auto mt-2 max-w-xs text-xs normal-case leading-5 text-slate-400">
+                  Frontal, buena luz y misma distancia semanal.
                 </p>
               </div>
-            </>
-          ) : (
-            <div className="p-6">
-              <div className="mx-auto mb-5 grid h-24 w-24 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
-                <ImagePlus size={48} />
-              </div>
+            )}
 
-              <p className="text-3xl font-black">Sube tu foto semanal</p>
-
-              <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-white/50">
-                Foto frontal de cuerpo completo, buena luz y misma distancia
-                cada semana.
-              </p>
-            </div>
-          )}
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhoto}
-            className="hidden"
-          />
-        </label>
-
-        <div className="mt-5 grid gap-4">
-          <LuxuryInput
-            label="Peso actual"
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="Ej: 72.5 kg"
-          />
-
-          <label>
-            <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-white/45">
-              Nota de la semana
-            </p>
-
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="min-h-[120px] w-full border border-white/10 bg-white/[0.04] px-5 py-4 font-semibold text-white outline-none placeholder:text-white/25 focus:border-emerald-300/50"
-              placeholder="Ej: Entrené 4 días, dormí mejor, me siento con más energía..."
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhoto}
+              className="hidden"
             />
           </label>
 
-          <PrimaryButton onClick={saveCheckIn} disabled={loading}>
-            <Save size={21} />
-            {loading ? "Analizando con IA..." : "Guardar y analizar"}
-            <ChevronRight size={18} />
-          </PrimaryButton>
-        </div>
-      </div>
-    </div>
-  );
-}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Field
+                label="Peso"
+                value={form.weight}
+                onChange={(e) => handleChange("weight", e.target.value)}
+                placeholder="72.5"
+                type="number"
+                step="0.1"
+              />
 
-function LatestPanel({ lastCheckin, weightDiff }) {
-  if (!lastCheckin) {
-    return (
-      <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] p-7 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_88%,90%_100%,0_100%)]">
-        <div className="absolute right-0 top-0 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <Field
+                label="Cintura"
+                value={form.waist}
+                onChange={(e) => handleChange("waist", e.target.value)}
+                placeholder="80"
+                type="number"
+                step="0.1"
+              />
 
-        <div className="relative">
-          <div className="grid h-14 w-14 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
-            <Activity size={28} />
-          </div>
+              <Field
+                label="Pecho"
+                value={form.chest}
+                onChange={(e) => handleChange("chest", e.target.value)}
+                placeholder="95"
+                type="number"
+                step="0.1"
+              />
 
-          <p className="mt-6 text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
-            Último progreso
-          </p>
-
-          <h2 className="mt-2 text-4xl font-black">Sin registros todavía</h2>
-
-          <p className="mt-4 leading-7 text-white/58">
-            Guarda tu primer check-in para crear tu línea de progreso.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_88%,90%_100%,0_100%)]">
-      {lastCheckin.photo_url && (
-        <img
-          src={lastCheckin.photo_url}
-          alt="Último check-in"
-          className="h-[560px] w-full object-cover"
-        />
-      )}
-
-      <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-[#02040a]/45 to-transparent" />
-
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
-          Último resultado
-        </p>
-
-        <h2 className="mt-2 text-5xl font-black">
-          {lastCheckin.peso || lastCheckin.weight || "-"} kg
-        </h2>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <MiniStat
-            label="Cambio"
-            value={
-              weightDiff === null
-                ? "Sin comparación"
-                : `${weightDiff > 0 ? "+" : ""}${weightDiff} kg`
-            }
-          />
-
-          <MiniStat
-            label="Grasa aprox."
-            value={lastCheckin.body_fat_range || "No estimable"}
-          />
-        </div>
-
-        {lastCheckin.visual_changes && (
-          <p className="mt-4 border-l border-emerald-300/30 pl-4 text-sm leading-6 text-white/70">
-            {lastCheckin.visual_changes}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function HistoryPanel({ history }) {
-  return (
-    <div className="relative overflow-hidden border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-2xl [clip-path:polygon(0_0,100%_0,100%_94%,94%_100%,0_100%)]">
-      <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
-
-      <div className="relative">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center bg-emerald-400/15 text-emerald-300 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]">
-            <History />
-          </div>
-
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
-              Timeline
-            </p>
-            <h2 className="text-3xl font-black">Historial semanal</h2>
-          </div>
-        </div>
-
-        {history.length === 0 ? (
-          <div className="grid min-h-[300px] place-items-center border border-white/10 bg-white/[0.035] p-6 text-center">
-            <div>
-              <Camera className="mx-auto mb-4 text-emerald-300" size={42} />
-              <h3 className="text-xl font-black">Aún no hay historial</h3>
-              <p className="mt-2 text-white/50">
-                Guarda tu primer check-in para activar tu progreso visual.
-              </p>
+              <Field
+                label="Cadera"
+                value={form.hips}
+                onChange={(e) => handleChange("hips", e.target.value)}
+                placeholder="90"
+                type="number"
+                step="0.1"
+              />
             </div>
+
+            <label>
+              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                Nota
+              </p>
+
+              <textarea
+                value={form.notes}
+                onChange={(e) => handleChange("notes", e.target.value)}
+                className="h-[74px] w-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold normal-case text-white outline-none placeholder:text-white/20 focus:border-[#10b981]/50"
+                placeholder="Ej: entrené 4 días, mejor energía..."
+              />
+            </label>
+
+            <PrimaryButton onClick={saveCheckIn} disabled={loading}>
+              <Save size={17} />
+              {loading ? "Guardando..." : "Guardar check-in"}
+              <ChevronRight size={15} />
+            </PrimaryButton>
           </div>
-        ) : (
-          <div className="max-h-[760px] space-y-4 overflow-y-auto pr-1">
-            {history.map((item, index) => (
-              <HistoryItem key={item.id} item={item} index={index} />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
 }
 
-function HistoryItem({ item, index }) {
+function SavingLoader({ loading }) {
+  const [percent, setPercent] = useState(8);
+  const steps = ["Foto", "Medidas", "Subida", "Guardado"];
+
+  useEffect(() => {
+    if (!loading) return;
+
+    setPercent(8);
+
+    const interval = setInterval(() => {
+      setPercent((prev) => {
+        if (prev >= 96) return prev;
+        if (prev < 45) return prev + 7;
+        if (prev < 80) return prev + 4;
+        return prev + 1;
+      });
+    }, 450);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const activeStep = Math.min(
+    steps.length - 1,
+    Math.floor((percent / 100) * steps.length)
+  );
+
   return (
-    <div className="grid gap-4 border border-white/10 bg-white/[0.04] p-4 transition hover:border-emerald-300/25 hover:bg-white/[0.07] md:grid-cols-[120px_1fr]">
-      {item.photo_url ? (
+    <div className="border border-[#10b981]/20 bg-[#07120d] p-3 shadow-2xl shadow-[#10b981]/5">
+      <div className="relative overflow-hidden border border-white/10 bg-[#0d2218]/70 p-4">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 bg-[#10b981]/20 blur-3xl" />
+
+        <div className="relative flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
+              Guardando progreso
+            </p>
+            <h3 className="mt-1 text-xl font-black uppercase italic">
+              Check-in semanal
+            </h3>
+          </div>
+
+          <div className="grid h-14 w-14 place-items-center border border-[#10b981]/25">
+            <span className="text-lg font-black text-[#10b981]">
+              {percent}%
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-3 h-2 overflow-hidden bg-white/5">
+          <div
+            className="h-full bg-[#10b981] transition-all"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          {steps.map((step, index) => {
+            const completed = index < activeStep;
+            const active = index === activeStep;
+
+            return (
+              <div
+                key={step}
+                className={`border px-1 py-2 text-center ${
+                  completed
+                    ? "border-[#10b981]/25 bg-[#10b981]/10"
+                    : active
+                      ? "border-[#10b981]/40 bg-[#10b981]/5"
+                      : "border-white/5 bg-black/10"
+                }`}
+              >
+                <p
+                  className={`text-[8px] font-black uppercase ${
+                    completed || active ? "text-white" : "text-slate-600"
+                  }`}
+                >
+                  {completed ? "✓ " : ""}
+                  {step}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryPanel({ history, loading }) {
+  return (
+    <div className="border border-white/10 bg-[#091710] p-4 shadow-2xl shadow-black/20">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <History size={16} className="text-[#10b981]" />
+          <h3 className="text-sm font-black uppercase italic">
+            Historial semanal
+          </h3>
+        </div>
+
+        <span className="text-[10px] font-black text-slate-500">
+          {history.length} registros
+        </span>
+      </div>
+
+      {loading ? (
+        <p className="text-xs text-slate-400">Cargando historial...</p>
+      ) : history.length === 0 ? (
+        <div className="border border-dashed border-white/10 bg-white/[0.03] p-5 text-center">
+          <Camera className="mx-auto mb-2 text-[#10b981]" size={28} />
+          <p className="text-xs font-black uppercase">Sin historial</p>
+          <p className="mt-1 text-xs normal-case text-slate-500">
+            Guarda tu primer check-in.
+          </p>
+        </div>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {history.map((item, index) => (
+            <HistoryCard key={item.id} item={item} index={index} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HistoryCard({ item, index }) {
+  return (
+    <div className="w-[210px] shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+      {item.image_url ? (
         <img
-          src={item.photo_url}
-          alt="Check-in semanal"
-          className="h-36 w-full object-cover md:w-32"
+          src={item.image_url}
+          alt="Check-in"
+          className="h-32 w-full object-cover"
         />
       ) : (
-        <div className="grid h-36 w-full place-items-center bg-white/10 text-white/40 md:w-32">
+        <div className="grid h-32 place-items-center bg-white/5 text-xs text-slate-500">
           Sin foto
         </div>
       )}
 
-      <div>
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-300">
+      <div className="p-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[9px] font-black uppercase tracking-wide text-[#10b981]">
             Registro {index + 1}
           </p>
-
-          <p className="text-xs font-bold text-white/35">
+          <p className="text-[9px] text-slate-500">
             {new Date(item.created_at).toLocaleDateString("es-ES")}
           </p>
         </div>
 
-        <h3 className="mt-2 text-2xl font-black">
-          {item.peso || item.weight || "-"} kg ·{" "}
-          {item.body_fat_range || "No estimable"}
-        </h3>
+        <h4 className="mt-1 text-xl font-black">{item.weight || "-"} kg</h4>
 
-        <p className="mt-2 text-sm leading-6 text-white/58">
-          {item.visual_changes || item.note || "Sin descripción registrada."}
+        <p className="mt-1 line-clamp-2 text-[11px] normal-case leading-4 text-slate-400">
+          {item.notes || "Sin nota registrada."}
         </p>
-
-        {item.recommendation && (
-          <p className="mt-3 border-l border-emerald-300/30 pl-3 text-sm leading-6 text-emerald-100/70">
-            {item.recommendation}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -586,13 +606,12 @@ function HistoryItem({ item, index }) {
 
 function Notice() {
   return (
-    <div className="border border-yellow-300/20 bg-yellow-300/10 p-5 text-yellow-100 backdrop-blur-xl [clip-path:polygon(0_0,100%_0,100%_82%,97%_100%,0_100%)]">
-      <div className="flex items-start gap-3">
-        <ShieldCheck className="mt-1 shrink-0 text-yellow-300" />
-        <p className="text-sm leading-6 text-white/70">
-          La estimación de grasa corporal por foto es orientativa. No sustituye
-          mediciones profesionales, bioimpedancia, plicómetro ni evaluación
-          médica.
+    <div className="border border-amber-400/20 bg-amber-500/10 p-3">
+      <div className="flex items-start gap-2">
+        <ShieldCheck className="mt-0.5 shrink-0 text-amber-300" size={16} />
+        <p className="text-xs normal-case leading-5 text-amber-100/80">
+          Usa una foto parecida cada semana: misma luz, distancia y postura. Así
+          el progreso será más fácil de comparar.
         </p>
       </div>
     </div>
@@ -604,13 +623,16 @@ function Alert({ type, text }) {
 
   return (
     <div
-      className={`mt-5 border p-5 font-bold backdrop-blur-xl ${
+      className={`border p-3 text-xs font-bold normal-case ${
         isError
           ? "border-red-400/20 bg-red-500/10 text-red-300"
-          : "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
+          : "border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]"
       }`}
     >
-      {text}
+      <div className="flex items-center gap-2">
+        {isError ? <AlertCircle size={15} /> : <CheckCircle2 size={15} />}
+        {text}
+      </div>
     </div>
   );
 }
@@ -618,58 +640,56 @@ function Alert({ type, text }) {
 function PrimaryButton({ children, onClick, disabled }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
-      className="group relative overflow-hidden rounded-full bg-gradient-to-r from-emerald-400 via-lime-300 to-emerald-500 px-6 py-4 font-black text-[#03110a] shadow-[0_20px_60px_#22c55e33] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+      className="group relative w-full overflow-hidden bg-[#10b981] px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-[#06110c] shadow-[0_20px_60px_#22c55e22] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <span className="relative z-10 flex items-center justify-center gap-3">
+      <span className="relative z-10 flex items-center justify-center gap-2">
         {children}
       </span>
-      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition duration-700 group-hover:translate-x-full" />
+      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/45 to-transparent transition duration-700 group-hover:translate-x-full" />
     </button>
   );
 }
 
-function LuxuryInput({ label, ...props }) {
+function Field({ label, ...props }) {
   return (
     <label>
-      <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-white/45">
+      <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-white/40">
         {label}
       </p>
 
       <input
         {...props}
-        className="w-full border border-white/10 bg-white/[0.04] px-5 py-4 font-semibold text-white outline-none placeholder:text-white/25 focus:border-emerald-300/50"
+        className="h-10 w-full border border-white/10 bg-white/[0.04] px-3 text-xs font-bold text-white outline-none placeholder:text-white/20 focus:border-[#10b981]/50"
       />
     </label>
   );
 }
 
-function MetricLine({ icon, label, value, detail }) {
+function MetricBox({ icon, label, value, detail }) {
   return (
-    <div className="border-l border-emerald-300/25 bg-white/[0.04] p-5">
-      <div className="mb-4 flex items-center gap-3 text-emerald-300">
+    <div className="min-w-0 border border-white/10 bg-[#0d2218]/70 p-2.5">
+      <div className="mb-1 flex items-center gap-1.5 text-[#10b981]">
         {icon}
-        <p className="text-xs font-black uppercase tracking-[0.25em] text-white/40">
+        <p className="truncate text-[7px] font-black uppercase tracking-wide text-slate-500">
           {label}
         </p>
       </div>
 
-      <p className="text-3xl font-black">
+      <p className="truncate text-sm font-black">
         {value}
-        <span className="text-sm text-white/40"> {detail}</span>
+        <span className="text-[9px] text-slate-500"> {detail}</span>
       </p>
     </div>
   );
 }
 
-function MiniStat({ label, value }) {
-  return (
-    <div className="border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
-      <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">
-        {label}
-      </p>
-      <p className="mt-1 text-lg font-black">{value}</p>
-    </div>
-  );
+function safeParse(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
 }
