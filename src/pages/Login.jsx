@@ -58,11 +58,11 @@ export function Login() {
         updated_at: new Date().toISOString(),
       };
 
-      const { data: createdProfile, error: createError } = await supabase
-        .from("profiles")
-        .insert(newProfile)
-        .select()
-        .single();
+     const { data: createdProfile, error: createError } = await supabase
+  .from("profiles")
+  .upsert(newProfile, { onConflict: "id" })
+  .select()
+  .single();
 
       if (createError) {
         console.error("Error creando perfil:", createError);
