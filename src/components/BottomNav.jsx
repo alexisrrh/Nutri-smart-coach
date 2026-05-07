@@ -1,47 +1,32 @@
 import { NavLink } from "react-router-dom";
-import { BarChart3, Camera, History, UserRound } from "lucide-react";
+import { LayoutDashboard, Camera, History, UserRound } from "lucide-react";
 
 export default function BottomNav() {
   const items = [
-    {
-      to: "/dashboard",
-      label: "Inicio",
-      icon: <BarChart3 size={22} />,
-    },
-    {
-      to: "/foto-comida",
-      label: "Analizar",
-      icon: <Camera size={22} />,
-    },
-    {
-      to: "/comidas",
-      label: "Historial",
-      icon: <History size={22} />,
-    },
-    {
-      to: "/perfil",
-      label: "Perfil",
-      icon: <UserRound size={22} />,
-    },
+    { to: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
+    { to: "/foto-comida", label: "Scan", Icon: Camera },
+    { to: "/comidas", label: "Historial", Icon: History },
+    { to: "/perfil", label: "Perfil", Icon: UserRound },
   ];
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-50 w-[92%] max-w-md -translate-x-1/2  border border-white/10 bg-[#081a12]/90 p-2 shadow-2xl backdrop-blur-xl">
+    <nav className="fixed bottom-3 left-1/2 z-50 w-[92%] max-w-md -translate-x-1/2 border border-white/10 bg-[#06110c]/95 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
       <div className="grid grid-cols-4 gap-1">
-        {items.map((item) => (
+        {items.map(({ to, label, Icon }) => (
           <NavLink
-            key={item.to}
-            to={item.to}
+            key={to}
+            to={to}
+            end={to === "/dashboard"}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1  px-3 py-3 text-xs font-black transition ${
+              `flex min-h-[58px] flex-col items-center justify-center gap-1 px-2 py-2 text-[9px] font-black uppercase tracking-wide transition ${
                 isActive
-                  ? "bg-emerald-500 text-white"
-                  : "text-white/50 hover:bg-white/10 hover:text-white"
+                  ? "bg-[#10b981] text-[#06110c]"
+                  : "text-slate-500 hover:bg-white/5 hover:text-white"
               }`
             }
           >
-            {item.icon}
-            {item.label}
+            <Icon size={20} />
+            <span>{label}</span>
           </NavLink>
         ))}
       </div>
