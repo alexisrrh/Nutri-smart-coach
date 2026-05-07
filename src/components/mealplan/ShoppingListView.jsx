@@ -61,7 +61,7 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
+      <div className=" border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
         <ShoppingBag className="mx-auto mb-2 text-[#10b981]" size={26} />
         <p className="text-sm font-black uppercase text-white">Lista vacía</p>
         <p className="mt-1 text-xs normal-case text-slate-400">
@@ -76,7 +76,7 @@ export function ShoppingListView({ plan }) {
   };
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-[#07120d] p-4">
+    <section className=" border border-white/5 bg-[#07120d] p-4">
       <header className="mb-4 flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
@@ -93,15 +93,15 @@ export function ShoppingListView({ plan }) {
           type="button"
           onClick={() => setCheckedItems({})}
           disabled={checkedCount === 0}
-          className="rounded-lg border border-white/5 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-slate-300 disabled:opacity-40"
+          className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-slate-300 disabled:opacity-40"
         >
           Reiniciar
         </button>
       </header>
 
-      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/5">
+      <div className="mb-4 h-1.5 overflow-hidden  bg-white/5">
         <div
-          className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+          className="h-full bg-[#10b981] transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -112,7 +112,7 @@ export function ShoppingListView({ plan }) {
             key={category.key}
             type="button"
             onClick={() => setActiveCategory(category.key)}
-            className={`flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition ${
+            className={`flex shrink-0 items-center gap-2  border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition ${
               activeCategory === category.key
                 ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                 : "border-white/5 bg-[#0d2218] text-slate-400"
@@ -134,14 +134,14 @@ export function ShoppingListView({ plan }) {
               key={item.id}
               type="button"
               onClick={() => toggleItem(item.id)}
-              className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+              className={`flex items-center gap-3  border p-3 text-left transition ${
                 isChecked
                   ? "border-[#10b981]/15 bg-[#10b981]/5 opacity-55"
                   : "border-white/5 bg-[#0d2218]/60 hover:bg-[#0d2218]"
               }`}
             >
               <div
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                className={`flex h-5 w-5 shrink-0 items-center justify-center  border ${
                   isChecked
                     ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                     : "border-white/20 text-transparent"

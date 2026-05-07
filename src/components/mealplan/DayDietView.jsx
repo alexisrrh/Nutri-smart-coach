@@ -53,7 +53,7 @@ export function DayDietView({
             key={`${dayData.day}-${index}`}
             type="button"
             onClick={() => setActiveDay(index)}
-            className={`shrink-0 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
+            className={`shrink-0  border px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
               safeActiveDay === index
                 ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_16px_rgba(16,185,129,0.18)]"
                 : "border-white/5 bg-[#0d2218] text-slate-400 hover:bg-[#123022] hover:text-white"
@@ -64,7 +64,7 @@ export function DayDietView({
         ))}
       </div>
 
-      <div className="rounded-2xl border border-white/5 bg-[#07120d] p-3">
+      <div className=" border border-white/5 bg-[#07120d] p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
@@ -80,16 +80,16 @@ export function DayDietView({
             </p>
           </div>
 
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center  border border-[#10b981]/20 bg-[#10b981]/10">
             <span className="text-lg font-black text-[#10b981]">
               {percentage}%
             </span>
           </div>
         </div>
 
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div className="mt-3 h-1.5 overflow-hidden  bg-white/5">
           <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            className="h-full  bg-[#10b981] transition-all duration-500"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -129,7 +129,7 @@ export function DayDietView({
           return (
             <article
               key={mealId}
-              className={`overflow-hidden rounded-2xl border transition-all ${
+              className={`overflow-hidden  border transition-all ${
                 isCompleted
                   ? "border-[#10b981]/30 bg-[#10b981]/5 opacity-80"
                   : "border-white/5 bg-[#07120d]"
@@ -166,7 +166,7 @@ export function DayDietView({
                 <button
                   type="button"
                   onClick={() => toggleMeal(mealId)}
-                  className={`shrink-0 rounded-xl border px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all ${
+                  className={`shrink-0  border px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all ${
                     isCompleted
                       ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                       : "border-white/10 bg-[#0d2218] text-slate-300 hover:bg-white/5"
@@ -215,7 +215,7 @@ export function DayDietView({
                     ))}
                   </div>
                 ) : (
-                  <p className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-2 text-[11px] normal-case text-slate-400">
+                  <p className=" border border-white/5 bg-[#0d2218]/60 p-2 text-[11px] normal-case text-slate-400">
                     Sin ingredientes detallados.
                   </p>
                 )}
@@ -232,7 +232,7 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-full border border-white/5 bg-[#0d2218]/70 px-3 py-1.5">
+    <div className="flex shrink-0 items-center gap-2 border border-white/5 bg-[#0d2218]/70 px-3 py-1.5">
       <span className="max-w-[120px] truncate text-[11px] font-bold normal-case text-slate-300">
         {name}
       </span>
@@ -246,7 +246,7 @@ function IngredientPill({ item }) {
 
 function DayMacro({ icon, value, label }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-[#0d2218]/60 p-2 text-center">
+    <div className=" border border-white/5 bg-[#0d2218]/60 p-2 text-center">
       <div className="mx-auto mb-1 flex justify-center text-[#10b981]">
         {icon}
       </div>
@@ -261,7 +261,7 @@ function DayMacro({ icon, value, label }) {
 
 function MiniMacro({ label, value }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-[#0d2218]/70 px-2 py-1">
+    <div className=" border border-white/5 bg-[#0d2218]/70 px-2 py-1">
       <span className="text-[8px] font-black uppercase text-slate-500">
         {label}
       </span>

@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +40,11 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 app.get("/", (req, res) => {
   res.json({
     ok: true,
@@ -51,6 +57,8 @@ app.get("/health", (req, res) => {
     ok: true,
     status: "Backend funcionando correctamente",
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
+    hasSupabaseUrl: Boolean(process.env.SUPABASE_URL),
+    hasSupabaseServiceKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
   });
 });
 
@@ -75,6 +83,7 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
     }
 
     const goal = req.body.goal || "perder_grasa";
+    const userId = req.body.user_id || null;
     const base64Image = req.file.buffer.toString("base64");
 
     const response = await ai.models.generateContent({
@@ -154,7 +163,31 @@ Reglas:
       });
     }
 
-    return res.json(normalizeFoodAnalysis(data));
+    const analysis = normalizeFoodAnalysis(data);
+
+    let imageUrl = null;
+    let savedRecord = null;
+
+    if (userId) {
+      imageUrl = await uploadImageToSupabase({
+        bucket: "food-photos",
+        userId,
+        file: req.file,
+      });
+
+      savedRecord = await saveMealAnalysis({
+        userId,
+        imageUrl,
+        goal,
+        analysis,
+      });
+    }
+
+    return res.json({
+      ...analysis,
+      image_url: imageUrl,
+      saved: Boolean(savedRecord),
+    });
   } catch (error) {
     console.error("Error analyze-food completo:", error);
 
@@ -166,7 +199,8 @@ Reglas:
 });
 
 app.post("/generate-diet", async (req, res) => {
-  const { profile, preferences } = req.body || {};
+  const { profile, preferences, user_id } = req.body || {};
+  const userId = user_id || profile?.id || profile?.user_id || null;
 
   try {
     if (!profile || Object.keys(profile).length === 0) {
@@ -175,22 +209,24 @@ app.post("/generate-diet", async (req, res) => {
       });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.json({
-        week: createFallbackDiet(profile, preferences),
-        usedFallback: true,
-        warning: "GEMINI_API_KEY no está configurada en Render",
-      });
-    }
+    let week;
+    let usedFallback = false;
+    let warning = "";
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [
+    if (!process.env.GEMINI_API_KEY) {
+      week = createFallbackDiet(profile, preferences);
+      usedFallback = true;
+      warning = "GEMINI_API_KEY no está configurada en Render";
+    } else {
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: [
             {
-              text: `
+              role: "user",
+              parts: [
+                {
+                  text: `
 Devuelve SOLO JSON válido. No uses markdown.
 
 Crea una dieta semanal para NutriSmartCoach.
@@ -233,40 +269,55 @@ Reglas:
 - Usa comida económica, común y fácil.
 - Mantén valores nutricionales realistas.
 `,
+                },
+              ],
             },
           ],
-        },
-      ],
-    });
+        });
 
-    const rawText = response.text || "";
-    const cleanText = cleanGeminiJson(rawText);
+        const rawText = response.text || "";
+        const cleanText = cleanGeminiJson(rawText);
 
-    let data;
+        const data = JSON.parse(cleanText);
 
-    try {
-      data = JSON.parse(cleanText);
-    } catch {
-      console.error("Gemini no devolvió JSON en generate-diet:", rawText);
+        if (!data.week || !Array.isArray(data.week)) {
+          throw new Error("Gemini no devolvió week válido");
+        }
 
-      return res.json({
-        week: createFallbackDiet(profile, preferences),
-        usedFallback: true,
-        warning: "Gemini no devolvió JSON válido",
-      });
+        week = data.week;
+      } catch (error) {
+        console.error("Error Gemini generate-diet:", error);
+        week = createFallbackDiet(profile, preferences);
+        usedFallback = true;
+        warning = error.message || "Gemini falló generando dieta";
+      }
     }
 
-    if (!data.week || !Array.isArray(data.week)) {
-      return res.json({
-        week: createFallbackDiet(profile, preferences),
-        usedFallback: true,
-        warning: "Gemini no devolvió week válido",
+    let savedPlan = null;
+
+    if (userId) {
+      savedPlan = await saveDietPlan({
+        userId,
+        profile,
+        preferences,
+        week,
+        usedFallback,
+        warning,
+      });
+
+      await upsertUserProfile({
+        userId,
+        profile,
+        preferences,
       });
     }
 
     return res.json({
-      week: data.week,
-      usedFallback: false,
+      week,
+      usedFallback,
+      warning,
+      saved: Boolean(savedPlan),
+      diet_plan_id: savedPlan?.id || null,
     });
   } catch (error) {
     console.error("Error generate-diet completo:", error);
@@ -275,9 +326,193 @@ Reglas:
       week: createFallbackDiet(profile, preferences),
       usedFallback: true,
       warning: error.message,
+      saved: false,
     });
   }
 });
+
+app.post("/checkins", upload.single("image"), async (req, res) => {
+  try {
+    const userId = req.body.user_id || null;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: "Falta user_id",
+      });
+    }
+
+    let imageUrl = null;
+
+    if (req.file) {
+      imageUrl = await uploadImageToSupabase({
+        bucket: "checkin-photos",
+        userId,
+        file: req.file,
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("checkins")
+      .insert({
+        user_id: userId,
+        image_url: imageUrl,
+        weight: toNumberOrNull(req.body.weight),
+        waist: toNumberOrNull(req.body.waist),
+        chest: toNumberOrNull(req.body.chest),
+        hips: toNumberOrNull(req.body.hips),
+        notes: req.body.notes || "",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error guardando checkin:", error);
+      return res.status(500).json({
+        error: "No se pudo guardar el check-in",
+        detail: error.message,
+      });
+    }
+
+    return res.json({
+      ok: true,
+      checkin: data,
+    });
+  } catch (error) {
+    console.error("Error checkins:", error);
+
+    return res.status(500).json({
+      error: "Error guardando check-in",
+      detail: error.message,
+    });
+  }
+});
+
+async function uploadImageToSupabase({ bucket, userId, file }) {
+  if (
+    !process.env.SUPABASE_URL ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    !file
+  ) {
+    return null;
+  }
+
+  const extension = getFileExtension(file.mimetype);
+  const filePath = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false,
+    });
+
+  if (error) {
+    console.error(`Error subiendo imagen a ${bucket}:`, error);
+    return null;
+  }
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+  return data?.publicUrl || null;
+}
+
+async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from("meal_analyses")
+    .insert({
+      user_id: userId,
+      image_url: imageUrl,
+      goal,
+      food: analysis.food,
+      description: analysis.description,
+      portion_estimate: analysis.portion_estimate,
+      ingredients_detected: analysis.ingredients_detected,
+      calories: analysis.calories,
+      protein: analysis.protein,
+      carbs: analysis.carbs,
+      fat: analysis.fat,
+      fiber: analysis.fiber,
+      sugar: analysis.sugar,
+      sodium: analysis.sodium,
+      confidence: analysis.confidence,
+      score: analysis.score,
+      goal_fit: analysis.goal_fit,
+      recommendation: analysis.recommendation,
+      improvements: analysis.improvements,
+      warning: analysis.warning,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error guardando análisis en Supabase:", error);
+    return null;
+  }
+
+  return data;
+}
+
+async function saveDietPlan({
+  userId,
+  profile,
+  preferences,
+  week,
+  usedFallback,
+  warning,
+}) {
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from("diet_plans")
+    .insert({
+      user_id: userId,
+      profile,
+      preferences: preferences || {},
+      week,
+      used_fallback: usedFallback,
+      warning: warning || "",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error guardando dieta en Supabase:", error);
+    return null;
+  }
+
+  return data;
+}
+
+async function upsertUserProfile({ userId, profile, preferences }) {
+  if (!userId || !profile) return null;
+
+  const payload = {
+    id: userId,
+    age: toNumberOrNull(profile.age || profile.edad),
+    weight: toNumberOrNull(profile.weight || profile.peso),
+    height: toNumberOrNull(profile.height || profile.altura),
+    goal: profile.goal || profile.objetivo || preferences?.goal || null,
+    activity_level: profile.activity_level || profile.actividad || null,
+    gender: profile.gender || profile.genero || null,
+    preferences: preferences || {},
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error guardando perfil en Supabase:", error);
+    return null;
+  }
+
+  return data;
+}
 
 function normalizeFoodAnalysis(data = {}) {
   return {
@@ -385,7 +620,6 @@ function createFallbackDiet(profile = {}, preferences = {}) {
         fat: 10,
       },
     ],
-
     ganar_musculo: [
       {
         time: "08:00",
@@ -428,7 +662,6 @@ function createFallbackDiet(profile = {}, preferences = {}) {
         fat: 24,
       },
     ],
-
     mantener_peso: [
       {
         time: "08:00",
@@ -565,6 +798,20 @@ function varyDetails(details, goal, dayIndex, mealIndex) {
 
   const list = variations[goal] || variations.mantener_peso;
   return list[(dayIndex + mealIndex) % list.length] || details;
+}
+
+function getFileExtension(mimeType = "") {
+  if (mimeType.includes("png")) return "png";
+  if (mimeType.includes("webp")) return "webp";
+  if (mimeType.includes("jpeg")) return "jpg";
+  if (mimeType.includes("jpg")) return "jpg";
+  return "jpg";
+}
+
+function toNumberOrNull(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function clamp(value, min, max) {

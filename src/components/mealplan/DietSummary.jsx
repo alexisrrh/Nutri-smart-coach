@@ -54,7 +54,7 @@ export function DietSummary({ plan, getWeekTotals }) {
 
   if (!Array.isArray(plan) || plan.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
+      <div className=" border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
         <Target className="mx-auto mb-2 text-[#10b981]" size={24} />
 
         <p className="text-xs font-black uppercase tracking-wide text-white">
@@ -69,7 +69,7 @@ export function DietSummary({ plan, getWeekTotals }) {
   }
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-[#07120d] p-3">
+    <section className=" border border-white/5 bg-[#07120d] p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
@@ -81,7 +81,7 @@ export function DietSummary({ plan, getWeekTotals }) {
           </h3>
         </div>
 
-        <div className="rounded-xl border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
+        <div className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
           <p className="text-sm font-black text-white">{mealsCount}</p>
           <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
             comidas
@@ -123,7 +123,7 @@ export function DietSummary({ plan, getWeekTotals }) {
         />
       </div>
 
-      <div className="mt-3 rounded-xl border border-white/5 bg-[#0d2218]/60 p-3">
+      <div className="mt-3 border border-white/5 bg-[#0d2218]/60 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500">
             <Activity size={12} className="text-[#10b981]" />
@@ -137,7 +137,7 @@ export function DietSummary({ plan, getWeekTotals }) {
           </div>
         </div>
 
-        <div className="flex h-2 overflow-hidden rounded-full bg-white/5">
+        <div className="flex h-2 overflow-hidden bg-white/5">
           <div
             className="bg-[#10b981]"
             style={{ width: `${percentages.protein}%` }}
@@ -158,9 +158,9 @@ export function DietSummary({ plan, getWeekTotals }) {
 
 function SummaryCard({ icon, title, value, unit, detail }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-[#0d2218]/60 p-3">
+    <div className=" border border-white/5 bg-[#0d2218]/60 p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#10b981]/10 text-[#10b981]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#10b981]/10 text-[#10b981]">
           {icon}
         </div>
 
