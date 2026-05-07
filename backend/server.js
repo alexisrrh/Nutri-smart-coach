@@ -52,6 +52,7 @@ app.get("/health", (req, res) => {
   res.json({
     ok: true,
     status: "Backend funcionando correctamente",
+    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
   });
 });
 
@@ -59,7 +60,7 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
   try {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        error: "Falta configurar GEMINI_API_KEY en el backend",
+        error: "Falta configurar GEMINI_API_KEY en Render",
       });
     }
 
@@ -86,30 +87,28 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
           parts: [
             {
               text: `
-Eres un asistente nutricional para una app fitness llamada NutriSmartCoach.
+Devuelve SOLO JSON válido. No uses markdown.
 
-Analiza la comida de la imagen y estima sus valores nutricionales.
+Analiza la comida de la imagen para NutriSmartCoach.
 
 Objetivo del usuario: ${goal}
 
-Devuelve SOLO JSON válido. No uses markdown, no uses explicaciones fuera del JSON.
-
-Estructura exacta:
+Formato exacto:
 {
   "food": "nombre claro de la comida",
   "calories": 0,
   "protein": 0,
   "carbs": 0,
   "fat": 0,
-  "recommendation": "recomendación breve según el objetivo del usuario",
+  "recommendation": "recomendación breve",
   "score": 0
 }
 
 Reglas:
-- calories debe ser un número aproximado.
-- protein, carbs y fat deben ser números en gramos.
-- score debe ser un número del 1 al 10.
-- Si no puedes identificar bien la comida, haz una estimación prudente.
+- calories debe ser número aproximado.
+- protein, carbs y fat deben ser gramos.
+- score debe ser número del 1 al 10.
+- Si no identificas bien la comida, haz una estimación prudente.
 `,
             },
             {
@@ -124,26 +123,36 @@ Reglas:
     });
 
     const rawText = response.text || "";
-    const cleanText = rawText.replace(/```json|```/g, "").trim();
+    const cleanText = cleanGeminiJson(rawText);
 
     let data;
 
     try {
       data = JSON.parse(cleanText);
-    } catch (parseError) {
-      console.error("Respuesta no válida de Gemini:", rawText);
+    } catch {
+      console.error("Gemini no devolvió JSON en analyze-food:", rawText);
 
       return res.status(500).json({
-        error: "Gemini no devolvió un JSON válido",
-        raw: rawText,
+        error: "La IA no devolvió un análisis válido",
+        detail: rawText.slice(0, 300),
       });
     }
 
-    res.json(data);
+    return res.json({
+      food: data.food || "Comida detectada",
+      calories: Number(data.calories) || 0,
+      protein: Number(data.protein) || 0,
+      carbs: Number(data.carbs) || 0,
+      fat: Number(data.fat) || 0,
+      recommendation:
+        data.recommendation ||
+        "Estimación aproximada. Para mayor precisión, pesa los alimentos.",
+      score: Number(data.score) || 5,
+    });
   } catch (error) {
-    console.error("Error analyze-food:", error);
+    console.error("Error analyze-food completo:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: "Error analizando imagen",
       detail: error.message,
     });
@@ -151,18 +160,20 @@ Reglas:
 });
 
 app.post("/generate-diet", async (req, res) => {
+  const { profile, preferences } = req.body || {};
+
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        error: "Falta configurar GEMINI_API_KEY en el backend",
+    if (!profile || Object.keys(profile).length === 0) {
+      return res.status(400).json({
+        error: "Falta completar el perfil del usuario",
       });
     }
 
-    const { profile, preferences } = req.body;
-
-    if (!profile) {
-      return res.status(400).json({
-        error: "Falta el perfil del usuario",
+    if (!process.env.GEMINI_API_KEY) {
+      return res.json({
+        week: createFallbackDiet(profile, preferences),
+        usedFallback: true,
+        warning: "GEMINI_API_KEY no está configurada en Render",
       });
     }
 
@@ -174,19 +185,17 @@ app.post("/generate-diet", async (req, res) => {
           parts: [
             {
               text: `
-Eres un nutricionista experto para una app fitness llamada NutriSmartCoach.
-
-Crea una dieta semanal personalizada de lunes a domingo.
-
-Perfil del usuario:
-${JSON.stringify(profile, null, 2)}
-
-Preferencias:
-${JSON.stringify(preferences || {}, null, 2)}
-
 Devuelve SOLO JSON válido. No uses markdown.
 
-Estructura exacta:
+Crea una dieta semanal para NutriSmartCoach.
+
+Perfil:
+${JSON.stringify(profile)}
+
+Preferencias:
+${JSON.stringify(preferences || {})}
+
+Formato exacto:
 {
   "week": [
     {
@@ -196,7 +205,7 @@ Estructura exacta:
           "time": "08:00",
           "name": "Desayuno",
           "food": "Avena con yogur y fruta",
-          "details": "60g de avena, 200g de yogur natural, 1 banana",
+          "details": "60g avena, 200g yogur natural, 1 banana",
           "calories": 450,
           "protein": 25,
           "carbs": 60,
@@ -208,11 +217,11 @@ Estructura exacta:
 }
 
 Reglas:
-- Incluye 4 comidas por día: Desayuno, Almuerzo, Merienda y Cena.
-- Usa alimentos comunes, económicos y fáciles de preparar.
-- Incluye gramajes en "details".
-- Ajusta la dieta al objetivo del usuario.
-- Mantén números realistas.
+- 7 días: Lunes a Domingo.
+- 4 comidas por día.
+- Incluye details con cantidades.
+- Usa comida económica, común y fácil.
+- Mantén valores nutricionales realistas.
 `,
             },
           ],
@@ -221,31 +230,218 @@ Reglas:
     });
 
     const rawText = response.text || "";
-    const cleanText = rawText.replace(/```json|```/g, "").trim();
+    const cleanText = cleanGeminiJson(rawText);
 
     let data;
 
     try {
       data = JSON.parse(cleanText);
-    } catch (parseError) {
-      console.error("Respuesta no válida de Gemini:", rawText);
+    } catch {
+      console.error("Gemini no devolvió JSON en generate-diet:", rawText);
 
-      return res.status(500).json({
-        error: "Gemini no devolvió un JSON válido",
-        raw: rawText,
+      return res.json({
+        week: createFallbackDiet(profile, preferences),
+        usedFallback: true,
+        warning: "Gemini no devolvió JSON válido",
       });
     }
 
-    res.json(data);
-  } catch (error) {
-    console.error("Error generate-diet:", error);
+    if (!data.week || !Array.isArray(data.week)) {
+      return res.json({
+        week: createFallbackDiet(profile, preferences),
+        usedFallback: true,
+        warning: "Gemini no devolvió week válido",
+      });
+    }
 
-    res.status(500).json({
-      error: "Error generando dieta",
-      detail: error.message,
+    return res.json({
+      week: data.week,
+      usedFallback: false,
+    });
+  } catch (error) {
+    console.error("Error generate-diet completo:", error);
+
+    return res.json({
+      week: createFallbackDiet(profile, preferences),
+      usedFallback: true,
+      warning: error.message,
     });
   }
 });
+
+function cleanGeminiJson(text = "") {
+  return String(text)
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+function createFallbackDiet(profile = {}, preferences = {}) {
+  const rawGoal =
+    profile?.goal || profile?.objetivo || preferences?.goal || "mantener_peso";
+
+  const goal = mapGoal(rawGoal);
+
+  const days = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ];
+
+  const baseMeals = {
+    perder_grasa: [
+      {
+        time: "08:00",
+        name: "Desayuno",
+        food: "Tortilla de claras con fruta",
+        details: "4 claras, 1 huevo entero, 1 plátano",
+        calories: 350,
+        protein: 32,
+        carbs: 30,
+        fat: 9,
+      },
+      {
+        time: "13:30",
+        name: "Almuerzo",
+        food: "Pollo con verduras y arroz pequeño",
+        details: "180g pollo, 70g arroz, 200g verduras",
+        calories: 520,
+        protein: 48,
+        carbs: 45,
+        fat: 14,
+      },
+      {
+        time: "18:00",
+        name: "Merienda",
+        food: "Yogur griego con frutos rojos",
+        details: "200g yogur griego, 80g frutos rojos",
+        calories: 220,
+        protein: 20,
+        carbs: 20,
+        fat: 5,
+      },
+      {
+        time: "21:00",
+        name: "Cena",
+        food: "Pescado blanco con ensalada y patata",
+        details: "180g pescado, 200g patata cocida, 1 plato ensalada",
+        calories: 430,
+        protein: 42,
+        carbs: 35,
+        fat: 10,
+      },
+    ],
+
+    ganar_musculo: [
+      {
+        time: "08:00",
+        name: "Desayuno",
+        food: "Avena con leche, plátano y huevos",
+        details: "80g avena, 250ml leche, 1 plátano, 2 huevos",
+        calories: 620,
+        protein: 35,
+        carbs: 80,
+        fat: 18,
+      },
+      {
+        time: "13:30",
+        name: "Almuerzo",
+        food: "Pollo con arroz, aguacate y verduras",
+        details: "220g pollo, 100g arroz, 80g aguacate, 200g verduras",
+        calories: 780,
+        protein: 55,
+        carbs: 85,
+        fat: 22,
+      },
+      {
+        time: "18:00",
+        name: "Merienda",
+        food: "Yogur griego con frutos secos",
+        details: "250g yogur griego, 30g frutos secos",
+        calories: 420,
+        protein: 28,
+        carbs: 30,
+        fat: 20,
+      },
+      {
+        time: "21:00",
+        name: "Cena",
+        food: "Salmón con patata y ensalada",
+        details: "200g salmón, 250g patata, 1 plato ensalada",
+        calories: 650,
+        protein: 50,
+        carbs: 45,
+        fat: 24,
+      },
+    ],
+
+    mantener_peso: [
+      {
+        time: "08:00",
+        name: "Desayuno",
+        food: "Avena con yogur y fruta",
+        details: "60g avena, 200g yogur natural, 1 pieza fruta",
+        calories: 450,
+        protein: 25,
+        carbs: 60,
+        fat: 12,
+      },
+      {
+        time: "13:30",
+        name: "Almuerzo",
+        food: "Pavo con arroz y verduras",
+        details: "180g pavo, 90g arroz, 200g verduras",
+        calories: 620,
+        protein: 45,
+        carbs: 70,
+        fat: 16,
+      },
+      {
+        time: "18:00",
+        name: "Merienda",
+        food: "Tostada integral con queso fresco",
+        details: "2 rebanadas pan integral, 80g queso fresco",
+        calories: 300,
+        protein: 18,
+        carbs: 35,
+        fat: 10,
+      },
+      {
+        time: "21:00",
+        name: "Cena",
+        food: "Huevos con ensalada y pan integral",
+        details: "3 huevos, 1 plato ensalada, 1 rebanada pan integral",
+        calories: 480,
+        protein: 38,
+        carbs: 30,
+        fat: 20,
+      },
+    ],
+  };
+
+  const selectedMeals = baseMeals[goal] || baseMeals.mantener_peso;
+
+  return days.map((day) => ({
+    day,
+    meals: selectedMeals,
+  }));
+}
+
+function mapGoal(goal) {
+  if (goal === "lose_fat") return "perder_grasa";
+  if (goal === "gain_muscle") return "ganar_musculo";
+  if (goal === "maintain") return "mantener_peso";
+
+  if (goal === "perder_grasa") return "perder_grasa";
+  if (goal === "ganar_musculo") return "ganar_musculo";
+  if (goal === "mantener_peso") return "mantener_peso";
+
+  return "mantener_peso";
+}
 
 app.listen(PORT, () => {
   console.log(`Servidor activo en puerto ${PORT}`);
