@@ -329,26 +329,35 @@ Reglas:
     });
   }
 });
-
 app.post("/checkins", upload.single("image"), async (req, res) => {
   try {
     const userId = req.body.user_id || null;
 
     if (!userId) {
-      return res.status(400).json({
-        error: "Falta user_id",
-      });
+      return res.status(400).json({ error: "Falta user_id" });
     }
 
-    let imageUrl = null;
-
-    if (req.file) {
-      imageUrl = await uploadImageToSupabase({
-        bucket: "checkin-photos",
-        userId,
-        file: req.file,
-      });
+    if (!req.file) {
+      return res.status(400).json({ error: "Falta la imagen del check-in" });
     }
+
+    const imageUrl = await uploadImageToSupabase({
+      bucket: "checkin-photos",
+      userId,
+      file: req.file,
+    });
+
+    const previousCheckins = await getPreviousCheckins(userId);
+
+    const analysis = await analyzeCheckinWithGemini({
+      file: req.file,
+      weight: req.body.weight,
+      waist: req.body.waist,
+      chest: req.body.chest,
+      hips: req.body.hips,
+      notes: req.body.notes,
+      previousCheckins,
+    });
 
     const { data, error } = await supabase
       .from("checkins")
@@ -360,13 +369,15 @@ app.post("/checkins", upload.single("image"), async (req, res) => {
         chest: toNumberOrNull(req.body.chest),
         hips: toNumberOrNull(req.body.hips),
         notes: req.body.notes || "",
+        body_fat_range: analysis.body_fat_range,
+        confidence: analysis.confidence,
+        visual_changes: analysis.visual_changes,
+        recommendation: analysis.recommendation,
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Error guardando checkin:", error);
-
       return res.status(500).json({
         error: "No se pudo guardar el check-in",
         detail: error.message,
@@ -818,6 +829,217 @@ function toNumberOrNull(value) {
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+app.get("/checkins/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from("checkins")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        error: "No se pudieron cargar los check-ins",
+        detail: error.message,
+      });
+    }
+
+    return res.json({ checkins: data || [] });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error cargando check-ins",
+      detail: error.message,
+    });
+  }
+});
+
+app.get("/diet-plans/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from("diet_plans")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        error: "No se pudieron cargar las dietas",
+        detail: error.message,
+      });
+    }
+
+    return res.json({ diet_plans: data || [] });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error cargando dietas",
+      detail: error.message,
+    });
+  }
+});
+
+app.get("/meal-analyses/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from("meal_analyses")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        error: "No se pudieron cargar los análisis de comida",
+        detail: error.message,
+      });
+    }
+
+    return res.json({ meal_analyses: data || [] });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error cargando análisis de comida",
+      detail: error.message,
+    });
+  }
+});
+
+async function getPreviousCheckins(userId) {
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(2);
+
+  if (error) {
+    console.error("Error cargando checkins previos:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+async function analyzeCheckinWithGemini({
+  file,
+  weight,
+  waist,
+  chest,
+  hips,
+  notes,
+  previousCheckins,
+}) {
+  if (!process.env.GEMINI_API_KEY) {
+    return createFallbackCheckinAnalysis({ weight, previousCheckins });
+  }
+
+  try {
+    const base64Image = file.buffer.toString("base64");
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `
+Eres un coach fitness experto para NutriSmart Coach.
+
+Analiza la foto corporal del usuario de forma prudente y útil.
+
+Datos actuales:
+Peso: ${weight || "no indicado"} kg
+Cintura: ${waist || "no indicada"} cm
+Pecho: ${chest || "no indicado"} cm
+Cadera: ${hips || "no indicada"} cm
+Notas del usuario: ${notes || "sin notas"}
+
+Check-ins anteriores:
+${JSON.stringify(previousCheckins || [])}
+
+Devuelve SOLO JSON válido. No uses markdown.
+
+Estructura exacta:
+{
+  "body_fat_range": "rango aproximado, por ejemplo 18-22%",
+  "confidence": 0,
+  "visual_changes": "cambios visuales observables de forma prudente",
+  "recommendation": "recomendación concreta para la próxima semana"
+}
+
+Reglas:
+- No des diagnóstico médico.
+- No afirmes precisión exacta.
+- confidence debe ser número del 1 al 100.
+- Si la foto no permite evaluar bien, baja confidence.
+- Sé útil: habla de hábitos, entrenamiento, proteína, descanso y constancia.
+`,
+            },
+            {
+              inlineData: {
+                mimeType: file.mimetype,
+                data: base64Image,
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const cleanText = cleanGeminiJson(response.text || "");
+    const data = JSON.parse(cleanText);
+
+    return normalizeCheckinAnalysis(data);
+  } catch (error) {
+    console.error("Error analizando checkin con Gemini:", error);
+    return createFallbackCheckinAnalysis({ weight, previousCheckins });
+  }
+}
+
+function normalizeCheckinAnalysis(data = {}) {
+  return {
+    body_fat_range: data.body_fat_range || "No estimable",
+    confidence: clamp(Number(data.confidence) || 60, 1, 100),
+    visual_changes:
+      data.visual_changes ||
+      "No se pudieron detectar cambios visuales con suficiente claridad.",
+    recommendation:
+      data.recommendation ||
+      "Mantén una rutina constante, prioriza proteína suficiente y repite el check-in semanal con la misma luz y postura.",
+  };
+}
+
+function createFallbackCheckinAnalysis({ weight, previousCheckins }) {
+  const previous = previousCheckins?.[0];
+  const previousWeight = Number(previous?.weight || 0);
+  const currentWeight = Number(weight || 0);
+
+  let visualChanges = "Primer registro guardado. A partir del próximo check-in podremos comparar evolución.";
+
+  if (previousWeight && currentWeight) {
+    const diff = Number((currentWeight - previousWeight).toFixed(1));
+
+    visualChanges =
+      diff < 0
+        ? `Has bajado aproximadamente ${Math.abs(diff)} kg desde el último registro.`
+        : diff > 0
+          ? `Has subido aproximadamente ${diff} kg desde el último registro.`
+          : "Tu peso se mantiene estable desde el último registro.";
+  }
+
+  return {
+    body_fat_range: "No estimable",
+    confidence: 50,
+    visual_changes: visualChanges,
+    recommendation:
+      "Repite la foto cada semana con la misma luz, distancia y postura para comparar mejor tu progreso.",
+  };
 }
 
 app.listen(PORT, () => {
