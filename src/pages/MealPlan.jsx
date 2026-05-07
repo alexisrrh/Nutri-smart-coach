@@ -9,6 +9,11 @@ import { ShoppingListView } from "../components/mealplan/ShoppingListView";
 import { PrintablePlan } from "../components/mealplan/PrintablePlan";
 import { WeeklyCalendarView } from "../components/mealplan/WeeklyCalendarView";
 
+const PROFILE_KEY = "nutricoach_profile";
+const API_URL =
+  import.meta.env.VITE_API_URL?.trim() ||
+  "https://nutricoach-backend-frlc.onrender.com";
+
 const DIET_TYPES = [
   { value: "balanced", label: "⚖️ Balanceada" },
   { value: "keto", label: "🥑 Cetogénica (Keto)" },
@@ -31,24 +36,52 @@ const BUDGET_TYPES = [
 
 const normalizePlan = (weekArray) => {
   if (!Array.isArray(weekArray)) return [];
-  return weekArray.map((day) => ({
-    day: day.day || "Día",
-    meals: day.meals || {}
-  }));
+
+  return weekArray.map((day) => {
+    const mealsArray = Array.isArray(day.meals)
+      ? day.meals
+      : Object.values(day.meals || {});
+
+    return {
+      day: day.day || "Día",
+      meals: mealsArray.map((meal, index) => ({
+        type: meal.type || meal.name || `meal-${index}`,
+        time: meal.time || "08:00",
+        name: meal.name || "Comida",
+        title: meal.food || meal.title || meal.name || "Comida",
+        food: meal.food || meal.title || meal.name || "Comida",
+        ingredients:
+          meal.ingredients ||
+          meal.details?.split(",").map((item) => item.trim()) ||
+          [],
+        details: meal.details || "",
+        calories: Number(meal.calories || meal.kcal || 0),
+        protein: Number(meal.protein || 0),
+        carbs: Number(meal.carbs || 0),
+        fat: Number(meal.fat || 0),
+      })),
+    };
+  });
 };
 
 const getWeekTotals = (plan) => {
   const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
   if (!plan || plan.length === 0) return totals;
+
   plan.forEach((day) => {
-    if (!day.meals) return;
-    Object.values(day.meals).forEach((meal) => {
+    const meals = Array.isArray(day.meals)
+      ? day.meals
+      : Object.values(day.meals || {});
+
+    meals.forEach((meal) => {
       totals.calories += Number(meal.calories || meal.kcal || 0);
       totals.protein += Number(meal.protein || 0);
       totals.carbs += Number(meal.carbs || 0);
       totals.fat += Number(meal.fat || 0);
     });
   });
+
   return totals;
 };
 
@@ -72,36 +105,49 @@ export function MealPlan() {
   }, []);
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
+
+    const response = await fetch(`${API_URL}/generate-diet`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        profile,
+        preferences: formData,
+      }),
+    });
+
+    const text = await response.text();
+
+    let data;
     try {
-      // 🌟 CORRECCIÓN: Apuntamos al puerto real de tu backend (normalmente 5000 o 3000 según tu config)
-      // Si usas un proxy en Vite cambia la URL a la que tenías antes
-      const response = await fetch("http://localhost:5173/api/generate-meal-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-
-      // Validamos si el servidor dio error antes de parsear el JSON
-      if (!response.ok) {
-        throw new Error(`Error en el servidor: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      const cleanPlan = normalizePlan(data.week || []);
-      setPlan(cleanPlan);
-      setProgress({});
-      localStorage.setItem("smart_diet_plan", JSON.stringify(cleanPlan));
-    } catch (err) {
-      console.error("Fallo de conexión con el Smart Coach:", err);
-      alert("No se ha podido conectar con el servidor de IA. Asegúrate de tener el backend encendido.");
-    } finally {
-      setLoading(false);
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("El backend no devolvió JSON válido.");
     }
-  };
 
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+          data?.detail ||
+          `Error en el servidor: ${response.status}`
+      );
+    }
+
+    const cleanPlan = normalizePlan(data.week || []);
+    setPlan(cleanPlan);
+    setProgress({});
+    localStorage.setItem("smart_diet_plan", JSON.stringify(cleanPlan));
+  } catch (err) {
+    console.error("Fallo de conexión con el Smart Coach:", err);
+    alert(err.message || "No se ha podido conectar con el servidor de IA.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const toggleMeal = (mealId) => {
     setProgress((prev) => {
