@@ -32,9 +32,7 @@ app.use(express.json({ limit: "10mb" }));
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 4 * 1024 * 1024,
-  },
+  limits: { fileSize: 4 * 1024 * 1024 },
 });
 
 const ai = new GoogleGenAI({
@@ -113,7 +111,7 @@ Estructura exacta:
   "goal_fit": "explica si esta comida encaja o no con el objetivo del usuario",
   "recommendation": "recomendación clara y accionable",
   "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
-  "warning": "advertencia breve si la comida parece muy calórica, frita, muy salada o incompleta; si no aplica, usa string vacío"
+  "warning": "advertencia breve si aplica; si no aplica, usa string vacío"
 }
 
 Reglas:
@@ -126,11 +124,8 @@ Reglas:
 - No inventes ingredientes invisibles.
 - Si hay dudas, dilo en recommendation o warning.
 - La respuesta debe ayudar al usuario a tomar una decisión real.
-- Ajusta recommendation, improvements y goal_fit según el objetivo:
-  - perder_grasa: prioriza proteína, saciedad, control de calorías y menos fritos/salsas.
-  - ganar_musculo: prioriza proteína suficiente, carbohidratos útiles y calorías adecuadas.
-  - mantener_peso: prioriza equilibrio y porciones razonables.
-`
+- Ajusta recommendation, improvements y goal_fit según el objetivo.
+`,
             },
             {
               inlineData: {
@@ -159,17 +154,7 @@ Reglas:
       });
     }
 
-    return res.json({
-      food: data.food || "Comida detectada",
-      calories: Number(data.calories) || 0,
-      protein: Number(data.protein) || 0,
-      carbs: Number(data.carbs) || 0,
-      fat: Number(data.fat) || 0,
-      recommendation:
-        data.recommendation ||
-        "Estimación aproximada. Para mayor precisión, pesa los alimentos.",
-      score: Number(data.score) || 5,
-    });
+    return res.json(normalizeFoodAnalysis(data));
   } catch (error) {
     console.error("Error analyze-food completo:", error);
 
@@ -238,9 +223,13 @@ Formato exacto:
 }
 
 Reglas:
-- 7 días: Lunes a Domingo.
-- 4 comidas por día.
-- Incluye details con cantidades.
+- Genera exactamente 7 días: Lunes a Domingo.
+- Cada día debe tener comidas diferentes.
+- No repitas el mismo desayuno más de 2 veces.
+- No repitas el mismo almuerzo más de 2 veces.
+- No repitas la misma cena más de 2 veces.
+- Usa 4 comidas por día.
+- Incluye details con cantidades exactas.
 - Usa comida económica, común y fácil.
 - Mantén valores nutricionales realistas.
 `,
@@ -290,11 +279,51 @@ Reglas:
   }
 });
 
+function normalizeFoodAnalysis(data = {}) {
+  return {
+    food: data.food || "Comida detectada",
+    description: data.description || "Análisis visual generado por IA.",
+    portion_estimate:
+      data.portion_estimate || "Porción aproximada no especificada.",
+    ingredients_detected: Array.isArray(data.ingredients_detected)
+      ? data.ingredients_detected
+      : [],
+    calories: Number(data.calories) || 0,
+    protein: Number(data.protein) || 0,
+    carbs: Number(data.carbs) || 0,
+    fat: Number(data.fat) || 0,
+    fiber: Number(data.fiber) || 0,
+    sugar: Number(data.sugar) || 0,
+    sodium: Number(data.sodium) || 0,
+    confidence: clamp(Number(data.confidence) || 70, 1, 100),
+    score: clamp(Number(data.score) || 5, 1, 10),
+    goal_fit:
+      data.goal_fit ||
+      "La comida puede encajar según el contexto, pero la estimación depende de la porción real.",
+    recommendation:
+      data.recommendation ||
+      "Estimación aproximada. Para mayor precisión, pesa los alimentos.",
+    improvements: Array.isArray(data.improvements)
+      ? data.improvements.slice(0, 4)
+      : [],
+    warning: data.warning || "",
+  };
+}
+
 function cleanGeminiJson(text = "") {
-  return String(text)
+  const cleaned = String(text)
     .replace(/```json/g, "")
     .replace(/```/g, "")
     .trim();
+
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+
+  if (firstBrace !== -1 && lastBrace !== -1) {
+    return cleaned.slice(firstBrace, lastBrace + 1);
+  }
+
+  return cleaned;
 }
 
 function createFallbackDiet(profile = {}, preferences = {}) {
@@ -444,14 +473,16 @@ function createFallbackDiet(profile = {}, preferences = {}) {
     ],
   };
 
-return days.map((day, dayIndex) => ({
-  day,
-  meals: selectedMeals.map((meal, mealIndex) => ({
-    ...meal,
-    food: varyMeal(meal.food, goal, dayIndex, mealIndex),
-    details: varyDetails(meal.details, goal, dayIndex, mealIndex),
-  })),
-}));
+  const selectedMeals = baseMeals[goal] || baseMeals.mantener_peso;
+
+  return days.map((day, dayIndex) => ({
+    day,
+    meals: selectedMeals.map((meal, mealIndex) => ({
+      ...meal,
+      food: varyMeal(meal.food, goal, dayIndex, mealIndex),
+      details: varyDetails(meal.details, goal, dayIndex, mealIndex),
+    })),
+  }));
 }
 
 function mapGoal(goal) {
@@ -465,10 +496,6 @@ function mapGoal(goal) {
 
   return "mantener_peso";
 }
-
-app.listen(PORT, () => {
-  console.log(`Servidor activo en puerto ${PORT}`);
-});
 
 function varyMeal(food, goal, dayIndex, mealIndex) {
   const variations = {
@@ -539,3 +566,11 @@ function varyDetails(details, goal, dayIndex, mealIndex) {
   const list = variations[goal] || variations.mantener_peso;
   return list[(dayIndex + mealIndex) % list.length] || details;
 }
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+app.listen(PORT, () => {
+  console.log(`Servidor activo en puerto ${PORT}`);
+});
