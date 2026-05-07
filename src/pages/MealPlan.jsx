@@ -352,21 +352,7 @@ export function MealPlan() {
               />
             </div>
           </div>
-
-          {loading && (
-            <div className="mt-5 rounded-xl border border-[#10b981]/20 bg-[#0d2218]/70 p-5 text-center">
-              <Loader2
-                className="mx-auto mb-3 animate-spin text-[#10b981]"
-                size={26}
-              />
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-[#10b981]">
-                Generando dieta
-              </p>
-              <p className="mt-2 text-xs normal-case text-slate-400">
-                Estamos creando comidas, porciones y macros.
-              </p>
-            </div>
-          )}
+{loading && <GeneratingDietLoader loading={loading} />}
 
           {!loading && !hasPlan && (
             <EmptyPlan />
@@ -655,4 +641,126 @@ function buildShareText(plan) {
       return `${day.day}\n${meals}`;
     })
     .join("\n\n");
+}
+function GeneratingDietLoader({ loading }) {
+  const [percent, setPercent] = React.useState(7);
+
+  const steps = [
+    "Perfil",
+    "Macros",
+    "Comidas",
+    "Porciones",
+    "Compra",
+  ];
+
+  React.useEffect(() => {
+    if (!loading) return;
+
+    setPercent(7);
+
+    const interval = setInterval(() => {
+      setPercent((prev) => {
+        if (prev >= 96) return prev;
+        if (prev < 45) return prev + 5;
+        if (prev < 80) return prev + 3;
+        return prev + 1;
+      });
+    }, 550);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const activeStep = Math.min(
+    steps.length - 1,
+    Math.floor((percent / 100) * steps.length)
+  );
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
+      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0d2218]/70 p-4">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#10b981]/20 blur-3xl" />
+
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
+              Smart Diet IA
+            </p>
+
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+              Creando tu dieta
+            </h3>
+
+            <p className="mt-2 text-[11px] normal-case leading-4 text-slate-400">
+              {percent < 90
+                ? "Calculando comidas, macros y lista semanal."
+                : "Últimos ajustes. Ya casi está lista."}
+            </p>
+          </div>
+
+          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+            <div className="absolute inset-0 rounded-full border border-[#10b981]/20" />
+            <div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-t-[#10b981]" />
+            <span className="relative text-lg font-black text-[#10b981]">
+              {percent}%
+            </span>
+          </div>
+        </div>
+
+        <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/5">
+          <div
+            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            style={{ width: `${percent}%` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        </div>
+
+        <div className="mt-4 grid grid-cols-5 gap-1.5">
+          {steps.map((step, index) => {
+            const completed = index < activeStep;
+            const active = index === activeStep;
+
+            return (
+              <div
+                key={step}
+                className={`rounded-lg border px-1 py-2 text-center transition-all ${
+                  completed
+                    ? "border-[#10b981]/25 bg-[#10b981]/10"
+                    : active
+                      ? "border-[#10b981]/40 bg-[#10b981]/5"
+                      : "border-white/5 bg-black/10"
+                }`}
+              >
+                <div
+                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${
+                    completed
+                      ? "bg-[#10b981] text-[#06110c]"
+                      : active
+                        ? "border border-[#10b981] text-[#10b981] animate-pulse"
+                        : "border border-white/10 text-slate-600"
+                  }`}
+                >
+                  {completed ? "✓" : index + 1}
+                </div>
+
+                <p
+                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
+                    completed || active ? "text-white" : "text-slate-600"
+                  }`}
+                >
+                  {step}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] font-bold normal-case text-slate-500">
+          <span>No cierres esta pantalla</span>
+          <span className="text-[#10b981]">
+            {percent < 96 ? "Procesando..." : "Finalizando..."}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
