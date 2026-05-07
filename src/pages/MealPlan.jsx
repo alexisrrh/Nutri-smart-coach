@@ -117,13 +117,17 @@ export function MealPlan() {
           "Completa tu perfil antes de generar una dieta personalizada."
         );
       }
-
-      const response = await fetch(`${API_URL}/generate-diet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: savedProfile, preferences: formData }),
-      });
-
+const response = await fetch(`${API_URL}/generate-diet`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    profile: savedProfile,
+    preferences: formData,
+    user_id: savedProfile?.id || savedProfile?.user_id || "",
+  }),
+});
       const text = await response.text();
 
       let data;

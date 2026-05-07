@@ -277,7 +277,6 @@ Reglas:
 
         const rawText = response.text || "";
         const cleanText = cleanGeminiJson(rawText);
-
         const data = JSON.parse(cleanText);
 
         if (!data.week || !Array.isArray(data.week)) {
@@ -367,6 +366,7 @@ app.post("/checkins", upload.single("image"), async (req, res) => {
 
     if (error) {
       console.error("Error guardando checkin:", error);
+
       return res.status(500).json({
         error: "No se pudo guardar el check-in",
         detail: error.message,
@@ -620,6 +620,7 @@ function createFallbackDiet(profile = {}, preferences = {}) {
         fat: 10,
       },
     ],
+
     ganar_musculo: [
       {
         time: "08:00",
@@ -662,6 +663,7 @@ function createFallbackDiet(profile = {}, preferences = {}) {
         fat: 24,
       },
     ],
+
     mantener_peso: [
       {
         time: "08:00",
