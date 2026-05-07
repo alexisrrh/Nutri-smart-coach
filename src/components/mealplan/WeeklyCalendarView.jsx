@@ -25,7 +25,7 @@ export function WeeklyCalendarView({ plan, activeDay, setActiveDay }) {
               key={`${dayData.day}-${index}`}
               type="button"
               onClick={() => setActiveDay(index)}
-              className={`shrink-0 rounded-xl border px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all ${
+              className={`shrink-0  border px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all ${
                 activeDay === index
                   ? "border-[#10b981] bg-[#10b981] text-slate-950"
                   : "border-white/5 bg-[#0d2218] text-slate-400"
@@ -49,7 +49,7 @@ export function WeeklyCalendarView({ plan, activeDay, setActiveDay }) {
           return (
             <div
               key={`${dayData.day}-${dayIdx}`}
-              className={`rounded-xl border p-3 transition-all ${
+              className={` border p-3 transition-all ${
                 activeDay === dayIdx
                   ? "border-[#10b981]/40 bg-[#0d2218]/80"
                   : "border-white/5 bg-[#07120d]"
@@ -58,7 +58,7 @@ export function WeeklyCalendarView({ plan, activeDay, setActiveDay }) {
               <button
                 type="button"
                 onClick={() => setActiveDay(dayIdx)}
-                className="mb-3 w-full rounded-lg bg-[#0d2218] px-2 py-2 text-center transition hover:bg-[#123022]"
+                className="mb-3 w-full  bg-[#0d2218] px-2 py-2 text-center transition hover:bg-[#123022]"
               >
                 <p className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
                   {shortDay(dayData.day)}
@@ -101,7 +101,7 @@ function MobileDayCard({ day, onSelectMeal }) {
   const totals = getDayTotals(day.meals);
 
   return (
-    <div className="mt-4 rounded-xl border border-white/5 bg-[#07120d] p-4">
+    <div className="mt-4 border border-white/5 bg-[#07120d] p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
@@ -113,7 +113,7 @@ function MobileDayCard({ day, onSelectMeal }) {
           </h3>
         </div>
 
-        <div className="rounded-lg border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
+        <div className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
           <p className="text-sm font-black text-white">
             {Math.round(totals.calories)}
           </p>
@@ -141,7 +141,7 @@ function MealMiniCard({ meal, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group w-full rounded-lg border border-white/5 bg-[#0d2218]/40 p-2.5 text-left transition hover:border-[#10b981]/30 hover:bg-[#0d2218]"
+      className="group w-full border border-white/5 bg-[#0d2218]/40 p-2.5 text-left transition hover:border-[#10b981]/30 hover:bg-[#0d2218]"
     >
       <span className="block text-[8px] font-black uppercase tracking-widest text-slate-500">
         {meal.time} · {meal.name}
@@ -163,7 +163,7 @@ function MealWideButton({ meal, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-xl border border-white/5 bg-[#0d2218]/50 p-3 text-left transition hover:border-[#10b981]/30"
+      className=" border border-white/5 bg-[#0d2218]/50 p-3 text-left transition hover:border-[#10b981]/30"
     >
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
@@ -196,7 +196,7 @@ function MealModal({ meal, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 p-3 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="max-h-[86vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/5 bg-[#06110c] shadow-2xl">
+      <div className="max-h-[86vh] w-full max-w-lg overflow-y-auto border border-white/5 bg-[#06110c] shadow-2xl">
         <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-white/5 bg-[#06110c]/95 p-5 backdrop-blur">
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
@@ -211,7 +211,7 @@ function MealModal({ meal, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-white/5 p-2 text-slate-400 transition hover:text-white"
+            className=" bg-white/5 p-2 text-slate-400 transition hover:text-white"
           >
             <X size={17} />
           </button>
@@ -235,14 +235,14 @@ function MealModal({ meal, onClose }) {
                 {ingredients.map((ingredient, index) => (
                   <div
                     key={`${ingredient}-${index}`}
-                    className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-3 text-xs font-bold normal-case text-slate-300"
+                    className=" border border-white/5 bg-[#0d2218]/60 p-3 text-xs font-bold normal-case text-slate-300"
                   >
                     {ingredient}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-3 text-xs normal-case text-slate-400">
+              <p className=" border border-white/5 bg-[#0d2218]/60 p-3 text-xs normal-case text-slate-400">
                 Sin ingredientes detallados.
               </p>
             )}
@@ -255,7 +255,7 @@ function MealModal({ meal, onClose }) {
 
 function MacroBox({ icon, label, value }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-2 text-center">
+    <div className=" border border-white/5 bg-[#0d2218]/60 p-2 text-center">
       <div className="mx-auto mb-1 flex justify-center text-[#10b981]">
         {icon}
       </div>

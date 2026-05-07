@@ -40,11 +40,11 @@ export function MealPlanForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="overflow-hidden rounded-2xl border border-white/5 bg-[#091710] shadow-2xl shadow-black/20"
+      className="overflow-hidden border border-white/5 bg-[#091710] shadow-2xl shadow-black/20"
     >
       <div className="border-b border-white/5 bg-[#07120d] p-3 sm:p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#10b981]/10 text-[#10b981]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#10b981]/10 text-[#10b981]">
             <Sparkles size={18} />
           </div>
 
@@ -150,7 +150,7 @@ export function MealPlanForm({
         <button
           type="submit"
           disabled={loading}
-          className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#10b981] px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#06110c] transition hover:bg-[#0da371] disabled:cursor-not-allowed disabled:opacity-50"
+          className="relative flex w-full items-center justify-center gap-2 overflow-hidden bg-[#10b981] px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#06110c] transition hover:bg-[#0da371] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -185,7 +185,7 @@ function SelectField({ icon, label, name, value, onChange, children }) {
         name={name}
         value={value}
         onChange={onChange}
-        className="h-11 w-full rounded-xl border border-white/10 bg-[#0d2218] px-2 text-[10px] font-black uppercase text-white outline-none transition focus:border-[#10b981]"
+        className="h-11 w-full border border-white/10 bg-[#0d2218] px-2 text-[10px] font-black uppercase text-white outline-none transition focus:border-[#10b981]"
       >
         {children}
       </select>
@@ -207,7 +207,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="h-11 w-full rounded-xl border border-white/10 bg-[#0d2218] px-3 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
+        className="h-11 w-full border border-white/10 bg-[#0d2218] px-3 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
       />
     </label>
   );
@@ -215,7 +215,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
 
 function SummaryPill({ label, value }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/5 bg-[#0d2218]/70 px-2 py-2">
+    <div className="min-w-0 border border-white/5 bg-[#0d2218]/70 px-2 py-2">
       <p className="text-[7px] font-black uppercase tracking-[0.15em] text-slate-500">
         {label}
       </p>

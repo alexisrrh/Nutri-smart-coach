@@ -198,7 +198,7 @@ export function MealPlan() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Mi dieta semanal - NutriSmart Coach",
+          title: "Mi dieta semanal - Nutri Smart Coach",
           text,
         });
       } else {
@@ -219,7 +219,7 @@ export function MealPlan() {
         <header className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-[9px] font-black uppercase tracking-[0.32em] text-[#10b981]">
-              NUTRISMART COACH
+              NUTRI SMART COACH
             </div>
 
             <h1 className="mt-1 text-2xl font-black uppercase italic leading-none tracking-tight text-white sm:text-4xl">
@@ -235,7 +235,7 @@ export function MealPlan() {
             type="button"
             onClick={handleResetPlan}
             disabled={!hasPlan}
-            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#10b981]/20 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex shrink-0 items-center gap-1.5  border border-[#10b981]/20 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {hasPlan ? <RefreshCcw size={13} /> : <Plus size={13} />}
             Nueva
@@ -243,7 +243,7 @@ export function MealPlan() {
         </header>
 
         {!profileComplete && (
-          <div className="flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-[#1a1605] p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3  border border-amber-500/20 bg-[#1a1605] p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <AlertTriangle
                 className="mt-0.5 shrink-0 text-amber-500"
@@ -264,7 +264,7 @@ export function MealPlan() {
             <button
               type="button"
               onClick={() => navigate("/perfil")}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-black transition hover:bg-amber-400"
+              className=" bg-amber-500 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-black transition hover:bg-amber-400"
             >
               Completar perfil
             </button>
@@ -286,7 +286,7 @@ export function MealPlan() {
           BUDGET_TYPES={BUDGET_TYPES}
         />
 
-        <section className="overflow-hidden rounded-2xl border border-white/5 bg-[#091710] shadow-2xl shadow-black/20">
+        <section className="overflow-hidden border border-white/5 bg-[#091710] shadow-2xl shadow-black/20">
           <div className="flex flex-col gap-3 border-b border-white/5 bg-[#07120d] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -365,7 +365,7 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-2 text-[9px] font-black uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex items-center justify-center gap-1.5 border px-2.5 py-2 text-[9px] font-black uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-40 ${
         active
           ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
           : "border-white/5 bg-[#0d2218] text-slate-300 hover:bg-slate-900"
@@ -382,7 +382,7 @@ function StatusBox({ type, message }) {
 
   return (
     <div
-      className={`rounded-xl border p-3 text-xs font-bold normal-case leading-5 ${
+      className={` border p-3 text-xs font-bold normal-case leading-5 ${
         isError
           ? "border-red-500/20 bg-red-500/10 text-red-200"
           : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-200"
@@ -402,7 +402,7 @@ function StatusBox({ type, message }) {
 
 function EmptyPlan() {
   return (
-    <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-6 text-center">
+    <div className=" border border-dashed border-white/10 bg-[#07120d] p-6 text-center">
       <Sparkles className="mx-auto mb-3 text-[#10b981]" size={28} />
 
       <p className="text-sm font-black uppercase tracking-wide text-white">
@@ -495,9 +495,9 @@ function GeneratingDietLoader({ loading }) {
   );
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
-      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0d2218]/70 p-4">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#10b981]/20 blur-3xl" />
+    <div className="overflow-hidden border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
+      <div className="relative overflow-hidden border border-white/5 bg-[#0d2218]/70 p-4">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 bg-[#10b981]/20 blur-3xl" />
 
         <div className="relative flex items-center justify-between gap-4">
           <div className="min-w-0">
@@ -517,8 +517,8 @@ function GeneratingDietLoader({ loading }) {
           </div>
 
           <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
-            <div className="absolute inset-0 rounded-full border border-[#10b981]/20" />
-            <div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-t-[#10b981]" />
+            <div className="absolute inset-0  border border-[#10b981]/20" />
+            <div className="absolute inset-1 animate-spin border-2 border-transparent border-t-[#10b981]" />
 
             <span className="relative text-lg font-black text-[#10b981]">
               {percent}%
@@ -526,9 +526,9 @@ function GeneratingDietLoader({ loading }) {
           </div>
         </div>
 
-        <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/5">
+        <div className="relative mt-4 h-2 overflow-hidden bg-white/5">
           <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            className="h-full  bg-[#10b981] transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -541,7 +541,7 @@ function GeneratingDietLoader({ loading }) {
             return (
               <div
                 key={step}
-                className={`rounded-lg border px-1 py-2 text-center transition-all ${
+                className={` border px-1 py-2 text-center transition-all ${
                   completed
                     ? "border-[#10b981]/25 bg-[#10b981]/10"
                     : active
@@ -550,7 +550,7 @@ function GeneratingDietLoader({ loading }) {
                 }`}
               >
                 <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${
+                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center text-[9px] font-black ${
                     completed
                       ? "bg-[#10b981] text-[#06110c]"
                       : active
@@ -679,7 +679,7 @@ function safeParse(value, fallback) {
 }
 
 function buildShareText(plan) {
-  if (!plan?.length) return "NutriSmart Coach - Dieta semanal.";
+  if (!plan?.length) return "Nutri Smart Coach - Dieta semanal.";
 
   return plan
     .map((day) => {
