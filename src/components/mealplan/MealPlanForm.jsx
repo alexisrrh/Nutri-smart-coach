@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import {
-  AlertCircle,
   BadgeEuro,
   ChefHat,
   Loader2,
@@ -43,41 +42,36 @@ export function MealPlanForm({
       onSubmit={handleSubmit}
       className="overflow-hidden rounded-2xl border border-white/5 bg-[#091710] shadow-2xl shadow-black/20"
     >
-      <div className="border-b border-white/5 bg-[#07120d] p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#10b981]/10 text-[#10b981]">
-            <Sparkles size={20} />
+      <div className="border-b border-white/5 bg-[#07120d] p-3 sm:p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#10b981]/10 text-[#10b981]">
+            <Sparkles size={18} />
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#10b981]">
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[#10b981]">
               Smart Diet Builder
             </p>
 
-            <h2 className="mt-1 text-xl font-black uppercase italic tracking-tight text-white sm:text-2xl">
+            <h2 className="mt-0.5 text-lg font-black uppercase italic tracking-tight text-white">
               Personaliza tu dieta
             </h2>
-
-            <p className="mt-1 text-xs normal-case leading-5 text-slate-400">
-              Ajusta objetivo, estilo, presupuesto y alimentos a evitar. La IA
-              generará una semana completa con porciones y macros.
-            </p>
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
           <SummaryPill label="Objetivo" value={cleanLabel(selectedSummary.goal)} />
           <SummaryPill label="Dieta" value={cleanLabel(selectedSummary.diet)} />
           <SummaryPill label="Comidas" value={`${selectedSummary.meals}/día`} />
-          <SummaryPill label="Budget" value={cleanLabel(selectedSummary.budget)} />
+          <SummaryPill label="Plan" value={cleanLabel(selectedSummary.budget)} />
         </div>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
-        <div className="grid gap-3 md:grid-cols-2">
+      <div className="space-y-3 p-3 sm:p-4">
+        <div className="grid grid-cols-2 gap-2">
           <SelectField
-            icon={<Salad size={15} />}
-            label="Tipo de dieta"
+            icon={<Salad size={14} />}
+            label="Dieta"
             name="dietType"
             value={formData.dietType}
             onChange={handleChange}
@@ -90,8 +84,8 @@ export function MealPlanForm({
           </SelectField>
 
           <SelectField
-            icon={<Target size={15} />}
-            label="Objetivo nutricional"
+            icon={<Target size={14} />}
+            label="Objetivo"
             name="goal"
             value={formData.goal}
             onChange={handleChange}
@@ -104,22 +98,22 @@ export function MealPlanForm({
           </SelectField>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2">
           <SelectField
-            icon={<Utensils size={15} />}
-            label="Comidas al día"
+            icon={<Utensils size={14} />}
+            label="Comidas"
             name="mealsPerDay"
             value={formData.mealsPerDay}
             onChange={handleChange}
           >
-            <option value="3">3 comidas</option>
-            <option value="4">4 comidas</option>
-            <option value="5">5 comidas</option>
+            <option value="3">3/día</option>
+            <option value="4">4/día</option>
+            <option value="5">5/día</option>
           </SelectField>
 
           <SelectField
-            icon={<BadgeEuro size={15} />}
-            label="Presupuesto"
+            icon={<BadgeEuro size={14} />}
+            label="Budget"
             name="budget"
             value={formData.budget}
             onChange={handleChange}
@@ -132,45 +126,36 @@ export function MealPlanForm({
           </SelectField>
 
           <SelectField
-            icon={<ChefHat size={15} />}
-            label="Nivel de cocina"
+            icon={<ChefHat size={14} />}
+            label="Cocina"
             name="cookingLevel"
             value={formData.cookingLevel}
             onChange={handleChange}
           >
-            <option value="easy">Fácil y rápido</option>
-            <option value="medium">Intermedio</option>
-            <option value="hard">Elaborado</option>
+            <option value="easy">Fácil</option>
+            <option value="medium">Media</option>
+            <option value="hard">Pro</option>
           </SelectField>
         </div>
 
         <TextField
-          icon={<XCircle size={15} />}
-          label="Alimentos a evitar"
+          icon={<XCircle size={14} />}
+          label="Evitar"
           name="exclusions"
           value={formData.exclusions}
           onChange={handleChange}
-          placeholder="Ej: lactosa, gluten, atún, brócoli..."
+          placeholder="Ej: lactosa, gluten, atún..."
         />
-
-        <div className="flex items-start gap-2 rounded-xl border border-[#10b981]/10 bg-[#10b981]/5 p-3">
-          <AlertCircle className="mt-0.5 shrink-0 text-[#10b981]" size={15} />
-
-          <p className="text-xs normal-case leading-5 text-slate-400">
-            Consejo: cuanto más claro seas con alergias o alimentos que no te
-            gustan, mejor será la dieta generada.
-          </p>
-        </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#10b981] px-5 py-3.5 text-xs font-black uppercase tracking-[0.18em] text-slate-950 transition hover:bg-[#0da371] disabled:cursor-not-allowed disabled:opacity-50"
+          className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#10b981] px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#06110c] transition hover:bg-[#0da371] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
               <Loader2 className="animate-spin" size={15} />
-              Calculando plan...
+              Calculando...
             </>
           ) : (
             <>
@@ -180,7 +165,7 @@ export function MealPlanForm({
           )}
 
           {!loading && (
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition duration-700 hover:translate-x-full" />
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition duration-700 hover:translate-x-full" />
           )}
         </button>
       </div>
@@ -190,17 +175,17 @@ export function MealPlanForm({
 
 function SelectField({ icon, label, name, value, onChange, children }) {
   return (
-    <label className="block">
-      <div className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+    <label className="block min-w-0">
+      <div className="mb-1 flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
-        {label}
+        <span className="truncate">{label}</span>
       </div>
 
       <select
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border border-white/10 bg-[#0d2218] px-3 py-3 text-xs font-bold uppercase text-white outline-none transition focus:border-[#10b981]"
+        className="h-11 w-full rounded-xl border border-white/10 bg-[#0d2218] px-2 text-[10px] font-black uppercase text-white outline-none transition focus:border-[#10b981]"
       >
         {children}
       </select>
@@ -211,7 +196,7 @@ function SelectField({ icon, label, name, value, onChange, children }) {
 function TextField({ icon, label, name, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <div className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+      <div className="mb-1 flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         {label}
       </div>
@@ -222,7 +207,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-white/10 bg-[#0d2218] px-3 py-3 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
+        className="h-11 w-full rounded-xl border border-white/10 bg-[#0d2218] px-3 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
       />
     </label>
   );
@@ -230,12 +215,12 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
 
 function SummaryPill({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-[#0d2218]/70 p-3">
-      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+    <div className="min-w-0 rounded-xl border border-white/5 bg-[#0d2218]/70 px-2 py-2">
+      <p className="text-[7px] font-black uppercase tracking-[0.15em] text-slate-500">
         {label}
       </p>
 
-      <p className="mt-1 truncate text-[11px] font-black uppercase text-white">
+      <p className="mt-0.5 truncate text-[9px] font-black uppercase text-white">
         {value}
       </p>
     </div>

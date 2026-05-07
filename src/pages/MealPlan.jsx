@@ -6,7 +6,6 @@ import {
   Calendar,
   CheckCircle2,
   Download,
-  Loader2,
   Plus,
   RefreshCcw,
   Scan,
@@ -21,7 +20,6 @@ import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
 import { ShoppingListView } from "../components/mealplan/ShoppingListView";
 import { PrintablePlan } from "../components/mealplan/PrintablePlan";
-import { WeeklyCalendarView } from "../components/mealplan/WeeklyCalendarView";
 
 const PROFILE_KEY = "nutricoach_profile";
 const PLAN_KEY = "smart_diet_plan";
@@ -67,35 +65,29 @@ export function MealPlan() {
   const [plan, setPlan] = useState([]);
   const [activeDay, setActiveDay] = useState(0);
   const [progress, setProgress] = useState({});
-  const [viewMode, setViewMode] = useState("list");
   const [showShopping, setShowShopping] = useState(false);
   const [profile, setProfile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    try {
-      const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
-      const savedPlan = safeParse(localStorage.getItem(PLAN_KEY), []);
-      const savedProgress = safeParse(localStorage.getItem(PROGRESS_KEY), {});
+    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+    const savedPlan = safeParse(localStorage.getItem(PLAN_KEY), []);
+    const savedProgress = safeParse(localStorage.getItem(PROGRESS_KEY), {});
 
-      setProfile(savedProfile);
-      setPlan(normalizePlan(savedPlan));
-      setProgress(savedProgress);
+    setProfile(savedProfile);
+    setPlan(normalizePlan(savedPlan));
+    setProgress(savedProgress);
 
-      if (savedProfile?.goal || savedProfile?.objetivo) {
-        setFormData((prev) => ({
-          ...prev,
-          goal: mapProfileGoalToForm(savedProfile.goal || savedProfile.objetivo),
-        }));
-      }
-    } catch (error) {
-      console.error("Error cargando datos locales:", error);
+    if (savedProfile?.goal || savedProfile?.objetivo) {
+      setFormData((prev) => ({
+        ...prev,
+        goal: mapProfileGoalToForm(savedProfile.goal || savedProfile.objetivo),
+      }));
     }
   }, []);
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
-
   const hasPlan = plan.length > 0;
 
   const completedMeals = useMemo(() => {
@@ -129,15 +121,13 @@ export function MealPlan() {
       const response = await fetch(`${API_URL}/generate-diet`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile: savedProfile,
-          preferences: formData,
-        }),
+        body: JSON.stringify({ profile: savedProfile, preferences: formData }),
       });
 
       const text = await response.text();
 
       let data;
+
       try {
         data = JSON.parse(text);
       } catch {
@@ -161,14 +151,13 @@ export function MealPlan() {
       setPlan(cleanPlan);
       setProgress({});
       setActiveDay(0);
-      setViewMode("list");
 
       localStorage.setItem(PLAN_KEY, JSON.stringify(cleanPlan));
       localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
 
       if (data.usedFallback) {
         setNotice(
-          "Se generó una dieta base porque la IA tardó demasiado o falló temporalmente."
+          "Se generó una dieta base porque la IA falló temporalmente."
         );
       } else {
         setNotice("Dieta generada correctamente.");
@@ -187,7 +176,6 @@ export function MealPlan() {
     setPlan([]);
     setProgress({});
     setActiveDay(0);
-    setViewMode("list");
     setShowShopping(false);
     setNotice("");
     setErrorMessage("");
@@ -224,53 +212,51 @@ export function MealPlan() {
   };
 
   return (
-    <div className="min-h-screen bg-[#06110c] pb-32 text-white font-sans">
+    <div className="min-h-screen bg-[#06110c] pb-28 text-white font-sans">
       <PrintablePlan plan={plan} />
 
-      <main className="mx-auto max-w-6xl space-y-4 px-3 pt-4 sm:space-y-6 sm:px-6 sm:pt-8">
+      <main className="mx-auto max-w-6xl space-y-3 px-3 pt-4 sm:space-y-5 sm:px-6 sm:pt-8">
         <header className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-[9px] font-black uppercase tracking-[0.32em] text-[#10b981] sm:text-[10px]">
+          <div className="min-w-0">
+            <div className="text-[9px] font-black uppercase tracking-[0.32em] text-[#10b981]">
               NUTRISMART COACH
             </div>
 
-            <h1 className="mt-1 text-3xl font-black uppercase italic leading-none tracking-tight text-white sm:text-4xl">
+            <h1 className="mt-1 text-2xl font-black uppercase italic leading-none tracking-tight text-white sm:text-4xl">
               Dieta personalizada
             </h1>
+
+            <p className="mt-1 max-w-xl text-[11px] normal-case leading-4 text-slate-500 sm:text-xs">
+              Semana completa con comidas, porciones, macros y compra.
+            </p>
           </div>
 
           <button
             type="button"
             onClick={handleResetPlan}
             disabled={!hasPlan}
-            className="flex items-center gap-2 rounded-xl border border-[#10b981]/20 bg-[#0d2218] px-3 py-2 text-[10px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#10b981]/20 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {hasPlan ? <RefreshCcw size={14} /> : <Plus size={14} />}
+            {hasPlan ? <RefreshCcw size={13} /> : <Plus size={13} />}
             Nueva
           </button>
         </header>
 
-        <p className="max-w-2xl text-xs normal-case leading-5 text-slate-400 sm:text-sm">
-          Dieta semanal con comidas, porciones, ingredientes, macros y lista de
-          compra lista para imprimir o compartir.
-        </p>
-
         {!profileComplete && (
-          <div className="flex flex-col gap-4 rounded-xl border border-amber-500/20 bg-[#1a1605] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-[#1a1605] p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <AlertTriangle
                 className="mt-0.5 shrink-0 text-amber-500"
-                size={18}
+                size={17}
               />
 
               <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-amber-500">
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-amber-500">
                   Falta completar tu perfil
                 </h4>
 
-                <p className="mt-1 text-xs normal-case leading-5 text-amber-200/60">
-                  Necesitamos tu edad, peso, altura y objetivo para calcular una
-                  dieta útil.
+                <p className="mt-1 text-[11px] normal-case leading-4 text-amber-200/60">
+                  Necesitamos edad, peso, altura y objetivo.
                 </p>
               </div>
             </div>
@@ -278,17 +264,14 @@ export function MealPlan() {
             <button
               type="button"
               onClick={() => navigate("/perfil")}
-              className="rounded-lg bg-amber-500 px-5 py-2.5 text-xs font-black uppercase tracking-wide text-black transition hover:bg-amber-400"
+              className="rounded-lg bg-amber-500 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-black transition hover:bg-amber-400"
             >
               Completar perfil
             </button>
           </div>
         )}
 
-        {errorMessage && (
-          <StatusBox type="error" message={errorMessage} />
-        )}
-
+        {errorMessage && <StatusBox type="error" message={errorMessage} />}
         {notice && !errorMessage && (
           <StatusBox type="success" message={notice} />
         )}
@@ -303,122 +286,75 @@ export function MealPlan() {
           BUDGET_TYPES={BUDGET_TYPES}
         />
 
-        <section className="rounded-2xl border border-white/5 bg-[#091710] p-4 shadow-2xl shadow-black/20 sm:p-6">
-          <div className="flex flex-col gap-4 border-b border-white/5 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="overflow-hidden rounded-2xl border border-white/5 bg-[#091710] shadow-2xl shadow-black/20">
+          <div className="flex flex-col gap-3 border-b border-white/5 bg-[#07120d] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-[#10b981]" />
-                <h2 className="text-lg font-black uppercase tracking-tight text-white">
+                <Sparkles size={15} className="text-[#10b981]" />
+                <h2 className="text-base font-black uppercase tracking-tight text-white">
                   Tu dieta semanal
                 </h2>
               </div>
 
-              <p className="mt-1 text-xs normal-case text-slate-400">
+              <p className="mt-1 text-[11px] normal-case text-slate-500">
                 {hasPlan
-                  ? `${completedMeals}/${totalMeals} comidas completadas · ${completionPercent}%`
+                  ? `${completedMeals}/${totalMeals} comidas · ${completionPercent}% completado`
                   : "Genera una dieta para comenzar."}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:flex">
-             <ActionButton
-  icon={<ShoppingCart size={14} />}
-  label={showShopping ? "Ver dieta" : "Compra"}
-  onClick={() => {
-    setShowShopping((prev) => !prev);
-
-    setTimeout(() => {
-      document
-        .getElementById("shopping-section")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  }}
-  active={showShopping}
-  disabled={!hasPlan}
-/>
+            <div className="grid grid-cols-3 gap-2">
+              <ActionButton
+                icon={<ShoppingCart size={13} />}
+                label={showShopping ? "Dieta" : "Compra"}
+                onClick={() => setShowShopping((prev) => !prev)}
+                active={showShopping}
+                disabled={!hasPlan}
+              />
 
               <ActionButton
-                icon={<Download size={14} />}
+                icon={<Download size={13} />}
                 label="PDF"
                 onClick={() => window.print()}
                 disabled={!hasPlan}
               />
 
               <ActionButton
-                icon={<Share2 size={14} />}
-                label="Compartir"
+                icon={<Share2 size={13} />}
+                label="Enviar"
                 onClick={handleShare}
                 disabled={!hasPlan}
               />
             </div>
           </div>
-{loading && <GeneratingDietLoader loading={loading} />}
 
-          {!loading && !hasPlan && (
-            <EmptyPlan />
-          )}
+          <div className="p-4">
+            {loading && <GeneratingDietLoader loading={loading} />}
 
-          {!loading && hasPlan && (
-            <div className="mt-5 space-y-5">
-              <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
+            {!loading && !hasPlan && <EmptyPlan />}
 
-              {!showShopping && (
-                <>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setViewMode(viewMode === "list" ? "calendar" : "list")
-                      }
-                      className="rounded-lg border border-white/5 bg-[#0d2218] px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10"
-                    >
-                      {viewMode === "list"
-                        ? "Vista semanal"
-                        : "Vista por día"}
-                    </button>
-                  </div>
+            {!loading && hasPlan && (
+              <div className="space-y-4">
+                <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
 
-                  {viewMode === "calendar" ? (
-                    <WeeklyCalendarView
-                      plan={plan}
-                      activeDay={activeDay}
-                      setActiveDay={setActiveDay}
-                    />
-                  ) : (
-                    <DayDietView
-                      plan={plan}
-                      activeDay={activeDay}
-                      setActiveDay={setActiveDay}
-                      progress={progress}
-                      toggleMeal={toggleMeal}
-                    />
-                  )}
-                </>
-              )}
-
-              {showShopping && (
-  <div id="shopping-section">
-    <ShoppingListView plan={plan} />
-  </div>
-)}
-            </div>
-          )}
+                {!showShopping ? (
+                  <DayDietView
+                    plan={plan}
+                    activeDay={activeDay}
+                    setActiveDay={setActiveDay}
+                    progress={progress}
+                    toggleMeal={toggleMeal}
+                  />
+                ) : (
+                  <ShoppingListView plan={plan} />
+                )}
+              </div>
+            )}
+          </div>
         </section>
       </main>
 
       <BottomNav navigate={navigate} />
-
-      <style>{`
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-
-          body {
-            background: #ffffff !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
@@ -429,7 +365,7 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-2 text-[9px] font-black uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-40 ${
         active
           ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
           : "border-white/5 bg-[#0d2218] text-slate-300 hover:bg-slate-900"
@@ -446,7 +382,7 @@ function StatusBox({ type, message }) {
 
   return (
     <div
-      className={`rounded-xl border p-4 text-xs font-bold normal-case leading-5 ${
+      className={`rounded-xl border p-3 text-xs font-bold normal-case leading-5 ${
         isError
           ? "border-red-500/20 bg-red-500/10 text-red-200"
           : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-200"
@@ -454,9 +390,9 @@ function StatusBox({ type, message }) {
     >
       <div className="flex items-start gap-2">
         {isError ? (
-          <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
         ) : (
-          <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
         )}
         <span>{message}</span>
       </div>
@@ -466,16 +402,15 @@ function StatusBox({ type, message }) {
 
 function EmptyPlan() {
   return (
-    <div className="mt-5 rounded-xl border border-dashed border-white/10 bg-[#07120d] p-8 text-center">
-      <Sparkles className="mx-auto mb-3 text-[#10b981]" size={30} />
+    <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-6 text-center">
+      <Sparkles className="mx-auto mb-3 text-[#10b981]" size={28} />
 
       <p className="text-sm font-black uppercase tracking-wide text-white">
         No hay dieta generada
       </p>
 
       <p className="mx-auto mt-2 max-w-sm text-xs normal-case leading-5 text-slate-400">
-        Configura tus preferencias y genera una dieta semanal optimizada para tu
-        objetivo.
+        Configura tus preferencias y genera una dieta semanal optimizada.
       </p>
     </div>
   );
@@ -485,49 +420,165 @@ function BottomNav({ navigate }) {
   return (
     <div className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-white/5 bg-[#091710]/95 px-6 py-3 backdrop-blur-md">
       <div className="mx-auto flex max-w-md items-center justify-between text-slate-400">
-        <button
-          type="button"
+        <NavItem
+          icon={<BarChart2 size={20} />}
+          label="Inicio"
+          active
           onClick={() => navigate("/dashboard")}
-          className="flex flex-col items-center gap-1 text-[#10b981]"
-        >
-          <BarChart2 size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-wider">
-            Inicio
-          </span>
-        </button>
+        />
 
-        <button
-          type="button"
+        <NavItem
+          icon={<Scan size={20} />}
+          label="Analizar"
           onClick={() => navigate("/foto-comida")}
-          className="flex flex-col items-center gap-1 transition hover:text-white"
-        >
-          <Scan size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-wider">
-            Analizar
-          </span>
-        </button>
+        />
 
-        <button
-          type="button"
+        <NavItem
+          icon={<Calendar size={20} />}
+          label="Historial"
           onClick={() => navigate("/comidas")}
-          className="flex flex-col items-center gap-1 transition hover:text-white"
-        >
-          <Calendar size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-wider">
-            Historial
-          </span>
-        </button>
+        />
 
-        <button
-          type="button"
+        <NavItem
+          icon={<User size={20} />}
+          label="Perfil"
           onClick={() => navigate("/perfil")}
-          className="flex flex-col items-center gap-1 transition hover:text-white"
-        >
-          <User size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-wider">
-            Perfil
+        />
+      </div>
+    </div>
+  );
+}
+
+function NavItem({ icon, label, active = false, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 transition ${
+        active ? "text-[#10b981]" : "hover:text-white"
+      }`}
+    >
+      {icon}
+
+      <span className="text-[10px] font-bold uppercase tracking-wider">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function GeneratingDietLoader({ loading }) {
+  const [percent, setPercent] = React.useState(7);
+
+  const steps = ["Perfil", "Macros", "Comidas", "Porciones", "Compra"];
+
+  React.useEffect(() => {
+    if (!loading) return;
+
+    setPercent(7);
+
+    const interval = setInterval(() => {
+      setPercent((prev) => {
+        if (prev >= 96) return prev;
+        if (prev < 45) return prev + 5;
+        if (prev < 80) return prev + 3;
+        return prev + 1;
+      });
+    }, 550);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const activeStep = Math.min(
+    steps.length - 1,
+    Math.floor((percent / 100) * steps.length)
+  );
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
+      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0d2218]/70 p-4">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#10b981]/20 blur-3xl" />
+
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
+              Smart Diet IA
+            </p>
+
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+              Creando tu dieta
+            </h3>
+
+            <p className="mt-2 text-[11px] normal-case leading-4 text-slate-400">
+              {percent < 90
+                ? "Calculando comidas, macros y lista semanal."
+                : "Últimos ajustes. Ya casi está lista."}
+            </p>
+          </div>
+
+          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+            <div className="absolute inset-0 rounded-full border border-[#10b981]/20" />
+            <div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-t-[#10b981]" />
+
+            <span className="relative text-lg font-black text-[#10b981]">
+              {percent}%
+            </span>
+          </div>
+        </div>
+
+        <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/5">
+          <div
+            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        <div className="mt-4 grid grid-cols-5 gap-1.5">
+          {steps.map((step, index) => {
+            const completed = index < activeStep;
+            const active = index === activeStep;
+
+            return (
+              <div
+                key={step}
+                className={`rounded-lg border px-1 py-2 text-center transition-all ${
+                  completed
+                    ? "border-[#10b981]/25 bg-[#10b981]/10"
+                    : active
+                      ? "border-[#10b981]/40 bg-[#10b981]/5"
+                      : "border-white/5 bg-black/10"
+                }`}
+              >
+                <div
+                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${
+                    completed
+                      ? "bg-[#10b981] text-[#06110c]"
+                      : active
+                        ? "animate-pulse border border-[#10b981] text-[#10b981]"
+                        : "border border-white/10 text-slate-600"
+                  }`}
+                >
+                  {completed ? "✓" : index + 1}
+                </div>
+
+                <p
+                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
+                    completed || active ? "text-white" : "text-slate-600"
+                  }`}
+                >
+                  {step}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] font-bold normal-case text-slate-500">
+          <span>No cierres esta pantalla</span>
+          <span className="text-[#10b981]">
+            {percent < 96 ? "Procesando..." : "Finalizando..."}
           </span>
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -605,6 +656,7 @@ function mapProfileGoalToForm(goal) {
   if (goal === "perder_grasa") return "lose_fat";
   if (goal === "ganar_musculo") return "gain_muscle";
   if (goal === "mantener_peso") return "maintain";
+
   return goal || "lose_fat";
 }
 
@@ -641,126 +693,4 @@ function buildShareText(plan) {
       return `${day.day}\n${meals}`;
     })
     .join("\n\n");
-}
-function GeneratingDietLoader({ loading }) {
-  const [percent, setPercent] = React.useState(7);
-
-  const steps = [
-    "Perfil",
-    "Macros",
-    "Comidas",
-    "Porciones",
-    "Compra",
-  ];
-
-  React.useEffect(() => {
-    if (!loading) return;
-
-    setPercent(7);
-
-    const interval = setInterval(() => {
-      setPercent((prev) => {
-        if (prev >= 96) return prev;
-        if (prev < 45) return prev + 5;
-        if (prev < 80) return prev + 3;
-        return prev + 1;
-      });
-    }, 550);
-
-    return () => clearInterval(interval);
-  }, [loading]);
-
-  const activeStep = Math.min(
-    steps.length - 1,
-    Math.floor((percent / 100) * steps.length)
-  );
-
-  return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
-      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0d2218]/70 p-4">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#10b981]/20 blur-3xl" />
-
-        <div className="relative flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
-              Smart Diet IA
-            </p>
-
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
-              Creando tu dieta
-            </h3>
-
-            <p className="mt-2 text-[11px] normal-case leading-4 text-slate-400">
-              {percent < 90
-                ? "Calculando comidas, macros y lista semanal."
-                : "Últimos ajustes. Ya casi está lista."}
-            </p>
-          </div>
-
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
-            <div className="absolute inset-0 rounded-full border border-[#10b981]/20" />
-            <div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-t-[#10b981]" />
-            <span className="relative text-lg font-black text-[#10b981]">
-              {percent}%
-            </span>
-          </div>
-        </div>
-
-        <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/5">
-          <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
-            style={{ width: `${percent}%` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        </div>
-
-        <div className="mt-4 grid grid-cols-5 gap-1.5">
-          {steps.map((step, index) => {
-            const completed = index < activeStep;
-            const active = index === activeStep;
-
-            return (
-              <div
-                key={step}
-                className={`rounded-lg border px-1 py-2 text-center transition-all ${
-                  completed
-                    ? "border-[#10b981]/25 bg-[#10b981]/10"
-                    : active
-                      ? "border-[#10b981]/40 bg-[#10b981]/5"
-                      : "border-white/5 bg-black/10"
-                }`}
-              >
-                <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${
-                    completed
-                      ? "bg-[#10b981] text-[#06110c]"
-                      : active
-                        ? "border border-[#10b981] text-[#10b981] animate-pulse"
-                        : "border border-white/10 text-slate-600"
-                  }`}
-                >
-                  {completed ? "✓" : index + 1}
-                </div>
-
-                <p
-                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
-                    completed || active ? "text-white" : "text-slate-600"
-                  }`}
-                >
-                  {step}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] font-bold normal-case text-slate-500">
-          <span>No cierres esta pantalla</span>
-          <span className="text-[#10b981]">
-            {percent < 96 ? "Procesando..." : "Finalizando..."}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
 }

@@ -12,130 +12,122 @@ export function PrintablePlan({ plan }) {
   return (
     <>
       <style>{`
+        @media screen {
+          .print-only { display: none !important; }
+        }
+
         @media print {
-          @page {
-            size: A4;
-            margin: 14mm;
-          }
+          @page { size: A4; margin: 10mm; }
 
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            box-shadow: none !important;
-            text-shadow: none !important;
-          }
-
-          html,
-          body {
-            background: white !important;
+          html, body {
+            background: #ffffff !important;
             color: #111827 !important;
             font-family: Arial, Helvetica, sans-serif !important;
           }
 
-          .no-print {
-            display: none !important;
-          }
-
-          .print-only {
-            display: block !important;
-          }
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
 
           .print-page {
-            background: white !important;
+            background: #ffffff !important;
             color: #111827 !important;
-            padding: 0 !important;
           }
 
           .print-header {
-            border-bottom: 2px solid #111827 !important;
-            padding-bottom: 10px !important;
-            margin-bottom: 14px !important;
+            border-bottom: 2px solid #064e3b !important;
+            padding-bottom: 7px !important;
+            margin-bottom: 10px !important;
           }
 
           .print-brand {
-            font-size: 22px !important;
-            font-weight: 900 !important;
-            letter-spacing: 1px !important;
             margin: 0 !important;
+            font-size: 18px !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.8px !important;
             text-transform: uppercase !important;
+            color: #064e3b !important;
           }
 
-          .print-muted {
-            color: #4b5563 !important;
-            font-size: 10px !important;
+          .print-subtitle {
+            margin: 2px 0 0 !important;
+            font-size: 9px !important;
             font-weight: 700 !important;
-            margin: 2px 0 0 0 !important;
+            color: #4b5563 !important;
           }
 
           .print-section-title {
-            font-size: 15px !important;
+            margin: 0 0 7px !important;
+            font-size: 12px !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
-            margin: 0 0 8px 0 !important;
-            color: #065f46 !important;
+            color: #064e3b !important;
           }
 
           .print-grid {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 9px !important;
+            gap: 7px !important;
           }
 
           .print-day-card {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
             border: 1px solid #d1d5db !important;
-            border-radius: 0 !important;
-            padding: 9px !important;
-            margin-bottom: 9px !important;
-            background: white !important;
+            padding: 7px !important;
+            background: #ffffff !important;
           }
 
           .print-day-title {
-            font-size: 14px !important;
+            margin: 0 0 5px !important;
+            padding-bottom: 4px !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            font-size: 12px !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
-            border-bottom: 1px solid #e5e7eb !important;
-            padding-bottom: 5px !important;
-            margin: 0 0 7px 0 !important;
             color: #111827 !important;
           }
 
           .print-meal {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
-            margin-bottom: 7px !important;
-            padding-bottom: 6px !important;
+            margin-bottom: 5px !important;
+            padding-bottom: 5px !important;
             border-bottom: 1px solid #f3f4f6 !important;
           }
 
+          .print-meal:last-child {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+            border-bottom: 0 !important;
+          }
+
           .print-meal-meta {
-            font-size: 9px !important;
+            margin: 0 0 1px !important;
+            font-size: 8px !important;
             color: #047857 !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
-            margin: 0 0 2px 0 !important;
           }
 
           .print-meal-name {
-            font-size: 11px !important;
+            margin: 0 !important;
+            font-size: 10px !important;
             font-weight: 900 !important;
             color: #111827 !important;
-            margin: 0 !important;
           }
 
           .print-meal-details {
-            font-size: 10px !important;
-            color: #374151 !important;
-            line-height: 1.3 !important;
             margin: 2px 0 !important;
+            font-size: 8.8px !important;
+            line-height: 1.25 !important;
+            color: #374151 !important;
           }
 
           .print-macros {
-            font-size: 9px !important;
+            margin: 2px 0 0 !important;
+            font-size: 8px !important;
+            font-weight: 800 !important;
             color: #111827 !important;
-            font-weight: 700 !important;
-            margin: 2px 0 0 0 !important;
           }
 
           .print-break {
@@ -145,54 +137,48 @@ export function PrintablePlan({ plan }) {
           .print-shopping-grid {
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
-            gap: 7px !important;
+            gap: 5px 9px !important;
           }
 
           .print-shopping-item {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
-            border-bottom: 1px solid #e5e7eb !important;
-            padding: 5px 0 !important;
             display: flex !important;
+            gap: 5px !important;
             align-items: flex-start !important;
-            gap: 6px !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            padding: 4px 0 !important;
           }
 
           .print-checkbox {
-            width: 10px !important;
-            height: 10px !important;
+            width: 9px !important;
+            height: 9px !important;
             border: 1px solid #6b7280 !important;
             margin-top: 1px !important;
             flex-shrink: 0 !important;
           }
 
           .print-shopping-name {
-            font-size: 10px !important;
-            font-weight: 800 !important;
-            color: #111827 !important;
             margin: 0 !important;
+            font-size: 9px !important;
+            font-weight: 900 !important;
+            color: #111827 !important;
           }
 
           .print-shopping-amount {
-            font-size: 9px !important;
-            font-weight: 700 !important;
+            margin: 1px 0 0 !important;
+            font-size: 8px !important;
+            font-weight: 800 !important;
             color: #047857 !important;
-            margin: 1px 0 0 0 !important;
           }
 
           .print-footer {
-            margin-top: 14px !important;
+            margin-top: 10px !important;
             border-top: 1px solid #e5e7eb !important;
-            padding-top: 6px !important;
-            font-size: 9px !important;
+            padding-top: 5px !important;
+            font-size: 8px !important;
             color: #6b7280 !important;
             text-align: center !important;
-          }
-        }
-
-        @media screen {
-          .print-only {
-            display: none !important;
           }
         }
       `}</style>
@@ -200,8 +186,8 @@ export function PrintablePlan({ plan }) {
       <div className="print-only print-page">
         <header className="print-header">
           <h1 className="print-brand">NutriSmart Coach</h1>
-          <p className="print-muted">
-            Plan nutricional semanal personalizado · Dieta + macros + lista de compra
+          <p className="print-subtitle">
+            Plan nutricional semanal · Dieta + macros + lista de compra
           </p>
         </header>
 
@@ -225,7 +211,9 @@ export function PrintablePlan({ plan }) {
                     <p className="print-meal-name">{meal.food}</p>
 
                     <p className="print-meal-details">
-                      {meal.details || meal.ingredients.join(", ") || "Porciones no especificadas"}
+                      {meal.details ||
+                        meal.ingredients.join(", ") ||
+                        "Porciones no especificadas"}
                     </p>
 
                     <p className="print-macros">
@@ -244,7 +232,7 @@ export function PrintablePlan({ plan }) {
         <section className="print-break">
           <header className="print-header">
             <h1 className="print-brand">Lista de compra semanal</h1>
-            <p className="print-muted">
+            <p className="print-subtitle">
               Cantidades aproximadas calculadas desde tu dieta.
             </p>
           </header>
@@ -264,7 +252,7 @@ export function PrintablePlan({ plan }) {
         </section>
 
         <footer className="print-footer">
-          NutriSmart Coach · Los valores son aproximados y pueden variar según las marcas y porciones reales.
+          NutriSmart Coach · Valores aproximados. Ajusta porciones reales si pesas los alimentos.
         </footer>
       </div>
     </>

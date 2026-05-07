@@ -1,268 +1,173 @@
 import React, { useMemo, useState } from "react";
 import {
+  Beef,
   Check,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Milk,
+  Package,
   ShoppingBag,
   Wheat,
-  Beef,
   Apple,
-  Package,
 } from "lucide-react";
 
 export function ShoppingListView({ plan }) {
   const [checkedItems, setCheckedItems] = useState({});
-  const [openCategories, setOpenCategories] = useState({
-    proteinas: true,
-    carbohidratos: true,
-    frutasVerduras: true,
-    lacteos: true,
-    otros: true,
-  });
+  const [activeCategory, setActiveCategory] = useState("proteinas");
 
   const shoppingGroups = useMemo(() => buildShoppingGroups(plan), [plan]);
 
-  const allItems = Object.values(shoppingGroups).flat();
+  const categories = [
+    {
+      key: "proteinas",
+      label: "Proteínas",
+      icon: <Beef size={14} />,
+      items: shoppingGroups.proteinas,
+    },
+    {
+      key: "carbohidratos",
+      label: "Carbos",
+      icon: <Wheat size={14} />,
+      items: shoppingGroups.carbohidratos,
+    },
+    {
+      key: "frutasVerduras",
+      label: "Verdes",
+      icon: <Apple size={14} />,
+      items: shoppingGroups.frutasVerduras,
+    },
+    {
+      key: "lacteos",
+      label: "Lácteos",
+      icon: <Milk size={14} />,
+      items: shoppingGroups.lacteos,
+    },
+    {
+      key: "otros",
+      label: "Otros",
+      icon: <Package size={14} />,
+      items: shoppingGroups.otros,
+    },
+  ].filter((category) => category.items.length > 0);
+
+  const allItems = categories.flatMap((category) => category.items);
   const totalItems = allItems.length;
   const checkedCount = allItems.filter((item) => checkedItems[item.id]).length;
   const progress =
     totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
+  const activeItems =
+    categories.find((category) => category.key === activeCategory)?.items ||
+    categories[0]?.items ||
+    [];
+
   if (totalItems === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-6 text-center">
-        <ShoppingBag className="mx-auto mb-3 text-[#10b981]" size={28} />
-
-        <p className="text-sm font-black uppercase text-white">
-          Lista de compra vacía
-        </p>
-
-        <p className="mx-auto mt-2 max-w-sm text-xs normal-case leading-5 text-slate-400">
-          Genera una dieta con ingredientes para crear automáticamente la lista
-          semanal.
+      <div className="rounded-xl border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
+        <ShoppingBag className="mx-auto mb-2 text-[#10b981]" size={26} />
+        <p className="text-sm font-black uppercase text-white">Lista vacía</p>
+        <p className="mt-1 text-xs normal-case text-slate-400">
+          Genera una dieta con ingredientes para crear la compra.
         </p>
       </div>
     );
   }
 
   const toggleItem = (id) => {
-    setCheckedItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
-
-  const toggleCategory = (categoryKey) => {
-    setOpenCategories((prev) => ({
-      ...prev,
-      [categoryKey]: !prev[categoryKey],
-    }));
-  };
-
-  const clearChecked = () => setCheckedItems({});
 
   return (
-    <section className="space-y-4 rounded-xl border border-white/5 bg-[#07120d] p-4 sm:p-5">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="rounded-2xl border border-white/5 bg-[#07120d] p-4">
+      <header className="mb-4 flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
             <ShoppingBag size={14} />
-            Lista de compra semanal
+            Compra semanal
           </div>
 
-          <h3 className="mt-1 text-2xl font-black uppercase italic tracking-tight text-white">
-            Compra inteligente
-          </h3>
-
           <p className="mt-1 text-xs normal-case text-slate-400">
-            Cantidades aproximadas sumadas para toda la semana.
+            {checkedCount}/{totalItems} comprados · {progress}%
           </p>
         </div>
 
         <button
           type="button"
-          onClick={clearChecked}
+          onClick={() => setCheckedItems({})}
           disabled={checkedCount === 0}
-          className="rounded-lg border border-white/5 bg-[#0d2218] px-4 py-2.5 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg border border-white/5 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-slate-300 disabled:opacity-40"
         >
           Reiniciar
         </button>
       </header>
 
-      <div className="rounded-xl border border-white/5 bg-[#0d2218]/60 p-4">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-black uppercase tracking-wide text-white">
-            Progreso de compra
-          </p>
-
-          <p className="text-xs font-black text-[#10b981]">
-            {checkedCount}/{totalItems} · {progress}%
-          </p>
-        </div>
-
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-          <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <ShoppingCategory
-          title="Proteínas"
-          categoryKey="proteinas"
-          icon={<Beef size={16} />}
-          items={shoppingGroups.proteinas}
-          checkedItems={checkedItems}
-          open={openCategories.proteinas}
-          onToggleCategory={toggleCategory}
-          onToggleItem={toggleItem}
-        />
-
-        <ShoppingCategory
-          title="Carbohidratos"
-          categoryKey="carbohidratos"
-          icon={<Wheat size={16} />}
-          items={shoppingGroups.carbohidratos}
-          checkedItems={checkedItems}
-          open={openCategories.carbohidratos}
-          onToggleCategory={toggleCategory}
-          onToggleItem={toggleItem}
-        />
-
-        <ShoppingCategory
-          title="Frutas y verduras"
-          categoryKey="frutasVerduras"
-          icon={<Apple size={16} />}
-          items={shoppingGroups.frutasVerduras}
-          checkedItems={checkedItems}
-          open={openCategories.frutasVerduras}
-          onToggleCategory={toggleCategory}
-          onToggleItem={toggleItem}
-        />
-
-        <ShoppingCategory
-          title="Lácteos"
-          categoryKey="lacteos"
-          icon={<Milk size={16} />}
-          items={shoppingGroups.lacteos}
-          checkedItems={checkedItems}
-          open={openCategories.lacteos}
-          onToggleCategory={toggleCategory}
-          onToggleItem={toggleItem}
-        />
-
-        <ShoppingCategory
-          title="Otros"
-          categoryKey="otros"
-          icon={<Package size={16} />}
-          items={shoppingGroups.otros}
-          checkedItems={checkedItems}
-          open={openCategories.otros}
-          onToggleCategory={toggleCategory}
-          onToggleItem={toggleItem}
+      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div
+          className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+          style={{ width: `${progress}%` }}
         />
       </div>
-    </section>
-  );
-}
 
-function ShoppingCategory({
-  title,
-  categoryKey,
-  icon,
-  items,
-  checkedItems,
-  open,
-  onToggleCategory,
-  onToggleItem,
-}) {
-  if (!items || items.length === 0) return null;
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {categories.map((category) => (
+          <button
+            key={category.key}
+            type="button"
+            onClick={() => setActiveCategory(category.key)}
+            className={`flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition ${
+              activeCategory === category.key
+                ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
+                : "border-white/5 bg-[#0d2218] text-slate-400"
+            }`}
+          >
+            {category.icon}
+            {category.label}
+            <span className="opacity-70">{category.items.length}</span>
+          </button>
+        ))}
+      </div>
 
-  const checkedCount = items.filter((item) => checkedItems[item.id]).length;
+      <div className="grid gap-2 sm:grid-cols-2">
+        {activeItems.map((item) => {
+          const isChecked = checkedItems[item.id];
 
-  return (
-    <div className="overflow-hidden rounded-xl border border-white/5 bg-[#0d2218]/40">
-      <button
-        type="button"
-        onClick={() => onToggleCategory(categoryKey)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/[0.03]"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#10b981]/10 text-[#10b981]">
-            {icon}
-          </div>
-
-          <div>
-            <p className="text-xs font-black uppercase tracking-wide text-white">
-              {title}
-            </p>
-
-            <p className="text-[10px] font-bold normal-case text-slate-500">
-              {checkedCount}/{items.length} comprados
-            </p>
-          </div>
-        </div>
-
-        <div className="text-slate-500">
-          {open ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
-        </div>
-      </button>
-
-      {open && (
-        <div className="grid gap-2 border-t border-white/5 p-3 sm:grid-cols-2">
-          {items.map((item) => {
-            const isChecked = checkedItems[item.id];
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onToggleItem(item.id)}
-                className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-all ${
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => toggleItem(item.id)}
+              className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+                isChecked
+                  ? "border-[#10b981]/15 bg-[#10b981]/5 opacity-55"
+                  : "border-white/5 bg-[#0d2218]/60 hover:bg-[#0d2218]"
+              }`}
+            >
+              <div
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                   isChecked
-                    ? "border-[#10b981]/15 bg-[#10b981]/5 opacity-55"
-                    : "border-white/5 bg-[#07120d] hover:bg-[#0d2218]"
+                    ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
+                    : "border-white/20 text-transparent"
                 }`}
               >
-                <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                    isChecked
-                      ? "border-[#10b981] bg-[#10b981] text-slate-950"
-                      : "border-white/20 text-transparent"
+                <Check size={12} strokeWidth={3} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`truncate text-xs font-black uppercase tracking-wide ${
+                    isChecked ? "text-slate-500 line-through" : "text-slate-200"
                   }`}
                 >
-                  <Check size={12} strokeWidth={3} />
-                </div>
+                  {item.name}
+                </p>
 
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`truncate text-xs font-black uppercase tracking-wide ${
-                      isChecked
-                        ? "text-slate-500 line-through"
-                        : "text-slate-200"
-                    }`}
-                  >
-                    {item.name}
-                  </p>
-
-                  <p className="mt-0.5 text-[11px] font-bold normal-case text-[#10b981]">
-                    {item.amount}
-                  </p>
-                </div>
-
-                {isChecked && (
-                  <CheckCircle2 className="shrink-0 text-[#10b981]" size={15} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                <p className="mt-0.5 text-[11px] font-bold normal-case text-[#10b981]">
+                  {item.amount}
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -275,9 +180,7 @@ function buildShoppingGroups(plan = []) {
       : Object.values(day?.meals || {});
 
     meals.forEach((meal) => {
-      const ingredients = getIngredients(meal);
-
-      ingredients.forEach((ingredient) => {
+      getIngredients(meal).forEach((ingredient) => {
         const parsed = parseIngredient(ingredient);
         if (!parsed.name) return;
 
@@ -318,10 +221,7 @@ function buildShoppingGroups(plan = []) {
   };
 
   Array.from(itemsMap.values())
-    .map((item) => ({
-      ...item,
-      amount: formatAmount(item),
-    }))
+    .map((item) => ({ ...item, amount: formatAmount(item) }))
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((item) => {
       groups[item.category].push(item);
@@ -346,42 +246,22 @@ function getIngredients(meal) {
 }
 
 function parseIngredient(rawIngredient) {
-  if (typeof rawIngredient === "object" && rawIngredient !== null) {
-    const amountText = rawIngredient.amount || rawIngredient.quantity || "";
-    const name = rawIngredient.name || rawIngredient.food || "Ingrediente";
-    const amount = parseAmount(amountText);
-
-    return {
-      name,
-      ...amount,
-    };
-  }
-
-  const text = String(rawIngredient).trim();
+  const text =
+    typeof rawIngredient === "object"
+      ? `${rawIngredient.amount || rawIngredient.quantity || ""} ${
+          rawIngredient.name || rawIngredient.food || ""
+        }`
+      : String(rawIngredient).trim();
 
   const match = text.match(
     /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
   );
 
-  if (!match) {
-    return {
-      name: text,
-      value: 1,
-      unit: "unknown",
-    };
-  }
+  if (!match) return { name: text, value: 1, unit: "unknown" };
 
   const value = Number(String(match[1]).replace(",", "."));
   const unitText = (match[2] || "").toLowerCase();
   const name = (match[3] || text).trim();
-
-  if (!unitText) {
-    return {
-      name,
-      value,
-      unit: "unknown",
-    };
-  }
 
   if (unitText === "g") return { name, value, unit: "g" };
   if (unitText === "kg") return { name, value, unit: "kg" };
@@ -412,76 +292,27 @@ function parseIngredient(rawIngredient) {
   return { name, value, unit: "unknown" };
 }
 
-function parseAmount(amountText = "") {
-  const text = String(amountText).trim();
-
-  const match = text.match(
-    /(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?/i
-  );
-
-  if (!match) {
-    return { value: 1, unit: "unknown" };
-  }
-
-  const value = Number(String(match[1]).replace(",", "."));
-  const unitText = (match[2] || "").toLowerCase();
-
-  if (unitText === "g") return { value, unit: "g" };
-  if (unitText === "kg") return { value, unit: "kg" };
-  if (unitText === "ml") return { value, unit: "ml" };
-  if (unitText === "l") return { value, unit: "l" };
-
-  if (
-    unitText.includes("unidad") ||
-    unitText.includes("huevo") ||
-    unitText.includes("pieza") ||
-    unitText.includes("rebanada") ||
-    unitText.includes("plátano") ||
-    unitText.includes("platano") ||
-    unitText.includes("banana") ||
-    unitText.includes("lata")
-  ) {
-    return { value, unit: "unit" };
-  }
-
-  if (
-    unitText.includes("plato") ||
-    unitText.includes("ración") ||
-    unitText.includes("raciones")
-  ) {
-    return { value, unit: "portion" };
-  }
-
-  return { value, unit: "unknown" };
-}
-
 function formatAmount(item) {
   const parts = [];
 
   if (item.grams > 0) {
-    if (item.grams >= 1000) {
-      parts.push(`${formatNumber(item.grams / 1000)} kg`);
-    } else {
-      parts.push(`${Math.round(item.grams)} g`);
-    }
+    parts.push(
+      item.grams >= 1000
+        ? `${formatNumber(item.grams / 1000)} kg`
+        : `${Math.round(item.grams)} g`
+    );
   }
 
   if (item.ml > 0) {
-    if (item.ml >= 1000) {
-      parts.push(`${formatNumber(item.ml / 1000)} L`);
-    } else {
-      parts.push(`${Math.round(item.ml)} ml`);
-    }
+    parts.push(
+      item.ml >= 1000
+        ? `${formatNumber(item.ml / 1000)} L`
+        : `${Math.round(item.ml)} ml`
+    );
   }
 
-  if (item.units > 0) {
-    parts.push(`${Math.round(item.units)} ud`);
-  }
-
-  if (item.portions > 0) {
-    parts.push(`${Math.round(item.portions)} raciones`);
-  }
-
+  if (item.units > 0) parts.push(`${Math.round(item.units)} ud`);
+  if (item.portions > 0) parts.push(`${Math.round(item.portions)} raciones`);
   if (parts.length === 0 && item.unknown > 0) {
     parts.push(`${item.unknown} vez/semana`);
   }
@@ -492,67 +323,67 @@ function formatAmount(item) {
 function categorizeIngredient(name = "") {
   const text = name.toLowerCase();
 
-  const proteinWords = [
-    "pollo",
-    "pavo",
-    "carne",
-    "ternera",
-    "salmón",
-    "salmon",
-    "pescado",
-    "merluza",
-    "atún",
-    "atun",
-    "huevo",
-    "claras",
-    "proteína",
-    "proteina",
-  ];
+  if (
+    [
+      "pollo",
+      "pavo",
+      "carne",
+      "ternera",
+      "salmón",
+      "salmon",
+      "pescado",
+      "merluza",
+      "atún",
+      "atun",
+      "huevo",
+      "claras",
+    ].some((word) => text.includes(word))
+  ) {
+    return "proteinas";
+  }
 
-  const carbWords = [
-    "arroz",
-    "pasta",
-    "avena",
-    "pan",
-    "patata",
-    "boniato",
-    "tostada",
-    "cereal",
-    "quinoa",
-    "lentejas",
-    "garbanzos",
-  ];
+  if (
+    [
+      "arroz",
+      "pasta",
+      "avena",
+      "pan",
+      "patata",
+      "boniato",
+      "quinoa",
+      "lentejas",
+      "garbanzos",
+    ].some((word) => text.includes(word))
+  ) {
+    return "carbohidratos";
+  }
 
-  const fruitVegWords = [
-    "verduras",
-    "ensalada",
-    "fruta",
-    "plátano",
-    "platano",
-    "banana",
-    "frutos rojos",
-    "manzana",
-    "brócoli",
-    "brocoli",
-    "zanahoria",
-    "aguacate",
-    "tomate",
-  ];
-
-  const dairyWords = [
-    "yogur",
-    "leche",
-    "queso",
-    "requesón",
-    "requeson",
-    "fresco batido",
-  ];
-
-  if (proteinWords.some((word) => text.includes(word))) return "proteinas";
-  if (carbWords.some((word) => text.includes(word))) return "carbohidratos";
-  if (fruitVegWords.some((word) => text.includes(word)))
+  if (
+    [
+      "verduras",
+      "ensalada",
+      "fruta",
+      "plátano",
+      "platano",
+      "banana",
+      "frutos rojos",
+      "manzana",
+      "brócoli",
+      "brocoli",
+      "aguacate",
+      "tomate",
+    ].some((word) => text.includes(word))
+  ) {
     return "frutasVerduras";
-  if (dairyWords.some((word) => text.includes(word))) return "lacteos";
+  }
+
+  if (
+    ["yogur", "leche", "queso", "requesón", "requeson"].some((word) =>
+      text.includes(word)
+    )
+  ) {
+    return "lacteos";
+  }
 
   return "otros";
 }

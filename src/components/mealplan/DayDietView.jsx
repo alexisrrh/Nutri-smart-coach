@@ -46,16 +46,16 @@ export function DayDietView({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="space-y-3">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {plan.map((dayData, index) => (
           <button
             key={`${dayData.day}-${index}`}
             type="button"
             onClick={() => setActiveDay(index)}
-            className={`shrink-0 rounded-xl border px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all sm:px-5 sm:py-3 sm:text-xs ${
+            className={`shrink-0 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
               safeActiveDay === index
-                ? "border-[#10b981] bg-[#10b981] text-slate-950 shadow-[0_0_16px_rgba(16,185,129,0.22)]"
+                ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_16px_rgba(16,185,129,0.18)]"
                 : "border-white/5 bg-[#0d2218] text-slate-400 hover:bg-[#123022] hover:text-white"
             }`}
           >
@@ -64,46 +64,61 @@ export function DayDietView({
         ))}
       </div>
 
-      <div className="rounded-xl border border-white/5 bg-[#07120d] p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+      <div className="rounded-2xl border border-white/5 bg-[#07120d] p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
               Plan diario
             </span>
 
-            <h3 className="mt-1 text-2xl font-black uppercase italic tracking-tight text-white sm:text-3xl">
+            <h3 className="mt-0.5 truncate text-xl font-black uppercase italic tracking-tight text-white">
               {activeDayData?.day || "Día"}
             </h3>
 
-            <p className="mt-1 text-xs normal-case text-slate-500">
-              {completed}/{total} comidas completadas
+            <p className="mt-0.5 text-[11px] normal-case text-slate-500">
+              {completed}/{total} comidas · {percentage}% completado
             </p>
           </div>
 
-          <div className="text-right">
-            <p className="text-2xl font-black text-[#10b981]">{percentage}%</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-              progreso
-            </p>
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10">
+            <span className="text-lg font-black text-[#10b981]">
+              {percentage}%
+            </span>
           </div>
         </div>
 
-        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${percentage}%` }}
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-4 gap-2">
-          <DayMacro icon={<Flame size={14} />} value={dayTotals.calories} label="kcal" />
-          <DayMacro icon={<Beef size={14} />} value={`${dayTotals.protein}g`} label="prot" />
-          <DayMacro icon={<Wheat size={14} />} value={`${dayTotals.carbs}g`} label="carb" />
-          <DayMacro icon={<Droplets size={14} />} value={`${dayTotals.fat}g`} label="grasas" />
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          <DayMacro
+            icon={<Flame size={13} />}
+            value={Math.round(dayTotals.calories)}
+            label="kcal"
+          />
+          <DayMacro
+            icon={<Beef size={13} />}
+            value={`${Math.round(dayTotals.protein)}g`}
+            label="prot"
+          />
+          <DayMacro
+            icon={<Wheat size={13} />}
+            value={`${Math.round(dayTotals.carbs)}g`}
+            label="carb"
+          />
+          <DayMacro
+            icon={<Droplets size={13} />}
+            value={`${Math.round(dayTotals.fat)}g`}
+            label="grasa"
+          />
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {mealsArray.map((meal, index) => {
           const mealId = getMealId(activeDayData?.day, meal, index);
           const isCompleted = Boolean(progress?.[mealId]);
@@ -114,33 +129,33 @@ export function DayDietView({
           return (
             <article
               key={mealId}
-              className={`overflow-hidden rounded-xl border transition-all ${
+              className={`overflow-hidden rounded-2xl border transition-all ${
                 isCompleted
                   ? "border-[#10b981]/30 bg-[#10b981]/5 opacity-80"
                   : "border-white/5 bg-[#07120d]"
               }`}
             >
-              <div className="flex items-start justify-between gap-3 border-b border-white/5 p-4">
+              <div className="flex items-start justify-between gap-3 p-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500">
                     <span className="inline-flex items-center gap-1 text-[#10b981]">
-                      <Utensils size={12} />
+                      <Utensils size={11} />
                       {mealName}
                     </span>
 
                     <span className="inline-flex items-center gap-1">
-                      <Clock size={11} />
+                      <Clock size={10} />
                       {meal.time || defaultMealTime(index)}
                     </span>
 
                     <span className="inline-flex items-center gap-1">
-                      <Flame size={11} />
+                      <Flame size={10} />
                       {Math.round(Number(meal.calories || meal.kcal || 0))} kcal
                     </span>
                   </div>
 
                   <h4
-                    className={`mt-2 text-base font-black uppercase italic leading-tight tracking-tight sm:text-lg ${
+                    className={`mt-1.5 text-sm font-black uppercase italic leading-tight tracking-tight sm:text-base ${
                       isCompleted ? "text-white/45 line-through" : "text-white"
                     }`}
                   >
@@ -151,15 +166,15 @@ export function DayDietView({
                 <button
                   type="button"
                   onClick={() => toggleMeal(mealId)}
-                  className={`shrink-0 rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all sm:px-4 ${
+                  className={`shrink-0 rounded-xl border px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all ${
                     isCompleted
-                      ? "border-[#10b981] bg-[#10b981] text-slate-950"
+                      ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                       : "border-white/10 bg-[#0d2218] text-slate-300 hover:bg-white/5"
                   }`}
                 >
                   {isCompleted ? (
                     <span className="inline-flex items-center gap-1">
-                      <CheckCircle2 size={13} />
+                      <CheckCircle2 size={12} />
                       Hecho
                     </span>
                   ) : (
@@ -168,32 +183,42 @@ export function DayDietView({
                 </button>
               </div>
 
-              <div className="grid gap-3 p-4 lg:grid-cols-[1fr_220px]">
-                <div>
-                  <p className="mb-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-500">
-                    Porciones e ingredientes
+              <div className="border-t border-white/5 px-3 pb-3 pt-2">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-500">
+                    Porciones
                   </p>
 
-                  {ingredients.length > 0 ? (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {ingredients.map((item, idx) => (
-                        <IngredientPill key={`${mealId}-ing-${idx}`} item={item} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-3 text-xs normal-case text-slate-400">
-                      Sin ingredientes detallados. Puedes mejorar el prompt para
-                      pedir cantidades exactas.
-                    </p>
-                  )}
+                  <div className="flex gap-1.5">
+                    <MiniMacro
+                      label="P"
+                      value={`${Math.round(Number(meal.protein || 0))}g`}
+                    />
+                    <MiniMacro
+                      label="C"
+                      value={`${Math.round(Number(meal.carbs || 0))}g`}
+                    />
+                    <MiniMacro
+                      label="G"
+                      value={`${Math.round(Number(meal.fat || 0))}g`}
+                    />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 lg:grid-cols-2">
-                  <MiniMacro label="Kcal" value={Math.round(Number(meal.calories || meal.kcal || 0))} />
-                  <MiniMacro label="Prot" value={`${Math.round(Number(meal.protein || 0))}g`} />
-                  <MiniMacro label="Carb" value={`${Math.round(Number(meal.carbs || 0))}g`} />
-                  <MiniMacro label="Grasa" value={`${Math.round(Number(meal.fat || 0))}g`} />
-                </div>
+                {ingredients.length > 0 ? (
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {ingredients.map((item, idx) => (
+                      <IngredientPill
+                        key={`${mealId}-ing-${idx}`}
+                        item={item}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-2 text-[11px] normal-case text-slate-400">
+                    Sin ingredientes detallados.
+                  </p>
+                )}
               </div>
             </article>
           );
@@ -207,12 +232,12 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-[#0d2218]/60 px-3 py-2">
-      <span className="truncate text-xs font-bold normal-case text-slate-300">
+    <div className="flex shrink-0 items-center gap-2 rounded-full border border-white/5 bg-[#0d2218]/70 px-3 py-1.5">
+      <span className="max-w-[120px] truncate text-[11px] font-bold normal-case text-slate-300">
         {name}
       </span>
 
-      <span className="shrink-0 text-[11px] font-black normal-case text-[#10b981]">
+      <span className="shrink-0 text-[10px] font-black normal-case text-[#10b981]">
         {amount}
       </span>
     </div>
@@ -221,13 +246,13 @@ function IngredientPill({ item }) {
 
 function DayMacro({ icon, value, label }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-2 text-center">
+    <div className="rounded-xl border border-white/5 bg-[#0d2218]/60 p-2 text-center">
       <div className="mx-auto mb-1 flex justify-center text-[#10b981]">
         {icon}
       </div>
 
-      <p className="text-sm font-black text-white">{value}</p>
-      <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <p className="text-xs font-black text-white">{value}</p>
+      <p className="text-[7px] font-black uppercase tracking-widest text-slate-500">
         {label}
       </p>
     </div>
@@ -236,11 +261,11 @@ function DayMacro({ icon, value, label }) {
 
 function MiniMacro({ label, value }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-[#0d2218]/60 p-2">
-      <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+    <div className="rounded-lg border border-white/5 bg-[#0d2218]/70 px-2 py-1">
+      <span className="text-[8px] font-black uppercase text-slate-500">
         {label}
-      </p>
-      <p className="mt-1 text-sm font-black text-white">{value}</p>
+      </span>
+      <span className="ml-1 text-[10px] font-black text-white">{value}</span>
     </div>
   );
 }
@@ -288,7 +313,7 @@ function splitIngredient(item = "") {
   const text = String(item).trim();
 
   const match = text.match(
-    /^(\d+[\d.,]*\s?(g|kg|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones))/i
+    /^(\d+[\d.,]*\s?(g|kg|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones))/i
   );
 
   if (!match) {
@@ -308,7 +333,7 @@ function splitIngredient(item = "") {
 }
 
 function shortDay(day = "") {
-  const normalized = day.toLowerCase();
+  const normalized = String(day).toLowerCase();
 
   if (normalized.startsWith("lunes")) return "Lun";
   if (normalized.startsWith("martes")) return "Mar";
@@ -320,7 +345,7 @@ function shortDay(day = "") {
     return "Sáb";
   if (normalized.startsWith("domingo")) return "Dom";
 
-  return day.slice(0, 3) || "Día";
+  return String(day).slice(0, 3) || "Día";
 }
 
 function defaultMealTime(index) {
