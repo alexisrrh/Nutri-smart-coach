@@ -423,12 +423,14 @@ function createFallbackDiet(profile = {}, preferences = {}) {
     ],
   };
 
-  const selectedMeals = baseMeals[goal] || baseMeals.mantener_peso;
-
-  return days.map((day) => ({
-    day,
-    meals: selectedMeals,
-  }));
+return days.map((day, dayIndex) => ({
+  day,
+  meals: selectedMeals.map((meal, mealIndex) => ({
+    ...meal,
+    food: varyMeal(meal.food, goal, dayIndex, mealIndex),
+    details: varyDetails(meal.details, goal, dayIndex, mealIndex),
+  })),
+}));
 }
 
 function mapGoal(goal) {
@@ -446,3 +448,73 @@ function mapGoal(goal) {
 app.listen(PORT, () => {
   console.log(`Servidor activo en puerto ${PORT}`);
 });
+
+function varyMeal(food, goal, dayIndex, mealIndex) {
+  const variations = {
+    perder_grasa: [
+      "Tortilla de claras con fruta",
+      "Yogur griego con avena y frutos rojos",
+      "Pollo con arroz pequeño y verduras",
+      "Pavo con ensalada y boniato",
+      "Merluza con patata cocida y ensalada",
+      "Atún con arroz integral y tomate",
+      "Huevos con verduras salteadas",
+    ],
+    ganar_musculo: [
+      "Avena con leche, plátano y huevos",
+      "Pollo con arroz, aguacate y verduras",
+      "Pasta integral con carne magra",
+      "Salmón con patata y ensalada",
+      "Yogur griego con frutos secos",
+      "Tortilla con pan integral y fruta",
+      "Pavo con quinoa y verduras",
+    ],
+    mantener_peso: [
+      "Avena con yogur y fruta",
+      "Pavo con arroz y verduras",
+      "Huevos con ensalada y pan integral",
+      "Pescado con patata cocida",
+      "Tostada integral con queso fresco",
+      "Pollo con verduras y arroz",
+      "Yogur natural con fruta y frutos secos",
+    ],
+  };
+
+  const list = variations[goal] || variations.mantener_peso;
+  return list[(dayIndex + mealIndex) % list.length] || food;
+}
+
+function varyDetails(details, goal, dayIndex, mealIndex) {
+  const variations = {
+    perder_grasa: [
+      "4 claras, 1 huevo entero, 1 pieza de fruta",
+      "200g yogur griego, 40g avena, 80g frutos rojos",
+      "180g pollo, 70g arroz, 200g verduras",
+      "160g pavo, 200g ensalada, 150g boniato",
+      "180g merluza, 200g patata cocida, ensalada",
+      "1 lata de atún, 80g arroz integral, tomate",
+      "2 huevos, 200g verduras salteadas",
+    ],
+    ganar_musculo: [
+      "80g avena, 250ml leche, 1 plátano, 2 huevos",
+      "220g pollo, 100g arroz, 80g aguacate, verduras",
+      "100g pasta integral, 180g carne magra",
+      "200g salmón, 250g patata, ensalada",
+      "250g yogur griego, 30g frutos secos",
+      "3 huevos, 2 rebanadas pan integral, 1 fruta",
+      "180g pavo, 90g quinoa, 200g verduras",
+    ],
+    mantener_peso: [
+      "60g avena, 200g yogur natural, 1 pieza fruta",
+      "180g pavo, 90g arroz, 200g verduras",
+      "3 huevos, ensalada, 1 rebanada pan integral",
+      "180g pescado, 200g patata cocida",
+      "2 tostadas integrales, 80g queso fresco",
+      "180g pollo, 80g arroz, 200g verduras",
+      "200g yogur natural, 1 fruta, 20g frutos secos",
+    ],
+  };
+
+  const list = variations[goal] || variations.mantener_peso;
+  return list[(dayIndex + mealIndex) % list.length] || details;
+}

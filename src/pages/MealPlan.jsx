@@ -321,13 +321,21 @@ export function MealPlan() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 sm:flex">
-              <ActionButton
-                icon={<ShoppingCart size={14} />}
-                label={showShopping ? "Ver dieta" : "Compra"}
-                onClick={() => setShowShopping((prev) => !prev)}
-                active={showShopping}
-                disabled={!hasPlan}
-              />
+             <ActionButton
+  icon={<ShoppingCart size={14} />}
+  label={showShopping ? "Ver dieta" : "Compra"}
+  onClick={() => {
+    setShowShopping((prev) => !prev);
+
+    setTimeout(() => {
+      document
+        .getElementById("shopping-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }}
+  active={showShopping}
+  disabled={!hasPlan}
+/>
 
               <ActionButton
                 icon={<Download size={14} />}
@@ -402,7 +410,11 @@ export function MealPlan() {
                 </>
               )}
 
-              {showShopping && <ShoppingListView plan={plan} />}
+              {showShopping && (
+  <div id="shopping-section">
+    <ShoppingListView plan={plan} />
+  </div>
+)}
             </div>
           )}
         </section>
