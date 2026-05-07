@@ -17,6 +17,7 @@ import {
   safeParse,
 } from "../components/dashboard/dashboardUtils";
 
+
 const MEALS_KEY = "nutricoach_meals";
 const PROFILE_KEY = "nutricoach_profile";
 
