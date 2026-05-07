@@ -71,8 +71,9 @@ export default function FoodPhoto() {
       setError("");
 
       const formData = new FormData();
-      formData.append("image", image);
-      formData.append("goal", goal);
+     formData.append("image", image);
+formData.append("goal", goal);
+formData.append("user_id", profile?.id || profile?.user_id || "");
 
       const response = await fetch(`${API_URL}/analyze-food`, {
         method: "POST",
