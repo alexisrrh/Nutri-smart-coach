@@ -19,6 +19,7 @@ import {
 import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabase";
 
+
 const PROFILE_KEY = "nutricoach_profile";
 const API_URL =
   import.meta.env.VITE_API_URL?.trim() ||
@@ -160,12 +161,13 @@ export function CheckIn() {
         method: "POST",
         body: formData,
       });
+const data = await response.json();
 
-      const data = await response.json();
+console.log("RESPUESTA CHECKIN:", data);
 
-      if (!response.ok) {
-        throw new Error(data.error || data.detail || "No se pudo guardar.");
-      }
+if (!response.ok) {
+  throw new Error(data.detail || data.error || "No se pudo guardar.");
+}
 
       setHistory((prev) => [data.checkin, ...prev]);
       setFile(null);
@@ -571,15 +573,15 @@ function HistoryPanel({ history, loading }) {
 
 function HistoryCard({ item, index }) {
   return (
-    <div className="w-[210px] shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+    <div className="w-[280px] shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
       {item.image_url ? (
         <img
           src={item.image_url}
           alt="Check-in"
-          className="h-32 w-full object-cover"
+          className="h-40 w-full object-cover"
         />
       ) : (
-        <div className="grid h-32 place-items-center bg-white/5 text-xs text-slate-500">
+        <div className="grid h-40 place-items-center bg-white/5 text-xs text-slate-500">
           Sin foto
         </div>
       )}
@@ -589,20 +591,66 @@ function HistoryCard({ item, index }) {
           <p className="text-[9px] font-black uppercase tracking-wide text-[#10b981]">
             Registro {index + 1}
           </p>
+
           <p className="text-[9px] text-slate-500">
-            {new Date(item.created_at).toLocaleDateString("es-ES")}
+            {item.created_at
+              ? new Date(item.created_at).toLocaleDateString("es-ES")
+              : "-"}
           </p>
         </div>
 
-        <h4 className="mt-1 text-xl font-black">{item.weight || "-"} kg</h4>
+        <h4 className="mt-2 text-2xl font-black">
+          {item.weight || "-"} kg
+        </h4>
 
-        <p className="mt-1 line-clamp-2 text-[11px] normal-case leading-4 text-slate-400">
-          {item.notes || "Sin nota registrada."}
-        </p>
+        <div className="mt-2 grid grid-cols-3 gap-1 text-[10px]">
+          <div className="border border-white/10 bg-black/20 p-2">
+            <p className="text-slate-500">Cintura</p>
+            <p className="font-black text-white">{item.waist || "-"} cm</p>
+          </div>
+
+          <div className="border border-white/10 bg-black/20 p-2">
+            <p className="text-slate-500">Pecho</p>
+            <p className="font-black text-white">{item.chest || "-"} cm</p>
+          </div>
+
+          <div className="border border-white/10 bg-black/20 p-2">
+            <p className="text-slate-500">Cadera</p>
+            <p className="font-black text-white">{item.hips || "-"} cm</p>
+          </div>
+        </div>
+
+        <div className="mt-3 space-y-2 text-[11px] normal-case leading-4 text-slate-300">
+          <p>
+            <span className="font-black text-[#10b981]">Grasa aprox:</span>{" "}
+            {item.body_fat_range || "No estimable"}
+          </p>
+
+          <p>
+            <span className="font-black text-[#10b981]">Confianza:</span>{" "}
+            {item.confidence ? `${item.confidence}%` : "-"}
+          </p>
+
+          <p>
+            <span className="font-black text-[#10b981]">Cambios:</span>{" "}
+            {item.visual_changes || "Sin análisis visual."}
+          </p>
+
+          <p>
+            <span className="font-black text-[#10b981]">Recomendación:</span>{" "}
+            {item.recommendation || "Sin recomendación."}
+          </p>
+
+          <p>
+            <span className="font-black text-[#10b981]">Nota:</span>{" "}
+            {item.notes || "Sin nota registrada."}
+          </p>
+        </div>
       </div>
     </div>
   );
 }
+
 
 function Notice() {
   return (
