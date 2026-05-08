@@ -4,6 +4,7 @@ import cors from "cors";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -342,7 +343,7 @@ app.post("/checkins", upload.single("image"), async (req, res) => {
     }
 
     const imageUrl = await uploadImageToSupabase({
-      bucket: "checkin-photos",
+      bucket: "checkins",
       userId,
       file: req.file,
     });
@@ -399,33 +400,49 @@ app.post("/checkins", upload.single("image"), async (req, res) => {
 });
 
 async function uploadImageToSupabase({ bucket, userId, file }) {
-  if (
-    !process.env.SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    !file
-  ) {
-    return null;
+  if (!process.env.SUPABASE_URL) {
+    throw new Error("Falta SUPABASE_URL en Render");
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY en Render");
+  }
+
+  if (!file) {
+    throw new Error("No se recibió archivo para subir");
   }
 
   const extension = getFileExtension(file.mimetype);
   const filePath = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
-  const { error } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
-      upsert: false,
+      upsert: true,
     });
 
-  if (error) {
-    console.error(`Error subiendo imagen a ${bucket}:`, error);
-    return null;
+  if (uploadError) {
+    console.error("ERROR STORAGE SUPABASE:", uploadError);
+
+    throw new Error(
+      `No se pudo subir imagen al bucket ${bucket}: ${uploadError.message}`
+    );
   }
 
-  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+  const { data: publicData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(filePath);
 
-  return data?.publicUrl || null;
+  if (!publicData?.publicUrl) {
+    throw new Error("Supabase no devolvió publicUrl");
+  }
+
+  console.log("Imagen subida correctamente:", publicData.publicUrl);
+
+  return publicData.publicUrl;
 }
+
 
 async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
   if (!userId) return null;
