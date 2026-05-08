@@ -93,15 +93,7 @@ export function Dashboard() {
     });
   }, [meals]);
 
-  if (loadingData) {
-  return (
-    <DashboardLayout>
-      <DashboardHeader loadingData={loadingData} navigate={navigate} />
-      <DashboardSkeleton />
-    </DashboardLayout>
-  );
-}
-
+  
   const totals = useMemo(() => {
     return todayMeals.reduce(
       (acc, meal) => {
@@ -140,6 +132,14 @@ export function Dashboard() {
     todayMeals.length,
     Boolean(activeDiet)
   );
+    if (loadingData) {
+  return (
+    <DashboardLayout>
+      <DashboardHeader loadingData={loadingData} navigate={navigate} />
+      <DashboardSkeleton />
+    </DashboardLayout>
+  );
+}
 
   return (
     <DashboardLayout>
