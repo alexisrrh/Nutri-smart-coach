@@ -994,8 +994,11 @@ Reglas:
 - No des diagnóstico médico.
 - No afirmes precisión exacta.
 - confidence debe ser número del 1 al 100.
-- Si la foto no permite evaluar bien, baja confidence.
-- Sé útil: habla de hábitos, entrenamiento, proteína, descanso y constancia.
+- visual_changes debe tener máximo 220 caracteres.
+- recommendation debe tener máximo 280 caracteres.
+- Sé directo, claro y resumido.
+- No uses listas largas.
+- No uses markdown.
 `,
             },
             {

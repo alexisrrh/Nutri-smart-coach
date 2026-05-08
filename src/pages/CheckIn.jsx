@@ -571,24 +571,31 @@ function HistoryPanel({ history, loading }) {
   );
 }
 
+
+
 function HistoryCard({ item, index }) {
+  const short = (text, max = 180) => {
+    if (!text) return "";
+    return text.length > max ? text.slice(0, max) + "..." : text;
+  };
+
   return (
-    <div className="w-[280px] shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+    <div className="w-[300px] shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
       {item.image_url ? (
         <img
           src={item.image_url}
           alt="Check-in"
-          className="h-40 w-full object-cover"
+          className="h-44 w-full object-cover"
         />
       ) : (
-        <div className="grid h-40 place-items-center bg-white/5 text-xs text-slate-500">
+        <div className="grid h-44 place-items-center bg-white/5 text-xs text-slate-500">
           Sin foto
         </div>
       )}
 
       <div className="p-3">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[9px] font-black uppercase tracking-wide text-[#10b981]">
+        <div className="flex items-center justify-between">
+          <p className="text-[9px] font-black uppercase text-[#10b981]">
             Registro {index + 1}
           </p>
 
@@ -604,25 +611,14 @@ function HistoryCard({ item, index }) {
         </h4>
 
         <div className="mt-2 grid grid-cols-3 gap-1 text-[10px]">
-          <div className="border border-white/10 bg-black/20 p-2">
-            <p className="text-slate-500">Cintura</p>
-            <p className="font-black text-white">{item.waist || "-"} cm</p>
-          </div>
-
-          <div className="border border-white/10 bg-black/20 p-2">
-            <p className="text-slate-500">Pecho</p>
-            <p className="font-black text-white">{item.chest || "-"} cm</p>
-          </div>
-
-          <div className="border border-white/10 bg-black/20 p-2">
-            <p className="text-slate-500">Cadera</p>
-            <p className="font-black text-white">{item.hips || "-"} cm</p>
-          </div>
+          <MiniMetric label="Cintura" value={item.waist} />
+          <MiniMetric label="Pecho" value={item.chest} />
+          <MiniMetric label="Cadera" value={item.hips} />
         </div>
 
         <div className="mt-3 space-y-2 text-[11px] normal-case leading-4 text-slate-300">
           <p>
-            <span className="font-black text-[#10b981]">Grasa aprox:</span>{" "}
+            <span className="font-black text-[#10b981]">Grasa:</span>{" "}
             {item.body_fat_range || "No estimable"}
           </p>
 
@@ -633,17 +629,12 @@ function HistoryCard({ item, index }) {
 
           <p>
             <span className="font-black text-[#10b981]">Cambios:</span>{" "}
-            {item.visual_changes || "Sin análisis visual."}
+            {short(item.visual_changes, 170) || "Sin análisis visual."}
           </p>
 
           <p>
-            <span className="font-black text-[#10b981]">Recomendación:</span>{" "}
-            {item.recommendation || "Sin recomendación."}
-          </p>
-
-          <p>
-            <span className="font-black text-[#10b981]">Nota:</span>{" "}
-            {item.notes || "Sin nota registrada."}
+            <span className="font-black text-[#10b981]">Consejo:</span>{" "}
+            {short(item.recommendation, 190) || "Sin recomendación."}
           </p>
         </div>
       </div>
@@ -651,6 +642,14 @@ function HistoryCard({ item, index }) {
   );
 }
 
+function MiniMetric({ label, value }) {
+  return (
+    <div className="border border-white/10 bg-black/20 p-2">
+      <p className="text-slate-500">{label}</p>
+      <p className="font-black text-white">{value || "-"} cm</p>
+    </div>
+  );
+}
 
 function Notice() {
   return (
