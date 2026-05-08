@@ -18,15 +18,7 @@ export default function DashboardBackground() {
       <div className="pointer-events-none absolute left-1/2 top-0 h-[220px] w-[220px] -translate-x-1/2 rounded-full bg-[#10b981]/20 blur-[120px]" />
 
       {/* NOISE */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.025] mix-blend-soft-light">
-        <div
-          className="h-full w-full"
-          style={{
-            backgroundImage:
-              "url('https://grainy-gradients.vercel.app/noise.svg')",
-          }}
-        />
-      </div>
+   
 
       {/* LIGHT LINE */}
       <div className="pointer-events-none absolute left-0 top-[120px] h-px w-full bg-gradient-to-r from-transparent via-[#10b981]/30 to-transparent" />
