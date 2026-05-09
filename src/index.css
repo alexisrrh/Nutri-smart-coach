@@ -53,3 +53,12 @@ select:focus option:checked {
   background: #10b981 !important; /* Verde esmeralda */
   color: #000 !important;
 }
+@keyframes scanner {
+  0% {
+    transform: translateY(-120%);
+  }
+
+  100% {
+    transform: translateY(420%);
+  }
+}
