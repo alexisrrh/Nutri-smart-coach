@@ -1,76 +1,74 @@
-import { Camera, Sparkles, Zap } from "lucide-react";
+import { Camera, Flame, Gauge, Dumbbell } from "lucide-react";
 
-export default function AIScanHero() {
+export default function AIScanHero({ result }) {
   return (
-    <section className="relative overflow-hidden rounded-[34px] border border-[#10b981]/20 bg-[#07170f] p-4 shadow-[0_30px_120px_rgba(16,185,129,0.14)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%)]" />
-      <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#10b981]/20 blur-3xl" />
-      <div className="absolute left-0 top-0 h-full w-full bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:34px_34px]" />
+    <section className="relative overflow-hidden rounded-[30px] bg-[#092016] p-4">
+      <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[#10b981]/25 blur-3xl" />
 
       <div className="relative z-10">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_14px_#10b981]" />
+        <div className="flex items-center justify-between">
+          <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
+            AI Nutrition Scanner
+          </p>
 
-            <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
-              AI FOOD SCANNER
-            </p>
-          </div>
-
-          <div className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1">
-            <p className="text-[8px] font-black uppercase tracking-widest text-[#10b981]">
-              LIVE
-            </p>
-          </div>
+          <span className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-[#10b981]">
+            Live
+          </span>
         </div>
 
-        <div className="flex items-end justify-between gap-4">
+        <div className="mt-3 flex items-end justify-between gap-3">
           <div>
-            <h1 className="text-[32px] font-black uppercase italic leading-none">
-              Escanea
+            <h1 className="text-[30px] font-black uppercase italic leading-[0.9]">
+              Escanea <br />
+              <span className="text-[#10b981]">tu comida</span>
             </h1>
 
-            <h2 className="mt-1 text-[34px] font-black uppercase italic leading-none text-[#10b981]">
-              tu comida
-            </h2>
-
-            <p className="mt-3 max-w-[230px] text-[11px] normal-case leading-5 text-slate-300">
-              La IA analiza calorías, macros, ingredientes y si encaja con tu objetivo.
+            <p className="mt-3 max-w-[210px] text-[11px] normal-case leading-4 text-slate-300">
+              Calorías, macros y calidad nutricional en segundos.
             </p>
           </div>
 
-          <div className="relative grid h-[104px] w-[104px] shrink-0 place-items-center rounded-[30px] border border-[#10b981]/20 bg-black/30">
-            <div className="absolute inset-0 rounded-[30px] border border-[#10b981]/20 animate-ping opacity-20" />
-
-            <div className="absolute inset-3 rounded-[24px] border border-white/10" />
-
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#10b981] text-[#06110c] shadow-[0_0_40px_#10b98166]">
-              <Camera size={28} />
-            </div>
+          <div className="grid h-20 w-20 shrink-0 place-items-center rounded-[26px] bg-[#10b981] text-[#04110b] shadow-[0_0_40px_#10b98155]">
+            <Camera size={30} />
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <HeroMiniStat icon={<Zap size={13} />} label="Rápido" value="IA" />
-          <HeroMiniStat icon={<Sparkles size={13} />} label="Macros" value="Auto" />
-          <HeroMiniStat icon={<Camera size={13} />} label="Foto" value="Scan" />
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <HeroStat
+            icon={<Flame size={13} />}
+            label="Kcal"
+            value={result ? Math.round(result.calories || 0) : "--"}
+          />
+
+          <HeroStat
+            icon={<Dumbbell size={13} />}
+            label="Prot"
+            value={result ? `${Math.round(result.protein || 0)}g` : "--"}
+          />
+
+          <HeroStat
+            icon={<Gauge size={13} />}
+            label="Score"
+            value={result ? `${result.score || 0}/10` : "--"}
+          />
         </div>
       </div>
     </section>
   );
 }
 
-function HeroMiniStat({ icon, label, value }) {
+function HeroStat({ icon, label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5">
-      <div className="mb-1 flex items-center gap-1 text-[#10b981]">
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+      <div className="mb-1 flex items-center gap-1.5 text-[#10b981]">
         {icon}
-        <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+
+        <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
           {label}
         </p>
       </div>
 
-      <p className="text-xs font-black uppercase text-white">{value}</p>
+      <p className="text-sm font-black text-white">{value}</p>
     </div>
   );
 }
