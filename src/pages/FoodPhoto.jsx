@@ -1,66 +1,151 @@
-import { Clock3, Flame } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export default function RecentMealsSlider({ meals = [] }) {
-  if (!meals.length) return null;
+import AIScanHero from "../components/food/AIScanHero";
+import FoodUploadCard from "../components/food/FoodUploadCard";
+import FoodScannerLoader from "../components/food/FoodScannerLoader";
+import FoodResultCard from "../components/food/FoodResultCard";
+import FoodTags from "../components/food/FoodTags";
+import SmartSwapCard from "../components/food/SmartSwapCard";
+import RecentMealsSlider from "../components/food/RecentMealsSlider";
+import FoodPageLayout from "../components/food/FoodPageLayout";
+
+import {
+  saveMealToLocalStorage,
+  safeParse,
+} from "../components/food/foodUtils";
+
+const API_URL =
+  import.meta.env.VITE_API_URL?.trim() ||
+  "https://nutricoach-backend-frlc.onrender.com";
+
+const MEALS_KEY = "nutricoach_meals";
+
+export default function FoodPhoto() {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const [error, setError] = useState("");
+
+  const [meals, setMeals] = useState([]);
+
+  useEffect(() => {
+    const storedMeals = safeParse(
+      localStorage.getItem(MEALS_KEY),
+      []
+    );
+
+    setMeals(storedMeals);
+  }, []);
+
+  function handleImage(event) {
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith("image/")) {
+      setError("El archivo debe ser una imagen.");
+      return;
+    }
+
+    setError("");
+
+    setFile(selectedFile);
+
+    setPreview(URL.createObjectURL(selectedFile));
+
+    setResult(null);
+  }
+
+  async function analyzeFood() {
+    if (!file) {
+      setError("Sube una imagen primero.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const formData = new FormData();
+
+      formData.append("image", file);
+
+      const response = await fetch(`${API_URL}/analyze-food`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.detail ||
+            "Error analizando imagen"
+        );
+      }
+
+      setResult(data);
+
+      saveMealToLocalStorage(data, preview);
+
+      const updatedMeals = safeParse(
+        localStorage.getItem(MEALS_KEY),
+        []
+      );
+
+      setMeals(updatedMeals);
+    } catch (err) {
+      console.error("Error frontend:", err);
+
+      setError(
+        err.message || "No se pudo analizar la comida."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <section className="mt-3">
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-[8px] font-black uppercase tracking-[0.24em] text-[#10b981]">
-          Escaneos recientes
-        </p>
+    <FoodPageLayout>
+      <AIScanHero />
 
-        <span className="text-[8px] font-black uppercase tracking-widest text-white/30">
-          history
-        </span>
-      </div>
+      {!loading && !result && (
+        <FoodUploadCard
+          preview={preview}
+          handleImage={handleImage}
+          analyzeFood={analyzeFood}
+          loading={loading}
+        />
+      )}
 
-      <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {meals.map((meal, index) => (
-          <div
-            key={index}
-            className="relative h-[180px] min-w-[150px] overflow-hidden rounded-[28px] border border-white/10 bg-black/25"
-          >
-            {meal.image && (
-              <img
-                src={meal.image}
-                alt={meal.food}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
+      {loading && (
+        <FoodScannerLoader preview={preview} />
+      )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#04110b] via-[#04110b]/20 to-transparent" />
+      {!loading && result && (
+        <>
+          <FoodResultCard
+            result={result}
+            preview={preview}
+          />
 
-            <div className="absolute left-3 top-3 rounded-full border border-[#10b981]/25 bg-black/45 px-2 py-1 backdrop-blur-xl">
-              <p className="text-[7px] font-black uppercase tracking-widest text-[#10b981]">
-                {meal.score || 0}/10
-              </p>
-            </div>
+          <FoodTags result={result} />
 
-            <div className="absolute bottom-3 left-3 right-3">
-              <p className="line-clamp-2 text-[11px] font-black uppercase italic leading-4 text-white">
-                {meal.food}
-              </p>
+          <SmartSwapCard result={result} />
+        </>
+      )}
 
-              <div className="mt-2 flex items-center justify-between">
-                <div className="flex items-center gap-1 text-[#10b981]">
-                  <Flame size={11} />
-                  <span className="text-[8px] font-black">
-                    {Math.round(meal.calories || 0)} kcal
-                  </span>
-                </div>
+      <RecentMealsSlider meals={meals} />
 
-                <div className="flex items-center gap-1 text-white/40">
-                  <Clock3 size={10} />
-                  <span className="text-[7px] font-black uppercase">
-                    reciente
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+      {error && (
+        <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-[11px] font-bold text-red-300">
+          {error}
+        </div>
+      )}
+    </FoodPageLayout>
   );
 }
