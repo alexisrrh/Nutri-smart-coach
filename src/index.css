@@ -1,64 +1,82 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #060b13;
+  color: white;
+  font-family: Inter, sans-serif;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: white;
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
   background: #07130d;
 }
 
-.input {
-  width: 100%;
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.75rem 1rem;
-  outline: none;
-  color: white;
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.4);
+  border-radius: 999px;
 }
 
-.input option {
-  color: black;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.7);
 }
 
-/* src/index.css */
-:root {
-  color-scheme: dark;
-}
+/* ANIMACIONES */
 
-/* Quitar flechas de inputs numéricos */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type=number] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* src/index.css */
-
-/* 1. Forzar modo oscuro para controles del sistema */
-:root {
-  color-scheme: dark;
-}
-
-/* 2. Estilo para las opciones del desplegable */
-select option {
-  background-color: #020617; /* El mismo fondo oscuro de tu app */
-  color: white;
-  font-family: monospace;
-}
-
-/* 3. Evitar el azul feo al seleccionar (en algunos navegadores) */
-select:focus option:checked {
-  background: #10b981 !important; /* Verde esmeralda */
-  color: #000 !important;
-}
-@keyframes scanner {
+@keyframes floatSlow {
   0% {
-    transform: translateY(-120%);
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
   }
 
   100% {
-    transform: translateY(420%);
+    transform: translateY(0px);
   }
+}
+
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
 }
