@@ -11,7 +11,7 @@ import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { CheckInHistory } from "../components/checkin/CheckInHistory";
 import { CheckInNotice } from "../components/checkin/CheckInNotice";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
-
+import { CheckInCompare } from "../components/checkin/CheckInCompare";
 import {
   getWeightDiff,
   safeParse,
@@ -242,7 +242,7 @@ export function CheckIn() {
         <CheckInAlert type="success" text={message} />
 
         <CheckInNotice />
-
+<CheckInCompare history={history} />
         <CheckInHistory history={history} loading={loadingHistory} />
       </div>
 

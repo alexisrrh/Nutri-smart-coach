@@ -36,18 +36,17 @@ export function Dashboard() {
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  async function loadDashboardData() {
-    setLoadingData(true);
-
     const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
     const localMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
 
     setProfile(savedProfile);
     setMeals(localMeals);
+    setLoadingData(false);
 
+    loadRemoteDashboardData(savedProfile, localMeals);
+  }, []);
+
+  async function loadRemoteDashboardData(savedProfile, localMeals) {
     try {
       const {
         data: { user },
@@ -55,10 +54,7 @@ export function Dashboard() {
 
       const userId = user?.id || savedProfile?.id || savedProfile?.user_id;
 
-      if (!userId) {
-        setLoadingData(false);
-        return;
-      }
+      if (!userId) return;
 
       const [mealsRes, checkinsRes, dietsRes] = await Promise.allSettled([
         fetch(`${API_URL}/meal-analyses/${userId}`),
@@ -68,7 +64,10 @@ export function Dashboard() {
 
       if (mealsRes.status === "fulfilled" && mealsRes.value.ok) {
         const data = await mealsRes.value.json();
-        setMeals(data.meal_analyses || localMeals);
+        const remoteMeals = data.meal_analyses || localMeals;
+
+        setMeals(remoteMeals);
+        localStorage.setItem(MEALS_KEY, JSON.stringify(remoteMeals));
       }
 
       if (checkinsRes.status === "fulfilled" && checkinsRes.value.ok) {
@@ -81,9 +80,7 @@ export function Dashboard() {
         setDietPlans(data.diet_plans || []);
       }
     } catch (error) {
-      console.error("Error cargando dashboard:", error);
-    } finally {
-      setLoadingData(false);
+      console.error("Error cargando dashboard remoto:", error);
     }
   }
 
@@ -138,7 +135,7 @@ export function Dashboard() {
     Boolean(activeDiet)
   );
 
-  if (loadingData) {
+  if (loadingData && !profile && meals.length === 0) {
     return (
       <DashboardLayout>
         <DashboardHeader loadingData={loadingData} navigate={navigate} />
