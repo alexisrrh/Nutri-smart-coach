@@ -49,7 +49,7 @@ export default function AIHeroCard({
             </p>
           </div>
 
-          <div className="-mr-2 scale-75">
+          <div className="-mr-1 scale-90">
             <AIOrb />
           </div>
         </div>
