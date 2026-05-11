@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { LogIn, Mail, Lock, AlertCircle } from "lucide-react";
+import {
+  LogIn,
+  Mail,
+  Lock,
+  AlertCircle,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 
 export function Login() {
   const navigate = useNavigate();
@@ -19,13 +27,13 @@ export function Login() {
     setLoading(true);
 
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: form.email,
+      email: form.email.trim(),
       password: form.password,
     });
 
     if (error) {
       setLoading(false);
-      setError("El correo o la contraseña no son válidos");
+      setError("El correo o la contraseña no son válidos.");
       return;
     }
 
@@ -50,19 +58,26 @@ export function Login() {
       const newProfile = {
         id: user.id,
         email: user.email,
+        name: "",
         age: null,
         weight: null,
         height: null,
-        goal: null,
-        preferences: {},
+        gender: "male",
+        activity_level: "moderate",
+        goal: "perder_grasa",
+        preferences: {
+          gender: "male",
+          activity: "moderate",
+          goal: "perder_grasa",
+        },
         updated_at: new Date().toISOString(),
       };
 
-     const { data: createdProfile, error: createError } = await supabase
-  .from("profiles")
-  .upsert(newProfile, { onConflict: "id" })
-  .select()
-  .single();
+      const { data: createdProfile, error: createError } = await supabase
+        .from("profiles")
+        .upsert(newProfile, { onConflict: "id" })
+        .select()
+        .single();
 
       if (createError) {
         console.error("Error creando perfil:", createError);
@@ -71,10 +86,7 @@ export function Login() {
         return;
       }
 
-      localStorage.setItem(
-        "nutricoach_profile",
-        JSON.stringify(createdProfile)
-      );
+      localStorage.setItem("nutricoach_profile", JSON.stringify(createdProfile));
     } else {
       localStorage.setItem("nutricoach_profile", JSON.stringify(profileData));
     }
@@ -84,72 +96,96 @@ export function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#060b13] px-6 text-slate-200 font-sans tracking-tight">
-      <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#ffffff03] p-10 shadow-2xl backdrop-blur-2xl">
-        <div className="absolute left-1/2 top-0 h-[2px] w-32 -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#06110e] px-4 py-8 text-white font-sans">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,#10b98122,transparent_35%),radial-gradient(circle_at_20%_85%,#38bdf822,transparent_35%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:46px_46px]" />
 
-        <div className="mb-10 text-center">
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-            <LogIn size={30} />
+      <div className="relative w-full max-w-md">
+        <button
+          onClick={() => navigate("/")}
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
+        >
+          <ArrowLeft size={14} />
+          Inicio
+        </button>
+
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+          <div className="absolute left-1/2 top-0 h-[2px] w-40 -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+
+          <div className="mb-8 text-center">
+            <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-400 text-[#06110e] shadow-[0_0_35px_#10b98155]">
+              <LogIn size={30} />
+            </div>
+
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
+              <Sparkles size={13} />
+              Acceso inteligente
+            </div>
+
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter sm:text-4xl">
+              Bienvenido
+            </h1>
+
+            <p className="mt-4 text-sm text-white/50">
+              Entra a tu cuenta de NutriCoach iA.
+            </p>
           </div>
 
-          <h1 className="bg-gradient-to-br from-white via-white to-emerald-500/40 bg-clip-text text-3xl font-black tracking-tighter text-transparent">
-            Bienvenido de nuevo
-          </h1>
+          {error && (
+            <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-bold text-red-200">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              {error}
+            </div>
+          )}
 
-          <p className="mt-2 text-sm font-medium text-slate-400/80">
-            Entra a tu cuenta de NutriCoach iA
-          </p>
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Correo electrónico"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="tu@email.com"
+              icon={<Mail size={18} />}
+            />
 
-        {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-medium text-red-400">
-            <AlertCircle size={18} />
-            {error}
-          </div>
-        )}
+            <Input
+              label="Contraseña"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              icon={<Lock size={18} />}
+            />
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <Input
-            label="Correo Electrónico"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="tu@email.com"
-            icon={<Mail size={18} />}
-          />
-
-          <Input
-            label="Contraseña"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            icon={<Lock size={18} />}
-          />
-
-          <button
-            disabled={loading}
-            className="group relative w-full overflow-hidden rounded-xl border border-emerald-500/50 bg-emerald-500/10 py-4 text-sm font-black uppercase tracking-[0.2em] text-emerald-400 transition-all hover:bg-emerald-500 hover:text-[#060b13] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {loading ? "Iniciando..." : "Iniciar Sesión"}
-            </span>
-          </button>
-        </form>
-
-        <div className="mt-10 border-t border-white/5 pt-6 text-center">
-          <p className="text-sm font-medium text-slate-500">
-            ¿Aún no tienes cuenta?{" "}
-            <Link
-              to="/registro"
-              className="font-bold text-emerald-400 transition-colors hover:text-emerald-300"
+            <button
+              disabled={loading}
+              className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.22em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Regístrate aquí
-            </Link>
-          </p>
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {loading ? "Iniciando..." : "Iniciar sesión"}
+                {!loading && (
+                  <ArrowRight
+                    size={17}
+                    className="transition group-hover:translate-x-1"
+                  />
+                )}
+              </span>
+            </button>
+          </form>
+
+          <div className="mt-8 border-t border-white/5 pt-6 text-center">
+            <p className="text-sm text-white/45">
+              ¿Aún no tienes cuenta?{" "}
+              <Link
+                to="/registro"
+                className="font-black text-emerald-300 transition hover:text-white"
+              >
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>
@@ -158,19 +194,17 @@ export function Login() {
 
 function Input({ label, icon, ...props }) {
   return (
-    <div className="group">
-      <p className="mb-2 ml-1 text-[11px] font-black uppercase tracking-widest text-white/30 transition-colors group-focus-within:text-emerald-400">
+    <div>
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
 
-      <div className="relative flex items-center">
-        <div className="absolute left-0 text-emerald-500/40 transition-colors group-focus-within:text-emerald-400">
-          {icon}
-        </div>
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
+        <span className="text-emerald-300">{icon}</span>
 
         <input
           {...props}
-          className="w-full border-b border-white/10 bg-transparent py-3 pl-8 text-base font-semibold text-white outline-none transition-all placeholder:text-white/5 focus:border-emerald-500"
+          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
         />
       </div>
     </div>

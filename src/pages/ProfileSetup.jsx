@@ -8,6 +8,12 @@ import {
   AlertCircle,
   CheckCircle2,
   LogOut,
+  Sparkles,
+  Ruler,
+  Weight,
+  Calendar,
+  Activity,
+  Target,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import BottomNav from "../components/BottomNav";
@@ -20,7 +26,6 @@ export function ProfileSetup() {
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState("");
-
   const [user, setUser] = useState(null);
 
   const [form, setForm] = useState({
@@ -55,6 +60,8 @@ export function ProfileSetup() {
 
       setUser(user);
 
+      const localProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
+
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -64,18 +71,15 @@ export function ProfileSetup() {
       if (profileError) {
         console.error("Error cargando perfil:", profileError);
         setError("No se pudo cargar el perfil.");
-        return;
       }
-
-      const localProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
 
       const profile = profileData || localProfile;
 
       setForm({
         name: profile?.name || "",
-        age: profile?.age || "",
-        weight: profile?.weight || "",
-        height: profile?.height || "",
+        age: profile?.age || profile?.edad || "",
+        weight: profile?.weight || profile?.peso || "",
+        height: profile?.height || profile?.altura || "",
         gender: profile?.gender || "male",
         activity:
           profile?.activity_level ||
@@ -93,6 +97,10 @@ export function ProfileSetup() {
             user_id: user.id,
             id: user.id,
             activity: profileData.activity_level,
+            objetivo: profileData.goal,
+            peso: profileData.weight,
+            altura: profileData.height,
+            edad: profileData.age,
           })
         );
       }
@@ -102,7 +110,7 @@ export function ProfileSetup() {
   }
 
   async function handleLogout() {
-    if (!window.confirm("¿CONFIRMAR CIERRE DE SESIÓN?")) return;
+    if (!window.confirm("¿Cerrar sesión?")) return;
 
     await supabase.auth.signOut();
 
@@ -116,6 +124,7 @@ export function ProfileSetup() {
 
   function handleChange(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }));
+    setSaved(false);
   }
 
   async function handleSubmit(e) {
@@ -129,6 +138,11 @@ export function ProfileSetup() {
 
       if (!currentUser) {
         setError("No hay usuario conectado.");
+        return;
+      }
+
+      if (!form.name || !form.age || !form.weight || !form.height) {
+        setError("Completa nombre, edad, peso y altura.");
         return;
       }
 
@@ -176,7 +190,7 @@ export function ProfileSetup() {
       localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile));
 
       setSaved(true);
-      setTimeout(() => navigate("/dashboard"), 900);
+      setTimeout(() => navigate("/dashboard"), 800);
     } finally {
       setLoading(false);
     }
@@ -184,10 +198,10 @@ export function ProfileSetup() {
 
   if (loadingProfile) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-[#060b13] text-white">
+      <section className="flex min-h-screen items-center justify-center bg-[#06110e] text-white">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-10 w-10 animate-pulse border border-emerald-500/30 bg-emerald-500/10" />
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-400">
+          <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-emerald-400/30 bg-emerald-400/10" />
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
             Cargando perfil...
           </p>
         </div>
@@ -196,141 +210,171 @@ export function ProfileSetup() {
   }
 
   return (
-    <section className="min-h-screen bg-[#060b13] px-4 py-6 pb-32 text-slate-200 tracking-tight font-sans">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6 flex items-center justify-between border-b border-white/5 pb-4">
+    <section className="min-h-screen bg-[#06110e] px-4 py-5 pb-32 text-white font-sans">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-5 flex items-center justify-between">
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400/70 transition hover:text-emerald-400"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
           >
-            <ArrowLeft size={15} /> Dashboard
+            <ArrowLeft size={14} />
+            Dashboard
           </button>
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red-500/60 transition hover:text-red-400"
+            className="inline-flex items-center gap-2 rounded-full border border-red-400/10 bg-red-400/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-300/60 transition hover:border-red-400/30 hover:text-red-300"
           >
             <LogOut size={14} />
             Salir
           </button>
         </div>
 
-        <div className="relative border border-white/10 bg-[#ffffff03] p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
-          <div className="absolute left-0 top-0 h-[2px] w-24 bg-gradient-to-r from-emerald-500 to-transparent" />
+        <div className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl sm:p-7">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                <Sparkles size={13} />
+                Configuración inteligente
+              </div>
 
-          <div className="mb-8">
-            <div className="mb-5 inline-flex h-13 w-13 items-center justify-center border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-              <UserRound size={26} />
+              <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl">
+                Perfil personal
+              </h1>
+
+              <p className="mt-2 max-w-xl text-sm text-white/50">
+                Ajusta tus datos para que NutriCoach calcule mejor tus metas,
+                macros y recomendaciones.
+              </p>
             </div>
 
-            <h1 className="bg-gradient-to-br from-white via-white to-emerald-500/50 bg-clip-text text-3xl font-black uppercase tracking-tighter text-transparent sm:text-4xl">
-              Perfil Personal
-            </h1>
+            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400 text-[#06110e] shadow-[0_0_25px_#10b98155]">
+                <UserRound size={26} />
+              </div>
 
-            <p className="mt-2 text-xs font-black uppercase tracking-[0.25em] text-emerald-500/60">
-              Configuración de usuario_
-            </p>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-white/35">
+                  Usuario
+                </p>
+                <p className="max-w-[180px] truncate text-sm font-bold text-white">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {error && (
-            <div className="mb-6 flex items-start gap-3 border border-red-500/20 bg-red-500/10 p-4 text-xs font-bold normal-case text-red-300">
-              <AlertCircle size={17} className="mt-0.5 shrink-0" />
-              {error}
-            </div>
-          )}
+        {error && (
+          <AlertBox type="error" icon={<AlertCircle size={17} />}>
+            {error}
+          </AlertBox>
+        )}
 
-          {saved && (
-            <div className="mb-6 flex items-center gap-3 border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs font-black uppercase tracking-widest text-emerald-400">
-              <CheckCircle2 size={17} />
-              Perfil actualizado con éxito_
-            </div>
-          )}
+        {saved && (
+          <AlertBox type="success" icon={<CheckCircle2 size={17} />}>
+            Perfil actualizado con éxito.
+          </AlertBox>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl backdrop-blur-xl sm:p-7"
+        >
+          <div className="mb-6 grid gap-4 md:grid-cols-2">
             <Input
-              label="Nombre y Apellido"
+              icon={<UserRound size={16} />}
+              label="Nombre y apellido"
               name="name"
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="EJ. ALEXIS RODRÍGUEZ"
+              placeholder="Ej. Alexis Rodríguez"
             />
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <Input
-                label="Edad"
-                name="age"
-                type="number"
-                value={form.age}
-                onChange={(e) => handleChange("age", e.target.value)}
-                required
-              />
+            <CustomSelect
+              icon={<UserRound size={16} />}
+              label="Género"
+              value={form.gender}
+              options={[
+                { id: "male", label: "Hombre" },
+                { id: "female", label: "Mujer" },
+              ]}
+              onChange={(val) => handleChange("gender", val)}
+            />
+          </div>
 
-              <Input
-                label="Peso (kg)"
-                name="weight"
-                type="number"
-                step="0.1"
-                value={form.weight}
-                onChange={(e) => handleChange("weight", e.target.value)}
-                required
-              />
+          <div className="mb-6 grid gap-4 md:grid-cols-3">
+            <Input
+              icon={<Calendar size={16} />}
+              label="Edad"
+              name="age"
+              type="number"
+              value={form.age}
+              onChange={(e) => handleChange("age", e.target.value)}
+              required
+            />
 
-              <Input
-                label="Altura (cm)"
-                name="height"
-                type="number"
-                value={form.height}
-                onChange={(e) => handleChange("height", e.target.value)}
-                required
-              />
-            </div>
+            <Input
+              icon={<Weight size={16} />}
+              label="Peso"
+              name="weight"
+              type="number"
+              step="0.1"
+              value={form.weight}
+              onChange={(e) => handleChange("weight", e.target.value)}
+              required
+              suffix="kg"
+            />
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <CustomSelect
-                label="Género"
-                value={form.gender}
-                options={[
-                  { id: "male", label: "HOMBRE" },
-                  { id: "female", label: "MUJER" },
-                ]}
-                onChange={(val) => handleChange("gender", val)}
-              />
+            <Input
+              icon={<Ruler size={16} />}
+              label="Altura"
+              name="height"
+              type="number"
+              value={form.height}
+              onChange={(e) => handleChange("height", e.target.value)}
+              required
+              suffix="cm"
+            />
+          </div>
 
-              <CustomSelect
-                label="Nivel de Actividad"
-                value={form.activity}
-                options={[
-                  { id: "low", label: "SEDENTARIO" },
-                  { id: "moderate", label: "MODERADA (3-5 DÍAS)" },
-                  { id: "high", label: "ALTA (ATLETA)" },
-                ]}
-                onChange={(val) => handleChange("activity", val)}
-              />
-            </div>
+          <div className="mb-7 grid gap-4 md:grid-cols-2">
+            <CustomSelect
+              icon={<Activity size={16} />}
+              label="Nivel de actividad"
+              value={form.activity}
+              options={[
+                { id: "low", label: "Sedentario" },
+                { id: "moderate", label: "Moderada · 3-5 días" },
+                { id: "high", label: "Alta · atleta" },
+              ]}
+              onChange={(val) => handleChange("activity", val)}
+            />
 
             <CustomSelect
-              label="Objetivo Fitness"
+              icon={<Target size={16} />}
+              label="Objetivo fitness"
               value={form.goal}
               options={[
-                { id: "perder_grasa", label: "PERDER GRASA" },
-                { id: "ganar_musculo", label: "GANAR MÚSCULO" },
-                { id: "mantener_peso", label: "MANTENER PESO" },
+                { id: "perder_grasa", label: "Perder grasa" },
+                { id: "ganar_musculo", label: "Ganar músculo" },
+                { id: "mantener_peso", label: "Mantener peso" },
               ]}
               onChange={(val) => handleChange("goal", val)}
             />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full overflow-hidden border border-emerald-500/50 bg-emerald-500/10 py-4 text-xs font-black uppercase tracking-[0.35em] text-emerald-400 transition-all hover:bg-emerald-500 hover:text-black hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <div className="relative z-10 flex items-center justify-center gap-3">
-                <Save size={17} />
-                {loading ? "Guardando..." : "Guardar Cambios"}
-              </div>
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.24em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <div className="relative z-10 flex items-center justify-center gap-3">
+              <Save size={17} />
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </div>
+          </button>
+        </form>
       </div>
 
       <BottomNav />
@@ -338,7 +382,23 @@ export function ProfileSetup() {
   );
 }
 
-function CustomSelect({ label, value, options, onChange }) {
+function AlertBox({ type, icon, children }) {
+  const styles =
+    type === "error"
+      ? "border-red-400/20 bg-red-400/10 text-red-200"
+      : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+
+  return (
+    <div
+      className={`mb-5 flex items-start gap-3 rounded-2xl border p-4 text-sm font-bold ${styles}`}
+    >
+      <span className="mt-0.5 shrink-0">{icon}</span>
+      {children}
+    </div>
+  );
+}
+
+function CustomSelect({ icon, label, value, options, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const selectedOption = options.find((opt) => opt.id === value);
@@ -355,48 +415,51 @@ function CustomSelect({ label, value, options, onChange }) {
   }, []);
 
   return (
-    <div className="relative group" ref={containerRef}>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/30 transition-colors group-focus-within:text-emerald-500">
+    <div className="relative" ref={containerRef}>
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
 
-      <div
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex cursor-pointer items-center justify-between border-b py-3 transition-all ${
+        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
           isOpen
-            ? "border-emerald-500 bg-white/5"
-            : "border-white/10 hover:border-white/30"
+            ? "border-emerald-400/50 bg-emerald-400/10"
+            : "border-white/10 bg-black/20 hover:border-white/20"
         }`}
       >
-        <span className="text-sm font-bold uppercase text-white">
+        <span className="flex items-center gap-3 text-sm font-bold text-white">
+          <span className="text-emerald-300">{icon}</span>
           {selectedOption?.label}
         </span>
 
         <ChevronDown
           size={16}
-          className={`text-emerald-500 transition-transform duration-300 ${
+          className={`text-emerald-300 transition-transform duration-300 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
-      </div>
+      </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full border border-white/10 bg-[#0d141f] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl">
+        <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b1713] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl">
           {options.map((opt) => (
-            <div
+            <button
+              type="button"
               key={opt.id}
               onClick={() => {
                 onChange(opt.id);
                 setIsOpen(false);
               }}
-              className={`cursor-pointer px-5 py-4 text-xs font-bold uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-black ${
+              className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-emerald-400 hover:text-[#06110e] ${
                 value === opt.id
-                  ? "bg-white/5 text-emerald-400"
-                  : "text-slate-400"
+                  ? "bg-emerald-400/10 text-emerald-300"
+                  : "text-white/55"
               }`}
             >
               {opt.label}
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -404,17 +467,27 @@ function CustomSelect({ label, value, options, onChange }) {
   );
 }
 
-function Input({ label, ...props }) {
+function Input({ label, icon, suffix, ...props }) {
   return (
-    <div className="group">
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/30 transition-colors group-focus-within:text-emerald-500">
+    <div>
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
 
-      <input
-        {...props}
-        className="w-full border-b border-white/10 bg-transparent py-3 text-sm font-bold text-white outline-none transition-all placeholder:text-white/5 focus:border-emerald-500"
-      />
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
+        <span className="text-emerald-300">{icon}</span>
+
+        <input
+          {...props}
+          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+        />
+
+        {suffix && (
+          <span className="text-xs font-black uppercase tracking-widest text-white/30">
+            {suffix}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
