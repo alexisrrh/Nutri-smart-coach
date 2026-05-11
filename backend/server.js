@@ -566,12 +566,13 @@ function buildDietConfig(preferences = {}) {
     preferences.durationDays ||
     7;
 
-  const rawMeals =
-    preferences.mealsPerDay ||
-    preferences.meals_per_day ||
-    preferences.meals ||
-    4;
-
+const rawMeals =
+  preferences.mealsPerDay ||
+  preferences.meals_per_day ||
+  preferences.meals ||
+  preferences.comidas ||
+  preferences.comidasDia ||
+  4;
   const days = clamp(Number(rawDays) || 7, 1, 7);
   const mealsPerDay = clamp(Number(rawMeals) || 4, 2, 6);
 
@@ -701,22 +702,114 @@ function normalizeGeneratedDiet(week = [], dietConfig) {
 
   return days.map((dayName, dayIndex) => {
     const sourceDay = week[dayIndex] || {};
-    const meals = Array.isArray(sourceDay.meals) ? sourceDay.meals : [];
+    const rawMeals = Array.isArray(sourceDay.meals) ? sourceDay.meals : [];
+
+    let meals = rawMeals
+      .slice(0, dietConfig.mealsPerDay)
+      .map((meal, index) =>
+        sanitizeDietMeal(meal, index, dietConfig)
+      );
+
+    while (meals.length < dietConfig.mealsPerDay) {
+      meals.push(
+        createDefaultMeal(meals.length, dietConfig)
+      );
+    }
 
     return {
-      day: sourceDay.day || dayName,
-      meals: meals.slice(0, dietConfig.mealsPerDay).map((meal, index) => ({
-        time: meal.time || defaultDietMealTime(index, dietConfig.mealsPerDay),
-        name: meal.name || defaultDietMealName(index, dietConfig.mealsPerDay),
-        food: meal.food || "Comida personalizada",
-        details: meal.details || "Cantidades no especificadas",
-        calories: Number(meal.calories) || 0,
-        protein: Number(meal.protein) || 0,
-        carbs: Number(meal.carbs) || 0,
-        fat: Number(meal.fat) || 0,
-      })),
+      day: dayName,
+      meals,
     };
   });
+}
+function sanitizeDietMeal(meal = {}, index, dietConfig) {
+  let food = meal.food || "Comida personalizada";
+  let details = meal.details || "Cantidades no especificadas";
+
+  if (dietConfig.isLowCarb) {
+    const cleaned = removeForbiddenLowCarbFoods(food, details);
+    food = cleaned.food;
+    details = cleaned.details;
+  }
+
+  return {
+    time: meal.time || defaultDietMealTime(index, dietConfig.mealsPerDay),
+    name: meal.name || defaultDietMealName(index, dietConfig.mealsPerDay),
+    food,
+    details,
+    calories: Number(meal.calories) || 0,
+    protein: Number(meal.protein) || 0,
+    carbs: dietConfig.isLowCarb
+      ? Math.min(Number(meal.carbs) || 8, 18)
+      : Number(meal.carbs) || 0,
+    fat: Number(meal.fat) || 0,
+  };
+}
+
+function removeForbiddenLowCarbFoods(food = "", details = "") {
+  const forbidden = [
+    "pan",
+    "arroz",
+    "pasta",
+    "avena",
+    "cereal",
+    "cereales",
+    "azúcar",
+    "tortilla",
+    "tortillas",
+    "patata",
+    "boniato",
+    "yuca",
+    "harina",
+    "galleta",
+    "galletas",
+    "maíz",
+  ];
+
+  let newFood = String(food);
+  let newDetails = String(details);
+
+  const text = `${newFood} ${newDetails}`.toLowerCase();
+
+  const hasForbidden = forbidden.some((item) =>
+    text.includes(item)
+  );
+
+  if (!hasForbidden) {
+    return { food: newFood, details: newDetails };
+  }
+
+  return {
+    food: "Proteína con verduras bajas en carbohidratos",
+    details:
+      "180g pollo, pescado o huevos; ensalada verde; aguacate; aceite de oliva",
+  };
+}
+
+function createDefaultMeal(index, dietConfig) {
+  if (dietConfig.isLowCarb) {
+    return {
+      time: defaultDietMealTime(index, dietConfig.mealsPerDay),
+      name: defaultDietMealName(index, dietConfig.mealsPerDay),
+      food: "Huevos con aguacate y ensalada",
+      details: "2-3 huevos, 80g aguacate, ensalada verde",
+      calories: 420,
+      protein: 28,
+      carbs: 8,
+      fat: 30,
+    };
+  }
+
+  return {
+    time: defaultDietMealTime(index, dietConfig.mealsPerDay),
+    name: defaultDietMealName(index, dietConfig.mealsPerDay),
+    food: "Pollo con verduras",
+    details: "180g pollo, 200g verduras, aceite de oliva",
+    calories: 430,
+    protein: 45,
+    carbs: 20,
+    fat: 16,
+  };
 }
 
 function defaultDietMealTime(index, mealsPerDay) {

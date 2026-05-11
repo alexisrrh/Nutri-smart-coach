@@ -1,20 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
-  BarChart2,
-  Calendar,
   CheckCircle2,
   Download,
   Plus,
   RefreshCcw,
-  Scan,
   Share2,
   ShoppingCart,
   Sparkles,
-  User,
 } from "lucide-react";
 
+import BottomNav from "../components/BottomNav";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
@@ -30,23 +27,39 @@ const API_URL =
   "https://nutricoach-backend-frlc.onrender.com";
 
 const DIET_TYPES = [
-  { value: "balanced", label: "⚖️ Balanceada" },
-  { value: "keto", label: "🥑 Cetogénica" },
-  { value: "vegetarian", label: "🌱 Vegetariana" },
-  { value: "vegan", label: "🌿 Vegana" },
-  { value: "hyperprotein", label: "🥩 Alta proteína" },
+  { value: "balanced", label: "Balanceada" },
+  { value: "low_carb", label: "Sin carbohidratos" },
+  { value: "keto", label: "Keto" },
+  { value: "hyperprotein", label: "Alta proteína" },
+  { value: "vegetarian", label: "Vegetariana" },
+  { value: "vegan", label: "Vegana" },
 ];
 
 const GOAL_TYPES = [
-  { value: "lose_fat", label: "🔥 Perder grasa" },
-  { value: "gain_muscle", label: "💪 Ganar músculo" },
-  { value: "maintain", label: "🏃‍♂️ Mantener" },
+  { value: "lose_fat", label: "Perder grasa" },
+  { value: "gain_muscle", label: "Ganar músculo" },
+  { value: "maintain", label: "Mantener" },
 ];
 
 const BUDGET_TYPES = [
-  { value: "low", label: "🪙 Económico" },
-  { value: "medium", label: "💵 Estándar" },
-  { value: "high", label: "💎 Premium" },
+  { value: "low", label: "Económico" },
+  { value: "medium", label: "Normal" },
+  { value: "high", label: "Premium" },
+];
+
+const PLAN_DAYS = [
+  { value: "2", label: "2 días" },
+  { value: "3", label: "3 días" },
+  { value: "5", label: "5 días" },
+  { value: "7", label: "7 días" },
+];
+
+const MEALS_PER_DAY = [
+  { value: "2", label: "2 comidas · ayuno" },
+  { value: "3", label: "3 comidas" },
+  { value: "4", label: "4 comidas" },
+  { value: "5", label: "5 comidas" },
+  { value: "6", label: "6 comidas" },
 ];
 
 export function MealPlan() {
@@ -55,9 +68,11 @@ export function MealPlan() {
   const [formData, setFormData] = useState({
     dietType: "balanced",
     goal: "lose_fat",
+    planDays: "7",
     mealsPerDay: "4",
     budget: "medium",
     cookingLevel: "easy",
+    homeFoods: "",
     exclusions: "",
   });
 
@@ -90,18 +105,20 @@ export function MealPlan() {
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
   const hasPlan = plan.length > 0;
 
-  const completedMeals = useMemo(() => {
-    return Object.values(progress).filter(Boolean).length;
-  }, [progress]);
+  const completedMeals = useMemo(
+    () => Object.values(progress).filter(Boolean).length,
+    [progress]
+  );
 
-  const totalMeals = useMemo(() => {
-    return plan.reduce((acc, day) => acc + (day.meals?.length || 0), 0);
-  }, [plan]);
+  const totalMeals = useMemo(
+    () => plan.reduce((acc, day) => acc + (day.meals?.length || 0), 0),
+    [plan]
+  );
 
   const completionPercent =
     totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0;
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     setLoading(true);
@@ -113,42 +130,34 @@ export function MealPlan() {
       const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
 
       if (!isProfileComplete(savedProfile)) {
-        throw new Error(
-          "Completa tu perfil antes de generar una dieta personalizada."
-        );
+        throw new Error("Completa tu perfil antes de generar una dieta.");
       }
-const response = await fetch(`${API_URL}/generate-diet`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    profile: savedProfile,
-    preferences: formData,
-    user_id: savedProfile?.id || savedProfile?.user_id || "",
-  }),
-});
-      const text = await response.text();
 
-      let data;
+      const response = await fetch(`${API_URL}/generate-diet`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile: savedProfile,
+          preferences: {
+            ...formData,
+            days: Number(formData.planDays),
+            mealsPerDay: Number(formData.mealsPerDay),
+            lowCarb:
+              formData.dietType === "low_carb" || formData.dietType === "keto",
+          },
+          user_id: savedProfile?.id || savedProfile?.user_id || "",
+        }),
+      });
 
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("El backend no devolvió una respuesta válida.");
-      }
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            data?.detail ||
-            `Error en el servidor: ${response.status}`
-        );
+        throw new Error(data?.error || data?.detail || "Error generando dieta.");
       }
 
       const cleanPlan = normalizePlan(data.week || []);
 
-      if (cleanPlan.length === 0) {
+      if (!cleanPlan.length) {
         throw new Error("No se pudo generar una dieta válida.");
       }
 
@@ -159,24 +168,20 @@ const response = await fetch(`${API_URL}/generate-diet`, {
       localStorage.setItem(PLAN_KEY, JSON.stringify(cleanPlan));
       localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
 
-      if (data.usedFallback) {
-        setNotice(
-          "Se generó una dieta base porque la IA falló temporalmente."
-        );
-      } else {
-        setNotice("Dieta generada correctamente.");
-      }
-    } catch (err) {
-      console.error("Fallo de conexión con el Smart Coach:", err);
-      setErrorMessage(
-        err.message || "No se ha podido conectar con el servidor de IA."
+      setNotice(
+        data.usedFallback
+          ? "Se generó una dieta base porque la IA tardó demasiado."
+          : "Dieta generada correctamente."
       );
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(err.message || "No se pudo generar la dieta.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleResetPlan = () => {
+  function handleResetPlan() {
     setPlan([]);
     setProgress({});
     setActiveDay(0);
@@ -186,93 +191,105 @@ const response = await fetch(`${API_URL}/generate-diet`, {
 
     localStorage.removeItem(PLAN_KEY);
     localStorage.removeItem(PROGRESS_KEY);
-  };
+  }
 
-  const toggleMeal = (mealId) => {
+  function toggleMeal(mealId) {
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(updated));
       return updated;
     });
-  };
+  }
 
-  const handleShare = async () => {
+  async function handleShare() {
     const text = buildShareText(plan);
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Mi dieta semanal - Nutri Smart Coach",
+          title: "Mi dieta semanal - NutriSmart Coach",
           text,
         });
       } else {
         await navigator.clipboard.writeText(text);
         setNotice("Dieta copiada al portapapeles.");
       }
-    } catch (error) {
-      console.error("Error compartiendo dieta:", error);
+    } catch {
       setErrorMessage("No se pudo compartir la dieta.");
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#06110c] pb-28 text-white font-sans">
+    <section className="relative min-h-screen overflow-x-hidden bg-[#06110c] pb-32 text-white">
       <PrintablePlan plan={plan} />
 
-      <main className="mx-auto max-w-6xl space-y-3 px-3 pt-4 sm:space-y-5 sm:px-6 sm:pt-8">
-        <header className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-[9px] font-black uppercase tracking-[0.32em] text-[#10b981]">
-              NUTRI SMART COACH
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98120,transparent_36%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:34px_34px]" />
+
+      <main className="relative z-10 mx-auto max-w-md space-y-3 px-3 pt-3 lg:max-w-6xl">
+        <header className="relative overflow-hidden rounded-[34px] border border-[#10b981]/20 bg-[#07170f] p-4 shadow-[0_30px_120px_rgba(16,185,129,0.12)]">
+          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#10b981]/20 blur-3xl" />
+
+          <div className="relative">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981]" />
+                <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
+                  Smart Diet IA
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleResetPlan}
+                disabled={!hasPlan}
+                className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-[#10b981] disabled:opacity-30"
+              >
+                {hasPlan ? "Nueva" : "Crear"}
+              </button>
             </div>
 
-            <h1 className="mt-1 text-2xl font-black uppercase italic leading-none tracking-tight text-white sm:text-4xl">
-              Dieta personalizada
+            <h1 className="text-[32px] font-black uppercase italic leading-none">
+              Dieta
+              <span className="block text-[#10b981]">personalizada</span>
             </h1>
 
-            <p className="mt-1 max-w-xl text-[11px] normal-case leading-4 text-slate-500 sm:text-xs">
-              Semana completa con comidas, porciones, macros y compra.
+            <p className="mt-3 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
+              Genera una dieta por objetivo, días, comidas, presupuesto y alimentos que tienes en casa.
             </p>
-          </div>
 
-          <button
-            type="button"
-            onClick={handleResetPlan}
-            disabled={!hasPlan}
-            className="flex shrink-0 items-center gap-1.5  border border-[#10b981]/20 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {hasPlan ? <RefreshCcw size={13} /> : <Plus size={13} />}
-            Nueva
-          </button>
+            {hasPlan && (
+              <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                    Progreso semanal
+                  </p>
+                  <p className="text-sm font-black text-[#10b981]">
+                    {completionPercent}%
+                  </p>
+                </div>
+
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full bg-[#10b981]"
+                    style={{ width: `${completionPercent}%` }}
+                  />
+                </div>
+
+                <p className="mt-2 text-[10px] normal-case text-slate-500">
+                  {completedMeals}/{totalMeals} comidas completadas
+                </p>
+              </div>
+            )}
+          </div>
         </header>
 
         {!profileComplete && (
-          <div className="flex flex-col gap-3  border border-amber-500/20 bg-[#1a1605] p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <AlertTriangle
-                className="mt-0.5 shrink-0 text-amber-500"
-                size={17}
-              />
-
-              <div>
-                <h4 className="text-[10px] font-black uppercase tracking-wider text-amber-500">
-                  Falta completar tu perfil
-                </h4>
-
-                <p className="mt-1 text-[11px] normal-case leading-4 text-amber-200/60">
-                  Necesitamos edad, peso, altura y objetivo.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/perfil")}
-              className=" bg-amber-500 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-black transition hover:bg-amber-400"
-            >
-              Completar perfil
-            </button>
-          </div>
+          <StatusBox
+            type="error"
+            message="Completa tu perfil para generar una dieta precisa."
+            action={() => navigate("/perfil")}
+          />
         )}
 
         {errorMessage && <StatusBox type="error" message={errorMessage} />}
@@ -288,26 +305,28 @@ const response = await fetch(`${API_URL}/generate-diet`, {
           DIET_TYPES={DIET_TYPES}
           GOAL_TYPES={GOAL_TYPES}
           BUDGET_TYPES={BUDGET_TYPES}
+          PLAN_DAYS={PLAN_DAYS}
+          MEALS_PER_DAY={MEALS_PER_DAY}
         />
 
-        <section className="overflow-hidden border border-white/5 bg-[#091710] shadow-2xl shadow-black/20">
-          <div className="flex flex-col gap-3 border-b border-white/5 bg-[#07120d] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="overflow-hidden rounded-[34px] border border-white/10 bg-[#07170f]">
+          <div className="flex items-center justify-between border-b border-white/10 p-3">
             <div>
               <div className="flex items-center gap-2">
                 <Sparkles size={15} className="text-[#10b981]" />
-                <h2 className="text-base font-black uppercase tracking-tight text-white">
-                  Tu dieta semanal
+                <h2 className="text-sm font-black uppercase italic">
+                  Plan generado
                 </h2>
               </div>
 
-              <p className="mt-1 text-[11px] normal-case text-slate-500">
+              <p className="mt-1 text-[10px] normal-case text-slate-500">
                 {hasPlan
-                  ? `${completedMeals}/${totalMeals} comidas · ${completionPercent}% completado`
-                  : "Genera una dieta para comenzar."}
+                  ? `${plan.length} días · ${totalMeals} comidas`
+                  : "Configura y genera tu dieta."}
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex gap-2">
               <ActionButton
                 icon={<ShoppingCart size={13} />}
                 label={showShopping ? "Dieta" : "Compra"}
@@ -332,8 +351,8 @@ const response = await fetch(`${API_URL}/generate-diet`, {
             </div>
           </div>
 
-          <div className="p-4">
-            {loading && <GeneratingDietLoader loading={loading} />}
+          <div className="p-3">
+            {loading && <GeneratingDietLoader />}
 
             {!loading && !hasPlan && <EmptyPlan />}
 
@@ -358,8 +377,8 @@ const response = await fetch(`${API_URL}/generate-diet`, {
         </section>
       </main>
 
-      <BottomNav navigate={navigate} />
-    </div>
+      <BottomNav />
+    </section>
   );
 }
 
@@ -369,27 +388,29 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center gap-1.5 border px-2.5 py-2 text-[9px] font-black uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`rounded-2xl border px-2.5 py-2 text-[8px] font-black uppercase tracking-wide transition disabled:opacity-30 ${
         active
           ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-          : "border-white/5 bg-[#0d2218] text-slate-300 hover:bg-slate-900"
+          : "border-white/10 bg-white/[0.04] text-slate-300"
       }`}
     >
-      {icon}
-      {label}
+      <span className="flex items-center gap-1">
+        {icon}
+        {label}
+      </span>
     </button>
   );
 }
 
-function StatusBox({ type, message }) {
+function StatusBox({ type, message, action }) {
   const isError = type === "error";
 
   return (
     <div
-      className={` border p-3 text-xs font-bold normal-case leading-5 ${
+      className={`rounded-[26px] border p-3 text-[11px] font-bold normal-case leading-5 ${
         isError
-          ? "border-red-500/20 bg-red-500/10 text-red-200"
-          : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-200"
+          ? "border-amber-400/20 bg-amber-500/10 text-amber-100"
+          : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-100"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -398,7 +419,17 @@ function StatusBox({ type, message }) {
         ) : (
           <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
         )}
-        <span>{message}</span>
+        <div>
+          <p>{message}</p>
+          {action && (
+            <button
+              onClick={action}
+              className="mt-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]"
+            >
+              Completar perfil
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -406,182 +437,28 @@ function StatusBox({ type, message }) {
 
 function EmptyPlan() {
   return (
-    <div className=" border border-dashed border-white/10 bg-[#07120d] p-6 text-center">
-      <Sparkles className="mx-auto mb-3 text-[#10b981]" size={28} />
-
-      <p className="text-sm font-black uppercase tracking-wide text-white">
-        No hay dieta generada
-      </p>
-
-      <p className="mx-auto mt-2 max-w-sm text-xs normal-case leading-5 text-slate-400">
-        Configura tus preferencias y genera una dieta semanal optimizada.
+    <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
+      <Sparkles className="mx-auto mb-3 text-[#10b981]" size={30} />
+      <p className="text-sm font-black uppercase">Sin dieta generada</p>
+      <p className="mx-auto mt-2 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
+        Elige objetivo, días, comidas y preferencias para crear tu dieta.
       </p>
     </div>
   );
 }
 
-function BottomNav({ navigate }) {
+function GeneratingDietLoader() {
   return (
-    <div className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-white/5 bg-[#091710]/95 px-6 py-3 backdrop-blur-md">
-      <div className="mx-auto flex max-w-md items-center justify-between text-slate-400">
-        <NavItem
-          icon={<BarChart2 size={20} />}
-          label="Inicio"
-          active
-          onClick={() => navigate("/dashboard")}
-        />
-
-        <NavItem
-          icon={<Scan size={20} />}
-          label="Analizar"
-          onClick={() => navigate("/foto-comida")}
-        />
-
-        <NavItem
-          icon={<Calendar size={20} />}
-          label="Historial"
-          onClick={() => navigate("/comidas")}
-        />
-
-        <NavItem
-          icon={<User size={20} />}
-          label="Perfil"
-          onClick={() => navigate("/perfil")}
-        />
-      </div>
-    </div>
-  );
-}
-
-function NavItem({ icon, label, active = false, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center gap-1 transition ${
-        active ? "text-[#10b981]" : "hover:text-white"
-      }`}
-    >
-      {icon}
-
-      <span className="text-[10px] font-bold uppercase tracking-wider">
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function GeneratingDietLoader({ loading }) {
-  const [percent, setPercent] = React.useState(7);
-
-  const steps = ["Perfil", "Macros", "Comidas", "Porciones", "Compra"];
-
-  React.useEffect(() => {
-    if (!loading) return;
-
-    setPercent(7);
-
-    const interval = setInterval(() => {
-      setPercent((prev) => {
-        if (prev >= 96) return prev;
-        if (prev < 45) return prev + 5;
-        if (prev < 80) return prev + 3;
-        return prev + 1;
-      });
-    }, 550);
-
-    return () => clearInterval(interval);
-  }, [loading]);
-
-  const activeStep = Math.min(
-    steps.length - 1,
-    Math.floor((percent / 100) * steps.length)
-  );
-
-  return (
-    <div className="overflow-hidden border border-[#10b981]/20 bg-[#07120d] p-4 shadow-2xl shadow-[#10b981]/5">
-      <div className="relative overflow-hidden border border-white/5 bg-[#0d2218]/70 p-4">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 bg-[#10b981]/20 blur-3xl" />
-
-        <div className="relative flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
-              Smart Diet IA
-            </p>
-
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
-              Creando tu dieta
-            </h3>
-
-            <p className="mt-2 text-[11px] normal-case leading-4 text-slate-400">
-              {percent < 90
-                ? "Calculando comidas, macros y lista semanal."
-                : "Últimos ajustes. Ya casi está lista."}
-            </p>
-          </div>
-
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
-            <div className="absolute inset-0  border border-[#10b981]/20" />
-            <div className="absolute inset-1 animate-spin border-2 border-transparent border-t-[#10b981]" />
-
-            <span className="relative text-lg font-black text-[#10b981]">
-              {percent}%
-            </span>
-          </div>
-        </div>
-
-        <div className="relative mt-4 h-2 overflow-hidden bg-white/5">
-          <div
-            className="h-full  bg-[#10b981] transition-all duration-500"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-
-        <div className="mt-4 grid grid-cols-5 gap-1.5">
-          {steps.map((step, index) => {
-            const completed = index < activeStep;
-            const active = index === activeStep;
-
-            return (
-              <div
-                key={step}
-                className={` border px-1 py-2 text-center transition-all ${
-                  completed
-                    ? "border-[#10b981]/25 bg-[#10b981]/10"
-                    : active
-                      ? "border-[#10b981]/40 bg-[#10b981]/5"
-                      : "border-white/5 bg-black/10"
-                }`}
-              >
-                <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center text-[9px] font-black ${
-                    completed
-                      ? "bg-[#10b981] text-[#06110c]"
-                      : active
-                        ? "animate-pulse border border-[#10b981] text-[#10b981]"
-                        : "border border-white/10 text-slate-600"
-                  }`}
-                >
-                  {completed ? "✓" : index + 1}
-                </div>
-
-                <p
-                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
-                    completed || active ? "text-white" : "text-slate-600"
-                  }`}
-                >
-                  {step}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] font-bold normal-case text-slate-500">
-          <span>No cierres esta pantalla</span>
-          <span className="text-[#10b981]">
-            {percent < 96 ? "Procesando..." : "Finalizando..."}
-          </span>
+    <div className="rounded-[30px] border border-[#10b981]/20 bg-[#10b981]/10 p-4">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 animate-spin rounded-2xl border-2 border-transparent border-t-[#10b981]" />
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.24em] text-[#10b981]">
+            Creando dieta IA
+          </p>
+          <p className="mt-1 text-[11px] normal-case text-slate-300">
+            Ajustando comidas, macros y porciones...
+          </p>
         </div>
       </div>
     </div>
@@ -598,31 +475,21 @@ function normalizePlan(weekArray) {
 
     return {
       day: day?.day || `Día ${dayIndex + 1}`,
-      meals: mealsArray.map((meal, index) => {
-        const food = meal?.food || meal?.title || meal?.name || "Comida";
-
-        const ingredients =
-          Array.isArray(meal?.ingredients) && meal.ingredients.length > 0
-            ? meal.ingredients
-            : meal?.details
-              ? meal.details.split(",").map((item) => item.trim()).filter(Boolean)
-              : [];
-
-        return {
-          id: meal?.id || `${day?.day || dayIndex}-${index}`,
-          type: meal?.type || meal?.name || `meal-${index}`,
-          time: meal?.time || defaultMealTime(index),
-          name: meal?.name || defaultMealName(index),
-          title: food,
-          food,
-          ingredients,
-          details: meal?.details || ingredients.join(", "),
-          calories: Number(meal?.calories || meal?.kcal || 0),
-          protein: Number(meal?.protein || 0),
-          carbs: Number(meal?.carbs || 0),
-          fat: Number(meal?.fat || 0),
-        };
-      }),
+      meals: mealsArray.map((meal, index) => ({
+        id: meal?.id || `${day?.day || dayIndex}-${index}`,
+        time: meal?.time || defaultMealTime(index),
+        name: meal?.name || defaultMealName(index),
+        food: meal?.food || meal?.title || "Comida",
+        title: meal?.food || meal?.title || "Comida",
+        details: meal?.details || "",
+        ingredients: meal?.details
+          ? meal.details.split(",").map((item) => item.trim()).filter(Boolean)
+          : [],
+        calories: Number(meal?.calories || meal?.kcal || 0),
+        protein: Number(meal?.protein || 0),
+        carbs: Number(meal?.carbs || 0),
+        fat: Number(meal?.fat || 0),
+      })),
     };
   });
 }
@@ -630,15 +497,12 @@ function normalizePlan(weekArray) {
 function getWeekTotals(plan) {
   return (plan || []).reduce(
     (totals, day) => {
-      const meals = Array.isArray(day?.meals) ? day.meals : [];
-
-      meals.forEach((meal) => {
-        totals.calories += Number(meal.calories || meal.kcal || 0);
+      day.meals?.forEach((meal) => {
+        totals.calories += Number(meal.calories || 0);
         totals.protein += Number(meal.protein || 0);
         totals.carbs += Number(meal.carbs || 0);
         totals.fat += Number(meal.fat || 0);
       });
-
       return totals;
     },
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
@@ -660,18 +524,15 @@ function mapProfileGoalToForm(goal) {
   if (goal === "perder_grasa") return "lose_fat";
   if (goal === "ganar_musculo") return "gain_muscle";
   if (goal === "mantener_peso") return "maintain";
-
   return goal || "lose_fat";
 }
 
 function defaultMealTime(index) {
-  const times = ["08:00", "13:30", "18:00", "21:00", "23:00"];
-  return times[index] || "08:00";
+  return ["08:00", "13:30", "17:30", "21:00", "22:30", "23:30"][index] || "08:00";
 }
 
 function defaultMealName(index) {
-  const names = ["Desayuno", "Almuerzo", "Merienda", "Cena", "Extra"];
-  return names[index] || "Comida";
+  return ["Desayuno", "Comida", "Merienda", "Cena", "Snack", "Extra"][index] || "Comida";
 }
 
 function safeParse(value, fallback) {
@@ -683,7 +544,7 @@ function safeParse(value, fallback) {
 }
 
 function buildShareText(plan) {
-  if (!plan?.length) return "Nutri Smart Coach - Dieta semanal.";
+  if (!plan?.length) return "NutriSmart Coach - Dieta semanal.";
 
   return plan
     .map((day) => {
