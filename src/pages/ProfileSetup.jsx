@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   LogOut,
 } from "lucide-react";
-import { supabase } from "../services/supabaseClient";
+import { supabase } from "../lib/supabase";
 import BottomNav from "../components/BottomNav";
 
 const PROFILE_KEY = "nutricoach_profile";

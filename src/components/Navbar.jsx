@@ -10,7 +10,7 @@ import {
   Camera,
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { supabase } from "../services/supabaseClient";
+import { supabase } from "../lib/supabase";
 
 export function Navbar() {
   const navigate = useNavigate();
