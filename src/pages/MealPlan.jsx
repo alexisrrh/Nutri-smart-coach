@@ -10,7 +10,7 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
-
+import { API_URL } from "../config/api";
 import BottomNav from "../components/BottomNav";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
@@ -22,9 +22,7 @@ const PROFILE_KEY = "nutricoach_profile";
 const PLAN_KEY = "smart_diet_plan";
 const PROGRESS_KEY = "smart_diet_progress";
 
-const API_URL =
-  import.meta.env.VITE_API_URL?.trim() ||
-  "https://nutricoach-backend-frlc.onrender.com";
+
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },

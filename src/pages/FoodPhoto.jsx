@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-
+import { API_URL } from "../config/api";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
@@ -15,9 +15,7 @@ import {
   safeParse,
 } from "../components/food/foodUtils";
 
-const API_URL =
-  import.meta.env.VITE_API_URL?.trim() ||
-  "https://nutricoach-backend-frlc.onrender.com";
+
 
 const MEALS_KEY = "nutricoach_meals";
 

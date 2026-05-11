@@ -66,11 +66,18 @@ export function Meals() {
     );
   }, [filteredMeals]);
 
-  const deleteMeal = (id) => {
-    const updated = meals.filter((m) => m.id !== id);
-    setMeals(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  };
+const deleteMeal = (mealToDelete) => {
+  const updated = meals.filter((meal) => {
+    if (meal.id && mealToDelete.id) {
+      return meal.id !== mealToDelete.id;
+    }
+
+    return meal.createdAt !== mealToDelete.createdAt;
+  });
+
+  setMeals(updated);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+};
 
   const clearMeals = () => {
     if (window.confirm("¿Borrar todo el historial?")) {
@@ -183,7 +190,7 @@ export function Meals() {
                 <MealCard
                   key={meal.id}
                   meal={meal}
-                  onDelete={() => deleteMeal(meal.id)}
+               onDelete={() => deleteMeal(meal)}
                 />
               ))}
             </div>
@@ -268,7 +275,8 @@ function MealCard({ meal, onDelete }) {
             )}
           </div>
 
-          <h3 className="text-xl font-black uppercase italic tracking-tight text-white sm:text-2xl">
+          <h3 className="text-xl font-black uppercase i
+          talic tracking-tight text-white sm:text-2xl">
             {meal.food || "Comida analizada"}
           </h3>
 
