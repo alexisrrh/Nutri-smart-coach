@@ -11,6 +11,7 @@ import DashboardInfoGrid from "../components/dashboard/DashboardInfoGrid";
 import SmartInsightCard from "../components/dashboard/SmartInsightCard";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 import { API_URL } from "../config/api";
+import { STORAGE_KEYS } from "../config/storageKeys";
 import {
   getGoals,
   getSmartTip,
@@ -19,8 +20,6 @@ import {
   safeParse,
 } from "../components/dashboard/dashboardUtils";
 
-const MEALS_KEY = "nutricoach_meals";
-const PROFILE_KEY = "nutricoach_profile";
 
 
 
@@ -32,17 +31,23 @@ export function Dashboard() {
   const [checkins, setCheckins] = useState([]);
   const [dietPlans, setDietPlans] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+useEffect(() => {
+  const savedProfile = safeParse(
+    localStorage.getItem(STORAGE_KEYS.PROFILE),
+    null
+  );
 
-  useEffect(() => {
-    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
-    const localMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
+  const localMeals = safeParse(
+    localStorage.getItem(STORAGE_KEYS.MEALS),
+    []
+  );
 
-    setProfile(savedProfile);
-    setMeals(localMeals);
-    setLoadingData(false);
+  setProfile(savedProfile);
+  setMeals(localMeals);
+  setLoadingData(false);
 
-    loadRemoteDashboardData(savedProfile, localMeals);
-  }, []);
+  loadRemoteDashboardData(savedProfile, localMeals);
+}, []);
 
   async function loadRemoteDashboardData(savedProfile, localMeals) {
     try {
@@ -65,7 +70,7 @@ export function Dashboard() {
         const remoteMeals = data.meal_analyses || localMeals;
 
         setMeals(remoteMeals);
-        localStorage.setItem(MEALS_KEY, JSON.stringify(remoteMeals));
+     localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
       }
 
       if (checkinsRes.status === "fulfilled" && checkinsRes.value.ok) {
