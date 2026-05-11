@@ -1,27 +1,73 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { CheckIn } from "./pages/CheckIn";
-import { Home } from "./pages/Home";
-import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
-import { Dashboard } from "./pages/Dashboard";
-import { ProfileSetup } from "./pages/ProfileSetup";
-import { Calculator } from "./pages/Calculator";
-import { MealPlan } from "./pages/MealPlan";
-import { Progress } from "./pages/Progress";
-import { Meals } from "./pages/Meals";
-import { Daily } from "./pages/Daily";
-import  FoodPhoto  from "./pages/FoodPhoto";
+
+const Home = lazy(() =>
+  import("./pages/Home").then((module) => ({ default: module.Home }))
+);
+
+const Login = lazy(() =>
+  import("./pages/Login").then((module) => ({ default: module.Login }))
+);
+
+const Register = lazy(() =>
+  import("./pages/Register").then((module) => ({ default: module.Register }))
+);
+
+const Dashboard = lazy(() =>
+  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard }))
+);
+
+const ProfileSetup = lazy(() =>
+  import("./pages/ProfileSetup").then((module) => ({
+    default: module.ProfileSetup,
+  }))
+);
+
+const Calculator = lazy(() =>
+  import("./pages/Calculator").then((module) => ({ default: module.Calculator }))
+);
+
+const MealPlan = lazy(() =>
+  import("./pages/MealPlan").then((module) => ({ default: module.MealPlan }))
+);
+
+const Progress = lazy(() =>
+  import("./pages/Progress").then((module) => ({ default: module.Progress }))
+);
+
+const Meals = lazy(() =>
+  import("./pages/Meals").then((module) => ({ default: module.Meals }))
+);
+
+const Daily = lazy(() =>
+  import("./pages/Daily").then((module) => ({ default: module.Daily }))
+);
+
+const CheckIn = lazy(() =>
+  import("./pages/CheckIn").then((module) => ({ default: module.CheckIn }))
+);
+
+const FoodPhoto = lazy(() => import("./pages/FoodPhoto"));
+
+function AppLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#06110e] text-white">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-emerald-400/30 bg-emerald-400/10" />
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
+          Cargando...
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }) {
   const { user, loadingAuth } = useAuth();
 
   if (loadingAuth) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#07130d] text-white">
-        Cargando...
-      </div>
-    );
+    return <AppLoader />;
   }
 
   if (!user) {
@@ -34,26 +80,96 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Register />} />
+      <Suspense fallback={<AppLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Register />} />
 
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /> </ProtectedRoute>} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/foto-comida" element={<ProtectedRoute> <FoodPhoto /> </ProtectedRoute>} />
-        <Route path="/resumen" element={<ProtectedRoute><Daily /></ProtectedRoute> }/>
-<Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-        <Route path="/perfil" element={<ProtectedRoute> <ProfileSetup /></ProtectedRoute>}/>
+          <Route
+            path="/foto-comida"
+            element={
+              <ProtectedRoute>
+                <FoodPhoto />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/calculadora" element={<ProtectedRoute><Calculator /></ProtectedRoute>}/>
+          <Route
+            path="/resumen"
+            element={
+              <ProtectedRoute>
+                <Daily />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/plan-comidas" element={<ProtectedRoute><MealPlan /></ProtectedRoute> } /> 
-        <Route path="/progreso" element={<ProtectedRoute> <Progress /> </ProtectedRoute> }/>
-        <Route path="/comidas" element={<ProtectedRoute> <Meals /> </ProtectedRoute> } />
+          <Route
+            path="/checkin"
+            element={
+              <ProtectedRoute>
+                <CheckIn />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+          <Route
+            path="/perfil"
+            element={
+              <ProtectedRoute>
+                <ProfileSetup />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/calculadora"
+            element={
+              <ProtectedRoute>
+                <Calculator />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/plan-comidas"
+            element={
+              <ProtectedRoute>
+                <MealPlan />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/progreso"
+            element={
+              <ProtectedRoute>
+                <Progress />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/comidas"
+            element={
+              <ProtectedRoute>
+                <Meals />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

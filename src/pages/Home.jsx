@@ -8,7 +8,7 @@ import {
   Zap,
   ShieldCheck,
 } from "lucide-react";
-
+import SmartImage from "../components/ui/SmartImage";
 export function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#06110e] text-white font-sans">
@@ -113,7 +113,7 @@ export function Home() {
                 </div>
 
                 <div className="relative mb-4 h-44 overflow-hidden rounded-[1.3rem] border border-white/10 bg-[#121a17] sm:h-64 lg:h-72">
-                  <img
+                 <SmartImage
                     src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=70"
                     alt="Nutrición saludable"
                     className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
