@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { UserPlus, Mail, Lock, User, AlertCircle } from "lucide-react";
+import {
+  UserPlus,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 
 export function Register() {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     nombre: "",
     email: "",
@@ -26,126 +36,196 @@ export function Register() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
+    if (!form.nombre.trim() || !form.email.trim() || !form.password) {
+      setLoading(false);
+      setError("Completa todos los campos.");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setLoading(false);
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email.trim(),
       password: form.password,
       options: {
         data: {
-          nombre: form.nombre,
+          nombre: form.nombre.trim(),
         },
       },
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       setError("Error al crear la cuenta: " + error.message);
       return;
     }
 
-    // Nota: Dependiendo de tu config de Supabase, quizás necesite verificar el correo
-    // o puedes redirigir directo si tienes habilitado el autoconfirm
-    navigate("/dashboard");
+    const user = data?.user;
+
+    if (user) {
+      const newProfile = {
+        id: user.id,
+        email: user.email,
+        name: form.nombre.trim(),
+        age: null,
+        weight: null,
+        height: null,
+        gender: "male",
+        activity_level: "moderate",
+        goal: "perder_grasa",
+        preferences: {
+          gender: "male",
+          activity: "moderate",
+          goal: "perder_grasa",
+        },
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data: createdProfile, error: profileError } = await supabase
+        .from("profiles")
+        .upsert(newProfile, { onConflict: "id" })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error("Error creando perfil:", profileError);
+      }
+
+      if (createdProfile) {
+        localStorage.setItem(
+          "nutricoach_profile",
+          JSON.stringify(createdProfile)
+        );
+      }
+    }
+
+    setLoading(false);
+    navigate("/perfil");
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#060b13] px-6 text-slate-200 font-sans tracking-tight">
-      {/* Tarjeta con efecto Cristal (Glassmorphism) */}
-      <div className="relative w-full max-w-md border border-white/10 bg-[#ffffff03] p-10 backdrop-blur-2xl shadow-2xl rounded-2xl">
-        
-        {/* Línea de gradiente decorativa superior (estilo Home) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-32 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#06110e] px-4 py-8 text-white font-sans">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,#10b98122,transparent_35%),radial-gradient(circle_at_20%_85%,#38bdf822,transparent_35%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:46px_46px]" />
 
-        <div className="mb-10 text-center">
-          {/* Icono circular con brillo esmeralda */}
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-            <UserPlus size={30} />
+      <div className="relative w-full max-w-md">
+        <button
+          onClick={() => navigate("/")}
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
+        >
+          <ArrowLeft size={14} />
+          Inicio
+        </button>
+
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+          <div className="absolute left-1/2 top-0 h-[2px] w-40 -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+
+          <div className="mb-8 text-center">
+            <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-400 text-[#06110e] shadow-[0_0_35px_#10b98155]">
+              <UserPlus size={30} />
+            </div>
+
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
+              <Sparkles size={13} />
+              Crea tu cuenta inteligente
+            </div>
+
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter sm:text-4xl">
+              Únete a <br></br> Nutri Smart Coach
+            </h1>
+
+            <p className="mt-4 text-md text-white/50">
+              Empieza a construir tu cambio físico con IA.
+            </p>
           </div>
-          
-          {/* Título con el gradiente característico */}
-          <h1 className="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-emerald-500/40 uppercase">
-            Únete a la IA
-          </h1>
-          <p className="mt-2 text-sm font-medium text-slate-400/80">
-            Empieza tu cambio físico hoy mismo
-          </p>
-        </div>
 
-        {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-medium text-red-400 animate-in fade-in">
-            <AlertCircle size={18} />
-            {error}
+          {error && (
+            <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-bold text-red-200">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Nombre completo"
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              placeholder="Ej. Alexis Rodríguez"
+              icon={<User size={18} />}
+            />
+
+            <Input
+              label="Correo electrónico"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="tu@email.com"
+              icon={<Mail size={18} />}
+            />
+
+            <Input
+              label="Contraseña"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Mínimo 6 caracteres"
+              icon={<Lock size={18} />}
+            />
+
+            <button
+              disabled={loading}
+              className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.22em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {loading ? "Creando cuenta..." : "Crear mi cuenta"}
+                {!loading && (
+                  <ArrowRight
+                    size={17}
+                    className="transition group-hover:translate-x-1"
+                  />
+                )}
+              </span>
+            </button>
+          </form>
+
+          <div className="mt-8 border-t border-white/5 pt-6 text-center">
+            <p className="text-sm text-white/45">
+              ¿Ya tienes cuenta?{" "}
+              <Link
+                to="/login"
+                className="font-black text-emerald-300 transition hover:text-white"
+              >
+                Inicia sesión aquí
+              </Link>
+            </p>
           </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-7">
-          <Input 
-            label="Nombre Completo" 
-            name="nombre" 
-            value={form.nombre} 
-            onChange={handleChange} 
-            placeholder="Ej. Alexis R."
-            icon={<User size={18} />}
-          />
-
-          <Input 
-            label="Correo Electrónico" 
-            name="email" 
-            type="email" 
-            value={form.email} 
-            onChange={handleChange} 
-            placeholder="tu@email.com"
-            icon={<Mail size={18} />}
-          />
-
-          <Input 
-            label="Contraseña del Sistema" 
-            name="password" 
-            type="password" 
-            value={form.password} 
-            onChange={handleChange} 
-            placeholder="••••••••"
-            icon={<Lock size={18} />}
-          />
-
-          {/* Botón Principal (Estilo 'Comenzar' del Home) */}
-          <button
-            disabled={loading}
-            className="group relative w-full overflow-hidden rounded-xl border border-emerald-500/50 bg-emerald-500/10 py-4 text-sm font-black uppercase tracking-[0.2em] text-emerald-400 transition-all hover:bg-emerald-500 hover:text-[#060b13] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {loading ? "Registrando..." : "Crear Mi Cuenta"}
-            </span>
-          </button>
-        </form>
-
-        <div className="mt-10 border-t border-white/5 pt-6 text-center">
-          <p className="text-sm font-medium text-slate-500">
-            ¿Ya tienes acceso?{" "}
-            <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
-              Inicia sesión aquí
-            </Link>
-          </p>
         </div>
       </div>
     </main>
   );
 }
 
-// Componente Reutilizable de Input (Mismo estilo que Perfil y Login)
 function Input({ label, icon, ...props }) {
   return (
-    <div className="group">
-      <p className="mb-2 ml-1 text-[11px] font-black uppercase tracking-widest text-white/30 group-focus-within:text-emerald-400 transition-colors">
+    <div>
+      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
-      <div className="relative flex items-center">
-        <div className="absolute left-0 text-emerald-500/40 group-focus-within:text-emerald-400 transition-colors">
-          {icon}
-        </div>
-        <input 
-          {...props} 
-          className="w-full border-b border-white/10 bg-transparent pl-8 py-3 font-semibold text-white text-base outline-none focus:border-emerald-500 transition-all placeholder:text-white/5" 
+
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
+        <span className="text-emerald-300">{icon}</span>
+
+        <input
+          {...props}
+          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
         />
       </div>
     </div>
