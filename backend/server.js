@@ -21,7 +21,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         return callback(null, true);
       }
 
@@ -210,12 +214,14 @@ app.post("/generate-diet", async (req, res) => {
       });
     }
 
+    const dietConfig = buildDietConfig(preferences);
+
     let week;
     let usedFallback = false;
     let warning = "";
 
     if (!process.env.GEMINI_API_KEY) {
-      week = createFallbackDiet(profile, preferences);
+      week = createFallbackDiet(profile, preferences, dietConfig);
       usedFallback = true;
       warning = "GEMINI_API_KEY no está configurada en Render";
     } else {
@@ -227,49 +233,7 @@ app.post("/generate-diet", async (req, res) => {
               role: "user",
               parts: [
                 {
-                  text: `
-Devuelve SOLO JSON válido. No uses markdown.
-
-Crea una dieta semanal para NutriSmartCoach.
-
-Perfil:
-${JSON.stringify(profile)}
-
-Preferencias:
-${JSON.stringify(preferences || {})}
-
-Formato exacto:
-{
-  "week": [
-    {
-      "day": "Lunes",
-      "meals": [
-        {
-          "time": "08:00",
-          "name": "Desayuno",
-          "food": "Avena con yogur y fruta",
-          "details": "60g avena, 200g yogur natural, 1 banana",
-          "calories": 450,
-          "protein": 25,
-          "carbs": 60,
-          "fat": 10
-        }
-      ]
-    }
-  ]
-}
-
-Reglas:
-- Genera exactamente 7 días: Lunes a Domingo.
-- Cada día debe tener comidas diferentes.
-- No repitas el mismo desayuno más de 2 veces.
-- No repitas el mismo almuerzo más de 2 veces.
-- No repitas la misma cena más de 2 veces.
-- Usa 4 comidas por día.
-- Incluye details con cantidades exactas.
-- Usa comida económica, común y fácil.
-- Mantén valores nutricionales realistas.
-`,
+                  text: buildDietPrompt(profile, preferences, dietConfig),
                 },
               ],
             },
@@ -284,10 +248,10 @@ Reglas:
           throw new Error("Gemini no devolvió week válido");
         }
 
-        week = data.week;
+        week = normalizeGeneratedDiet(data.week, dietConfig);
       } catch (error) {
         console.error("Error Gemini generate-diet:", error);
-        week = createFallbackDiet(profile, preferences);
+        week = createFallbackDiet(profile, preferences, dietConfig);
         usedFallback = true;
         warning = error.message || "Gemini falló generando dieta";
       }
@@ -299,7 +263,10 @@ Reglas:
       savedPlan = await saveDietPlan({
         userId,
         profile,
-        preferences,
+        preferences: {
+          ...(preferences || {}),
+          dietConfig,
+        },
         week,
         usedFallback,
         warning,
@@ -322,14 +289,17 @@ Reglas:
   } catch (error) {
     console.error("Error generate-diet completo:", error);
 
+    const dietConfig = buildDietConfig(preferences);
+
     return res.json({
-      week: createFallbackDiet(profile, preferences),
+      week: createFallbackDiet(profile, preferences, dietConfig),
       usedFallback: true,
       warning: error.message,
       saved: false,
     });
   }
 });
+
 app.post("/checkins", upload.single("image"), async (req, res) => {
   try {
     const userId = req.body.user_id || null;
@@ -588,13 +558,137 @@ function cleanGeminiJson(text = "") {
 
   return cleaned;
 }
+function buildDietConfig(preferences = {}) {
+  const rawDays =
+    preferences.days ||
+    preferences.planDays ||
+    preferences.trainingDays ||
+    preferences.durationDays ||
+    7;
 
-function createFallbackDiet(profile = {}, preferences = {}) {
-  const rawGoal =
-    profile?.goal || profile?.objetivo || preferences?.goal || "mantener_peso";
+  const rawMeals =
+    preferences.mealsPerDay ||
+    preferences.meals_per_day ||
+    preferences.meals ||
+    4;
 
-  const goal = mapGoal(rawGoal);
+  const days = clamp(Number(rawDays) || 7, 1, 7);
+  const mealsPerDay = clamp(Number(rawMeals) || 4, 2, 6);
 
+  const dietType = preferences.dietType || preferences.diet_type || "balanced";
+
+  const isLowCarb =
+    dietType === "keto" ||
+    dietType === "low_carb" ||
+    dietType === "sin_carbohidratos" ||
+    preferences.lowCarb === true;
+
+  const intermittentFasting =
+    mealsPerDay === 2 ||
+    preferences.intermittentFasting === true ||
+    preferences.ayuno === true;
+
+  const homeFoods =
+    preferences.homeFoods ||
+    preferences.foodsAtHome ||
+    preferences.availableFoods ||
+    "";
+
+  return {
+    days,
+    mealsPerDay,
+    dietType,
+    isLowCarb,
+    intermittentFasting,
+    homeFoods,
+  };
+}
+
+function buildDietPrompt(profile, preferences = {}, dietConfig) {
+  const dayNames = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ].slice(0, dietConfig.days);
+
+  const forbiddenLowCarb = `
+Si la dieta es sin carbohidratos, low carb o keto:
+- NO incluir pan.
+- NO incluir arroz.
+- NO incluir pasta.
+- NO incluir avena.
+- NO incluir cereales.
+- NO incluir azúcar.
+- NO incluir bollería.
+- NO incluir tortillas de trigo.
+- NO incluir patata, boniato o yuca salvo que el usuario lo permita.
+- Priorizar huevos, pollo, pescado, carne magra, yogur griego natural, queso fresco, aguacate, verduras bajas en carbohidratos y ensaladas.
+`;
+
+  return `
+Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
+
+Crea una dieta personalizada para NutriSmartCoach.
+
+Perfil del usuario:
+${JSON.stringify(profile)}
+
+Preferencias:
+${JSON.stringify(preferences || {})}
+
+Configuración obligatoria:
+- Genera exactamente ${dietConfig.days} días.
+- Los días deben ser: ${dayNames.join(", ")}.
+- Genera exactamente ${dietConfig.mealsPerDay} comidas por día.
+- Si son 2 comidas al día, interpreta que el usuario hace ayuno intermitente.
+- Si hay ayuno intermitente, usa horarios tipo 13:00 y 20:00.
+- Si son 3 comidas: desayuno, comida y cena.
+- Si son 4 comidas: desayuno, comida, merienda y cena.
+- Si son 5 o 6 comidas: añade snacks saludables.
+- Ajusta calorías, proteína, carbohidratos y grasa según el objetivo.
+- Incluye cantidades exactas en details.
+- Usa comida fácil, realista y económica si el presupuesto es bajo.
+- No repitas la misma comida todos los días.
+- Mantén valores nutricionales realistas.
+
+Alimentos disponibles en casa:
+${dietConfig.homeFoods || "No especificado"}
+
+Reglas sobre alimentos en casa:
+- Si el usuario indicó alimentos disponibles, intenta construir la dieta usando principalmente esos alimentos.
+- Si falta algo importante, puedes incluirlo, pero que sea común y económico.
+- No inventes alimentos raros.
+
+${dietConfig.isLowCarb ? forbiddenLowCarb : ""}
+
+Formato exacto:
+{
+  "week": [
+    {
+      "day": "Lunes",
+      "meals": [
+        {
+          "time": "13:00",
+          "name": "Comida 1",
+          "food": "Pollo con ensalada y aguacate",
+          "details": "180g pollo, 1 plato ensalada, 80g aguacate",
+          "calories": 520,
+          "protein": 48,
+          "carbs": 12,
+          "fat": 28
+        }
+      ]
+    }
+  ]
+}
+`;
+}
+
+function normalizeGeneratedDiet(week = [], dietConfig) {
   const days = [
     "Lunes",
     "Martes",
@@ -603,7 +697,83 @@ function createFallbackDiet(profile = {}, preferences = {}) {
     "Viernes",
     "Sábado",
     "Domingo",
-  ];
+  ].slice(0, dietConfig.days);
+
+  return days.map((dayName, dayIndex) => {
+    const sourceDay = week[dayIndex] || {};
+    const meals = Array.isArray(sourceDay.meals) ? sourceDay.meals : [];
+
+    return {
+      day: sourceDay.day || dayName,
+      meals: meals.slice(0, dietConfig.mealsPerDay).map((meal, index) => ({
+        time: meal.time || defaultDietMealTime(index, dietConfig.mealsPerDay),
+        name: meal.name || defaultDietMealName(index, dietConfig.mealsPerDay),
+        food: meal.food || "Comida personalizada",
+        details: meal.details || "Cantidades no especificadas",
+        calories: Number(meal.calories) || 0,
+        protein: Number(meal.protein) || 0,
+        carbs: Number(meal.carbs) || 0,
+        fat: Number(meal.fat) || 0,
+      })),
+    };
+  });
+}
+
+function defaultDietMealTime(index, mealsPerDay) {
+  if (mealsPerDay === 2) {
+    return ["13:00", "20:00"][index] || "13:00";
+  }
+
+  if (mealsPerDay === 3) {
+    return ["08:30", "14:00", "20:30"][index] || "08:30";
+  }
+
+  if (mealsPerDay === 4) {
+    return ["08:00", "13:30", "17:30", "21:00"][index] || "08:00";
+  }
+
+  if (mealsPerDay === 5) {
+    return ["08:00", "11:30", "14:30", "18:00", "21:00"][index] || "08:00";
+  }
+
+  return ["08:00", "10:30", "13:30", "16:30", "19:30", "22:00"][index] || "08:00";
+}
+
+function defaultDietMealName(index, mealsPerDay) {
+  if (mealsPerDay === 2) {
+    return ["Comida 1", "Comida 2"][index] || `Comida ${index + 1}`;
+  }
+
+  if (mealsPerDay === 3) {
+    return ["Desayuno", "Comida", "Cena"][index] || `Comida ${index + 1}`;
+  }
+
+  if (mealsPerDay === 4) {
+    return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
+  }
+
+  if (mealsPerDay === 5) {
+    return ["Desayuno", "Snack", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
+  }
+
+  return ["Desayuno", "Snack 1", "Comida", "Snack 2", "Cena", "Extra"][index] || `Comida ${index + 1}`;
+}
+
+function createFallbackDiet(profile = {}, preferences = {}, dietConfig = buildDietConfig(preferences)) {
+  const rawGoal =
+    profile?.goal || profile?.objetivo || preferences?.goal || "mantener_peso";
+
+  const goal = mapGoal(rawGoal);
+
+ const days = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+].slice(0, dietConfig.days);
 
   const baseMeals = {
     perder_grasa: [
@@ -738,14 +908,18 @@ function createFallbackDiet(profile = {}, preferences = {}) {
 
   const selectedMeals = baseMeals[goal] || baseMeals.mantener_peso;
 
-  return days.map((day, dayIndex) => ({
-    day,
-    meals: selectedMeals.map((meal, mealIndex) => ({
+return days.map((day, dayIndex) => ({
+  day,
+  meals: selectedMeals
+    .slice(0, dietConfig.mealsPerDay)
+    .map((meal, mealIndex) => ({
       ...meal,
+      time: defaultDietMealTime(mealIndex, dietConfig.mealsPerDay),
+      name: defaultDietMealName(mealIndex, dietConfig.mealsPerDay),
       food: varyMeal(meal.food, goal, dayIndex, mealIndex),
       details: varyDetails(meal.details, goal, dayIndex, mealIndex),
     })),
-  }));
+}));
 }
 
 function mapGoal(goal) {

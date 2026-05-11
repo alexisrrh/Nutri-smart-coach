@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
@@ -9,6 +10,7 @@ import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardInfoGrid from "../components/dashboard/DashboardInfoGrid";
 import SmartInsightCard from "../components/dashboard/SmartInsightCard";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
+
 import {
   getGoals,
   getSmartTip,
@@ -16,7 +18,6 @@ import {
   shortText,
   safeParse,
 } from "../components/dashboard/dashboardUtils";
-
 
 const MEALS_KEY = "nutricoach_meals";
 const PROFILE_KEY = "nutricoach_profile";
@@ -47,14 +48,18 @@ export function Dashboard() {
     setProfile(savedProfile);
     setMeals(localMeals);
 
-    const userId = savedProfile?.id || savedProfile?.user_id;
-
-    if (!userId) {
-      setLoadingData(false);
-      return;
-    }
-
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const userId = user?.id || savedProfile?.id || savedProfile?.user_id;
+
+      if (!userId) {
+        setLoadingData(false);
+        return;
+      }
+
       const [mealsRes, checkinsRes, dietsRes] = await Promise.allSettled([
         fetch(`${API_URL}/meal-analyses/${userId}`),
         fetch(`${API_URL}/checkins/${userId}`),
@@ -94,7 +99,6 @@ export function Dashboard() {
     });
   }, [meals]);
 
-  
   const totals = useMemo(() => {
     return todayMeals.reduce(
       (acc, meal) => {
@@ -133,14 +137,15 @@ export function Dashboard() {
     todayMeals.length,
     Boolean(activeDiet)
   );
-    if (loadingData) {
-  return (
-    <DashboardLayout>
-      <DashboardHeader loadingData={loadingData} navigate={navigate} />
-      <DashboardSkeleton />
-    </DashboardLayout>
-  );
-}
+
+  if (loadingData) {
+    return (
+      <DashboardLayout>
+        <DashboardHeader loadingData={loadingData} navigate={navigate} />
+        <DashboardSkeleton />
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -159,7 +164,12 @@ export function Dashboard() {
 
       <DashboardActions navigate={navigate} />
 
-      <SmartInsightCard smartTip={smartTip} nutritionScore={nutritionScore} />
+      <SmartInsightCard
+        smartTip={smartTip}
+        nutritionScore={nutritionScore}
+        mealCount={todayMeals.length}
+        hasDiet={Boolean(activeDiet)}
+      />
 
       <DashboardInfoGrid
         lastMeal={lastMeal}
