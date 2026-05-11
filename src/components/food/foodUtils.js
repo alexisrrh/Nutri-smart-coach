@@ -7,12 +7,12 @@ export function saveMealToLocalStorage(result, preview) {
     localStorage.getItem(MEALS_KEY),
     []
   );
-
-  const meal = {
-    ...result,
-    image: preview || result.image_url || null,
-    createdAt: new Date().toISOString(),
-  };
+const meal = {
+  id: result.id || crypto.randomUUID(),
+  ...result,
+  image: preview || result.image_url || null,
+  createdAt: result.createdAt || result.created_at || new Date().toISOString(),
+};
 
   localStorage.setItem(
     MEALS_KEY,

@@ -10,7 +10,7 @@ import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardInfoGrid from "../components/dashboard/DashboardInfoGrid";
 import SmartInsightCard from "../components/dashboard/SmartInsightCard";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
-
+import { API_URL } from "../config/api";
 import {
   getGoals,
   getSmartTip,
@@ -22,9 +22,7 @@ import {
 const MEALS_KEY = "nutricoach_meals";
 const PROFILE_KEY = "nutricoach_profile";
 
-const API_URL =
-  import.meta.env.VITE_API_URL?.trim() ||
-  "https://nutricoach-backend-frlc.onrender.com";
+
 
 export function Dashboard() {
   const navigate = useNavigate();
