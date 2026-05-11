@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Activity, Beef, Droplets, Flame, Target, Wheat } from "lucide-react";
 
-export function DietSummary({ plan, getWeekTotals }) {
+export function DietSummary({ plan = [], getWeekTotals }) {
   const totals = useMemo(() => {
     if (!Array.isArray(plan) || plan.length === 0) {
       return { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -54,8 +54,8 @@ export function DietSummary({ plan, getWeekTotals }) {
 
   if (!Array.isArray(plan) || plan.length === 0) {
     return (
-      <div className=" border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
-        <Target className="mx-auto mb-2 text-[#10b981]" size={24} />
+      <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-5 text-center">
+        <Target className="mx-auto mb-2 text-[#10b981]" size={26} />
 
         <p className="text-xs font-black uppercase tracking-wide text-white">
           Sin resumen nutricional
@@ -69,87 +69,97 @@ export function DietSummary({ plan, getWeekTotals }) {
   }
 
   return (
-    <section className=" border border-white/5 bg-[#07120d] p-3">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
-            Resumen nutricional
-          </p>
+    <section className="relative overflow-hidden rounded-[30px] border border-[#10b981]/15 bg-[#07170f] p-3 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
+      <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#10b981]/15 blur-3xl" />
 
-          <h3 className="mt-0.5 text-lg font-black uppercase italic text-white">
-            Semana completa
-          </h3>
-        </div>
+      <div className="relative z-10">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+              Resumen nutricional
+            </p>
 
-        <div className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
-          <p className="text-sm font-black text-white">{mealsCount}</p>
-          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
-            comidas
-          </p>
-        </div>
-      </div>
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+              Semana completa
+            </h3>
 
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <SummaryCard
-          icon={<Flame size={15} />}
-          title="Calorías"
-          value={Math.round(totals.calories)}
-          unit="kcal"
-          detail={`${dailyAverage.calories}/día`}
-        />
-
-        <SummaryCard
-          icon={<Beef size={15} />}
-          title="Proteína"
-          value={Math.round(totals.protein)}
-          unit="g"
-          detail={`${dailyAverage.protein}g/día`}
-        />
-
-        <SummaryCard
-          icon={<Wheat size={15} />}
-          title="Carbos"
-          value={Math.round(totals.carbs)}
-          unit="g"
-          detail={`${dailyAverage.carbs}g/día`}
-        />
-
-        <SummaryCard
-          icon={<Droplets size={15} />}
-          title="Grasas"
-          value={Math.round(totals.fat)}
-          unit="g"
-          detail={`${dailyAverage.fat}g/día`}
-        />
-      </div>
-
-      <div className="mt-3 border border-white/5 bg-[#0d2218]/60 p-3">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500">
-            <Activity size={12} className="text-[#10b981]" />
-            Macros
+            <p className="mt-1 text-[10px] normal-case text-slate-500">
+              {daysCount} días · {mealsCount} comidas
+            </p>
           </div>
 
-          <div className="flex gap-2 text-[9px] font-black uppercase text-slate-500">
-            <span>P {percentages.protein}%</span>
-            <span>C {percentages.carbs}%</span>
-            <span>G {percentages.fat}%</span>
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10 text-center">
+            <div>
+              <p className="text-lg font-black text-[#10b981]">{mealsCount}</p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
+                comidas
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex h-2 overflow-hidden bg-white/5">
-          <div
-            className="bg-[#10b981]"
-            style={{ width: `${percentages.protein}%` }}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <SummaryCard
+            icon={<Flame size={15} />}
+            title="Calorías"
+            value={Math.round(totals.calories)}
+            unit="kcal"
+            detail={`${dailyAverage.calories}/día`}
           />
-          <div
-            className="bg-white/45"
-            style={{ width: `${percentages.carbs}%` }}
+
+          <SummaryCard
+            icon={<Beef size={15} />}
+            title="Proteína"
+            value={Math.round(totals.protein)}
+            unit="g"
+            detail={`${dailyAverage.protein}g/día`}
           />
-          <div
-            className="bg-white/20"
-            style={{ width: `${percentages.fat}%` }}
+
+          <SummaryCard
+            icon={<Wheat size={15} />}
+            title="Carbos"
+            value={Math.round(totals.carbs)}
+            unit="g"
+            detail={`${dailyAverage.carbs}g/día`}
           />
+
+          <SummaryCard
+            icon={<Droplets size={15} />}
+            title="Grasas"
+            value={Math.round(totals.fat)}
+            unit="g"
+            detail={`${dailyAverage.fat}g/día`}
+          />
+        </div>
+
+        <div className="mt-3 rounded-[24px] border border-white/10 bg-black/20 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-500">
+              <Activity size={12} className="text-[#10b981]" />
+              Distribución macros
+            </div>
+
+            <div className="flex gap-2 text-[8px] font-black uppercase text-slate-500">
+              <span>P {percentages.protein}%</span>
+              <span>C {percentages.carbs}%</span>
+              <span>G {percentages.fat}%</span>
+            </div>
+          </div>
+
+          <div className="flex h-2 overflow-hidden rounded-full bg-white/5">
+            <div
+              className="bg-[#10b981]"
+              style={{ width: `${percentages.protein}%` }}
+            />
+            <div
+              className="bg-white/45"
+              style={{ width: `${percentages.carbs}%` }}
+            />
+            <div
+              className="bg-white/20"
+              style={{ width: `${percentages.fat}%` }}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -158,9 +168,9 @@ export function DietSummary({ plan, getWeekTotals }) {
 
 function SummaryCard({ icon, title, value, unit, detail }) {
   return (
-    <div className=" border border-white/5 bg-[#0d2218]/60 p-3">
+    <div className="rounded-[24px] border border-white/10 bg-black/20 p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#10b981]/10 text-[#10b981]">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
           {icon}
         </div>
 
@@ -173,7 +183,7 @@ function SummaryCard({ icon, title, value, unit, detail }) {
         {title}
       </p>
 
-      <p className="mt-1 text-lg font-black leading-none text-white">
+      <p className="mt-1 text-xl font-black leading-none text-white">
         {value}
       </p>
 

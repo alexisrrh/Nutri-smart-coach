@@ -1,12 +1,12 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  Apple,
   Beef,
   Check,
   Milk,
   Package,
   ShoppingBag,
   Wheat,
-  Apple,
 } from "lucide-react";
 
 export function ShoppingListView({ plan }) {
@@ -19,40 +19,47 @@ export function ShoppingListView({ plan }) {
     {
       key: "proteinas",
       label: "Proteínas",
-      icon: <Beef size={14} />,
+      icon: <Beef size={15} />,
       items: shoppingGroups.proteinas,
     },
     {
       key: "carbohidratos",
       label: "Carbos",
-      icon: <Wheat size={14} />,
+      icon: <Wheat size={15} />,
       items: shoppingGroups.carbohidratos,
     },
     {
       key: "frutasVerduras",
       label: "Verdes",
-      icon: <Apple size={14} />,
+      icon: <Apple size={15} />,
       items: shoppingGroups.frutasVerduras,
     },
     {
       key: "lacteos",
       label: "Lácteos",
-      icon: <Milk size={14} />,
+      icon: <Milk size={15} />,
       items: shoppingGroups.lacteos,
     },
     {
       key: "otros",
       label: "Otros",
-      icon: <Package size={14} />,
+      icon: <Package size={15} />,
       items: shoppingGroups.otros,
     },
   ].filter((category) => category.items.length > 0);
 
   const allItems = categories.flatMap((category) => category.items);
+
   const totalItems = allItems.length;
-  const checkedCount = allItems.filter((item) => checkedItems[item.id]).length;
+
+  const checkedCount = allItems.filter(
+    (item) => checkedItems[item.id]
+  ).length;
+
   const progress =
-    totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+    totalItems > 0
+      ? Math.round((checkedCount / totalItems) * 100)
+      : 0;
 
   const activeItems =
     categories.find((category) => category.key === activeCategory)?.items ||
@@ -61,111 +68,146 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className=" border border-dashed border-white/10 bg-[#07120d] p-5 text-center">
-        <ShoppingBag className="mx-auto mb-2 text-[#10b981]" size={26} />
-        <p className="text-sm font-black uppercase text-white">Lista vacía</p>
-        <p className="mt-1 text-xs normal-case text-slate-400">
+      <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
+        <ShoppingBag
+          className="mx-auto mb-3 text-[#10b981]"
+          size={30}
+        />
+
+        <p className="text-sm font-black uppercase text-white">
+          Lista vacía
+        </p>
+
+        <p className="mt-2 text-[11px] normal-case leading-5 text-slate-400">
           Genera una dieta con ingredientes para crear la compra.
         </p>
       </div>
     );
   }
 
-  const toggleItem = (id) => {
-    setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  function toggleItem(id) {
+    setCheckedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  }
 
   return (
-    <section className=" border border-white/5 bg-[#07120d] p-4">
-      <header className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
-            <ShoppingBag size={14} />
-            Compra semanal
+    <section className="relative overflow-hidden rounded-[32px] border border-[#10b981]/15 bg-[#07170f] p-4 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
+      <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[#10b981]/15 blur-3xl" />
+
+      <div className="relative z-10">
+        <header className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+              <ShoppingBag size={14} />
+              Compra semanal
+            </div>
+
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+              Lista inteligente
+            </h3>
+
+            <p className="mt-1 text-[11px] normal-case text-slate-500">
+              {checkedCount}/{totalItems} productos comprados
+            </p>
           </div>
 
-          <p className="mt-1 text-xs normal-case text-slate-400">
-            {checkedCount}/{totalItems} comprados · {progress}%
-          </p>
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10">
+            <div className="text-center">
+              <p className="text-lg font-black text-[#10b981]">
+                {progress}%
+              </p>
+
+              <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
+                listo
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/5">
+          <div
+            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
-        <button
-          type="button"
-          onClick={() => setCheckedItems({})}
-          disabled={checkedCount === 0}
-          className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-slate-300 disabled:opacity-40"
-        >
-          Reiniciar
-        </button>
-      </header>
-
-      <div className="mb-4 h-1.5 overflow-hidden  bg-white/5">
-        <div
-          className="h-full bg-[#10b981] transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {categories.map((category) => (
-          <button
-            key={category.key}
-            type="button"
-            onClick={() => setActiveCategory(category.key)}
-            className={`flex shrink-0 items-center gap-2  border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition ${
-              activeCategory === category.key
-                ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-                : "border-white/5 bg-[#0d2218] text-slate-400"
-            }`}
-          >
-            {category.icon}
-            {category.label}
-            <span className="opacity-70">{category.items.length}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-2">
-        {activeItems.map((item) => {
-          const isChecked = checkedItems[item.id];
-
-          return (
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categories.map((category) => (
             <button
-              key={item.id}
+              key={category.key}
               type="button"
-              onClick={() => toggleItem(item.id)}
-              className={`flex items-center gap-3  border p-3 text-left transition ${
-                isChecked
-                  ? "border-[#10b981]/15 bg-[#10b981]/5 opacity-55"
-                  : "border-white/5 bg-[#0d2218]/60 hover:bg-[#0d2218]"
+              onClick={() => setActiveCategory(category.key)}
+              className={`flex shrink-0 items-center gap-2 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
+                activeCategory === category.key
+                  ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
+                  : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"
               }`}
             >
-              <div
-                className={`flex h-5 w-5 shrink-0 items-center justify-center  border ${
+              {category.icon}
+
+              {category.label}
+
+              <span className="opacity-70">
+                {category.items.length}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {activeItems.map((item) => {
+            const isChecked = checkedItems[item.id];
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => toggleItem(item.id)}
+                className={`group relative overflow-hidden rounded-[24px] border p-3 text-left transition-all ${
                   isChecked
-                    ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-                    : "border-white/20 text-transparent"
+                    ? "border-[#10b981]/25 bg-[#10b981]/5 opacity-70"
+                    : "border-white/10 bg-black/20 hover:border-[#10b981]/20 hover:bg-black/30"
                 }`}
               >
-                <Check size={12} strokeWidth={3} />
-              </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-xl border transition-all ${
+                      isChecked
+                        ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
+                        : "border-white/15 bg-[#0d2218]"
+                    }`}
+                  >
+                    <Check size={13} strokeWidth={3} />
+                  </div>
 
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`truncate text-xs font-black uppercase tracking-wide ${
-                    isChecked ? "text-slate-500 line-through" : "text-slate-200"
-                  }`}
-                >
-                  {item.name}
-                </p>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`truncate text-[11px] font-black uppercase tracking-wide ${
+                        isChecked
+                          ? "text-slate-500 line-through"
+                          : "text-white"
+                      }`}
+                    >
+                      {item.name}
+                    </p>
 
-                <p className="mt-0.5 text-[11px] font-bold normal-case text-[#10b981]">
-                  {item.amount}
-                </p>
-              </div>
-            </button>
-          );
-        })}
+                    <p className="mt-1 text-[11px] font-bold normal-case text-[#10b981]">
+                      {item.amount}
+                    </p>
+                  </div>
+                </div>
+
+                {!isChecked && (
+                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="absolute inset-y-0 -left-24 w-24 rotate-12 bg-gradient-to-r from-transparent via-white/5 to-transparent blur-xl" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -182,6 +224,7 @@ function buildShoppingGroups(plan = []) {
     meals.forEach((meal) => {
       getIngredients(meal).forEach((ingredient) => {
         const parsed = parseIngredient(ingredient);
+
         if (!parsed.name) return;
 
         const key = normalizeName(parsed.name);
@@ -202,11 +245,16 @@ function buildShoppingGroups(plan = []) {
         const item = itemsMap.get(key);
 
         if (parsed.unit === "g") item.grams += parsed.value;
-        else if (parsed.unit === "kg") item.grams += parsed.value * 1000;
-        else if (parsed.unit === "ml") item.ml += parsed.value;
-        else if (parsed.unit === "l") item.ml += parsed.value * 1000;
-        else if (parsed.unit === "unit") item.units += parsed.value;
-        else if (parsed.unit === "portion") item.portions += parsed.value;
+        else if (parsed.unit === "kg")
+          item.grams += parsed.value * 1000;
+        else if (parsed.unit === "ml")
+          item.ml += parsed.value;
+        else if (parsed.unit === "l")
+          item.ml += parsed.value * 1000;
+        else if (parsed.unit === "unit")
+          item.units += parsed.value;
+        else if (parsed.unit === "portion")
+          item.portions += parsed.value;
         else item.unknown += 1;
       });
     });
@@ -221,7 +269,10 @@ function buildShoppingGroups(plan = []) {
   };
 
   Array.from(itemsMap.values())
-    .map((item) => ({ ...item, amount: formatAmount(item) }))
+    .map((item) => ({
+      ...item,
+      amount: formatAmount(item),
+    }))
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((item) => {
       groups[item.category].push(item);
@@ -231,7 +282,10 @@ function buildShoppingGroups(plan = []) {
 }
 
 function getIngredients(meal) {
-  if (Array.isArray(meal?.ingredients) && meal.ingredients.length > 0) {
+  if (
+    Array.isArray(meal?.ingredients) &&
+    meal.ingredients.length > 0
+  ) {
     return meal.ingredients.filter(Boolean);
   }
 
@@ -248,19 +302,29 @@ function getIngredients(meal) {
 function parseIngredient(rawIngredient) {
   const text =
     typeof rawIngredient === "object"
-      ? `${rawIngredient.amount || rawIngredient.quantity || ""} ${
-          rawIngredient.name || rawIngredient.food || ""
+      ? `${rawIngredient.amount || ""} ${
+          rawIngredient.name || ""
         }`
       : String(rawIngredient).trim();
 
   const match = text.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
+    /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
   );
 
-  if (!match) return { name: text, value: 1, unit: "unknown" };
+  if (!match) {
+    return {
+      name: text,
+      value: 1,
+      unit: "unknown",
+    };
+  }
 
-  const value = Number(String(match[1]).replace(",", "."));
+  const value = Number(
+    String(match[1]).replace(",", ".")
+  );
+
   const unitText = (match[2] || "").toLowerCase();
+
   const name = (match[3] || text).trim();
 
   if (unitText === "g") return { name, value, unit: "g" };
@@ -270,12 +334,12 @@ function parseIngredient(rawIngredient) {
 
   if (
     unitText.includes("unidad") ||
-    unitText.includes("huevo") ||
     unitText.includes("pieza") ||
+    unitText.includes("huevo") ||
     unitText.includes("rebanada") ||
-    unitText.includes("plátano") ||
-    unitText.includes("platano") ||
     unitText.includes("banana") ||
+    unitText.includes("platano") ||
+    unitText.includes("plátano") ||
     unitText.includes("lata")
   ) {
     return { name, value, unit: "unit" };
@@ -283,13 +347,16 @@ function parseIngredient(rawIngredient) {
 
   if (
     unitText.includes("plato") ||
-    unitText.includes("ración") ||
-    unitText.includes("raciones")
+    unitText.includes("ración")
   ) {
     return { name, value, unit: "portion" };
   }
 
-  return { name, value, unit: "unknown" };
+  return {
+    name,
+    value,
+    unit: "unknown",
+  };
 }
 
 function formatAmount(item) {
@@ -311,8 +378,14 @@ function formatAmount(item) {
     );
   }
 
-  if (item.units > 0) parts.push(`${Math.round(item.units)} ud`);
-  if (item.portions > 0) parts.push(`${Math.round(item.portions)} raciones`);
+  if (item.units > 0) {
+    parts.push(`${Math.round(item.units)} ud`);
+  }
+
+  if (item.portions > 0) {
+    parts.push(`${Math.round(item.portions)} raciones`);
+  }
+
   if (parts.length === 0 && item.unknown > 0) {
     parts.push(`${item.unknown} vez/semana`);
   }
@@ -329,12 +402,11 @@ function categorizeIngredient(name = "") {
       "pavo",
       "carne",
       "ternera",
-      "salmón",
-      "salmon",
-      "pescado",
-      "merluza",
-      "atún",
       "atun",
+      "atún",
+      "pescado",
+      "salmon",
+      "salmón",
       "huevo",
       "claras",
     ].some((word) => text.includes(word))
@@ -360,16 +432,15 @@ function categorizeIngredient(name = "") {
 
   if (
     [
-      "verduras",
-      "ensalada",
       "fruta",
-      "plátano",
-      "platano",
-      "banana",
-      "frutos rojos",
-      "manzana",
-      "brócoli",
+      "verdura",
+      "ensalada",
       "brocoli",
+      "brócoli",
+      "platano",
+      "plátano",
+      "banana",
+      "manzana",
       "aguacate",
       "tomate",
     ].some((word) => text.includes(word))
@@ -378,7 +449,7 @@ function categorizeIngredient(name = "") {
   }
 
   if (
-    ["yogur", "leche", "queso", "requesón", "requeson"].some((word) =>
+    ["leche", "yogur", "queso"].some((word) =>
       text.includes(word)
     )
   ) {
@@ -403,7 +474,10 @@ function toTitleCase(text = "") {
     .toLowerCase()
     .split(" ")
     .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+    )
     .join(" ");
 }
 
