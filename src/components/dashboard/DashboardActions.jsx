@@ -24,7 +24,7 @@ export default function DashboardActions({ navigate }) {
       <div className="grid grid-cols-2 gap-3 ">
         <ActionCard
           icon="/icons/scan-comida-icon.png"
-          label="PLAN DIETA IA"
+          label="PLAN DE DIETA"
           description="Dieta personalizada"
           badge="PLAN"
           onClick={() => navigate("/plan-comidas")}
