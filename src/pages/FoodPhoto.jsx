@@ -68,7 +68,8 @@ export default function FoodPhoto() {
       if (user?.id) {
         formData.append("user_id", user.id);
       }
-
+console.log("API:", API_URL);
+console.log("URL FINAL:", `${API_URL}/analyze-food`);
       const response = await fetch(`${API_URL}/analyze-food`, {
         method: "POST",
         body: formData,
