@@ -31,27 +31,40 @@ export default function FoodPhoto() {
     const storedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
     setMeals(storedMeals);
   }, []);
+
 async function handleImage(event) {
   const selectedFile = event.target.files?.[0];
 
   if (!selectedFile) return;
 
+  setError("");
+
+  const MAX_SIZE_MB = 8;
+
+  if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+    setError("La imagen es demasiado grande. Usa una foto menor a 8MB.");
+    return;
+  }
+
   let finalFile = selectedFile;
 
   try {
-    // Detectar HEIC/HEIF de iPhone
-    if (
+    const isHeic =
       selectedFile.type === "image/heic" ||
-      selectedFile.type === "image/heif"
-    ) {
+      selectedFile.type === "image/heif" ||
+      selectedFile.name.toLowerCase().endsWith(".heic") ||
+      selectedFile.name.toLowerCase().endsWith(".heif");
+
+    // Convertir HEIC/HEIF a JPG
+    if (isHeic) {
       const convertedBlob = await heic2any({
         blob: selectedFile,
         toType: "image/jpeg",
-        quality: 0.9,
+        quality: 0.85,
       });
 
       finalFile = new File(
-        [convertedBlob],
+        [Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob],
         selectedFile.name.replace(/\.[^/.]+$/, ".jpg"),
         {
           type: "image/jpeg",
@@ -66,17 +79,18 @@ async function handleImage(event) {
     ];
 
     if (!allowedTypes.includes(finalFile.type)) {
-      setError("Formato de imagen no compatible.");
+      setError(
+        "Formato no compatible. Usa JPG, PNG, WEBP o HEIC."
+      );
       return;
     }
 
-    setError("");
     setFile(finalFile);
     setPreview(URL.createObjectURL(finalFile));
     setResult(null);
 
   } catch (error) {
-    console.error("Error convirtiendo imagen:", error);
+    console.error("Error procesando imagen:", error);
     setError("No se pudo procesar la imagen.");
   }
 }
