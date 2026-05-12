@@ -18,7 +18,7 @@ export default function AIScoreRing({ score = 0 }) {
     <div className="relative flex items-center justify-center">
       {/* GLOW */}
       <div
-        className="absolute h-28 w-28 rounded-full blur-3xl"
+        className="absolute h-20 w-20 rounded-full blur-3xl"
         style={{
           background: color,
           opacity: 0.18,

@@ -5,7 +5,6 @@ import { supabase } from "../lib/supabase";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
-import DashboardMacrosGrid from "../components/dashboard/DashboardMacrosGrid";
 import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
@@ -141,15 +140,15 @@ export function Dashboard() {
       <DashboardHeader loadingData={loadingData} navigate={navigate} />
 
       <AIHeroCard
-        firstName={firstName}
-        nutritionScore={nutritionScore}
-        totals={totals}
-        navigate={navigate}
-        smartTip={smartTip}
-        todayMeals={todayMeals}
-      />
+  firstName={firstName}
+  nutritionScore={nutritionScore}
+  totals={totals}
+  goals={goals}
+  navigate={navigate}
+  smartTip={smartTip}
+  todayMeals={todayMeals}
+/>
 
-      <DashboardMacrosGrid totals={totals} goals={goals} />
 
       <DashboardActions navigate={navigate} />
     </DashboardLayout>

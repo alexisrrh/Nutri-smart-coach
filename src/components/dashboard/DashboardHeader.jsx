@@ -16,7 +16,7 @@ export default function DashboardHeader({ loadingData, navigate }) {
 
         <div className="min-w-0">
           <h1 className="truncate text-xl font-black italic leading-none tracking-tight text-white">
-            Nutri<span className="text-emerald-300">Smart</span>
+            Nutri<span className="text-emerald-300">SmartCoach</span>
           </h1>
 
           <div className="mt-1 flex items-center gap-2">
