@@ -52,12 +52,12 @@ export default function FoodUploadCard({
             </div>
           )}
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImage}
-            className="hidden"
-          />
+        <input
+  type="file"
+  accept="image/*,.heic,.heif"
+  onChange={handleImage}
+  className="hidden"
+/>
         </div>
       </label>
 
