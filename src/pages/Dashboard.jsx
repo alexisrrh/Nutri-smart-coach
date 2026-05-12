@@ -7,47 +7,40 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
 import DashboardMacrosGrid from "../components/dashboard/DashboardMacrosGrid";
 import DashboardActions from "../components/dashboard/DashboardActions";
-import DashboardInfoGrid from "../components/dashboard/DashboardInfoGrid";
-import SmartInsightCard from "../components/dashboard/SmartInsightCard";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
+
 import { API_URL } from "../config/api";
 import { STORAGE_KEYS } from "../config/storageKeys";
+
 import {
   getGoals,
   getSmartTip,
   getFirstName,
-  shortText,
   safeParse,
 } from "../components/dashboard/dashboardUtils";
-
-
-
 
 export function Dashboard() {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [meals, setMeals] = useState([]);
-  const [checkins, setCheckins] = useState([]);
   const [dietPlans, setDietPlans] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-useEffect(() => {
-  const savedProfile = safeParse(
-    localStorage.getItem(STORAGE_KEYS.PROFILE),
-    null
-  );
 
-  const localMeals = safeParse(
-    localStorage.getItem(STORAGE_KEYS.MEALS),
-    []
-  );
+  useEffect(() => {
+    const savedProfile = safeParse(
+      localStorage.getItem(STORAGE_KEYS.PROFILE),
+      null
+    );
 
-  setProfile(savedProfile);
-  setMeals(localMeals);
-  setLoadingData(false);
+    const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
 
-  loadRemoteDashboardData(savedProfile, localMeals);
-}, []);
+    setProfile(savedProfile);
+    setMeals(localMeals);
+    setLoadingData(false);
+
+    loadRemoteDashboardData(savedProfile, localMeals);
+  }, []);
 
   async function loadRemoteDashboardData(savedProfile, localMeals) {
     try {
@@ -59,9 +52,8 @@ useEffect(() => {
 
       if (!userId) return;
 
-      const [mealsRes, checkinsRes, dietsRes] = await Promise.allSettled([
+      const [mealsRes, dietsRes] = await Promise.allSettled([
         fetch(`${API_URL}/meal-analyses/${userId}`),
-        fetch(`${API_URL}/checkins/${userId}`),
         fetch(`${API_URL}/diet-plans/${userId}`),
       ]);
 
@@ -70,12 +62,7 @@ useEffect(() => {
         const remoteMeals = data.meal_analyses || localMeals;
 
         setMeals(remoteMeals);
-     localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
-      }
-
-      if (checkinsRes.status === "fulfilled" && checkinsRes.value.ok) {
-        const data = await checkinsRes.value.json();
-        setCheckins(data.checkins || []);
+        localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
       }
 
       if (dietsRes.status === "fulfilled" && dietsRes.value.ok) {
@@ -95,6 +82,7 @@ useEffect(() => {
     return meals.filter((meal) => {
       const date = meal.created_at || meal.createdAt;
       if (!date) return false;
+
       return new Date(date).toDateString() === today;
     });
   }, [meals]);
@@ -120,15 +108,13 @@ useEffect(() => {
 
     return Math.min(
       10,
-      Math.round((proteinScore + caloriesScore + carbsScore + fatScore) * 10) /
-        10
+      Math.round(
+        (proteinScore + caloriesScore + carbsScore + fatScore) * 10
+      ) / 10
     );
   }, [totals, goals]);
 
-  const lastMeal = meals[0];
-  const lastCheckin = checkins[0];
   const activeDiet = dietPlans[0];
-
   const firstName = getFirstName(profile?.name || profile?.nombre);
 
   const smartTip = getSmartTip(
@@ -163,20 +149,6 @@ useEffect(() => {
       <DashboardMacrosGrid totals={totals} goals={goals} />
 
       <DashboardActions navigate={navigate} />
-
-      <SmartInsightCard
-        smartTip={smartTip}
-        nutritionScore={nutritionScore}
-        mealCount={todayMeals.length}
-        hasDiet={Boolean(activeDiet)}
-      />
-
-      <DashboardInfoGrid
-        lastMeal={lastMeal}
-        lastCheckin={lastCheckin}
-        navigate={navigate}
-        shortText={shortText}
-      />
     </DashboardLayout>
   );
 }
