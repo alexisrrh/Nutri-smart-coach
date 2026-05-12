@@ -17,14 +17,21 @@ export function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:46px_46px]" />
 
         <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between border-b border-white/10 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-emerald-400 shadow-[0_0_28px_#10b98166]">
-              <Sparkles size={18} className="text-[#03110d]" />
-            </div>
+          <div className="flex items-center gap-3 ">
+           <img
+  src="/favicon.png"
+  alt="NutriSmart Coach"
+ className="h-18 w-17 rounded-2xl object-cover bg-transparent p-1 shadow-[0_0_50px_#10b98155] border border-emerald-500"
+/>
 
-            <p className="text-sm font-black uppercase tracking-tight italic sm:text-xl">
-              Nutri <span className="text-emerald-400">Smart</span> Coach
-            </p>
+           <div className="leading-none">
+  <p className="text-base font-black italic tracking-tight sm:text-xl">
+    Nutri<span className="text-emerald-300">Smart</span>
+  </p>
+  <p className="mt-1 text-[12px] font-black uppercase tracking-[0.28em] text-emerald-300/60">
+    Coach IA
+  </p>
+</div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
