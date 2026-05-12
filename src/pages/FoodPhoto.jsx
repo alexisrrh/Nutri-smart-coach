@@ -9,7 +9,7 @@ import FoodTags from "../components/food/FoodTags";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import RecentMealsSlider from "../components/food/RecentMealsSlider";
 import FoodPageLayout from "../components/food/FoodPageLayout";
-
+import heic2any from "heic2any";
 import {
   saveMealToLocalStorage,
   safeParse,
@@ -31,22 +31,55 @@ export default function FoodPhoto() {
     const storedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
     setMeals(storedMeals);
   }, []);
+async function handleImage(event) {
+  const selectedFile = event.target.files?.[0];
 
-  function handleImage(event) {
-    const selectedFile = event.target.files?.[0];
+  if (!selectedFile) return;
 
-    if (!selectedFile) return;
+  let finalFile = selectedFile;
 
-    if (!selectedFile.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen.");
+  try {
+    // Detectar HEIC/HEIF de iPhone
+    if (
+      selectedFile.type === "image/heic" ||
+      selectedFile.type === "image/heif"
+    ) {
+      const convertedBlob = await heic2any({
+        blob: selectedFile,
+        toType: "image/jpeg",
+        quality: 0.9,
+      });
+
+      finalFile = new File(
+        [convertedBlob],
+        selectedFile.name.replace(/\.[^/.]+$/, ".jpg"),
+        {
+          type: "image/jpeg",
+        }
+      );
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (!allowedTypes.includes(finalFile.type)) {
+      setError("Formato de imagen no compatible.");
       return;
     }
 
     setError("");
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
+    setFile(finalFile);
+    setPreview(URL.createObjectURL(finalFile));
     setResult(null);
+
+  } catch (error) {
+    console.error("Error convirtiendo imagen:", error);
+    setError("No se pudo procesar la imagen.");
   }
+}
 
   async function analyzeFood() {
     if (!file) {
