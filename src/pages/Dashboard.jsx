@@ -36,9 +36,12 @@ export function Dashboard() {
     const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
 
     setProfile(savedProfile);
-    setMeals(localMeals);
+    setMeals(Array.isArray(localMeals) ? localMeals : []);
+
+    // Mostrar dashboard inmediatamente
     setLoadingData(false);
 
+    // Cargar backend en segundo plano
     loadRemoteDashboardData(savedProfile, localMeals);
   }, []);
 
@@ -59,9 +62,9 @@ export function Dashboard() {
 
       if (mealsRes.status === "fulfilled" && mealsRes.value.ok) {
         const data = await mealsRes.value.json();
-        const remoteMeals = data.meal_analyses || localMeals;
+        const remoteMeals = data.meal_analyses || localMeals || [];
 
-        setMeals(remoteMeals);
+        setMeals(Array.isArray(remoteMeals) ? remoteMeals : []);
         localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
       }
 
@@ -124,7 +127,7 @@ export function Dashboard() {
     Boolean(activeDiet)
   );
 
-  if (loadingData && !profile && meals.length === 0) {
+  if (loadingData) {
     return (
       <DashboardLayout>
         <DashboardHeader loadingData={loadingData} navigate={navigate} />
