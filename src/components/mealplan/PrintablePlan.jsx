@@ -1,505 +1,441 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from 'react';
 
-export function PrintablePlan({ plan }) {
-  const normalizedPlan = useMemo(() => normalizePlan(plan), [plan]);
-  const shoppingItems = useMemo(
-    () => buildPrintableShoppingList(normalizedPlan),
-    [normalizedPlan]
-  );
+const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const MEAL_TYPES = ['Desayuno', 'Media Mañana', 'Almuerzo', 'Merienda', 'Cena'];
 
-  if (!normalizedPlan || normalizedPlan.length === 0) return null;
+// Diccionario para normalizar los nombres de los días que vienen del backend
+const NORMALIZE_DAYS = {
+  'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miércoles', 'miércoles': 'Miércoles',
+  'jueves': 'Jueves', 'viernes': 'Viernes', 'sabado': 'Sábado', 'sábado': 'Sábado', 'domingo': 'Domingo'
+};
+
+// Diccionario para mapear los tipos de comida al horario estándar de la rejilla
+const NORMALIZE_MEALS = {
+  'desayuno': 'Desayuno',
+  'mediamanaña': 'Media Mañana', 'mediamanana': 'Media Mañana', 'media mañana': 'Media Mañana',
+  'almuerzo': 'Almuerzo',
+  'merienda': 'Merienda',
+  'cena': 'Cena'
+};
+
+/**
+ * Limpia y parsea los ingredientes individuales para acumularlos en la lista de la compra.
+ */
+function parseIngredient(rawIngredient) {
+  if (!rawIngredient) return null;
+  const text = String(rawIngredient).trim();
+  
+  // Expresión regular corregida sin espacios que rompan la detección
+  const match = text.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i);
+  
+  if (!match) return { name: text, value: 1, unit: 'unidades' };
+
+  const valueStr = match[1].replace(',', '.');
+  const value = parseFloat(valueStr);
+  const rawUnit = match[2] ? match[2].toLowerCase() : 'unidades';
+  const name = match[3] ? match[3].trim() : text;
+
+  let unit = 'unidades';
+  if (rawUnit.includes('kg')) unit = 'kg';
+  else if (rawUnit.includes('g')) unit = 'g';
+  else if (rawUnit.includes('ml')) unit = 'ml';
+  else if (rawUnit.includes('l')) unit = 'l';
+  else if (rawUnit.includes('huevo')) unit = 'huevos';
+  else if (rawUnit.includes('pieza')) unit = 'piezas';
+  else if (rawUnit.includes('rebanada')) unit = 'rebanadas';
+  
+  return { name: name || text, value: isNaN(value) ? 1 : value, unit };
+}
+
+const PrintablePlan = forwardRef(({ plan, macroAverages }, ref) => {
+
+  // 1. CONVERTIR LA ESTRUCTURA DE MEALPLAN.JSX (DAYS Y MEALS) A MATRIZ HORIZONTAL
+  const indexedPlan = useMemo(() => {
+    const matrix = {};
+    DAYS_OF_WEEK.forEach(d => { matrix[d] = {}; });
+
+    if (!plan) return matrix;
+
+    try {
+      // Si el plan viene empaquetado como objeto que contiene el array (ej: plan.days o plan.plan)
+      const rawDays = Array.isArray(plan) 
+        ? plan 
+        : (plan.days || plan.plan || Object.values(plan));
+
+      if (Array.isArray(rawDays)) {
+        rawDays.forEach(dayObj => {
+          if (!dayObj) return;
+
+          // Obtener el nombre del día y normalizarlo
+          const rawDayName = (dayObj.day || dayObj.dia || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          const cleanDay = NORMALIZE_DAYS[rawDayName];
+          if (!cleanDay) return;
+
+          // Tu estructura guarda las comidas en un array interno llamado '.meals'
+          const mealsArray = dayObj.meals || [];
+          if (Array.isArray(mealsArray)) {
+            mealsArray.forEach(mealObj => {
+              if (!mealObj) return;
+
+              const rawMealType = (mealObj.mealType || mealObj.meal_type || mealObj.type || '').toLowerCase();
+              const cleanMeal = NORMALIZE_MEALS[rawMealType];
+
+              if (cleanMeal) {
+                // Guardamos el objeto entero de la comida en la coordenada [Día][Comida]
+                matrix[cleanDay][cleanMeal] = mealObj;
+              }
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error indexando la estructura en PrintablePlan:", error);
+    }
+
+    return matrix;
+  }, [plan]);
+
+  // 2. CONSTRUIR LISTA DE LA COMPRA EXTRAYENDO DE LOS INGREDIENTES Y DETALLES
+  const shoppingList = useMemo(() => {
+    const totals = {};
+    
+    Object.values(indexedPlan).forEach(dayData => {
+      Object.values(dayData).forEach(mealData => {
+        if (!mealData) return;
+
+        // Buscar ingredientes en '.ingredients', '.ingredientes' o parsear desde '.details'
+        const rawIngs = mealData.ingredients || mealData.ingredientes || mealData.details;
+        if (!rawIngs) return;
+
+        const ingredientsArray = Array.isArray(rawIngs)
+          ? rawIngs
+          : typeof rawIngs === 'string'
+          ? rawIngs.split(/[\n,]+/) // Rompe por saltos de línea o comas
+          : [];
+
+        ingredientsArray.forEach(rawIng => {
+          if (!rawIng || String(rawIng).trim() === '') return;
+          const parsed = parseIngredient(rawIng);
+          if (!parsed) return;
+
+          let category = 'Otros';
+          const lowerName = parsed.name.toLowerCase();
+          if (/pollo|pavo|ternera|cerdo|carne|lomo|jamon/i.test(lowerName)) category = 'Carnicería';
+          else if (/pescado|salmon|atun|merluza|bacalao/i.test(lowerName)) category = 'Pescadería';
+          else if (/lechuga|tomate|cebolla|fruta|platano|aguacate|espinaca|verdura|limon/i.test(lowerName)) category = 'Frutería';
+          else if (/leche|queso|yogur|crema|mantequilla/i.test(lowerName)) category = 'Lácteos';
+          else if (/arroz|pasta|pan|harina|avena|cereal|aceite/i.test(lowerName)) category = 'Despensa';
+
+          if (!totals[category]) totals[category] = {};
+          const key = `${parsed.name}_${parsed.unit}`;
+          if (!totals[category][key]) totals[category][key] = { name: parsed.name, value: 0, unit: parsed.unit };
+          totals[category][key].value += parsed.value;
+        });
+      });
+    });
+
+    const formattedList = {};
+    Object.keys(totals).forEach(cat => {
+      formattedList[cat] = Object.values(totals[cat]).map(item => ({
+        name: item.name,
+        amount: item.value % 1 === 0 ? item.value : item.value.toFixed(1),
+        unit: item.unit
+      }));
+    });
+    return formattedList;
+  }, [indexedPlan]);
+
+  if (!plan) return null;
 
   return (
-    <>
+    <div ref={ref} className="pdf-printable-root">
+      {/* ESTILOS INYECTADOS MODERNOS CON GRID DE 8 COLUMNAS INDESTRUCTIBLE */}
       <style>{`
-        @media screen {
-          .print-only { display: none !important; }
+        .pdf-printable-root {
+          display: none !important;
         }
 
         @media print {
-          @page { size: A4; margin: 10mm; }
-
-          html, body {
-            background: #ffffff !important;
-            color: #111827 !important;
-            font-family: Arial, Helvetica, sans-serif !important;
+          .pdf-printable-root {
+            display: block !important;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1a202c;
+            background: #ffffff;
+            width: 297mm;
+            min-height: 210mm;
+            box-sizing: border-box;
+            padding: 8mm;
           }
 
-          .no-print { display: none !important; }
-          .print-only { display: block !important; }
-
-          .print-page {
-            background: #ffffff !important;
-            color: #111827 !important;
-          }
-
-          .print-header {
-            border-bottom: 2px solid #064e3b !important;
-            padding-bottom: 7px !important;
-            margin-bottom: 10px !important;
-          }
-
-          .print-brand {
+          @page {
+            size: A4 landscape !important;
             margin: 0 !important;
-            font-size: 18px !important;
-            font-weight: 900 !important;
-            letter-spacing: 0.8px !important;
-            text-transform: uppercase !important;
-            color: #064e3b !important;
           }
 
-          .print-subtitle {
-            margin: 2px 0 0 !important;
-            font-size: 9px !important;
-            font-weight: 700 !important;
-            color: #4b5563 !important;
+          .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
           }
 
-          .print-section-title {
-            margin: 0 0 7px !important;
-            font-size: 12px !important;
-            font-weight: 900 !important;
-            text-transform: uppercase !important;
-            color: #064e3b !important;
+          .pdf-header h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #2b6cb0;
           }
 
-          .print-grid {
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 7px !important;
+          .pdf-macros {
+            display: flex;
+            gap: 8px;
           }
 
-          .print-day-card {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-            border: 1px solid #d1d5db !important;
-            padding: 7px !important;
+          .pdf-macro-pill {
+            background: #f7fafc !important;
+            border: 1px solid #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* REJILLA GRID HORIZONTAL */
+          .pdf-calendar-grid {
+            display: grid;
+            grid-template-columns: 95px repeat(7, 1fr);
+            gap: 1px;
+            background: #cbd5e0;
+            border: 1px solid #cbd5e0;
+            margin-bottom: 20px;
+          }
+
+          .pdf-grid-header {
+            background: #edf2f7 !important;
+            color: #4a5568;
+            font-weight: bold;
+            text-align: center;
+            padding: 6px 4px;
+            font-size: 11px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .pdf-grid-meal-label {
+            background: #f7fafc !important;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            text-align: center;
+            padding: 5px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .pdf-grid-cell {
             background: #ffffff !important;
+            padding: 6px;
+            min-height: 95px;
+            box-sizing: border-box;
           }
 
-          .print-day-title {
-            margin: 0 0 5px !important;
-            padding-bottom: 4px !important;
-            border-bottom: 1px solid #e5e7eb !important;
-            font-size: 12px !important;
-            font-weight: 900 !important;
-            text-transform: uppercase !important;
-            color: #111827 !important;
+          .pdf-meal-time {
+            font-size: 9px;
+            color: #2b6cb0;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
           }
 
-          .print-meal {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-            margin-bottom: 5px !important;
-            padding-bottom: 5px !important;
-            border-bottom: 1px solid #f3f4f6 !important;
+          .pdf-meal-name {
+            font-size: 10.5px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            line-height: 1.2;
+            color: #1a202c;
           }
 
-          .print-meal:last-child {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
-            border-bottom: 0 !important;
+          .pdf-recipe-box {
+            margin-top: 4px;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 4px;
           }
 
-          .print-meal-meta {
-            margin: 0 0 1px !important;
-            font-size: 8px !important;
-            color: #047857 !important;
-            font-weight: 900 !important;
-            text-transform: uppercase !important;
+          .pdf-recipe-title {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #718096;
+            font-weight: bold;
+            margin: 0 0 2px 0;
           }
 
-          .print-meal-name {
-            margin: 0 !important;
-            font-size: 10px !important;
-            font-weight: 900 !important;
-            color: #111827 !important;
+          .pdf-recipe-text {
+            font-size: 8.5px;
+            color: #4a5568;
+            line-height: 1.2;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
           }
 
-          .print-meal-details {
-            margin: 2px 0 !important;
-            font-size: 8.8px !important;
-            line-height: 1.25 !important;
-            color: #374151 !important;
+          .pdf-empty-cell {
+            color: #cbd5e0;
+            text-align: center;
+            font-size: 12px;
+            display: block;
+            margin-top: 25px;
           }
 
-          .print-macros {
-            margin: 2px 0 0 !important;
-            font-size: 8px !important;
-            font-weight: 800 !important;
-            color: #111827 !important;
+          .pdf-page-break {
+            page-break-before: always;
+            break-before: page;
           }
 
-          .print-break {
-            page-break-before: always !important;
+          .pdf-shop-title {
+            font-size: 15px;
+            color: #2d3748;
+            margin: 0 0 10px 0;
           }
 
-          .print-shopping-grid {
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 5px 9px !important;
+          .pdf-shop-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
           }
 
-          .print-shopping-item {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-            display: flex !important;
-            gap: 5px !important;
-            align-items: flex-start !important;
-            border-bottom: 1px solid #e5e7eb !important;
-            padding: 4px 0 !important;
+          .pdf-shop-card {
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 8px;
+            background: #f7fafc !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
-          .print-checkbox {
-            width: 9px !important;
-            height: 9px !important;
-            border: 1px solid #6b7280 !important;
-            margin-top: 1px !important;
-            flex-shrink: 0 !important;
+          .pdf-shop-card h3 {
+            margin: 0 0 4px 0;
+            font-size: 11px;
+            color: #2b6cb0;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 2px;
+            text-transform: uppercase;
           }
 
-          .print-shopping-name {
-            margin: 0 !important;
-            font-size: 9px !important;
-            font-weight: 900 !important;
-            color: #111827 !important;
+          .pdf-shop-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
           }
 
-          .print-shopping-amount {
-            margin: 1px 0 0 !important;
-            font-size: 8px !important;
-            font-weight: 800 !important;
-            color: #047857 !important;
-          }
-
-          .print-footer {
-            margin-top: 10px !important;
-            border-top: 1px solid #e5e7eb !important;
-            padding-top: 5px !important;
-            font-size: 8px !important;
-            color: #6b7280 !important;
-            text-align: center !important;
+          .pdf-shop-card li {
+            font-size: 10px;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
           }
         }
       `}</style>
 
-      <div className="print-only print-page">
-        <header className="print-header">
-          <h1 className="print-brand">NutriSmart Coach</h1>
-          <p className="print-subtitle">
-            Plan nutricional semanal · Dieta + macros + lista de compra
-          </p>
-        </header>
-
-        <section>
-          <h2 className="print-section-title">Dieta semanal</h2>
-
-          <div className="print-grid">
-            {normalizedPlan.map((dayData, idx) => (
-              <article key={`${dayData.day}-${idx}`} className="print-day-card">
-                <h3 className="print-day-title">{dayData.day}</h3>
-
-                {dayData.meals.map((meal, mealIndex) => (
-                  <div
-                    key={`${dayData.day}-${meal.name}-${mealIndex}`}
-                    className="print-meal"
-                  >
-                    <p className="print-meal-meta">
-                      {meal.time} · {meal.name}
-                    </p>
-
-                    <p className="print-meal-name">{meal.food}</p>
-
-                    <p className="print-meal-details">
-                      {meal.details ||
-                        meal.ingredients.join(", ") ||
-                        "Porciones no especificadas"}
-                    </p>
-
-                    <p className="print-macros">
-                      {Math.round(meal.calories || 0)} kcal ·{" "}
-                      {Math.round(meal.protein || 0)}g proteína ·{" "}
-                      {Math.round(meal.carbs || 0)}g carbs ·{" "}
-                      {Math.round(meal.fat || 0)}g grasas
-                    </p>
-                  </div>
-                ))}
-              </article>
-            ))}
+      {/* CABECERA DEL DOCUMENTO */}
+      <header className="pdf-header">
+        <h1>Tu Plan Nutricional Semanal + Recetas IA</h1>
+        {macroAverages && (
+          <div className="pdf-macros">
+            <span className="pdf-macro-pill">🔥 {macroAverages.calories || 0} kcal</span>
+            <span className="pdf-macro-pill">🥩 P: {macroAverages.protein || 0}g</span>
+            <span className="pdf-macro-pill">🍞 C: {macroAverages.carbs || 0}g</span>
+            <span className="pdf-macro-pill">🥑 G: {macroAverages.fats || 0}g</span>
           </div>
-        </section>
+        )}
+      </header>
 
-        <section className="print-break">
-          <header className="print-header">
-            <h1 className="print-brand">Lista de compra semanal</h1>
-            <p className="print-subtitle">
-              Cantidades aproximadas calculadas desde tu dieta.
-            </p>
-          </header>
+      {/* REJILLA DEL CALENDARIO HORIZONTAL */}
+      <div className="pdf-calendar-grid">
+        <div className="pdf-grid-header">Horario</div>
+        {DAYS_OF_WEEK.map(day => (
+          <div key={day} className="pdf-grid-header">{day}</div>
+        ))}
 
-          <div className="print-shopping-grid">
-            {shoppingItems.map((item) => (
-              <div key={item.id} className="print-shopping-item">
-                <div className="print-checkbox" />
+        {MEAL_TYPES.map(meal => (
+          <React.Fragment key={meal}>
+            {/* Fila lateral de comidas */}
+            <div className="pdf-grid-meal-label">{meal}</div>
+            
+            {DAYS_OF_WEEK.map(day => {
+              // Extraer la comida mapeada desde la matriz de días
+              const mealData = indexedPlan[day][meal] || null;
 
-                <div>
-                  <p className="print-shopping-name">{item.name}</p>
-                  <p className="print-shopping-amount">{item.amount}</p>
+              // Tu frontend mapea los platos bajo el parámetro '.food' o '.title'
+              const foodName = mealData?.food || mealData?.title || mealData?.name || '';
+              const time = mealData?.time || '';
+              const recipeText = mealData?.details || '';
+
+              return (
+                <div key={day} className="pdf-grid-cell">
+                  {mealData && foodName ? (
+                    <div>
+                      {/* Horario de la Comida */}
+                      {time && <span className="pdf-meal-time">🕒 {time}</span>}
+                      
+                      {/* Nombre del plato */}
+                      <p className="pdf-meal-name">{foodName}</p>
+                      
+                      {/* Receta generada por la IA */}
+                      {recipeText && (
+                        <div className="pdf-recipe-box">
+                          <p className="pdf-recipe-title">Receta IA:</p>
+                          <p className="pdf-recipe-text">{recipeText}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="pdf-empty-cell">-</span>
+                  )}
                 </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* SALTO DE HOJA AUTOMÁTICO */}
+      <div className="pdf-page-break"></div>
+
+      {/* SECCIÓN DE LA LISTA DE LA COMPRA */}
+      {shoppingList && Object.keys(shoppingList).length > 0 && (
+        <section style={{ marginTop: '10px' }}>
+          <h2 className="pdf-shop-title">🛒 Lista de la Compra Semanal</h2>
+          <div className="pdf-shop-grid">
+            {Object.entries(shoppingList).map(([category, items]) => (
+              <div key={category} className="pdf-shop-card">
+                <h3>{category}</h3>
+                <ul>
+                  {items.map((item, idx) => (
+                    <li key={idx}>
+                      <input type="checkbox" style={{ margin: 0, width: '10px', height: '10px' }} readOnly />
+                      <span>{item.name} ({item.amount} {item.unit})</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
         </section>
-
-        <footer className="print-footer">
-          NutriSmart Coach · Valores aproximados. Ajusta porciones reales si pesas los alimentos.
-        </footer>
-      </div>
-    </>
+      )}
+    </div>
   );
-}
+});
 
-function normalizePlan(plan = []) {
-  if (!Array.isArray(plan)) return [];
+PrintablePlan.displayName = 'PrintablePlan';
 
-  return plan.map((day, dayIndex) => {
-    const meals = Array.isArray(day?.meals)
-      ? day.meals
-      : Object.values(day?.meals || {});
-
-    return {
-      day: day?.day || `Día ${dayIndex + 1}`,
-      meals: meals.map((meal, index) => {
-        const ingredients = getIngredients(meal);
-
-        return {
-          time: meal?.time || defaultMealTime(index),
-          name: meal?.name || defaultMealName(index),
-          food: meal?.food || meal?.title || meal?.name || "Comida",
-          details: meal?.details || ingredients.join(", "),
-          ingredients,
-          calories: Number(meal?.calories || meal?.kcal || 0),
-          protein: Number(meal?.protein || 0),
-          carbs: Number(meal?.carbs || 0),
-          fat: Number(meal?.fat || 0),
-        };
-      }),
-    };
-  });
-}
-
-function buildPrintableShoppingList(plan = []) {
-  const map = new Map();
-
-  plan.forEach((day) => {
-    day.meals.forEach((meal) => {
-      getIngredients(meal).forEach((ingredient) => {
-        const parsed = parseIngredient(ingredient);
-        if (!parsed.name) return;
-
-        const key = normalizeName(parsed.name);
-
-        if (!map.has(key)) {
-          map.set(key, {
-            id: key,
-            name: toTitleCase(parsed.name),
-            grams: 0,
-            ml: 0,
-            units: 0,
-            portions: 0,
-            unknown: 0,
-          });
-        }
-
-        const item = map.get(key);
-
-        if (parsed.unit === "g") item.grams += parsed.value;
-        else if (parsed.unit === "kg") item.grams += parsed.value * 1000;
-        else if (parsed.unit === "ml") item.ml += parsed.value;
-        else if (parsed.unit === "l") item.ml += parsed.value * 1000;
-        else if (parsed.unit === "unit") item.units += parsed.value;
-        else if (parsed.unit === "portion") item.portions += parsed.value;
-        else item.unknown += 1;
-      });
-    });
-  });
-
-  return Array.from(map.values())
-    .map((item) => ({
-      ...item,
-      amount: formatAmount(item),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function getIngredients(meal) {
-  if (Array.isArray(meal?.ingredients) && meal.ingredients.length > 0) {
-    return meal.ingredients.filter(Boolean);
-  }
-
-  if (meal?.details) {
-    return String(meal.details)
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
-}
-
-function parseIngredient(rawIngredient) {
-  if (typeof rawIngredient === "object" && rawIngredient !== null) {
-    const amountText = rawIngredient.amount || rawIngredient.quantity || "";
-    const name = rawIngredient.name || rawIngredient.food || "Ingrediente";
-    const amount = parseAmount(amountText);
-
-    return {
-      name,
-      ...amount,
-    };
-  }
-
-  const text = String(rawIngredient).trim();
-
-  const match = text.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
-  );
-
-  if (!match) {
-    return {
-      name: text,
-      value: 1,
-      unit: "unknown",
-    };
-  }
-
-  const value = Number(String(match[1]).replace(",", "."));
-  const unitText = (match[2] || "").toLowerCase();
-  const name = (match[3] || text).trim();
-
-  if (!unitText) return { name, value, unit: "unknown" };
-  if (unitText === "g") return { name, value, unit: "g" };
-  if (unitText === "kg") return { name, value, unit: "kg" };
-  if (unitText === "ml") return { name, value, unit: "ml" };
-  if (unitText === "l") return { name, value, unit: "l" };
-
-  if (
-    unitText.includes("unidad") ||
-    unitText.includes("huevo") ||
-    unitText.includes("pieza") ||
-    unitText.includes("rebanada") ||
-    unitText.includes("plátano") ||
-    unitText.includes("platano") ||
-    unitText.includes("banana") ||
-    unitText.includes("lata")
-  ) {
-    return { name, value, unit: "unit" };
-  }
-
-  if (
-    unitText.includes("plato") ||
-    unitText.includes("ración") ||
-    unitText.includes("raciones")
-  ) {
-    return { name, value, unit: "portion" };
-  }
-
-  return { name, value, unit: "unknown" };
-}
-
-function parseAmount(amountText = "") {
-  const text = String(amountText).trim();
-
-  const match = text.match(
-    /(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?/i
-  );
-
-  if (!match) return { value: 1, unit: "unknown" };
-
-  const value = Number(String(match[1]).replace(",", "."));
-  const unitText = (match[2] || "").toLowerCase();
-
-  if (unitText === "g") return { value, unit: "g" };
-  if (unitText === "kg") return { value, unit: "kg" };
-  if (unitText === "ml") return { value, unit: "ml" };
-  if (unitText === "l") return { value, unit: "l" };
-
-  if (
-    unitText.includes("unidad") ||
-    unitText.includes("huevo") ||
-    unitText.includes("pieza") ||
-    unitText.includes("rebanada") ||
-    unitText.includes("plátano") ||
-    unitText.includes("platano") ||
-    unitText.includes("banana") ||
-    unitText.includes("lata")
-  ) {
-    return { value, unit: "unit" };
-  }
-
-  if (
-    unitText.includes("plato") ||
-    unitText.includes("ración") ||
-    unitText.includes("raciones")
-  ) {
-    return { value, unit: "portion" };
-  }
-
-  return { value, unit: "unknown" };
-}
-
-function formatAmount(item) {
-  const parts = [];
-
-  if (item.grams > 0) {
-    if (item.grams >= 1000) parts.push(`${formatNumber(item.grams / 1000)} kg`);
-    else parts.push(`${Math.round(item.grams)} g`);
-  }
-
-  if (item.ml > 0) {
-    if (item.ml >= 1000) parts.push(`${formatNumber(item.ml / 1000)} L`);
-    else parts.push(`${Math.round(item.ml)} ml`);
-  }
-
-  if (item.units > 0) parts.push(`${Math.round(item.units)} ud`);
-  if (item.portions > 0) parts.push(`${Math.round(item.portions)} raciones`);
-
-  if (parts.length === 0 && item.unknown > 0) {
-    parts.push(`${item.unknown} vez/semana`);
-  }
-
-  return parts.join(" + ") || "cantidad semanal";
-}
-
-function normalizeName(name = "") {
-  return String(name)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function toTitleCase(text = "") {
-  return String(text)
-    .toLowerCase()
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function formatNumber(number) {
-  return Number(number.toFixed(1)).toString();
-}
-
-function defaultMealTime(index) {
-  const times = ["08:00", "13:30", "18:00", "21:00", "23:00"];
-  return times[index] || "08:00";
-}
-
-function defaultMealName(index) {
-  const names = ["Desayuno", "Almuerzo", "Merienda", "Cena", "Extra"];
-  return names[index] || "Comida";
-}
+// Doble exportación compatible con Named y Default Imports para evitar bloqueos en Vite
+export { PrintablePlan };
+export default PrintablePlan;
