@@ -1,0 +1,21 @@
+{
+  "name": "NutriSmart Coach",
+  "short_name": "NutriSmart",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06110e",
+  "theme_color": "#10b981",
+  "description": "Nutrición inteligente con IA",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
