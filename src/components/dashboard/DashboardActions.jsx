@@ -1,4 +1,10 @@
 import ActionCard from "./ActionCard";
+import {
+  ChartNoAxesColumnIncreasing,
+  ClipboardList,
+  ScanLine,
+  UserRoundSearch,
+} from "lucide-react";
 
 export default function DashboardActions({ navigate }) {
   return (
@@ -22,6 +28,7 @@ export default function DashboardActions({ navigate }) {
       <div className="grid grid-cols-2 gap-2">
         <ActionCard
           icon="/icons/scan-comida-icon.png"
+          fallbackIcon={ClipboardList}
           label="Plan dieta"
           description="Dieta personalizada"
           badge="PLAN"
@@ -30,6 +37,7 @@ export default function DashboardActions({ navigate }) {
 
         <ActionCard
           icon="/icons/bodyscan-icon.png"
+          fallbackIcon={UserRoundSearch}
           label="Body scan"
           description="Check-in físico"
           badge="BODY"
@@ -38,6 +46,7 @@ export default function DashboardActions({ navigate }) {
 
         <ActionCard
           icon="/icons/historial-icon.png"
+          fallbackIcon={ScanLine}
           label="Historial"
           description="Comidas guardadas"
           badge="LOG"
@@ -46,6 +55,7 @@ export default function DashboardActions({ navigate }) {
 
         <ActionCard
           icon="/icons/progreso-icon.png"
+          fallbackIcon={ChartNoAxesColumnIncreasing}
           label="Progreso"
           description="Peso y evolución"
           badge="TRACK"

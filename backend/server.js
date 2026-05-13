@@ -1207,6 +1207,68 @@ app.get("/meal-analyses/:userId", async (req, res) => {
   }
 });
 
+app.delete("/meal-analyses/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Falta userId" });
+    }
+
+    const { data: meals, error: fetchError } = await supabase
+      .from("meal_analyses")
+      .select("id, image_url")
+      .eq("user_id", userId);
+
+    if (fetchError) {
+      return res.status(500).json({
+        error: "No se pudieron cargar los análisis de comida",
+        detail: fetchError.message,
+      });
+    }
+
+    const imagePaths = (meals || [])
+      .map((meal) =>
+        meal.image_url
+          ? getSupabaseStoragePath({
+              publicUrl: meal.image_url,
+              bucket: "food-photos",
+            })
+          : null
+      )
+      .filter(Boolean);
+
+    if (imagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("food-photos")
+        .remove(imagePaths);
+
+      if (storageError) {
+        console.error("Error borrando imágenes de comidas:", storageError);
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("meal_analyses")
+      .delete()
+      .eq("user_id", userId);
+
+    if (deleteError) {
+      return res.status(500).json({
+        error: "No se pudieron borrar los análisis de comida",
+        detail: deleteError.message,
+      });
+    }
+
+    return res.json({ ok: true, deleted: meals?.length || 0 });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error borrando historial de comidas",
+      detail: error.message,
+    });
+  }
+});
+
 app.delete("/meal-analyses/:mealId", async (req, res) => {
   try {
     const { mealId } = req.params;

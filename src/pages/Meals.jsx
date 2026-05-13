@@ -131,24 +131,7 @@ export function Meals() {
           throw new Error("No hay usuario conectado para borrar esta comida.");
         }
 
-        const response = await fetch(
-          `${API_URL}/meal-analyses/${mealId}?user_id=${encodeURIComponent(
-            user.id
-          )}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        const data = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(
-            data?.error ||
-              data?.detail ||
-              `No se pudo borrar la comida: ${response.status}`
-          );
-        }
+        await deleteRemoteMeal(mealId, user.id);
       }
 
       const updated = removeMealFromList(meals, mealToDelete);
@@ -165,12 +148,47 @@ export function Meals() {
     }
   }
 
-  const clearMeals = () => {
-    if (window.confirm("¿Borrar todo el historial?")) {
+  async function clearMeals() {
+    if (!window.confirm("¿Borrar todo el historial?")) return;
+
+    try {
+      setRemoteError("");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user?.id) {
+        throw new Error("No hay usuario conectado para borrar el historial remoto.");
+      }
+
+      const response = await fetch(
+        `${API_URL}/meal-analyses/user/${user.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+            data?.detail ||
+            `No se pudo borrar el historial: ${response.status}`
+        );
+      }
+
       setMeals([]);
       localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error("Error limpiando historial:", error);
+      setRemoteError(
+        error?.message ||
+          "No se pudo borrar el historial remoto. El historial local se mantiene intacto."
+      );
     }
-  };
+  }
 
   return (
     <section className="min-h-screen bg-[#06110e] px-4 py-5 pb-32 text-white font-sans">
@@ -447,6 +465,25 @@ function Empty({ onClick }) {
 function getCachedMeals() {
   const savedMeals = safeParse(localStorage.getItem(STORAGE_KEY), []);
   return Array.isArray(savedMeals) ? savedMeals : [];
+}
+
+async function deleteRemoteMeal(mealId, userId) {
+  const response = await fetch(
+    `${API_URL}/meal-analyses/${mealId}?user_id=${encodeURIComponent(userId)}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+        data?.detail ||
+        `No se pudo borrar la comida: ${response.status}`
+    );
+  }
 }
 
 function removeMealFromList(meals, mealToDelete) {
