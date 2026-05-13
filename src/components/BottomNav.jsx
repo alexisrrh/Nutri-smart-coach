@@ -10,7 +10,8 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-1 left-1/2 z-50 w-[90%] max-w-[390px] -translate-x-1/2 rounded-[1.4rem] border border-white/10 bg-[#03100a]/80 p-1.5 shadow-[0_14px_45px_rgba(16,185,129,0.14)] backdrop-blur-2xl">
+    /* Cambiado de 'fixed' a 'absolute' y eliminados márgenes forzados para encajar en el contenedor */
+    <nav className="absolute bottom-2 left-1/2 z-50 w-[92%] -translate-x-1/2 rounded-[1.4rem] border border-white/10 bg-[#03100a]/80 p-1.5 shadow-[0_14px_45px_rgba(16,185,129,0.14)] backdrop-blur-2xl">
       <div className="grid grid-cols-4 gap-1">
         {items.map(({ to, label, Icon }) => (
           <NavLink

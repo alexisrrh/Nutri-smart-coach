@@ -104,6 +104,8 @@ export function ProfileSetup() {
           })
         );
       }
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoadingProfile(false);
     }
@@ -191,6 +193,8 @@ export function ProfileSetup() {
 
       setSaved(true);
       setTimeout(() => navigate("/dashboard"), 800);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -198,90 +202,96 @@ export function ProfileSetup() {
 
   if (loadingProfile) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-[#06110e] text-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-emerald-400/30 bg-emerald-400/10" />
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
-            Cargando perfil...
-          </p>
-        </div>
-      </section>
+      <div className="min-h-screen bg-zinc-950 flex justify-center items-center p-0">
+        <section className="w-full max-w-md h-screen bg-[#06110e] text-white flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
+          <div className="text-center px-6">
+            <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-full border-2 border-emerald-400/30 bg-emerald-400/10 flex items-center justify-center">
+              <Activity className="h-6 w-6 text-emerald-400 animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-300">
+              Sincronizando Perfil...
+            </p>
+          </div>
+        </section>
+      </div>
     );
   }
 
   return (
-    <section className="min-h-screen bg-[#06110e] px-4 py-5 pb-32 text-white font-sans">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-5 flex items-center justify-between">
+    <div className="min-h-screen bg-zinc-950 flex justify-center items-center p-0">
+      <section className="w-full max-w-md h-screen md:h-[92vh] md:rounded-3xl md:border md:border-zinc-800/80 bg-[#06110e] text-white font-sans flex flex-col relative overflow-hidden shadow-2xl">
+        
+        {/* Header Superior Móvil */}
+        <div className="sticky top-0 bg-[#06110e]/95 backdrop-blur-md z-40 px-4 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
           <button
             onClick={() => navigate("/dashboard")}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/70 transition active:scale-95"
           >
-            <ArrowLeft size={14} />
-            Dashboard
+            <ArrowLeft size={12} />
+            Atrás
           </button>
+
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400">NutriSmartCoach</span>
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 rounded-full border border-red-400/10 bg-red-400/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-300/60 transition hover:border-red-400/30 hover:text-red-300"
+            className="inline-flex items-center gap-1.5 rounded-full border border-red-400/10 bg-red-400/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-300/70 transition active:scale-95"
           >
-            <LogOut size={14} />
+            <LogOut size={12} />
             Salir
           </button>
         </div>
 
-        <div className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl sm:p-7">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
-                <Sparkles size={13} />
-                Configuración inteligente
-              </div>
-
-              <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl">
-                Perfil personal
-              </h1>
-
-              <p className="mt-2 max-w-xl text-sm text-white/50">
-                Ajusta tus datos para que NutriCoach calcule mejor tus metas,
-                macros y recomendaciones.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-black/20 p-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400 text-[#06110e] shadow-[0_0_25px_#10b98155]">
-                <UserRound size={26} />
-              </div>
-
+        {/* Zona de contenido con scroll vertical (Sin pb forzados) */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 scrollbar-none">
+          
+          {/* Ficha informativa superior */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-xl backdrop-blur-xl">
+            <div className="flex flex-col gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-white/35">
-                  Usuario
+                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.15em] text-emerald-300">
+                  <Sparkles size={11} />
+                  Configuración inteligente
+                </div>
+                <h1 className="text-3xl font-black uppercase italic tracking-tighter">
+                  Perfil personal
+                </h1>
+                <p className="mt-1 text-xs text-white/50 leading-relaxed">
+                  Ajusta tus datos para calcular mejor tus metas, macros y recomendaciones.
                 </p>
-                <p className="max-w-[180px] truncate text-sm font-bold text-white">
-                  {user?.email}
-                </p>
+              </div>
+
+              <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-black/20 p-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-400 text-[#06110e] shadow-[0_0_15px_#10b98144]">
+                  <UserRound size={20} />
+                </div>
+                <div className="overflow-hidden">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/35">
+                    Usuario conectado
+                  </p>
+                  <p className="truncate text-xs font-bold text-white">
+                    {user?.email}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {error && (
-          <AlertBox type="error" icon={<AlertCircle size={17} />}>
-            {error}
-          </AlertBox>
-        )}
+          {error && (
+            <AlertBox type="error" icon={<AlertCircle size={15} />}>
+              {error}
+            </AlertBox>
+          )}
 
-        {saved && (
-          <AlertBox type="success" icon={<CheckCircle2 size={17} />}>
-            Perfil actualizado con éxito.
-          </AlertBox>
-        )}
+          {saved && (
+            <AlertBox type="success" icon={<CheckCircle2 size={15} />}>
+              Perfil actualizado con éxito.
+            </AlertBox>
+          )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl backdrop-blur-xl sm:p-7"
-        >
-          <div className="mb-6 grid gap-4 md:grid-cols-2">
+          {/* Formulario */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
             <Input
               icon={<UserRound size={16} />}
               label="Nombre y apellido"
@@ -291,54 +301,57 @@ export function ProfileSetup() {
               placeholder="Ej. Alexis Rodríguez"
             />
 
-            <CustomSelect
-              icon={<UserRound size={16} />}
-              label="Género"
-              value={form.gender}
-              options={[
-                { id: "male", label: "Hombre" },
-                { id: "female", label: "Mujer" },
-              ]}
-              onChange={(val) => handleChange("gender", val)}
-            />
-          </div>
+            {/* FILA 1: Género y Edad juntos */}
+            <div className="grid grid-cols-2 gap-3">
+              <CustomSelect
+                icon={<UserRound size={16} />}
+                label="Género"
+                value={form.gender}
+                options={[
+                  { id: "male", label: "Hombre" },
+                  { id: "female", label: "Mujer" },
+                ]}
+                onChange={(val) => handleChange("gender", val)}
+              />
 
-          <div className="mb-6 grid gap-4 md:grid-cols-3">
-            <Input
-              icon={<Calendar size={16} />}
-              label="Edad"
-              name="age"
-              type="number"
-              value={form.age}
-              onChange={(e) => handleChange("age", e.target.value)}
-              required
-            />
+              <Input
+                icon={<Calendar size={16} />}
+                label="Edad"
+                name="age"
+                type="number"
+                value={form.age}
+                onChange={(e) => handleChange("age", e.target.value)}
+                required
+              />
+            </div>
 
-            <Input
-              icon={<Weight size={16} />}
-              label="Peso"
-              name="weight"
-              type="number"
-              step="0.1"
-              value={form.weight}
-              onChange={(e) => handleChange("weight", e.target.value)}
-              required
-              suffix="kg"
-            />
+            {/* FILA 2: Peso y Altura juntos */}
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                icon={<Weight size={16} />}
+                label="Peso"
+                name="weight"
+                type="number"
+                step="0.1"
+                value={form.weight}
+                onChange={(e) => handleChange("weight", e.target.value)}
+                required
+                suffix="kg"
+              />
 
-            <Input
-              icon={<Ruler size={16} />}
-              label="Altura"
-              name="height"
-              type="number"
-              value={form.height}
-              onChange={(e) => handleChange("height", e.target.value)}
-              required
-              suffix="cm"
-            />
-          </div>
+              <Input
+                icon={<Ruler size={16} />}
+                label="Altura"
+                name="height"
+                type="number"
+                value={form.height}
+                onChange={(e) => handleChange("height", e.target.value)}
+                required
+                suffix="cm"
+              />
+            </div>
 
-          <div className="mb-7 grid gap-4 md:grid-cols-2">
+            {/* Nivel de actividad y Objetivo Fitness */}
             <CustomSelect
               icon={<Activity size={16} />}
               label="Nivel de actividad"
@@ -362,25 +375,33 @@ export function ProfileSetup() {
               ]}
               onChange={(val) => handleChange("goal", val)}
             />
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.24em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <div className="relative z-10 flex items-center justify-center gap-3">
-              <Save size={17} />
-              {loading ? "Guardando..." : "Guardar cambios"}
-            </div>
-          </button>
-        </form>
-      </div>
+            {/* Botón de guardar cambios */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.2em] text-[#06110e] shadow-[0_15px_35px_#10b98115] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <div className="relative z-10 flex items-center justify-center gap-2">
+                <Save size={15} />
+                {loading ? "Guardando..." : "Guardar cambios"}
+              </div>
+            </button>
+          </form>
+        </div>
 
-      <BottomNav />
-    </section>
+        {/* Zona Inferior Estática para el Menú (Actúa como marco fijo de la app) */}
+        <div className="shrink-0 w-full bg-[#06110e] border-t border-white/5 py-4 px-4 min-h-[80px] flex items-center justify-center relative">
+          <BottomNav />
+        </div>
+        
+      </section>
+    </div>
   );
 }
+
+
+// SUB-COMPONENTES AUXILIARES INTEGRADOS
 
 function AlertBox({ type, icon, children }) {
   const styles =
@@ -389,11 +410,9 @@ function AlertBox({ type, icon, children }) {
       : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
 
   return (
-    <div
-      className={`mb-5 flex items-start gap-3 rounded-2xl border p-4 text-sm font-bold ${styles}`}
-    >
+    <div className={`flex items-start gap-3 rounded-2xl border p-4 text-xs font-bold ${styles}`}>
       <span className="mt-0.5 shrink-0">{icon}</span>
-      {children}
+      <p>{children}</p>
     </div>
   );
 }
@@ -409,33 +428,31 @@ function CustomSelect({ icon, label, value, options, onChange }) {
         setIsOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className="relative" ref={containerRef}>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
+      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
+        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition ${
           isOpen
             ? "border-emerald-400/50 bg-emerald-400/10"
-            : "border-white/10 bg-black/20 hover:border-white/20"
+            : "border-white/10 bg-black/20"
         }`}
       >
-        <span className="flex items-center gap-3 text-sm font-bold text-white">
+        <span className="flex items-center gap-3 text-xs font-bold text-white">
           <span className="text-emerald-300">{icon}</span>
           {selectedOption?.label}
         </span>
-
         <ChevronDown
-          size={16}
+          size={14}
           className={`text-emerald-300 transition-transform duration-300 ${
             isOpen ? "rotate-180" : ""
           }`}
@@ -443,7 +460,7 @@ function CustomSelect({ icon, label, value, options, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b1713] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl">
+        <div className="absolute z-50 mt-1.5 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b1713] shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-3xl">
           {options.map((opt) => (
             <button
               type="button"
@@ -452,10 +469,10 @@ function CustomSelect({ icon, label, value, options, onChange }) {
                 onChange(opt.id);
                 setIsOpen(false);
               }}
-              className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-emerald-400 hover:text-[#06110e] ${
+              className={`block w-full px-4 py-3.5 text-left text-[11px] font-black uppercase tracking-wider transition ${
                 value === opt.id
-                  ? "bg-emerald-400/10 text-emerald-300"
-                  : "text-white/55"
+                  ? "bg-emerald-400 text-[#06110e]"
+                  : "text-white/60 hover:bg-white/5"
               }`}
             >
               {opt.label}
@@ -469,21 +486,21 @@ function CustomSelect({ icon, label, value, options, onChange }) {
 
 function Input({ label, icon, suffix, ...props }) {
   return (
-    <div>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
+    <div className="w-full">
+      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-white/35">
         {label}
       </p>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 transition focus-within:border-emerald-400/50">
         <span className="text-emerald-300">{icon}</span>
 
         <input
           {...props}
-          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+          className="w-full bg-transparent text-xs font-bold text-white outline-none placeholder:text-white/20"
         />
 
         {suffix && (
-          <span className="text-xs font-black uppercase tracking-widest text-white/30">
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
             {suffix}
           </span>
         )}
