@@ -189,7 +189,7 @@ Reglas:
     }
 
     return res.json({
-      ...analysis,
+      ...(savedRecord || analysis),
       image_url: imageUrl,
       saved: Boolean(savedRecord),
     });
@@ -385,7 +385,7 @@ async function uploadImageToSupabase({ bucket, userId, file }) {
   const extension = getFileExtension(file.mimetype);
   const filePath = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
@@ -411,6 +411,20 @@ async function uploadImageToSupabase({ bucket, userId, file }) {
   console.log("Imagen subida correctamente:", publicData.publicUrl);
 
   return publicData.publicUrl;
+}
+
+function getSupabaseStoragePath({ publicUrl, bucket }) {
+  try {
+    const url = new URL(publicUrl);
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const markerIndex = url.pathname.indexOf(marker);
+
+    if (markerIndex === -1) return null;
+
+    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+  } catch {
+    return null;
+  }
 }
 
 
@@ -1188,6 +1202,77 @@ app.get("/meal-analyses/:userId", async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: "Error cargando análisis de comida",
+      detail: error.message,
+    });
+  }
+});
+
+app.delete("/meal-analyses/:mealId", async (req, res) => {
+  try {
+    const { mealId } = req.params;
+    const userId = req.query.user_id;
+
+    if (!mealId) {
+      return res.status(400).json({ error: "Falta mealId" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: "Falta user_id" });
+    }
+
+    const { data: meal, error: fetchError } = await supabase
+      .from("meal_analyses")
+      .select("id, image_url")
+      .eq("id", mealId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (fetchError) {
+      return res.status(500).json({
+        error: "No se pudo cargar el análisis de comida",
+        detail: fetchError.message,
+      });
+    }
+
+    if (!meal) {
+      return res.status(404).json({
+        error: "Análisis de comida no encontrado",
+      });
+    }
+
+    if (meal.image_url) {
+      const imagePath = getSupabaseStoragePath({
+        publicUrl: meal.image_url,
+        bucket: "food-photos",
+      });
+
+      if (imagePath) {
+        const { error: storageError } = await supabase.storage
+          .from("food-photos")
+          .remove([imagePath]);
+
+        if (storageError) {
+          console.error("Error borrando imagen de comida:", storageError);
+        }
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("meal_analyses")
+      .delete()
+      .eq("id", mealId);
+
+    if (deleteError) {
+      return res.status(500).json({
+        error: "No se pudo borrar el análisis de comida",
+        detail: deleteError.message,
+      });
+    }
+
+    return res.json({ ok: true, deleted_id: mealId });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error borrando análisis de comida",
       detail: error.message,
     });
   }

@@ -15,25 +15,71 @@ import {
   Clock,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav";
+import { API_URL } from "../config/api";
+import { STORAGE_KEYS } from "../config/storageKeys";
+import { supabase } from "../lib/supabase";
+import { safeParse } from "../components/food/foodUtils";
 
-const STORAGE_KEY = "nutricoach_meals";
+const STORAGE_KEY = STORAGE_KEYS.MEALS;
 
 export function Meals() {
   const navigate = useNavigate();
-  const [meals, setMeals] = useState([]);
+  const [meals, setMeals] = useState(getCachedMeals);
   const [filter, setFilter] = useState("today");
   const [search, setSearch] = useState("");
+  const [remoteError, setRemoteError] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+
+  async function loadRemoteMeals(localMeals) {
+    try {
+      setRemoteError("");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user?.id) return;
+
+      const response = await fetch(`${API_URL}/meal-analyses/${user.id}`);
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            data?.detail ||
+            `No se pudo cargar el historial: ${response.status}`
+        );
+      }
+
+      const remoteMeals = Array.isArray(data?.meal_analyses)
+        ? data.meal_analyses
+        : [];
+
+      if (remoteMeals.length > 0 || localMeals.length === 0) {
+        setMeals(remoteMeals);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteMeals));
+      }
+    } catch (error) {
+      console.error("Error cargando comidas remotas:", error);
+      setRemoteError(
+        "Sin conexión con el historial remoto. Mostrando datos guardados en este dispositivo."
+      );
+    }
+  }
 
   useEffect(() => {
-    const savedMeals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    setMeals(savedMeals);
+    Promise.resolve().then(() => {
+      loadRemoteMeals(getCachedMeals());
+    });
   }, []);
 
   const filteredMeals = useMemo(() => {
     const now = new Date();
 
     return meals.filter((meal) => {
-      const mealDate = new Date(meal.createdAt || meal.created_at || Date.now());
+      const mealDate = new Date(
+        meal.createdAt || meal.created_at || new Date(0).toISOString()
+      );
 
       const matchesSearch = (meal.food || "")
         .toLowerCase()
@@ -66,18 +112,58 @@ export function Meals() {
     );
   }, [filteredMeals]);
 
-const deleteMeal = (mealToDelete) => {
-  const updated = meals.filter((meal) => {
-    if (meal.id && mealToDelete.id) {
-      return meal.id !== mealToDelete.id;
+  async function deleteMeal(mealToDelete) {
+    if (!mealToDelete) return;
+
+    const mealId = mealToDelete.id;
+
+    try {
+      setRemoteError("");
+
+      if (mealId) {
+        setDeletingId(mealId);
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user?.id) {
+          throw new Error("No hay usuario conectado para borrar esta comida.");
+        }
+
+        const response = await fetch(
+          `${API_URL}/meal-analyses/${mealId}?user_id=${encodeURIComponent(
+            user.id
+          )}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(
+            data?.error ||
+              data?.detail ||
+              `No se pudo borrar la comida: ${response.status}`
+          );
+        }
+      }
+
+      const updated = removeMealFromList(meals, mealToDelete);
+      setMeals(updated);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error("Error borrando comida:", error);
+      setRemoteError(
+        error?.message ||
+          "No se pudo borrar en remoto. El historial local se mantiene intacto."
+      );
+    } finally {
+      setDeletingId("");
     }
-
-    return meal.createdAt !== mealToDelete.createdAt;
-  });
-
-  setMeals(updated);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-};
+  }
 
   const clearMeals = () => {
     if (window.confirm("¿Borrar todo el historial?")) {
@@ -122,6 +208,12 @@ const deleteMeal = (mealToDelete) => {
             </button>
           </div>
         </div>
+
+        {remoteError && (
+          <div className="mb-5 rounded-[1.2rem] border border-amber-300/15 bg-amber-300/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-amber-100/70">
+            {remoteError}
+          </div>
+        )}
 
         <div className="mb-5 grid grid-cols-2 gap-2 md:grid-cols-4">
           <Summary icon={<Flame size={18} />} title="Calorías" value={totals.calories} unit="kcal" />
@@ -190,7 +282,8 @@ const deleteMeal = (mealToDelete) => {
                 <MealCard
                   key={meal.id}
                   meal={meal}
-               onDelete={() => deleteMeal(meal)}
+                  deleting={deletingId === meal.id}
+                  onDelete={() => deleteMeal(meal)}
                 />
               ))}
             </div>
@@ -237,8 +330,8 @@ function FilterButton({ active, onClick, children }) {
   );
 }
 
-function MealCard({ meal, onDelete }) {
-  const dateValue = meal.createdAt || meal.created_at || Date.now();
+function MealCard({ meal, onDelete, deleting }) {
+  const dateValue = meal.createdAt || meal.created_at || new Date(0).toISOString();
 
   const date = new Date(dateValue).toLocaleDateString("es-ES", {
     day: "2-digit",
@@ -301,6 +394,7 @@ function MealCard({ meal, onDelete }) {
 
         <button
           onClick={onDelete}
+          disabled={deleting}
           className="self-start rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/35 transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-300"
         >
           <Trash2 size={16} />
@@ -348,4 +442,22 @@ function Empty({ onClick }) {
       </button>
     </div>
   );
+}
+
+function getCachedMeals() {
+  const savedMeals = safeParse(localStorage.getItem(STORAGE_KEY), []);
+  return Array.isArray(savedMeals) ? savedMeals : [];
+}
+
+function removeMealFromList(meals, mealToDelete) {
+  return meals.filter((meal) => {
+    if (meal.id && mealToDelete.id) {
+      return meal.id !== mealToDelete.id;
+    }
+
+    return (
+      (meal.createdAt || meal.created_at) !==
+      (mealToDelete.createdAt || mealToDelete.created_at)
+    );
+  });
 }
