@@ -48,7 +48,35 @@ export default function FoodPhoto() {
 
   function handleImage(event) {
     const file = event.target.files?.[0];
+
     if (!file) return;
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+    ];
+
+    const isValid =
+      allowedTypes.includes(file.type) ||
+      /\.(jpg|jpeg|png|webp|heic|heif)$/i.test(file.name);
+
+    if (!isValid) {
+      setError("Formato no compatible. Usa JPG, PNG, WEBP o HEIC.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("La imagen es demasiado pesada. Usa una imagen menor de 10MB.");
+      return;
+    }
+
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
 
     setImage(file);
     setPreview(URL.createObjectURL(file));
