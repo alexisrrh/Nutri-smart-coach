@@ -11,6 +11,7 @@ import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
 
 import { API_URL } from "../config/api";
 import { STORAGE_KEYS } from "../config/storageKeys";
+import { supabase } from "../lib/supabase";
 
 import {
   saveMealToLocalStorage,
@@ -28,6 +29,10 @@ export default function FoodPhoto() {
   useEffect(() => {
     const storedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
     setMeals(Array.isArray(storedMeals) ? storedMeals : []);
+
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
   }, []);
 
   const totals = useMemo(() => {
@@ -48,7 +53,6 @@ export default function FoodPhoto() {
 
   function handleImage(event) {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     const allowedTypes = [
@@ -69,8 +73,8 @@ export default function FoodPhoto() {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("La imagen es demasiado pesada. Usa una imagen menor de 10MB.");
+    if (file.size > 4 * 1024 * 1024) {
+      setError("La imagen es demasiado pesada. Usa una imagen menor de 4MB.");
       return;
     }
 
@@ -92,8 +96,22 @@ export default function FoodPhoto() {
       setResult(null);
       setError("");
 
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.warn("No se pudo obtener usuario Supabase:", userError.message);
+      }
+
       const formData = new FormData();
       formData.append("image", image);
+      formData.append("goal", "perder_grasa");
+
+      if (user?.id) {
+        formData.append("user_id", user.id);
+      }
 
       const response = await fetch(`${API_URL}/analyze-food`, {
         method: "POST",
@@ -106,6 +124,7 @@ export default function FoodPhoto() {
         throw new Error(
           data?.error ||
             data?.message ||
+            data?.detail ||
             `Error del servidor: ${response.status}`
         );
       }
@@ -114,13 +133,24 @@ export default function FoodPhoto() {
         throw new Error("No se recibió respuesta válida del servidor.");
       }
 
-      setResult(data);
-      saveMealToLocalStorage(data, preview);
+      const mealToSave = {
+        ...data,
+        user_id: user?.id || null,
+        createdAt: data.createdAt || data.created_at || new Date().toISOString(),
+      };
 
-      const updatedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
+      setResult(mealToSave);
+      saveMealToLocalStorage(mealToSave, preview);
+
+      const updatedMeals = safeParse(
+        localStorage.getItem(STORAGE_KEYS.MEALS),
+        []
+      );
+
       setMeals(Array.isArray(updatedMeals) ? updatedMeals : []);
     } catch (error) {
       console.error("Error analizando comida:", error);
+
       setError(
         error?.message ||
           "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo."
