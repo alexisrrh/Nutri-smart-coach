@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -38,11 +38,7 @@ export function ProfileSetup() {
     goal: "perder_grasa",
   });
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
+  const loadProfile = useCallback(async () => {
     setLoadingProfile(true);
     setError("");
 
@@ -107,7 +103,11 @@ export function ProfileSetup() {
     } finally {
       setLoadingProfile(false);
     }
-  }
+  }, [navigate]);
+
+  useEffect(() => {
+    Promise.resolve().then(loadProfile);
+  }, [loadProfile]);
 
   async function handleLogout() {
     if (!window.confirm("¿Cerrar sesión?")) return;

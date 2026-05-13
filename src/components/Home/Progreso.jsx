@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Camera, Utensils, LineChart, ShieldCheck, ArrowLeft, TrendingUp, Calendar, Award, ArrowRight } from "lucide-react";
+import { Camera, Utensils, LineChart, ShieldCheck, TrendingUp, Calendar, Award, ArrowRight } from "lucide-react";
 
 export function Progreso() {
   return (

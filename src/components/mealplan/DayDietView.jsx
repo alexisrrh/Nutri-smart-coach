@@ -16,10 +16,11 @@ export function DayDietView({
   progress = {},
   toggleMeal,
 }) {
-  if (!Array.isArray(plan) || plan.length === 0) return null;
-
-  const safeActiveDay = Math.max(0, Math.min(activeDay, plan.length - 1));
-  const activeDayData = plan[safeActiveDay] || plan[0];
+  const hasPlan = Array.isArray(plan) && plan.length > 0;
+  const safeActiveDay = hasPlan
+    ? Math.max(0, Math.min(activeDay, plan.length - 1))
+    : 0;
+  const activeDayData = hasPlan ? plan[safeActiveDay] || plan[0] : null;
 
   const mealsArray = useMemo(() => {
     if (!activeDayData?.meals) return [];
@@ -29,6 +30,8 @@ export function DayDietView({
   }, [activeDayData]);
 
   const dayTotals = useMemo(() => getDayTotals(mealsArray), [mealsArray]);
+
+  if (!hasPlan) return null;
 
   const completed = mealsArray.filter((meal, index) =>
     Boolean(progress?.[getMealId(activeDayData?.day, meal, index)])
