@@ -92,7 +92,7 @@ export default function AIHeroCard({
         <HeroActionButton
           primary
           title="ESCANEAR"
-          subtitle="calorias IA"
+          subtitle="calorias"
           icon="/icons/scan-icon.png"
           onClick={() => navigate("/foto-comida")}
         />

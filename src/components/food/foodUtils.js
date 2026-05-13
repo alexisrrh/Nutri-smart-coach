@@ -1,22 +1,30 @@
+import { STORAGE_KEYS } from "../../config/storageKeys";
+
 export function saveMealToLocalStorage(result, preview) {
   if (!result) return;
 
-  const MEALS_KEY = "nutricoach_meals";
-
   const previousMeals = safeParse(
-    localStorage.getItem(MEALS_KEY),
+    localStorage.getItem(STORAGE_KEYS.MEALS),
     []
   );
-const meal = {
-  id: result.id || crypto.randomUUID(),
-  ...result,
-  image: preview || result.image_url || null,
-  createdAt: result.createdAt || result.created_at || new Date().toISOString(),
-};
+
+  const meal = {
+    id: result.id || crypto.randomUUID(),
+    ...result,
+    image: preview || result.image_url || result.image || null,
+    createdAt:
+      result.createdAt ||
+      result.created_at ||
+      new Date().toISOString(),
+  };
+
+  const mealsWithoutDuplicate = previousMeals.filter(
+    (item) => item.id !== meal.id
+  );
 
   localStorage.setItem(
-    MEALS_KEY,
-    JSON.stringify([meal, ...previousMeals])
+    STORAGE_KEYS.MEALS,
+    JSON.stringify([meal, ...mealsWithoutDuplicate])
   );
 }
 
@@ -26,6 +34,7 @@ export function getFoodScoreLabel(score) {
   if (value >= 9) return "Excelente";
   if (value >= 7) return "Muy buena";
   if (value >= 5) return "Aceptable";
+
   return "Mejorable";
 }
 
