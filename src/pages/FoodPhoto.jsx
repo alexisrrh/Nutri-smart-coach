@@ -1,141 +1,86 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { API_URL } from "../config/api";
+import { useEffect, useMemo, useState } from "react";
+
+import FoodPageLayout from "../components/food/FoodPageLayout";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
 import FoodResultCard from "../components/food/FoodResultCard";
-import FoodTags from "../components/food/FoodTags";
+import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
-import RecentMealsSlider from "../components/food/RecentMealsSlider";
-import FoodPageLayout from "../components/food/FoodPageLayout";
-import heic2any from "heic2any";
+import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
+
 import {
   saveMealToLocalStorage,
   safeParse,
 } from "../components/food/foodUtils";
 
-
-
-const MEALS_KEY = "nutricoach_meals";
+import { STORAGE_KEYS } from "../config/storageKeys";
 
 export default function FoodPhoto() {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
-    const storedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
-    setMeals(storedMeals);
+    const storedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
+    setMeals(Array.isArray(storedMeals) ? storedMeals : []);
   }, []);
 
-async function handleImage(event) {
-  const selectedFile = event.target.files?.[0];
+  const totals = useMemo(() => {
+    return meals.reduce(
+      (acc, meal) => {
+        acc.calories += Number(meal.calories || 0);
+        acc.protein += Number(meal.protein || 0);
+        return acc;
+      },
+      { calories: 0, protein: 0 }
+    );
+  }, [meals]);
 
-  if (!selectedFile) return;
+  const goals = {
+    calories: 2600,
+    protein: 170,
+  };
 
-  setError("");
+  function handleImage(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const MAX_SIZE_MB = 8;
-
-  if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-    setError("La imagen es demasiado grande. Usa una foto menor a 8MB.");
-    return;
-  }
-
-  let finalFile = selectedFile;
-
-  try {
-    const isHeic =
-      selectedFile.type === "image/heic" ||
-      selectedFile.type === "image/heif" ||
-      selectedFile.name.toLowerCase().endsWith(".heic") ||
-      selectedFile.name.toLowerCase().endsWith(".heif");
-
-    // Convertir HEIC/HEIF a JPG
-    if (isHeic) {
-      const convertedBlob = await heic2any({
-        blob: selectedFile,
-        toType: "image/jpeg",
-        quality: 0.85,
-      });
-
-      finalFile = new File(
-        [Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob],
-        selectedFile.name.replace(/\.[^/.]+$/, ".jpg"),
-        {
-          type: "image/jpeg",
-        }
-      );
-    }
-
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-    ];
-
-    if (!allowedTypes.includes(finalFile.type)) {
-      setError(
-        "Formato no compatible. Usa JPG, PNG, WEBP o HEIC."
-      );
-      return;
-    }
-
-    setFile(finalFile);
-    setPreview(URL.createObjectURL(finalFile));
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
     setResult(null);
-
-  } catch (error) {
-    console.error("Error procesando imagen:", error);
-    setError("No se pudo procesar la imagen.");
   }
-}
 
   async function analyzeFood() {
-    if (!file) {
-      setError("Sube una imagen primero.");
-      return;
-    }
+    if (!image || loading) return;
 
     try {
       setLoading(true);
-      setError("");
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      setResult(null);
 
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", image);
 
-      if (user?.id) {
-        formData.append("user_id", user.id);
-      }
-console.log("API:", API_URL);
-console.log("URL FINAL:", `${API_URL}/analyze-food`);
-      const response = await fetch(`${API_URL}/analyze-food`, {
+      const response = await fetch("http://localhost:3000/analyze-food", {
         method: "POST",
         body: formData,
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || data.detail || "Error analizando imagen");
+        throw new Error(`Error del servidor: ${response.status}`);
       }
+
+      const data = await response.json();
 
       setResult(data);
       saveMealToLocalStorage(data, preview);
 
-      const updatedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
-      setMeals(updatedMeals);
-    } catch (err) {
-      console.error("Error frontend:", err);
-      setError(err.message || "No se pudo analizar la comida.");
+      const updatedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
+      setMeals(Array.isArray(updatedMeals) ? updatedMeals : []);
+    } catch (error) {
+      console.error("Error analizando comida:", error);
     } finally {
       setLoading(false);
     }
@@ -143,34 +88,29 @@ console.log("URL FINAL:", `${API_URL}/analyze-food`);
 
   return (
     <FoodPageLayout>
-      <AIScanHero />
+      <div className="space-y-2">
+        <AIScanHero />
 
-      {!loading && !result && (
-        <FoodUploadCard
-          preview={preview}
-          handleImage={handleImage}
-          analyzeFood={analyzeFood}
-          loading={loading}
-        />
-      )}
+    {!result && !loading && (
+  <FoodUploadCard
+    preview={preview}
+    handleImage={handleImage}
+    analyzeFood={analyzeFood}
+    loading={loading}
+  />
+)}
 
-      {loading && <FoodScannerLoader preview={preview} />}
+        {loading && <FoodScannerLoader preview={preview} />}
 
-      {!loading && result && (
-        <>
-          <FoodResultCard result={result} preview={preview} />
-          <FoodTags result={result} />
-          <SmartSwapCard result={result} />
-        </>
-      )}
-
-      <RecentMealsSlider meals={meals} />
-
-      {error && (
-        <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-[11px] font-bold text-red-300">
-          {error}
-        </div>
-      )}
+        {result && !loading && (
+          <>
+            <FoodResultCard result={result} preview={preview} />
+            <NutritionInsights result={result} />
+            <SmartSwapCard result={result} />
+            <DailyGoalCard totals={totals} goals={goals} />
+          </>
+        )}
+      </div>
     </FoodPageLayout>
   );
 }
