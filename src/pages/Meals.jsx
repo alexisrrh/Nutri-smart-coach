@@ -15,12 +15,14 @@ import {
   Clock,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import { API_URL } from "../config/api";
-import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
-import { safeParse } from "../components/food/foodUtils";
-
-const STORAGE_KEY = STORAGE_KEYS.MEALS;
+import {
+  clearMeals as clearRemoteMeals,
+  deleteMeal as deleteRemoteMeal,
+  getCachedMeals,
+  listMeals,
+  removeMealFromCache,
+} from "../services/mealService";
 
 export function Meals() {
   const navigate = useNavigate();
@@ -30,7 +32,7 @@ export function Meals() {
   const [remoteError, setRemoteError] = useState("");
   const [deletingId, setDeletingId] = useState("");
 
-  async function loadRemoteMeals(localMeals) {
+  async function loadRemoteMeals() {
     try {
       setRemoteError("");
 
@@ -40,25 +42,7 @@ export function Meals() {
 
       if (!user?.id) return;
 
-      const response = await fetch(`${API_URL}/meal-analyses/${user.id}`);
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            data?.detail ||
-            `No se pudo cargar el historial: ${response.status}`
-        );
-      }
-
-      const remoteMeals = Array.isArray(data?.meal_analyses)
-        ? data.meal_analyses
-        : [];
-
-      if (remoteMeals.length > 0 || localMeals.length === 0) {
-        setMeals(remoteMeals);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteMeals));
-      }
+      setMeals(await listMeals(user.id));
     } catch (error) {
       console.error("Error cargando comidas remotas:", error);
       setRemoteError(
@@ -69,7 +53,7 @@ export function Meals() {
 
   useEffect(() => {
     Promise.resolve().then(() => {
-      loadRemoteMeals(getCachedMeals());
+      loadRemoteMeals();
     });
   }, []);
 
@@ -134,9 +118,8 @@ export function Meals() {
         await deleteRemoteMeal(mealId, user.id);
       }
 
-      const updated = removeMealFromList(meals, mealToDelete);
+      const updated = removeMealFromCache(mealToDelete);
       setMeals(updated);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch (error) {
       console.error("Error borrando comida:", error);
       setRemoteError(
@@ -162,25 +145,9 @@ export function Meals() {
         throw new Error("No hay usuario conectado para borrar el historial remoto.");
       }
 
-      const response = await fetch(
-        `${API_URL}/meal-analyses/user/${user.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok || !data?.ok) {
-        throw new Error(
-          data?.error ||
-            data?.detail ||
-            `No se pudo borrar el historial: ${response.status}`
-        );
-      }
+      await clearRemoteMeals(user.id);
 
       setMeals([]);
-      localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
       console.error("Error limpiando historial:", error);
       setRemoteError(
@@ -460,41 +427,4 @@ function Empty({ onClick }) {
       </button>
     </div>
   );
-}
-
-function getCachedMeals() {
-  const savedMeals = safeParse(localStorage.getItem(STORAGE_KEY), []);
-  return Array.isArray(savedMeals) ? savedMeals : [];
-}
-
-async function deleteRemoteMeal(mealId, userId) {
-  const response = await fetch(
-    `${API_URL}/meal-analyses/${mealId}?user_id=${encodeURIComponent(userId)}`,
-    {
-      method: "DELETE",
-    }
-  );
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      data?.error ||
-        data?.detail ||
-        `No se pudo borrar la comida: ${response.status}`
-    );
-  }
-}
-
-function removeMealFromList(meals, mealToDelete) {
-  return meals.filter((meal) => {
-    if (meal.id && mealToDelete.id) {
-      return meal.id !== mealToDelete.id;
-    }
-
-    return (
-      (meal.createdAt || meal.created_at) !==
-      (mealToDelete.createdAt || mealToDelete.created_at)
-    );
-  });
 }

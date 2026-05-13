@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
+import { listMeals } from "../services/mealService";
 
 export function Daily() {
   const { user } = useAuth();
@@ -18,14 +19,8 @@ export function Daily() {
         .eq("id", user.id)
         .single();
 
-      // comidas
-      const { data: mealsData } = await supabase
-        .from("meal_logs")
-        .select("*")
-        .eq("user_id", user.id);
-
       setProfile(profileData);
-      setMeals(mealsData || []);
+      setMeals(await listMeals(user.id));
     }
 
     if (user) loadData();

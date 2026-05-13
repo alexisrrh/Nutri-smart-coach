@@ -10,6 +10,7 @@ import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import { API_URL } from "../config/api";
 import { STORAGE_KEYS } from "../config/storageKeys";
+import { getCachedMeals, listMeals } from "../services/mealService";
 
 import {
   getGoals,
@@ -24,14 +25,11 @@ export function Dashboard() {
   const [profile] = useState(() =>
     safeParse(localStorage.getItem(STORAGE_KEYS.PROFILE), null)
   );
-  const [meals, setMeals] = useState(() => {
-    const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-    return Array.isArray(localMeals) ? localMeals : [];
-  });
+  const [meals, setMeals] = useState(getCachedMeals);
   const [dietPlans, setDietPlans] = useState([]);
   const [loadingData] = useState(false);
 
-  async function loadRemoteDashboardData(savedProfile, localMeals) {
+  async function loadRemoteDashboardData(savedProfile) {
     try {
       const {
         data: { user },
@@ -42,16 +40,12 @@ export function Dashboard() {
       if (!userId) return;
 
       const [mealsRes, dietsRes] = await Promise.allSettled([
-        fetch(`${API_URL}/meal-analyses/${userId}`),
+        listMeals(userId),
         fetch(`${API_URL}/diet-plans/${userId}`),
       ]);
 
-      if (mealsRes.status === "fulfilled" && mealsRes.value.ok) {
-        const data = await mealsRes.value.json();
-        const remoteMeals = data.meal_analyses || localMeals || [];
-
-        setMeals(Array.isArray(remoteMeals) ? remoteMeals : []);
-        localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
+      if (mealsRes.status === "fulfilled") {
+        setMeals(mealsRes.value);
       }
 
       if (dietsRes.status === "fulfilled" && dietsRes.value.ok) {
@@ -69,11 +63,9 @@ export function Dashboard() {
       null
     );
 
-    const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-
     // Cargar backend en segundo plano
     Promise.resolve().then(() => {
-      loadRemoteDashboardData(savedProfile, localMeals);
+      loadRemoteDashboardData(savedProfile);
     });
   }, []);
 
