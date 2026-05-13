@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, LogOut } from "lucide-react";
 
@@ -46,11 +46,7 @@ export function CheckIn() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoadingHistory(true);
     setError("");
 
@@ -85,7 +81,11 @@ export function CheckIn() {
 
     setHistory(data || []);
     setLoadingHistory(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    Promise.resolve().then(loadData);
+  }, [loadData]);
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];

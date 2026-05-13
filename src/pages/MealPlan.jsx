@@ -64,48 +64,22 @@ const MEALS_PER_DAY = [
 export function MealPlan() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    dietType: "balanced",
-    goal: "lose_fat",
-    planDays: "7",
-    mealsPerDay: "4",
-    budget: "medium",
-    cookingLevel: "easy",
-    homeFoods: "",
-    exclusions: "",
-  });
+  const [formData, setFormData] = useState(createInitialFormData);
 
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState([]);
+  const [plan, setPlan] = useState(() =>
+    normalizePlan(safeParse(localStorage.getItem(PLAN_KEY), []))
+  );
   const [activeDay, setActiveDay] = useState(0);
-  const [progress, setProgress] = useState({});
+  const [progress, setProgress] = useState(() =>
+    safeParse(localStorage.getItem(PROGRESS_KEY), {})
+  );
   const [showShopping, setShowShopping] = useState(false);
-  const [profile, setProfile] = useState(null);
+  const [profile] = useState(() =>
+    safeParse(localStorage.getItem(PROFILE_KEY), null)
+  );
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
-
-  useEffect(() => {
-    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
-    const savedPlan = normalizePlan(safeParse(localStorage.getItem(PLAN_KEY), []));
-    const savedProgress = safeParse(localStorage.getItem(PROGRESS_KEY), {});
-
-    setProfile(savedProfile);
-    setPlan(savedPlan);
-    setProgress(savedProgress);
-
-    if (savedProfile?.goal || savedProfile?.objetivo) {
-      setFormData((prev) => ({
-        ...prev,
-        goal: mapProfileGoalToForm(savedProfile.goal || savedProfile.objetivo),
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (plan.length > 0 && activeDay >= plan.length) {
-      setActiveDay(0);
-    }
-  }, [plan, activeDay]);
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
   const hasPlan = plan.length > 0;
@@ -518,9 +492,6 @@ function GeneratingDietLoader({ formData }) {
   const steps = ["Perfil", "Macros", "Menú", "Porciones", "Compra"];
 
   useEffect(() => {
-    setPercent(7);
-    setSeconds(0);
-
     const progressInterval = setInterval(() => {
       setPercent((prev) => {
         if (prev >= 96) return prev;
@@ -704,6 +675,23 @@ function mapProfileGoalToForm(goal) {
   if (goal === "mantener_peso") return "maintain";
 
   return goal || "lose_fat";
+}
+
+function createInitialFormData() {
+  const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+
+  return {
+    dietType: "balanced",
+    goal: mapProfileGoalToForm(
+      savedProfile?.goal || savedProfile?.objetivo || "lose_fat"
+    ),
+    planDays: "7",
+    mealsPerDay: "4",
+    budget: "medium",
+    cookingLevel: "easy",
+    homeFoods: "",
+    exclusions: "",
+  };
 }
 
 function defaultMealTime(index, total = 4) {

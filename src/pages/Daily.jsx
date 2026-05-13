@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 export function Daily() {
   const { user } = useAuth();

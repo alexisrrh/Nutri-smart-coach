@@ -1,4 +1,4 @@
-import { Lightbulb, Target, TrendingUp } from "lucide-react";
+import { Lightbulb, Target } from "lucide-react";
 
 export default function SmartInsightCard({
   smartTip,

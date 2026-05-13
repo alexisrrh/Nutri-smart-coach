@@ -9,8 +9,10 @@ export function CheckInLoader({ loading }) {
   useEffect(() => {
     if (!loading) return;
 
-    setPercent(8);
-    setSeconds(0);
+    const resetTimer = setTimeout(() => {
+      setPercent(8);
+      setSeconds(0);
+    }, 0);
 
     const progressInterval = setInterval(() => {
       setPercent((prev) => {
@@ -26,6 +28,7 @@ export function CheckInLoader({ loading }) {
     }, 1000);
 
     return () => {
+      clearTimeout(resetTimer);
       clearInterval(progressInterval);
       clearInterval(secondsInterval);
     };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -15,12 +15,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import BottomNav from "../components/BottomNav";
 
 export function Progress() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userId = user?.id;
 
   const [peso, setPeso] = useState("");
   const [nota, setNota] = useState("");
@@ -29,25 +30,27 @@ export function Progress() {
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [saved, setSaved] = useState(false);
 
-  async function getLogs() {
-    if (!user?.id) return;
+  const getLogs = useCallback(async () => {
+    if (!userId) return;
 
     setLoadingLogs(true);
 
     const { data, error } = await supabase
       .from("progress_logs")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
     if (!error) setLogs(data || []);
 
     setLoadingLogs(false);
-  }
+  }, [userId]);
 
   useEffect(() => {
-    if (user) getLogs();
-  }, [user]);
+    if (user) {
+      Promise.resolve().then(getLogs);
+    }
+  }, [getLogs, user]);
 
   async function handleSubmit(e) {
     e.preventDefault();

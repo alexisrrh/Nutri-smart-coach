@@ -21,28 +21,15 @@ import {
 export function Dashboard() {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(null);
-  const [meals, setMeals] = useState([]);
-  const [dietPlans, setDietPlans] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-
-  useEffect(() => {
-    const savedProfile = safeParse(
-      localStorage.getItem(STORAGE_KEYS.PROFILE),
-      null
-    );
-
+  const [profile] = useState(() =>
+    safeParse(localStorage.getItem(STORAGE_KEYS.PROFILE), null)
+  );
+  const [meals, setMeals] = useState(() => {
     const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-
-    setProfile(savedProfile);
-    setMeals(Array.isArray(localMeals) ? localMeals : []);
-
-    // Mostrar dashboard inmediatamente
-    setLoadingData(false);
-
-    // Cargar backend en segundo plano
-    loadRemoteDashboardData(savedProfile, localMeals);
-  }, []);
+    return Array.isArray(localMeals) ? localMeals : [];
+  });
+  const [dietPlans, setDietPlans] = useState([]);
+  const [loadingData] = useState(false);
 
   async function loadRemoteDashboardData(savedProfile, localMeals) {
     try {
@@ -75,6 +62,20 @@ export function Dashboard() {
       console.error("Error cargando dashboard remoto:", error);
     }
   }
+
+  useEffect(() => {
+    const savedProfile = safeParse(
+      localStorage.getItem(STORAGE_KEYS.PROFILE),
+      null
+    );
+
+    const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
+
+    // Cargar backend en segundo plano
+    Promise.resolve().then(() => {
+      loadRemoteDashboardData(savedProfile, localMeals);
+    });
+  }, []);
 
   const goals = useMemo(() => getGoals(profile), [profile]);
 
