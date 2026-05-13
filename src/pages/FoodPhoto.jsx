@@ -51,7 +51,17 @@ export default function FoodPhoto() {
     protein: 170,
   };
 
-  function handleImage(event) {
+  function resetScanner() {
+    if (preview) URL.revokeObjectURL(preview);
+
+    setImage(null);
+    setPreview("");
+    setResult(null);
+    setError("");
+    setLoading(false);
+  }
+
+  async function handleImage(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -73,19 +83,22 @@ export default function FoodPhoto() {
       return;
     }
 
-    if (file.size > 4 * 1024 * 1024) {
-      setError("La imagen es demasiado pesada. Usa una imagen menor de 4MB.");
-      return;
-    }
+    try {
+      setError("");
+      setResult(null);
 
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
+      const preparedImage = await prepareImageForUpload(file);
 
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-    setResult(null);
-    setError("");
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+
+      setImage(preparedImage);
+      setPreview(URL.createObjectURL(preparedImage));
+    } catch (error) {
+      console.error("Error preparando imagen:", error);
+      setError("No se pudo preparar la imagen. Intenta con otra foto.");
+    }
   }
 
   async function analyzeFood() {
@@ -188,9 +201,101 @@ export default function FoodPhoto() {
             <NutritionInsights result={result} />
             <SmartSwapCard result={result} />
             <DailyGoalCard totals={totals} goals={goals} />
+
+            <button
+              type="button"
+              onClick={resetScanner}
+              className="w-full rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#10b981] transition active:scale-[0.98] hover:bg-[#10b981]/15"
+            >
+              Analizar otra comida
+            </button>
           </>
         )}
       </div>
     </FoodPageLayout>
   );
+}
+
+async function prepareImageForUpload(file) {
+  const maxSize = 4 * 1024 * 1024;
+
+  if (file.size <= maxSize && !isHeicImage(file)) {
+    return file;
+  }
+
+  if (isHeicImage(file)) {
+    return file;
+  }
+
+  const compressed = await compressImage(file);
+
+  if (compressed.size > maxSize) {
+    throw new Error("La imagen sigue siendo demasiado pesada.");
+  }
+
+  return compressed;
+}
+
+function isHeicImage(file) {
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    /\.(heic|heif)$/i.test(file.name)
+  );
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const canvas = document.createElement("canvas");
+      const maxWidth = 1280;
+      const scale = Math.min(1, maxWidth / image.width);
+
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        reject(new Error("No se pudo procesar la imagen."));
+        return;
+      }
+
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("No se pudo comprimir la imagen."));
+            return;
+          }
+
+          const compressedFile = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, ".jpg"),
+            {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            }
+          );
+
+          resolve(compressedFile);
+        },
+        "image/jpeg",
+        0.82
+      );
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("No se pudo cargar la imagen."));
+    };
+
+    image.src = objectUrl;
+  });
 }
