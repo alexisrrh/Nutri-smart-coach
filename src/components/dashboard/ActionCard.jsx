@@ -1,11 +1,17 @@
+import { Sparkles } from "lucide-react";
+import { useState } from "react";
+
 export default function ActionCard({
   icon,
+  fallbackIcon,
   label,
   description,
   onClick,
-  badge = "AI",
   featured = false,
 }) {
+  const [imageError, setImageError] = useState(false);
+  const FallbackIcon = fallbackIcon || Sparkles;
+
   return (
     <button
       onClick={onClick}
@@ -30,26 +36,31 @@ export default function ActionCard({
               : "bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.12)]"
           }`}
         >
-          <span className="absolute -inset-5 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)] animate-[spin_2.8s_linear_infinite]" />
-          <span className="absolute inset-[3px] rounded-[1rem] bg-[#07170f]" />
-          <span className="absolute inset-[3px] rounded-[1rem] border border-emerald-500/25" />
+          <span className="pointer-events-none absolute -inset-5 z-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)] animate-[spin_2.8s_linear_infinite]" />
+          <span className="pointer-events-none absolute inset-[3px] z-[1] rounded-[1rem] bg-[#07170f]" />
+          <span className="pointer-events-none absolute inset-[3px] z-[2] rounded-[1rem] border border-emerald-500/25" />
 
-          {icon ? (
+          {icon && !imageError ? (
             <img
               src={icon}
               alt={label}
-              className={`relative z-10 object-contain ${
+              className={`relative z-20 object-contain ${
                 featured
                   ? "h-10 w-10 brightness-0 contrast-200"
                   : "h-10 w-10"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";
+                setImageError(true);
               }}
             />
           ) : (
-            <span className="relative z-10 text-sm font-black text-emerald-300">
-              ?
+            <span
+              className={`relative z-20 ${
+                featured ? "text-[#06110e]" : "text-emerald-300"
+              }`}
+            >
+              <FallbackIcon size={28} strokeWidth={2.4} />
             </span>
           )}
         </div>
