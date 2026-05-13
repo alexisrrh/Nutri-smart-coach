@@ -9,14 +9,12 @@ import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
 
-import { API_URL } from "../config/api";
-import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
-
 import {
-  saveMealToLocalStorage,
-  safeParse,
-} from "../components/food/foodUtils";
+  analyzeMeal,
+  cacheMeal,
+  getCachedMeals,
+} from "../services/mealService";
 
 export default function FoodPhoto() {
   const [image, setImage] = useState(null);
@@ -24,10 +22,7 @@ export default function FoodPhoto() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [meals, setMeals] = useState(() => {
-    const storedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-    return Array.isArray(storedMeals) ? storedMeals : [];
-  });
+  const [meals, setMeals] = useState(getCachedMeals);
 
   useEffect(() => {
     return () => {
@@ -118,51 +113,14 @@ export default function FoodPhoto() {
         console.warn("No se pudo obtener usuario Supabase:", userError.message);
       }
 
-      const formData = new FormData();
-      formData.append("image", image);
-      formData.append("goal", "perder_grasa");
-
-      if (user?.id) {
-        formData.append("user_id", user.id);
-      }
-
-      const response = await fetch(`${API_URL}/analyze-food`, {
-        method: "POST",
-        body: formData,
+      const mealToSave = await analyzeMeal({
+        image,
+        goal: "perder_grasa",
+        userId: user?.id,
       });
 
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            data?.message ||
-            data?.detail ||
-            `Error del servidor: ${response.status}`
-        );
-      }
-
-      if (!data) {
-        throw new Error("No se recibió respuesta válida del servidor.");
-      }
-
-      const mealToSave = {
-        ...data,
-        user_id: user?.id || null,
-        image_url: data.image_url || data.image || null,
-        created_at: data.created_at || data.createdAt || new Date().toISOString(),
-        createdAt: data.createdAt || data.created_at || new Date().toISOString(),
-      };
-
       setResult(mealToSave);
-      saveMealToLocalStorage(mealToSave, preview);
-
-      const updatedMeals = safeParse(
-        localStorage.getItem(STORAGE_KEYS.MEALS),
-        []
-      );
-
-      setMeals(Array.isArray(updatedMeals) ? updatedMeals : []);
+      setMeals(cacheMeal(mealToSave, preview));
     } catch (error) {
       console.error("Error analizando comida:", error);
 
