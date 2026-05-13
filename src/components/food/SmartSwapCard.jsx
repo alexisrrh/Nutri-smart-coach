@@ -1,6 +1,9 @@
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 export default function SmartSwapCard({ result }) {
+  const [open, setOpen] = useState(false);
+
   if (!result) return null;
 
   const improvements = Array.isArray(result.improvements)
@@ -8,6 +11,8 @@ export default function SmartSwapCard({ result }) {
     : [];
 
   if (improvements.length === 0) return null;
+
+  const text = cleanText(improvements[0]);
 
   return (
     <section className="mt-1.5 rounded-[20px] border border-white/10 bg-black/20 p-2.5">
@@ -21,22 +26,30 @@ export default function SmartSwapCard({ result }) {
         </div>
 
         <span className="text-[7px] font-black uppercase tracking-widest text-white/30">
-          smart
+          Smart
         </span>
       </div>
 
-      {improvements.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between gap-2 rounded-[16px] bg-[#10b981]/10 px-2.5 py-2"
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-2 rounded-[16px] bg-[#10b981]/10 px-2.5 py-2 text-left"
+      >
+        <p
+          className={`text-[10px] leading-4 text-emerald-100/85 ${
+            open ? "" : "line-clamp-2"
+          }`}
         >
-          <p className="line-clamp-2 text-[10px] leading-4 text-emerald-100/85">
-            {cleanText(item)}
-          </p>
+          {text}
+        </p>
 
-          <ArrowRight size={12} className="shrink-0 text-[#10b981]" />
-        </div>
-      ))}
+        <ArrowRight
+          size={12}
+          className={`shrink-0 text-[#10b981] transition ${
+            open ? "rotate-90" : ""
+          }`}
+        />
+      </button>
     </section>
   );
 }
