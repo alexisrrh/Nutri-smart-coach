@@ -24,16 +24,16 @@ export default function FoodPhoto() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [meals, setMeals] = useState([]);
+  const [meals, setMeals] = useState(() => {
+    const storedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
+    return Array.isArray(storedMeals) ? storedMeals : [];
+  });
 
   useEffect(() => {
-    const storedMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-    setMeals(Array.isArray(storedMeals) ? storedMeals : []);
-
     return () => {
       if (preview) URL.revokeObjectURL(preview);
     };
-  }, []);
+  }, [preview]);
 
   const totals = useMemo(() => {
     return meals.reduce(
@@ -149,6 +149,8 @@ export default function FoodPhoto() {
       const mealToSave = {
         ...data,
         user_id: user?.id || null,
+        image_url: data.image_url || data.image || null,
+        created_at: data.created_at || data.createdAt || new Date().toISOString(),
         createdAt: data.createdAt || data.created_at || new Date().toISOString(),
       };
 
