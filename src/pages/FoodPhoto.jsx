@@ -9,18 +9,20 @@ import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
 
+import { API_URL } from "../config/api";
+import { STORAGE_KEYS } from "../config/storageKeys";
+
 import {
   saveMealToLocalStorage,
   safeParse,
 } from "../components/food/foodUtils";
-
-import { STORAGE_KEYS } from "../config/storageKeys";
 
 export default function FoodPhoto() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function FoodPhoto() {
     setImage(file);
     setPreview(URL.createObjectURL(file));
     setResult(null);
+    setError("");
   }
 
   async function analyzeFood() {
@@ -59,20 +62,29 @@ export default function FoodPhoto() {
     try {
       setLoading(true);
       setResult(null);
+      setError("");
 
       const formData = new FormData();
       formData.append("image", image);
 
-      const response = await fetch("http://localhost:3000/analyze-food", {
+      const response = await fetch(`${API_URL}/analyze-food`, {
         method: "POST",
         body: formData,
       });
 
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
+        throw new Error(
+          data?.error ||
+            data?.message ||
+            `Error del servidor: ${response.status}`
+        );
       }
 
-      const data = await response.json();
+      if (!data) {
+        throw new Error("No se recibió respuesta válida del servidor.");
+      }
 
       setResult(data);
       saveMealToLocalStorage(data, preview);
@@ -81,6 +93,10 @@ export default function FoodPhoto() {
       setMeals(Array.isArray(updatedMeals) ? updatedMeals : []);
     } catch (error) {
       console.error("Error analizando comida:", error);
+      setError(
+        error?.message ||
+          "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo."
+      );
     } finally {
       setLoading(false);
     }
@@ -91,14 +107,20 @@ export default function FoodPhoto() {
       <div className="space-y-2">
         <AIScanHero />
 
-    {!result && !loading && (
-  <FoodUploadCard
-    preview={preview}
-    handleImage={handleImage}
-    analyzeFood={analyzeFood}
-    loading={loading}
-  />
-)}
+        {!result && !loading && (
+          <FoodUploadCard
+            preview={preview}
+            handleImage={handleImage}
+            analyzeFood={analyzeFood}
+            loading={loading}
+          />
+        )}
+
+        {error && (
+          <div className="rounded-[18px] border border-red-400/20 bg-red-400/10 p-3 text-[11px] leading-4 text-red-200">
+            {error}
+          </div>
+        )}
 
         {loading && <FoodScannerLoader preview={preview} />}
 
