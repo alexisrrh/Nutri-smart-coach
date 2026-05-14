@@ -1,17 +1,18 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Camera, History, UserRound } from "lucide-react";
+import { LayoutDashboard, Camera, Utensils, Flame, UserRound } from "lucide-react";
 
 export default function BottomNav() {
   const items = [
     { to: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
     { to: "/foto-comida", label: "Scan", Icon: Camera },
-    { to: "/comidas", label: "Historial", Icon: History },
+    { to: "/comidas", label: "Comidas", Icon: Utensils },
+    { to: "/plan-comidas", label: "Dieta", Icon: Flame },
     { to: "/perfil", label: "Perfil", Icon: UserRound },
   ];
 
   return (
     <nav className="fixed bottom-1 left-1/2 z-50 w-[90%] max-w-[390px] -translate-x-1/2 rounded-[1.4rem] border border-white/10 bg-[#03100a]/80 p-1.5 shadow-[0_14px_45px_rgba(16,185,129,0.14)] backdrop-blur-2xl">
-      <div className="grid grid-cols-4 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         {items.map(({ to, label, Icon }) => (
           <NavLink
             key={to}

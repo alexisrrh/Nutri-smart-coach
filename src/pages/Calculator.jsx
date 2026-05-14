@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navbar } from "../components/Navbar";
+import BottomNav from "../components/BottomNav";
 import { useAuth } from "../context/useAuth";
 import { getProfile } from "../services/profileService";
 
@@ -73,9 +73,7 @@ export function Calculator() {
 
   return (
     <main className="min-h-screen bg-[#07130d] text-white">
-      <Navbar />
-
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-32">
+      <section className="mx-auto max-w-5xl px-6 pb-32 pt-32">
         <h1 className="text-4xl font-bold md:text-6xl">
           Calculadora nutricional
         </h1>
@@ -125,6 +123,7 @@ export function Calculator() {
           </div>
         </div>
       </section>
+      <BottomNav />
     </main>
   );
 }
