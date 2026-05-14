@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
 
@@ -8,20 +8,18 @@ import { CheckInHero } from "../components/checkin/CheckInHero";
 import { CheckInForm } from "../components/checkin/CheckInForm";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { CheckInHistory } from "../components/checkin/CheckInHistory";
-import { CheckInNotice } from "../components/checkin/CheckInNotice";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInCompare } from "../components/checkin/CheckInCompare";
+import { CheckInAnalysis } from "../components/checkin/CheckInAnalysis";
+import { CheckInStatus } from "../components/checkin/CheckInStatus";
+import { CheckInDetailSheet } from "../components/checkin/CheckInDetailSheet";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
 import { createCheckin, listCheckins } from "../services/checkinService";
 import {
   clearCachedProfile,
   getCachedProfile,
 } from "../services/profileService";
-import {
-  AppShell,
-  PageHeaderCard,
-  SecondaryButton,
-} from "../components/ui";
+import { AppShell, SecondaryButton } from "../components/ui";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -45,6 +43,8 @@ export function CheckIn() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [selectedCheckin, setSelectedCheckin] = useState(null);
+  const [sheetMode, setSheetMode] = useState("detail");
 
   const loadData = useCallback(async () => {
     setLoadingHistory(true);
@@ -82,6 +82,22 @@ export function CheckIn() {
     () => getWeightDiff(lastCheckin, previousCheckin),
     [lastCheckin, previousCheckin]
   );
+
+  function openAnalysisSheet() {
+    if (!lastCheckin) return;
+    setSheetMode("analysis");
+    setSelectedCheckin(lastCheckin);
+  }
+
+  function openCheckinSheet(checkin) {
+    if (!checkin) return;
+    setSheetMode("detail");
+    setSelectedCheckin(checkin);
+  }
+
+  function closeSheet() {
+    setSelectedCheckin(null);
+  }
 
   function handleChange(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -169,17 +185,9 @@ export function CheckIn() {
   }
 
   return (
-    <AppShell>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <SecondaryButton
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            icon={<ArrowLeft size={15} />}
-            className="w-auto px-3 py-2 text-[10px]"
-          >
-            Dashboard
-          </SecondaryButton>
-
+    <AppShell contentClassName="px-2 pb-[96px] pt-2">
+      <div className="flex min-h-[calc(100dvh-106px)] flex-col gap-2.5">
+        <div className="flex items-center justify-end">
           <SecondaryButton
             type="button"
             onClick={handleLogout}
@@ -190,39 +198,53 @@ export function CheckIn() {
           </SecondaryButton>
         </div>
 
-        <PageHeaderCard
-          badge="Check-in físico"
-          badgeIcon={<Camera size={14} />}
-          icon={<Camera size={18} />}
-          title="Foto y medidas"
-          description="Registra tu físico con foto, peso y medidas para comparar tu evolución."
+        <CheckInHero
+          profile={profile}
         />
-
-        <section className="mt-4 space-y-3">
-          <CheckInHero
-            lastCheckin={lastCheckin}
-            weightDiff={weightDiff}
-            profile={profile}
-          />
-
-          <CheckInForm
-            preview={preview}
-            handlePhoto={handlePhoto}
-            form={form}
-            handleChange={handleChange}
-            saveCheckIn={saveCheckIn}
-            loading={loading}
-          />
-        </section>
-
-        <CheckInLoader loading={loading} />
 
         <CheckInAlert type="error" text={error} />
         <CheckInAlert type="success" text={message} />
 
-        <CheckInNotice />
-        <CheckInCompare history={history} />
-        <CheckInHistory history={history} loading={loadingHistory} />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
+          <div className="space-y-2">
+            <CheckInForm
+              preview={preview}
+              handlePhoto={handlePhoto}
+              form={form}
+              handleChange={handleChange}
+              saveCheckIn={saveCheckIn}
+              loading={loading}
+            />
+
+            <CheckInLoader loading={loading} />
+
+            <CheckInStatus lastCheckin={lastCheckin} weightDiff={weightDiff} />
+
+            <CheckInCompare history={history} onSelect={openCheckinSheet} />
+
+            <CheckInAnalysis
+              lastCheckin={lastCheckin}
+              profile={profile}
+              weightDiff={weightDiff}
+              onOpenFull={openAnalysisSheet}
+            />
+
+            <CheckInHistory
+              history={history}
+              loading={loadingHistory}
+              onSelect={openCheckinSheet}
+            />
+          </div>
+        </div>
+
+        {selectedCheckin && (
+          <CheckInDetailSheet
+            checkin={selectedCheckin}
+            mode={sheetMode}
+            onClose={closeSheet}
+          />
+        )}
+      </div>
     </AppShell>
   );
 }
