@@ -172,8 +172,8 @@ export default function FoodPhoto() {
 
   return (
     <FoodPageLayout>
-      <div className="space-y-2">
-        <AIScanHero />
+      <div className="flex h-full min-h-0 flex-col gap-2">
+        {(!result || loading) && <AIScanHero />}
 
         {!result && !loading && (
           <FoodUploadCard
@@ -185,7 +185,7 @@ export default function FoodPhoto() {
         )}
 
         {error && (
-          <div className="rounded-[18px] border border-red-400/20 bg-red-400/10 p-3 text-[11px] leading-4 text-red-200">
+          <div className="shrink-0 rounded-[18px] border border-red-400/20 bg-red-400/10 p-2.5 text-xs leading-4 text-red-200">
             {error}
           </div>
         )}
@@ -194,26 +194,32 @@ export default function FoodPhoto() {
 
         {result && !loading && (
           <>
-            <FoodResultCard result={result} preview={preview} />
-            <NutritionInsights result={result} />
-            <SmartSwapCard result={result} />
-            <DailyGoalCard totals={totals} goals={goals} />
+            <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="space-y-2">
+                <FoodResultCard result={result} preview={preview} />
+                <NutritionInsights result={result} />
+                <SmartSwapCard result={result} />
+                <DailyGoalCard totals={totals} goals={goals} />
+              </div>
+            </div>
 
-            <button
-              type="button"
-              onClick={discardAnalysis}
-              className="w-full rounded-[18px] border border-red-400/20 bg-red-400/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
-            >
-              Descartar análisis
-            </button>
+            <div className="grid shrink-0 grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={resetScanner}
+                className="rounded-[18px] border border-[#10b981]/25 bg-[#10b981] px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-[#04110b] shadow-[0_14px_40px_rgba(16,185,129,0.20)] transition active:scale-[0.98] hover:bg-emerald-300"
+              >
+                Analizar otra comida
+              </button>
 
-            <button
-              type="button"
-              onClick={resetScanner}
-              className="w-full rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#10b981] transition active:scale-[0.98] hover:bg-[#10b981]/15"
-            >
-              Analizar otra comida
-            </button>
+              <button
+                type="button"
+                onClick={discardAnalysis}
+                className="rounded-[18px] border border-red-400/20 bg-red-400/10 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+              >
+                Descartar análisis
+              </button>
+            </div>
           </>
         )}
       </div>

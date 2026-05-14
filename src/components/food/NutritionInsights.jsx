@@ -6,7 +6,7 @@ export default function NutritionInsights({ result }) {
   const insights = buildInsights(result);
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f] p-3">
+    <section className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f] p-2.5">
       <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#10b981]/12 blur-3xl" />
 
       <div className="relative z-10">
@@ -14,12 +14,12 @@ export default function NutritionInsights({ result }) {
           <div className="flex items-center gap-1.5">
             <Sparkles size={13} className="text-[#10b981]" />
 
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#10b981]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
               Insights IA
             </p>
           </div>
 
-          <span className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest text-[#10b981]">
+          <span className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
             Smart
           </span>
         </div>
@@ -58,11 +58,11 @@ function InsightRow({ icon, title, text, type }) {
         </div>
 
         <div>
-          <p className="text-[9px] font-black uppercase tracking-wide text-white">
+          <p className="text-[10px] font-black uppercase tracking-wide text-white">
             {title}
           </p>
 
-          <p className="mt-0.5 text-[10px] leading-4 text-slate-400">
+          <p className="mt-0.5 text-xs leading-4 text-slate-400">
             {text}
           </p>
         </div>
