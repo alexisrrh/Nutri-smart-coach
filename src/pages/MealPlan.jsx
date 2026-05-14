@@ -463,9 +463,9 @@ function GeneratingDietLoader({ formData }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#07170f]/95 p-3 shadow-[0_18px_50px_rgba(16,185,129,0.10)]">
-      <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#10b981]/16 blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98118,transparent_45%)]" />
+    <div className="relative overflow-hidden rounded-[26px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_42%)]" />
+      <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#10b981]/18 blur-3xl" />
 
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-3">
@@ -474,53 +474,36 @@ function GeneratingDietLoader({ formData }) {
               Smart Diet IA
             </p>
 
-            <h3 className="mt-1 text-lg font-black uppercase italic leading-none text-white">
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
               Creando tu dieta
             </h3>
 
-            <p className="mt-1 text-xs leading-4 text-slate-400">
-              {formData?.planDays} días · {formData?.mealsPerDay} comidas/día
+            <p className="mt-1.5 text-xs normal-case leading-4 text-slate-400">
+              {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
+              {Number(formData?.mealsPerDay) === 2
+                ? "ayuno intermitente"
+                : "plan personalizado"}
             </p>
           </div>
 
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/25 bg-[#10b981]/10 shadow-[0_0_22px_rgba(16,185,129,0.12)]">
-            <span className="text-base font-black text-[#10b981]">
+          <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-[22px] border border-[#10b981]/25 bg-[#10b981]/10">
+            <div className="absolute inset-1 animate-spin rounded-[18px] border-2 border-transparent border-t-[#10b981]" />
+            <div className="absolute inset-4 animate-pulse rounded-2xl bg-[#10b981]/10" />
+
+            <span className="relative text-lg font-black text-[#10b981]">
               {percent}%
             </span>
           </div>
         </div>
 
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_14px_rgba(16,185,129,0.45)] transition-all duration-500"
+            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {steps.map((step, index) => {
-            const completed = index < activeStep;
-            const active = index === activeStep;
-
-            return (
-              <span
-                key={step}
-                className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide transition ${
-                  completed
-                    ? "bg-[#10b981] text-[#06110c]"
-                    : active
-                    ? "border border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
-                    : "border border-white/8 bg-white/[0.035] text-white/35"
-                }`}
-              >
-                {completed ? "✓ " : ""}
-                {step}
-              </span>
-            );
-          })}
-        </div>
-
-        <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-slate-500">
+        <div className="mt-3 flex items-center justify-between text-[10px] font-bold normal-case text-slate-500">
           <span className="inline-flex items-center gap-1">
             <Timer size={12} />
             {seconds}s
@@ -529,6 +512,46 @@ function GeneratingDietLoader({ formData }) {
           <span className="text-[#10b981]">
             {percent < 96 ? "Procesando..." : "Finalizando..."}
           </span>
+        </div>
+
+        <div className="mt-3 grid grid-cols-5 gap-1.5">
+          {steps.map((step, index) => {
+            const completed = index < activeStep;
+            const active = index === activeStep;
+
+            return (
+              <div
+                key={step}
+                className={`rounded-2xl border px-1 py-2 text-center ${
+                  completed
+                    ? "border-[#10b981]/25 bg-[#10b981]/10"
+                    : active
+                    ? "border-[#10b981]/40 bg-[#10b981]/5"
+                    : "border-white/5 bg-black/10"
+                }`}
+              >
+                <div
+                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${
+                    completed
+                      ? "bg-[#10b981] text-[#06110c]"
+                      : active
+                      ? "animate-pulse border border-[#10b981] text-[#10b981]"
+                      : "border border-white/10 text-slate-600"
+                  }`}
+                >
+                  {completed ? "✓" : index + 1}
+                </div>
+
+                <p
+                  className={`truncate text-[10px] font-black uppercase tracking-tight ${
+                    completed || active ? "text-white" : "text-slate-600"
+                  }`}
+                >
+                  {step}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
