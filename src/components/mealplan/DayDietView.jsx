@@ -65,7 +65,7 @@ export function DayDietView({
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[8px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
                 Plan diario
               </span>
 
@@ -120,7 +120,7 @@ export function DayDietView({
             >
               <div className="flex items-start justify-between gap-3 p-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
                     <span className="inline-flex items-center gap-1 text-[#10b981]">
                       <Utensils size={11} />
                       {mealName}
@@ -149,7 +149,7 @@ export function DayDietView({
                 <button
                   type="button"
                   onClick={() => toggleMeal?.(mealId)}
-                  className={`shrink-0 rounded-2xl border px-3 py-2 text-[8px] font-black uppercase tracking-wider transition active:scale-95 ${
+                  className={`shrink-0 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition active:scale-95 ${
                     isCompleted
                       ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                       : "border-white/10 bg-[#0d2218] text-slate-300 hover:bg-white/5"
@@ -168,7 +168,7 @@ export function DayDietView({
 
               <div className="border-t border-white/10 px-3 pb-3 pt-2">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-500">
+                  <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
                     Porciones
                   </p>
 
@@ -220,7 +220,7 @@ function DayMacro({ icon, value, label }) {
     <div className="rounded-2xl border border-white/10 bg-black/20 p-2 text-center">
       <div className="mx-auto mb-1 flex justify-center text-[#10b981]">{icon}</div>
       <p className="text-xs font-black text-white">{value}</p>
-      <p className="text-[7px] font-black uppercase tracking-widest text-slate-500">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </p>
     </div>
@@ -230,7 +230,7 @@ function DayMacro({ icon, value, label }) {
 function MiniMacro({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-1">
-      <span className="text-[8px] font-black uppercase text-slate-500">{label}</span>
+      <span className="text-[10px] font-black uppercase text-slate-500">{label}</span>
       <span className="ml-1 text-[10px] font-black text-white">{value}</span>
     </div>
   );

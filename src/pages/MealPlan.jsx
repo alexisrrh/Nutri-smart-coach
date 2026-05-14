@@ -222,7 +222,7 @@ export function MealPlan() {
     <>
       <PrintablePlan plan={plan} />
 
-      <AppShell contentClassName="!max-w-[520px] px-3">
+      <AppShell wide contentClassName="px-3">
         <div className="space-y-3">
           <DietHeroCard
             hasPlan={hasPlan}
@@ -554,7 +554,7 @@ function GeneratingDietLoader({ formData }) {
                 </div>
 
                 <p
-                  className={`truncate text-[7px] font-black uppercase tracking-tight ${
+                  className={`truncate text-[10px] font-black uppercase tracking-tight ${
                     completed || active ? "text-white" : "text-slate-600"
                   }`}
                 >

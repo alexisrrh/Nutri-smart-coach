@@ -117,7 +117,7 @@ function MobileDayCard({ day, onSelectMeal }) {
           <p className="text-sm font-black text-white">
             {Math.round(totals.calories)}
           </p>
-          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+          <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
             kcal
           </p>
         </div>
@@ -143,7 +143,7 @@ function MealMiniCard({ meal, onClick }) {
       onClick={onClick}
       className="group w-full border border-white/5 bg-[#0d2218]/40 p-2.5 text-left transition hover:border-[#10b981]/30 hover:bg-[#0d2218]"
     >
-      <span className="block text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <span className="block text-[10px] font-black uppercase tracking-wide text-slate-500">
         {meal.time} · {meal.name}
       </span>
 
@@ -261,7 +261,7 @@ function MacroBox({ icon, label, value }) {
       </div>
 
       <p className="text-sm font-black text-white">{Math.round(Number(value)) || value}</p>
-      <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </p>
     </div>
