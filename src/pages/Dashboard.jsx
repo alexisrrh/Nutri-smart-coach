@@ -9,22 +9,19 @@ import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import { API_URL } from "../config/api";
-import { STORAGE_KEYS } from "../config/storageKeys";
 import { getCachedMeals, listMeals } from "../services/mealService";
+import { getCachedProfile, getProfile } from "../services/profileService";
 
 import {
   getGoals,
   getSmartTip,
   getFirstName,
-  safeParse,
 } from "../components/dashboard/dashboardUtils";
 
 export function Dashboard() {
   const navigate = useNavigate();
 
-  const [profile] = useState(() =>
-    safeParse(localStorage.getItem(STORAGE_KEYS.PROFILE), null)
-  );
+  const [profile, setProfile] = useState(getCachedProfile);
   const [meals, setMeals] = useState(getCachedMeals);
   const [dietPlans, setDietPlans] = useState([]);
   const [loadingData] = useState(false);
@@ -39,10 +36,15 @@ export function Dashboard() {
 
       if (!userId) return;
 
-      const [mealsRes, dietsRes] = await Promise.allSettled([
+      const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
+        getProfile(userId),
         listMeals(userId),
         fetch(`${API_URL}/diet-plans/${userId}`),
       ]);
+
+      if (profileRes.status === "fulfilled" && profileRes.value) {
+        setProfile(profileRes.value);
+      }
 
       if (mealsRes.status === "fulfilled") {
         setMeals(mealsRes.value);
@@ -58,10 +60,7 @@ export function Dashboard() {
   }
 
   useEffect(() => {
-    const savedProfile = safeParse(
-      localStorage.getItem(STORAGE_KEYS.PROFILE),
-      null
-    );
+    const savedProfile = getCachedProfile();
 
     // Cargar backend en segundo plano
     Promise.resolve().then(() => {

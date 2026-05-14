@@ -17,8 +17,11 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import BottomNav from "../components/BottomNav";
-
-const PROFILE_KEY = "nutricoach_profile";
+import {
+  clearCachedProfile,
+  getProfile,
+  saveProfile,
+} from "../services/profileService";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -49,57 +52,27 @@ export function ProfileSetup() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        localStorage.removeItem(PROFILE_KEY);
+        clearCachedProfile();
         navigate("/login");
         return;
       }
 
       setUser(user);
 
-      const localProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error("Error cargando perfil:", profileError);
-        setError("No se pudo cargar el perfil.");
-      }
-
-      const profile = profileData || localProfile;
+      const profile = await getProfile(user.id);
 
       setForm({
         name: profile?.name || "",
-        age: profile?.age || profile?.edad || "",
-        weight: profile?.weight || profile?.peso || "",
-        height: profile?.height || profile?.altura || "",
+        age: profile?.age || "",
+        weight: profile?.weight || "",
+        height: profile?.height || "",
         gender: profile?.gender || "male",
-        activity:
-          profile?.activity_level ||
-          profile?.activity ||
-          profile?.actividad ||
-          "moderate",
-        goal: profile?.goal || profile?.objetivo || "perder_grasa",
+        activity: profile?.activity_level || "moderate",
+        goal: profile?.goal || "perder_grasa",
       });
-
-      if (profileData) {
-        localStorage.setItem(
-          PROFILE_KEY,
-          JSON.stringify({
-            ...profileData,
-            user_id: user.id,
-            id: user.id,
-            activity: profileData.activity_level,
-            objetivo: profileData.goal,
-            peso: profileData.weight,
-            altura: profileData.height,
-            edad: profileData.age,
-          })
-        );
-      }
+    } catch (profileError) {
+      console.error("Error cargando perfil:", profileError);
+      setError("No se pudo cargar el perfil.");
     } finally {
       setLoadingProfile(false);
     }
@@ -114,7 +87,7 @@ export function ProfileSetup() {
 
     await supabase.auth.signOut();
 
-    localStorage.removeItem(PROFILE_KEY);
+    clearCachedProfile();
     localStorage.removeItem("smart_diet_plan");
     localStorage.removeItem("smart_diet_progress");
     localStorage.removeItem("nutricoach_meals");
@@ -146,8 +119,9 @@ export function ProfileSetup() {
         return;
       }
 
-      const profileToSave = {
+      await saveProfile({
         id: currentUser.id,
+        user_id: currentUser.id,
         email: currentUser.email,
         name: form.name.trim(),
         age: Number(form.age),
@@ -162,35 +136,13 @@ export function ProfileSetup() {
           goal: form.goal,
         },
         updated_at: new Date().toISOString(),
-      };
-
-      const { data, error: saveError } = await supabase
-        .from("profiles")
-        .upsert(profileToSave, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (saveError) {
-        console.error("Error guardando perfil:", saveError);
-        setError(saveError.message || "No se pudo guardar el perfil.");
-        return;
-      }
-
-      const localProfile = {
-        ...data,
-        id: currentUser.id,
-        user_id: currentUser.id,
-        activity: data.activity_level,
-        objetivo: data.goal,
-        peso: data.weight,
-        altura: data.height,
-        edad: data.age,
-      };
-
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile));
+      });
 
       setSaved(true);
       setTimeout(() => navigate("/dashboard"), 800);
+    } catch (saveError) {
+      console.error("Error guardando perfil:", saveError);
+      setError(saveError.message || "No se pudo guardar el perfil.");
     } finally {
       setLoading(false);
     }

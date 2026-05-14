@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
-import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
+import { getProfile } from "../services/profileService";
 
 export function Calculator() {
   const { user } = useAuth();
@@ -19,26 +19,22 @@ export function Calculator() {
 
   // 🔥 CARGAR DATOS DEL PERFIL
   useEffect(() => {
-    async function getProfile() {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    async function loadProfile() {
+      const profile = await getProfile(user.id);
 
-      if (data) {
+      if (profile) {
         setForm({
-          peso: data.peso || "",
-          altura: data.altura || "",
-          edad: data.edad || "",
-          genero: data.genero || "hombre",
-          actividad: "1.55",
-          objetivo: data.objetivo || "mantener",
+          peso: profile.weight || "",
+          altura: profile.height || "",
+          edad: profile.age || "",
+          genero: profile.gender || "male",
+          actividad: getActivityFactor(profile.activity_level),
+          objetivo: profile.goal || "mantener_peso",
         });
       }
     }
 
-    if (user) getProfile();
+    if (user) loadProfile();
   }, [user]);
 
   function calcular(e) {
@@ -51,7 +47,7 @@ export function Calculator() {
 
     let bmr;
 
-    if (form.genero === "hombre") {
+    if (form.genero === "hombre" || form.genero === "male") {
       bmr = 10 * peso + 6.25 * altura - 5 * edad + 5;
     } else {
       bmr = 10 * peso + 6.25 * altura - 5 * edad - 161;
@@ -59,8 +55,13 @@ export function Calculator() {
 
     let calorias = bmr * actividad;
 
-    if (form.objetivo === "bajar") calorias -= 400;
-    if (form.objetivo === "subir") calorias += 300;
+    if (form.objetivo === "bajar" || form.objetivo === "perder_grasa") {
+      calorias -= 400;
+    }
+
+    if (form.objetivo === "subir" || form.objetivo === "ganar_musculo") {
+      calorias += 300;
+    }
 
     const proteina = peso * 2;
 
@@ -126,4 +127,11 @@ export function Calculator() {
       </section>
     </main>
   );
+}
+
+function getActivityFactor(activityLevel) {
+  if (activityLevel === "low" || activityLevel === "sedentaria") return "1.2";
+  if (activityLevel === "high" || activityLevel === "alta") return "1.725";
+
+  return "1.55";
 }

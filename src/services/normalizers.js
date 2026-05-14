@@ -1,19 +1,34 @@
 export function normalizeProfile(data) {
   if (!data) return null;
 
+  const age = toNumberOrNull(data.age ?? data.edad);
+  const weight = toNumberOrNull(data.weight ?? data.peso);
+  const height = toNumberOrNull(data.height ?? data.altura);
+  const gender = normalizeGender(data.gender || data.genero);
+  const goal = normalizeGoal(data.goal || data.objetivo);
+  const activityLevel = normalizeActivityLevel(
+    data.activity_level || data.activity || data.actividad
+  );
+
   return {
     ...data,
     id: data.id || data.user_id || null,
     user_id: data.user_id || data.id || null,
     email: data.email || "",
     name: data.name || data.nombre || "",
-    age: toNumberOrNull(data.age ?? data.edad),
-    weight: toNumberOrNull(data.weight ?? data.peso),
-    height: toNumberOrNull(data.height ?? data.altura),
-    gender: data.gender || data.genero || "male",
-    goal: normalizeGoal(data.goal || data.objetivo),
-    activity_level:
-      data.activity_level || data.activity || data.actividad || "moderate",
+    age,
+    weight,
+    height,
+    gender,
+    goal,
+    activity_level: activityLevel,
+    edad: age,
+    peso: weight,
+    altura: height,
+    genero: gender,
+    objetivo: goal,
+    actividad: activityLevel,
+    activity: activityLevel,
     preferences: data.preferences || {},
     updated_at: data.updated_at || null,
   };
@@ -105,6 +120,22 @@ function normalizeGoal(goal) {
   if (goal === "mantener") return "mantener_peso";
 
   return goal || "perder_grasa";
+}
+
+function normalizeGender(gender) {
+  if (gender === "hombre") return "male";
+  if (gender === "mujer") return "female";
+
+  return gender || "male";
+}
+
+function normalizeActivityLevel(activityLevel) {
+  if (activityLevel === "sedentaria") return "low";
+  if (activityLevel === "ligera") return "low";
+  if (activityLevel === "moderada") return "moderate";
+  if (activityLevel === "alta") return "high";
+
+  return activityLevel || "moderate";
 }
 
 function toNumber(value) {
