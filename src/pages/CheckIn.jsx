@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, Camera, LogOut } from "lucide-react";
 
-import BottomNav from "../components/BottomNav";
 import { supabase } from "../lib/supabase";
 
 import { CheckInHero } from "../components/checkin/CheckInHero";
@@ -18,6 +17,11 @@ import {
   clearCachedProfile,
   getCachedProfile,
 } from "../services/profileService";
+import {
+  AppShell,
+  PageHeaderCard,
+  SecondaryButton,
+} from "../components/ui";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -165,32 +169,36 @@ export function CheckIn() {
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#06110c] px-3 pb-28 pt-4 text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_38%),radial-gradient(circle_at_bottom_left,#22c55e12,transparent_35%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:42px_42px]" />
-
-      <div className="relative z-10 mx-auto max-w-6xl space-y-3">
-        <header className="flex items-center justify-between border-b border-white/10 pb-3">
-          <button
+    <AppShell>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <SecondaryButton
             type="button"
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:bg-[#10b981] hover:text-[#06110c]"
+            icon={<ArrowLeft size={15} />}
+            className="w-auto px-3 py-2 text-[10px]"
           >
-            <ArrowLeft size={15} />
             Dashboard
-          </button>
+          </SecondaryButton>
 
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-red-400/70"
+            icon={<LogOut size={14} />}
+            className="w-auto border-red-400/15 bg-red-400/10 px-3 py-2 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
           >
-            <LogOut size={14} />
             Salir
-          </button>
-        </header>
+          </SecondaryButton>
+        </div>
 
-        <section className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+        <PageHeaderCard
+          badge="Check-in físico"
+          badgeIcon={<Camera size={14} />}
+          icon={<Camera size={18} />}
+          title="Foto y medidas"
+          description="Registra tu físico con foto, peso y medidas para comparar tu evolución."
+        />
+
+        <section className="mt-4 space-y-3">
           <CheckInHero
             lastCheckin={lastCheckin}
             weightDiff={weightDiff}
@@ -213,11 +221,8 @@ export function CheckIn() {
         <CheckInAlert type="success" text={message} />
 
         <CheckInNotice />
-<CheckInCompare history={history} />
+        <CheckInCompare history={history} />
         <CheckInHistory history={history} loading={loadingHistory} />
-      </div>
-
-      <BottomNav />
-    </section>
+    </AppShell>
   );
 }
