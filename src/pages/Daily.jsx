@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
-import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
 import { listMeals } from "../services/mealService";
+import { getProfile } from "../services/profileService";
 
 export function Daily() {
   const { user } = useAuth();
@@ -12,12 +12,7 @@ export function Daily() {
 
   useEffect(() => {
     async function loadData() {
-      // perfil
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      const profileData = await getProfile(user.id);
 
       setProfile(profileData);
       setMeals(await listMeals(user.id));
@@ -45,21 +40,21 @@ export function Daily() {
     const edad = Number(profile.edad);
 
     let bmr =
-      profile.genero === "mujer"
+      profile.genero === "female" || profile.genero === "mujer"
         ? 10 * peso + 6.25 * altura - 5 * edad - 161
         : 10 * peso + 6.25 * altura - 5 * edad + 5;
 
     let factor = 1.55;
 
-    if (profile.actividad === "sedentaria") factor = 1.2;
+    if (profile.actividad === "low" || profile.actividad === "sedentaria") factor = 1.2;
     if (profile.actividad === "ligera") factor = 1.375;
-    if (profile.actividad === "moderada") factor = 1.55;
-    if (profile.actividad === "alta") factor = 1.725;
+    if (profile.actividad === "moderate" || profile.actividad === "moderada") factor = 1.55;
+    if (profile.actividad === "high" || profile.actividad === "alta") factor = 1.725;
 
     let calorias = bmr * factor;
 
-    if (profile.objetivo === "bajar") calorias -= 400;
-    if (profile.objetivo === "subir") calorias += 300;
+    if (profile.objetivo === "bajar" || profile.objetivo === "perder_grasa") calorias -= 400;
+    if (profile.objetivo === "subir" || profile.objetivo === "ganar_musculo") calorias += 300;
 
     return Math.round(calorias);
   }

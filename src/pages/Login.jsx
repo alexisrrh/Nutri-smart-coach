@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { STORAGE_KEYS } from "../config/storageKeys";
+import {
+  clearCachedProfile,
+  getProfile,
+  saveProfile,
+} from "../services/profileService";
 import {
   LogIn,
   Mail,
@@ -39,56 +45,45 @@ export function Login() {
 
     const user = data.user;
 
-    localStorage.removeItem("nutricoach_profile");
-    localStorage.removeItem("smart_diet_plan");
-    localStorage.removeItem("smart_diet_progress");
-    localStorage.removeItem("nutricoach_meals");
+    clearCachedProfile();
+    localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
+    localStorage.removeItem(STORAGE_KEYS.DIET_PROGRESS);
+    localStorage.removeItem(STORAGE_KEYS.MEALS);
 
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
+    let profileData = null;
 
-    if (profileError) {
+    try {
+      profileData = await getProfile(user.id, { fallbackToCache: false });
+    } catch (profileError) {
       console.error("Error cargando perfil:", profileError);
     }
 
     if (!profileData) {
-      const newProfile = {
-        id: user.id,
-        email: user.email,
-        name: "",
-        age: null,
-        weight: null,
-        height: null,
-        gender: "male",
-        activity_level: "moderate",
-        goal: "perder_grasa",
-        preferences: {
+      try {
+        await saveProfile({
+          id: user.id,
+          user_id: user.id,
+          email: user.email,
+          name: "",
+          age: null,
+          weight: null,
+          height: null,
           gender: "male",
-          activity: "moderate",
+          activity_level: "moderate",
           goal: "perder_grasa",
-        },
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data: createdProfile, error: createError } = await supabase
-        .from("profiles")
-        .upsert(newProfile, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (createError) {
+          preferences: {
+            gender: "male",
+            activity: "moderate",
+            goal: "perder_grasa",
+          },
+          updated_at: new Date().toISOString(),
+        });
+      } catch (createError) {
         console.error("Error creando perfil:", createError);
         setLoading(false);
         setError("No se pudo crear el perfil del usuario.");
         return;
       }
-
-      localStorage.setItem("nutricoach_profile", JSON.stringify(createdProfile));
-    } else {
-      localStorage.setItem("nutricoach_profile", JSON.stringify(profileData));
     }
 
     setLoading(false);

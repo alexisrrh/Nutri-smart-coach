@@ -26,8 +26,7 @@ import {
   getDietProgress,
   listDietPlans,
 } from "../services/dietService";
-
-const PROFILE_KEY = "nutricoach_profile";
+import { getCachedProfile } from "../services/profileService";
 
 
 
@@ -78,9 +77,7 @@ export function MealPlan() {
   const [activeDay, setActiveDay] = useState(0);
   const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
-  const [profile] = useState(() =>
-    safeParse(localStorage.getItem(PROFILE_KEY), null)
-  );
+  const [profile] = useState(getCachedProfile);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -130,7 +127,7 @@ export function MealPlan() {
     setShowShopping(false);
 
     try {
-      const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+      const savedProfile = getCachedProfile();
 
       if (!isProfileComplete(savedProfile)) {
         throw new Error("Completa tu perfil antes de generar una dieta.");
@@ -661,7 +658,7 @@ function mapProfileGoalToForm(goal) {
 }
 
 function createInitialFormData() {
-  const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+  const savedProfile = getCachedProfile();
 
   return {
     dietType: "balanced",
@@ -675,14 +672,6 @@ function createInitialFormData() {
     homeFoods: "",
     exclusions: "",
   };
-}
-
-function safeParse(value, fallback) {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
 }
 
 function buildShareText(plan) {
