@@ -227,18 +227,22 @@ function buildShoppingGroups(plan = []) {
 
         if (!parsed.name) return;
 
-        const key = normalizeName(parsed.name);
+        const normalized = normalizeIngredientName(parsed.name);
+        const unitGroup = getUnitGroup(parsed.unit);
+        const key = `${normalized.key}:${unitGroup}`;
 
         if (!itemsMap.has(key)) {
           itemsMap.set(key, {
             id: key,
-            name: toTitleCase(parsed.name),
-            category: categorizeIngredient(parsed.name),
+            name: normalized.label,
+            category: categorizeIngredient(normalized.key),
+            unitGroup,
             grams: 0,
             ml: 0,
             units: 0,
             portions: 0,
             unknown: 0,
+            unknownLabels: [],
           });
         }
 
@@ -255,7 +259,10 @@ function buildShoppingGroups(plan = []) {
           item.units += parsed.value;
         else if (parsed.unit === "portion")
           item.portions += parsed.value;
-        else item.unknown += 1;
+        else {
+          item.unknown += 1;
+          item.unknownLabels.push(parsed.rawAmount || ingredient);
+        }
       });
     });
   });
@@ -308,7 +315,7 @@ function parseIngredient(rawIngredient) {
       : String(rawIngredient).trim();
 
   const match = text.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
+    /^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|gramos?|ml|l|litros?|unidad(?:es)?|ud|uds|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
   );
 
   if (!match) {
@@ -325,15 +332,22 @@ function parseIngredient(rawIngredient) {
 
   const unitText = (match[2] || "").toLowerCase();
 
-  const name = (match[3] || text).trim();
+  const matchedName = (match[3] || "").trim();
+  const name = matchedName || getNameFromUnitText(unitText) || text;
 
-  if (unitText === "g") return { name, value, unit: "g" };
+  if (unitText === "g" || unitText === "gr" || unitText.startsWith("gramo")) {
+    return { name, value, unit: "g" };
+  }
   if (unitText === "kg") return { name, value, unit: "kg" };
   if (unitText === "ml") return { name, value, unit: "ml" };
-  if (unitText === "l") return { name, value, unit: "l" };
+  if (unitText === "l" || unitText.startsWith("litro")) {
+    return { name, value, unit: "l" };
+  }
 
   if (
     unitText.includes("unidad") ||
+    unitText === "ud" ||
+    unitText === "uds" ||
     unitText.includes("pieza") ||
     unitText.includes("huevo") ||
     unitText.includes("rebanada") ||
@@ -387,14 +401,22 @@ function formatAmount(item) {
   }
 
   if (parts.length === 0 && item.unknown > 0) {
-    parts.push(`${item.unknown} vez/semana`);
+    parts.push(formatUnknownAmount(item));
   }
 
   return parts.join(" + ") || "cantidad semanal";
 }
 
+function getNameFromUnitText(unitText) {
+  if (/^huevo(?:s)?$/.test(unitText)) return "huevos";
+  if (/^pl[aá]tano(?:s)?$/.test(unitText)) return "plátanos";
+  if (/^banana(?:s)?$/.test(unitText)) return "bananas";
+
+  return "";
+}
+
 function categorizeIngredient(name = "") {
-  const text = name.toLowerCase();
+  const text = normalizeText(name);
 
   if (
     [
@@ -460,13 +482,75 @@ function categorizeIngredient(name = "") {
 }
 
 function normalizeName(name = "") {
-  return String(name)
+  return normalizeText(name);
+}
+
+function normalizeIngredientName(name = "") {
+  const key = normalizeName(name);
+  const canonicalKey = getCanonicalIngredientKey(key);
+
+  return {
+    key: canonicalKey,
+    label: CANONICAL_INGREDIENT_LABELS[canonicalKey] || toTitleCase(canonicalKey),
+  };
+}
+
+function getCanonicalIngredientKey(key) {
+  if (/^huevos?$/.test(key)) return "huevos";
+
+  if (
+    key === "arroz" ||
+    key === "arroz cocido" ||
+    key === "arroz blanco" ||
+    key === "arroz blanco cocido"
+  ) {
+    return "arroz";
+  }
+
+  if (
+    key === "pollo" ||
+    key === "pechuga pollo" ||
+    key === "pechuga de pollo" ||
+    key === "pollo plancha" ||
+    key === "pollo a la plancha"
+  ) {
+    return "pollo";
+  }
+
+  return key;
+}
+
+function getUnitGroup(unit) {
+  if (unit === "g" || unit === "kg") return "weight";
+  if (unit === "ml" || unit === "l") return "volume";
+  if (unit === "unit") return "unit";
+  if (unit === "portion") return "portion";
+
+  return "unknown";
+}
+
+function normalizeText(text = "") {
+  return String(text)
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function formatUnknownAmount(item) {
+  const uniqueLabels = Array.from(
+    new Set(
+      item.unknownLabels
+        .map((label) => String(label).trim())
+        .filter(Boolean)
+    )
+  );
+
+  if (uniqueLabels.length === 1) return uniqueLabels[0];
+
+  return `${item.unknown} vez/semana`;
 }
 
 function toTitleCase(text = "") {
@@ -484,3 +568,9 @@ function toTitleCase(text = "") {
 function formatNumber(number) {
   return Number(number.toFixed(1)).toString();
 }
+
+const CANONICAL_INGREDIENT_LABELS = {
+  arroz: "Arroz",
+  huevos: "Huevos",
+  pollo: "Pollo",
+};
