@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navbar } from "../components/Navbar";
+import BottomNav from "../components/BottomNav";
 import { useAuth } from "../context/useAuth";
 import { listMeals } from "../services/mealService";
 import { getProfile } from "../services/profileService";
@@ -67,9 +67,7 @@ export function Daily() {
 
   return (
     <main className="min-h-screen bg-[#07130d] text-white">
-      <Navbar />
-
-      <section className="mx-auto max-w-6xl px-6 pb-20 pt-32">
+      <section className="mx-auto max-w-6xl px-6 pb-32 pt-32">
         <h1 className="text-4xl font-bold md:text-6xl">
           Resumen diario
         </h1>
@@ -98,6 +96,7 @@ export function Daily() {
           />
         </div>
       </section>
+      <BottomNav />
     </main>
   );
 }
