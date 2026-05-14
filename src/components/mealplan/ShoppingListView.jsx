@@ -482,7 +482,7 @@ function categorizeIngredient(name = "") {
 }
 
 function normalizeName(name = "") {
-  return normalizeText(name);
+  return removePreparationWords(removeEmbeddedAmounts(normalizeText(name)));
 }
 
 function normalizeIngredientName(name = "") {
@@ -497,14 +497,15 @@ function normalizeIngredientName(name = "") {
 
 function getCanonicalIngredientKey(key) {
   if (/^huevos?$/.test(key)) return "huevos";
+  if (/^patatas?$/.test(key)) return "patata";
 
-  if (
-    key === "arroz" ||
-    key === "arroz cocido" ||
-    key === "arroz blanco" ||
-    key === "arroz blanco cocido"
-  ) {
-    return "arroz";
+  if (key === "arroz") return "arroz";
+  if (key === "patata") return "patata";
+  if (key === "avena") return "avena";
+  if (key === "pasta integral") return "pasta integral";
+
+  if (key === "pan integral" || key === "pan centeno" || key === "pan de centeno") {
+    return "pan integral";
   }
 
   if (
@@ -534,7 +535,28 @@ function normalizeText(text = "") {
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
+    .replace(/\((?:\d+(?:[.,]\d+)?)\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\)/gi, " ")
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\b/gi, " ")
     .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function removeEmbeddedAmounts(text) {
+  return String(text)
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function removePreparationWords(text) {
+  return String(text)
+    .replace(/\bpara pure\b/g, " ")
+    .replace(/\ba la plancha\b/g, " ")
+    .replace(
+      /\b(cocido|cocida|crudo|cruda|blanco|blanca|molido|molida|troceado|troceada)\b/g,
+      " "
+    )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -571,6 +593,11 @@ function formatNumber(number) {
 
 const CANONICAL_INGREDIENT_LABELS = {
   arroz: "Arroz",
+  avena: "Avena",
   huevos: "Huevos",
+  "pan integral": "Pan integral",
+  pasta: "Pasta",
+  "pasta integral": "Pasta integral",
+  patata: "Patata",
   pollo: "Pollo",
 };
