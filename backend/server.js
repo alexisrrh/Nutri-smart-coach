@@ -89,10 +89,33 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
 
     const goal = req.body.goal || "perder_grasa";
     const userId = req.body.user_id || null;
+    const imageHash = createImageHash(req.file.buffer);
+
+    if (userId) {
+      const existingAnalysis = await findMealAnalysisByImageHash({
+        userId,
+        imageHash,
+      });
+
+      if (existingAnalysis) {
+        return res.json({
+          ...existingAnalysis,
+          image_hash: imageHash,
+          image_url: existingAnalysis.image_url || null,
+          reused: true,
+          saved: true,
+        });
+      }
+    }
+
     const base64Image = req.file.buffer.toString("base64");
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
+      config: {
+        temperature: 0.1,
+        topP: 0.3,
+      },
       contents: [
         {
           role: "user",
@@ -101,7 +124,7 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
               text: `
 Eres un nutricionista experto para una app fitness llamada NutriSmart Coach.
 
-Analiza la comida de la imagen con el máximo detalle posible.
+Analiza SOLO la comida visible en la imagen. Sé consistente, prudente y determinista.
 
 Objetivo del usuario: ${goal}
 
@@ -129,14 +152,21 @@ Estructura exacta:
 }
 
 Reglas:
-- calories debe ser número aproximado.
-- protein, carbs, fat, fiber, sugar y sodium deben ser números.
+- Identifica únicamente ingredientes visibles o muy claramente inferibles por la imagen.
+- No inventes salsas, aceites, bebidas, guarniciones, toppings o ingredientes ocultos si no se ven.
+- Estima porciones visibles de forma conservadora usando referencias prácticas: plato pequeño/mediano/grande, puñado, taza, pieza, cucharada o gramos aproximados.
+- Si no puedes distinguir un ingrediente, usa nombres genéricos como "proteína visible", "verdura visible" o "salsa no identificada" y baja confidence.
+- calories debe ser número aproximado y realista para la porción visible.
+- protein, carbs, fat, fiber, sugar y sodium deben ser números realistas para esa porción.
 - sodium debe estar en mg.
 - confidence debe ser número del 1 al 100.
 - score debe ser número del 1 al 10.
-- Sé prudente: si no se ve claro, baja confidence.
-- No inventes ingredientes invisibles.
-- Si hay dudas, dilo en recommendation o warning.
+- Si la imagen es clara y la comida es común, confidence puede estar entre 70 y 90.
+- Si hay partes tapadas, mala luz, mezcla difícil o porciones inciertas, confidence debe bajar a 40-65.
+- Evita valores extremos: no uses más de 1200 kcal salvo que la porción visible sea claramente muy grande o muy calórica.
+- Evita macros extremos salvo evidencia visual clara.
+- Si hay dudas, explica la incertidumbre en recommendation o warning.
+- Mantén criterios estables: para la misma imagen, deberías devolver cifras muy parecidas.
 - La respuesta debe ayudar al usuario a tomar una decisión real.
 - Ajusta recommendation, improvements y goal_fit según el objetivo.
 `,
@@ -183,6 +213,7 @@ Reglas:
       savedRecord = await saveMealAnalysis({
         userId,
         imageUrl,
+        imageHash,
         goal,
         analysis,
       });
@@ -190,6 +221,7 @@ Reglas:
 
     return res.json({
       ...(savedRecord || analysis),
+      image_hash: imageHash,
       image_url: imageUrl,
       saved: Boolean(savedRecord),
     });
@@ -428,7 +460,25 @@ function getSupabaseStoragePath({ publicUrl, bucket }) {
 }
 
 
-async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
+async function findMealAnalysisByImageHash({ userId, imageHash }) {
+  if (!userId || !imageHash) return null;
+
+  const { data, error } = await supabase
+    .from("meal_analyses")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("image_hash", imageHash)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error buscando análisis por image_hash:", error);
+    throw new Error("No se pudo comprobar si la imagen ya fue analizada");
+  }
+
+  return data || null;
+}
+
+async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis }) {
   if (!userId) return null;
 
   const { data, error } = await supabase
@@ -436,6 +486,7 @@ async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
     .insert({
       user_id: userId,
       image_url: imageUrl,
+      image_hash: imageHash,
       goal,
       food: analysis.food,
       description: analysis.description,
@@ -1127,6 +1178,10 @@ function toNumberOrNull(value) {
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function createImageHash(buffer) {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
 app.get("/checkins/:userId", async (req, res) => {
