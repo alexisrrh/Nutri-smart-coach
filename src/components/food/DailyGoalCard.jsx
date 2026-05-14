@@ -12,17 +12,17 @@ export default function DailyGoalCard({ totals, goals }) {
   );
 
   return (
-    <section className="rounded-[22px] border border-white/10 bg-[#07170f] p-3">
+    <section className="rounded-[22px] border border-white/10 bg-[#07170f] p-2.5">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Sparkles size={13} className="text-[#10b981]" />
 
-          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
             Objetivo de hoy
           </p>
         </div>
 
-        <span className="text-[7px] font-black uppercase tracking-widest text-white/30">
+        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
           LIVE
         </span>
       </div>
@@ -47,7 +47,7 @@ export default function DailyGoalCard({ totals, goals }) {
         />
       </div>
 
-      <p className="mt-2 text-[10px] leading-4 text-white/50">
+      <p className="mt-2 text-xs leading-4 text-white/50">
         Sigue registrando comidas para completar tus objetivos diarios.
       </p>
     </section>
@@ -63,24 +63,24 @@ function GoalItem({
   unit,
 }) {
   return (
-    <div className="rounded-[16px] border border-white/10 bg-black/20 p-2.5">
+    <div className="rounded-[16px] border border-white/10 bg-black/20 p-2">
       <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-[#10b981]">
           {icon}
 
-          <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+          <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
             {label}
           </p>
         </div>
 
-        <p className="text-[8px] font-black text-[#10b981]">
+        <p className="text-[10px] font-black text-[#10b981]">
           {percent}%
         </p>
       </div>
 
       <p className="text-lg font-black italic text-white">
         {Math.round(value)}
-        <span className="ml-1 text-[9px] text-white/35">
+        <span className="ml-1 text-[10px] text-white/35">
           / {goal}
           {unit}
         </span>

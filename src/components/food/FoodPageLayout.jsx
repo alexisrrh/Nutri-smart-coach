@@ -2,11 +2,11 @@ import BottomNav from "../BottomNav";
 
 export default function FoodPageLayout({ children }) {
   return (
-    <section className="relative min-h-screen overflow-x-hidden bg-[#04110b] px-2 pb-24 pt-2 text-white">
+    <section className="relative h-dvh overflow-hidden bg-[#04110b] px-2 pb-[76px] pt-2 text-white">
       <FoodBackground />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-[430px] justify-center">
-        <div className="w-full overflow-hidden rounded-[26px] border border-[#10b981]/15 bg-[#07170f]/95 p-2 shadow-[0_30px_100px_rgba(16,185,129,0.12)] backdrop-blur-xl">
+      <main className="relative z-10 mx-auto flex h-full w-full max-w-[430px] justify-center">
+        <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[26px] border border-[#10b981]/15 bg-[#07170f]/95 p-2 shadow-[0_30px_100px_rgba(16,185,129,0.12)] backdrop-blur-xl">
           {children}
         </div>
       </main>

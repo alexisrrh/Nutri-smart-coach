@@ -7,11 +7,11 @@ export default function FoodResultCard({ result, preview }) {
   const advice = getShortAdvice(result);
 
   return (
-    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#06140d] p-2.5 shadow-[0_24px_80px_rgba(16,185,129,0.12)]">
+    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#06140d] p-2 shadow-[0_24px_80px_rgba(16,185,129,0.12)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98120,transparent_42%)]" />
 
-      <div className="relative z-10 space-y-2.5">
-        <div className="relative h-[150px] overflow-hidden rounded-[20px] border border-white/10 bg-black/30">
+      <div className="relative z-10 space-y-2">
+        <div className="relative h-[132px] overflow-hidden rounded-[20px] border border-white/10 bg-black/30">
           {preview || result.image_url ? (
             <img
               src={preview || result.image_url}
@@ -28,24 +28,24 @@ export default function FoodResultCard({ result, preview }) {
 
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-[#10b981]/20 bg-black/50 px-2.5 py-1 backdrop-blur-xl">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_12px_#10b981]" />
-            <span className="text-[7px] font-black uppercase tracking-[0.2em] text-[#10b981]">
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
               AI Scan
             </span>
           </div>
 
-          <div className="absolute right-2 top-2 grid h-[52px] w-[52px] place-items-center rounded-[18px] border border-[#10b981]/25 bg-[#10b981]/15 backdrop-blur-xl">
+          <div className="absolute right-2 top-2 grid h-12 w-12 place-items-center rounded-[16px] border border-[#10b981]/25 bg-[#10b981]/15 backdrop-blur-xl">
             <div className="text-center">
-              <p className="text-2xl font-black italic leading-none text-[#10b981]">
+              <p className="text-[22px] font-black italic leading-none text-[#10b981]">
                 {score}
               </p>
-              <p className="mt-0.5 text-[6px] font-black uppercase tracking-widest text-white/45">
+              <p className="text-[10px] font-black uppercase tracking-wide text-white/45">
                 score
               </p>
             </div>
           </div>
 
           <div className="absolute bottom-2 left-2 right-2">
-            <p className="mb-0.5 text-[7px] font-black uppercase tracking-[0.2em] text-white/40">
+            <p className="mb-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
               Comida detectada
             </p>
 
@@ -56,16 +56,16 @@ export default function FoodResultCard({ result, preview }) {
         </div>
 
         <div className="grid grid-cols-[1fr_92px] gap-2">
-          <div className="rounded-[20px] border border-[#10b981]/20 bg-[#10b981]/10 p-2.5">
+          <div className="rounded-[20px] border border-[#10b981]/20 bg-[#10b981]/10 p-2">
             <div className="mb-1.5 flex items-center gap-1.5 text-[#10b981]">
               <Flame size={13} />
-              <p className="text-[7px] font-black uppercase tracking-[0.18em]">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em]">
                 Energía
               </p>
             </div>
 
             <div className="flex items-end gap-1">
-              <span className="text-3xl font-black italic leading-none text-white">
+              <span className="text-[28px] font-black italic leading-none text-white">
                 {Math.round(result.calories || 0)}
               </span>
               <span className="pb-0.5 text-[10px] font-black uppercase text-slate-400">
@@ -74,12 +74,12 @@ export default function FoodResultCard({ result, preview }) {
             </div>
           </div>
 
-          <div className="rounded-[20px] border border-white/10 bg-black/25 p-2.5 text-right">
-            <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+          <div className="rounded-[20px] border border-white/10 bg-black/25 p-2 text-right">
+            <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
               proteína
             </p>
 
-            <p className="mt-1 text-2xl font-black italic text-[#10b981]">
+            <p className="mt-1 text-[23px] font-black italic leading-none text-[#10b981]">
               {Math.round(result.protein || 0)}
               <span className="text-[10px]">g</span>
             </p>
@@ -92,18 +92,18 @@ export default function FoodResultCard({ result, preview }) {
           <MacroMini icon={<Droplets size={12} />} label="Grasas" value={result.fat} unit="g" />
         </div>
 
-        <div className="rounded-[18px] border border-white/10 bg-black/20 p-2.5">
+        <div className="rounded-[18px] border border-white/10 bg-black/20 p-2">
           <div className="flex items-start gap-2.5">
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#10b981] text-[#06110c]">
               <Sparkles size={15} />
             </div>
 
             <div>
-              <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#10b981]">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
                 Veredicto IA
               </p>
 
-              <p className="mt-1 text-[10px] leading-4 text-emerald-100/85">
+              <p className="mt-0.5 text-xs leading-4 text-emerald-100/85">
                 {advice}
               </p>
             </div>
@@ -120,14 +120,14 @@ function MacroMini({ icon, label, value, unit }) {
       <div className="mb-1 flex items-center gap-1 text-[#10b981]">
         {icon}
 
-        <p className="text-[6px] font-black uppercase tracking-widest text-white/35">
+        <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
           {label}
         </p>
       </div>
 
       <p className="text-base font-black text-white">
         {Math.round(value || 0)}
-        <span className="ml-1 text-[8px] text-slate-500">{unit}</span>
+        <span className="ml-1 text-[10px] text-slate-500">{unit}</span>
       </p>
     </div>
   );

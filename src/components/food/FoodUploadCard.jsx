@@ -7,9 +7,9 @@ export default function FoodUploadCard({
   loading,
 }) {
   return (
-    <section className="mt-2">
+    <section className="min-h-0">
       <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-black/25 p-1.5 transition active:scale-[0.99]">
-        <div className="relative h-[190px] overflow-hidden rounded-[20px] bg-[#04110b]">
+        <div className="relative h-[168px] max-h-[180px] overflow-hidden rounded-[20px] bg-[#04110b]">
           {preview ? (
             <>
               <img
@@ -20,7 +20,7 @@ export default function FoodUploadCard({
 
               <div className="absolute inset-0 bg-gradient-to-t from-[#04110b] via-[#04110b]/20 to-transparent" />
 
-              <div className="absolute left-2 top-2 rounded-full border border-[#10b981]/25 bg-black/45 px-2.5 py-1 text-[7px] font-black uppercase tracking-widest text-[#10b981] backdrop-blur-xl">
+              <div className="absolute left-2 top-2 rounded-full border border-[#10b981]/25 bg-black/45 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#10b981] backdrop-blur-xl">
                 Foto lista
               </div>
 
@@ -29,7 +29,7 @@ export default function FoodUploadCard({
                   Imagen preparada
                 </p>
 
-                <p className="mt-0.5 text-[10px] text-white/60">
+                <p className="mt-0.5 text-xs text-white/60">
                   Toca la imagen para cambiarla.
                 </p>
               </div>
@@ -45,7 +45,7 @@ export default function FoodUploadCard({
                   Sube tu comida
                 </p>
 
-                <p className="mx-auto mt-1.5 max-w-[220px] text-[10px] leading-4 text-slate-400">
+                <p className="mx-auto mt-1.5 max-w-[220px] text-xs leading-4 text-slate-400">
                   Usa buena luz y que el plato se vea completo.
                 </p>
               </div>
@@ -65,7 +65,7 @@ export default function FoodUploadCard({
         type="button"
         onClick={analyzeFood}
         disabled={!preview || loading}
-        className="group relative mt-2 w-full overflow-hidden rounded-[18px] bg-[#10b981] px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#04110b] shadow-[0_14px_45px_rgba(16,185,129,0.22)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+        className="group relative mt-2 w-full overflow-hidden rounded-[18px] bg-[#10b981] px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#04110b] shadow-[0_14px_45px_rgba(16,185,129,0.22)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
       >
         <span className="relative z-10 flex items-center justify-center gap-2">
           <ScanLine size={15} />
@@ -74,6 +74,20 @@ export default function FoodUploadCard({
 
         <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/45 to-transparent transition duration-700 group-hover:translate-x-full" />
       </button>
+
+      <div className="mt-2 grid grid-cols-3 gap-1.5">
+        <ScanTip>Buena luz</ScanTip>
+        <ScanTip>Plato completo</ScanTip>
+        <ScanTip>IA activa</ScanTip>
+      </div>
     </section>
+  );
+}
+
+function ScanTip({ children }) {
+  return (
+    <div className="rounded-full border border-[#10b981]/15 bg-[#10b981]/10 px-2 py-1.5 text-center text-[10px] font-black uppercase tracking-wide text-emerald-100/75">
+      {children}
+    </div>
   );
 }

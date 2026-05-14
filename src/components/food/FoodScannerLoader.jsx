@@ -25,10 +25,10 @@ export default function FoodScannerLoader({ preview }) {
   );
 
   return (
-    <section className="mt-2 overflow-hidden rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
+    <section className="min-h-0 overflow-hidden rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.22em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
             Analizando comida
           </p>
 
@@ -42,7 +42,7 @@ export default function FoodScannerLoader({ preview }) {
         </div>
       </div>
 
-      <div className="relative h-[160px] overflow-hidden rounded-[18px] bg-black/30">
+      <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-black/30">
         {preview && (
           <img
             src={preview}
@@ -65,7 +65,7 @@ export default function FoodScannerLoader({ preview }) {
               {percent}%
             </p>
 
-            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.22em] text-white/45">
+            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
               Procesando con IA
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function FoodScannerLoader({ preview }) {
               </div>
 
               <p
-                className={`text-[6px] font-black uppercase leading-3 ${
+                className={`text-[10px] font-black uppercase leading-3 ${
                   completed || active ? "text-white" : "text-slate-600"
                 }`}
               >
