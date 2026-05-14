@@ -264,25 +264,42 @@ export function MealPlan() {
           )}
 
           <SurfaceCard className="flex min-h-0 flex-1 flex-col overflow-hidden p-0" radius="lg">
-            <div className="shrink-0 border-b border-white/[0.08] p-2.5">
-              <div className="flex items-center justify-between gap-3">
+            <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2.5">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <Sparkles size={14} className="text-[#10b981]" />
                     <h2 className="text-sm font-black uppercase italic">
                       {showShopping ? "Lista de compra" : "Plan generado"}
                     </h2>
                   </div>
 
-                  <p className="mt-0.5 text-[10px] normal-case text-slate-500">
+                  <p className="mt-1 truncate text-[10px] normal-case text-slate-500">
                     {hasPlan
                       ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
-                      : "Configura y genera tu dieta."}
+                      : "Tu dieta aparecerá aquí."}
                   </p>
                 </div>
 
                 {hasPlan && (
-                  <div className="flex shrink-0 gap-1">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-center shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22),0_0_24px_rgba(16,185,129,0.08)]">
+                    <span className="text-xs font-black text-[#10b981]">
+                      {completionPercent}%
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {hasPlan && (
+                <>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_16px_rgba(16,185,129,0.55)] transition-all"
+                      style={{ width: `${completionPercent}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-1.5">
                     <ActionButton
                       icon={<ShoppingCart size={13} />}
                       label={showShopping ? "Dieta" : "Compra"}
@@ -302,16 +319,7 @@ export function MealPlan() {
                       onClick={handleShare}
                     />
                   </div>
-                )}
-              </div>
-
-              {hasPlan && (
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
-                  <div
-                    className="h-full rounded-full bg-[#10b981] transition-all"
-                    style={{ width: `${completionPercent}%` }}
-                  />
-                </div>
+                </>
               )}
             </div>
 
@@ -393,35 +401,37 @@ function DietHeroCard({
 
 function ActionButton({ icon, label, onClick, active = false, disabled = false }) {
   return (
-    <SecondaryButton
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      icon={icon}
-      className={`w-auto rounded-xl px-2 py-2 text-[10px] tracking-wide disabled:opacity-30 ${
+      className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-2xl px-2 text-[10px] font-black uppercase tracking-wide shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] transition active:scale-[0.98] disabled:opacity-30 ${
         active
-          ? "border-[#10b981] bg-[#10b981] text-[#06110c] hover:bg-[#10b981] hover:text-[#06110c]"
-          : "border-white/10 bg-white/[0.04] text-slate-300"
+          ? "bg-[#10b981] text-[#06110c] shadow-[0_0_22px_rgba(16,185,129,0.18)]"
+          : "bg-white/[0.045] text-slate-300 hover:bg-[#10b981]/10 hover:text-white"
       }`}
     >
+      <span className={active ? "text-[#06110c]" : "text-[#10b981]"}>
+        {icon}
+      </span>
       {label}
-    </SecondaryButton>
+    </button>
   );
 }
 
 function EmptyPlan() {
   return (
-    <div className="rounded-[24px] bg-white/[0.035] p-4 text-center">
-      <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+    <div className="rounded-[24px] bg-white/[0.035] p-4 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+      <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
         <Sparkles size={20} />
       </div>
 
       <p className="text-sm font-black uppercase">
-        Sin dieta generada
+        Tu dieta aparecerá aquí
       </p>
 
       <p className="mx-auto mt-1.5 max-w-xs text-xs normal-case leading-4 text-slate-400">
-        Elige objetivo, días, comidas y preferencias para crear tu dieta.
+        Configura tus preferencias y genera un plan inteligente.
       </p>
     </div>
   );
