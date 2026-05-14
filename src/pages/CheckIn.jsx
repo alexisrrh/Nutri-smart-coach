@@ -12,13 +12,12 @@ import { CheckInHistory } from "../components/checkin/CheckInHistory";
 import { CheckInNotice } from "../components/checkin/CheckInNotice";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInCompare } from "../components/checkin/CheckInCompare";
-import {
-  getWeightDiff,
-  safeParse,
-} from "../components/checkin/checkinUtils";
+import { getWeightDiff } from "../components/checkin/checkinUtils";
 import { createCheckin, listCheckins } from "../services/checkinService";
-
-const PROFILE_KEY = "nutricoach_profile";
+import {
+  clearCachedProfile,
+  getCachedProfile,
+} from "../services/profileService";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -47,8 +46,7 @@ export function CheckIn() {
     setLoadingHistory(true);
     setError("");
 
-    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
-    setProfile(savedProfile);
+    setProfile(getCachedProfile());
 
     const {
       data: { user },
@@ -162,7 +160,7 @@ export function CheckIn() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    localStorage.removeItem(PROFILE_KEY);
+    clearCachedProfile();
     navigate("/");
   }
 

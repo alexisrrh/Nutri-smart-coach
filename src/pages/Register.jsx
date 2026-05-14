@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { saveProfile } from "../services/profileService";
 import {
   UserPlus,
   Mail,
@@ -67,39 +68,27 @@ export function Register() {
     const user = data?.user;
 
     if (user) {
-      const newProfile = {
-        id: user.id,
-        email: user.email,
-        name: form.nombre.trim(),
-        age: null,
-        weight: null,
-        height: null,
-        gender: "male",
-        activity_level: "moderate",
-        goal: "perder_grasa",
-        preferences: {
+      try {
+        await saveProfile({
+          id: user.id,
+          user_id: user.id,
+          email: user.email,
+          name: form.nombre.trim(),
+          age: null,
+          weight: null,
+          height: null,
           gender: "male",
-          activity: "moderate",
+          activity_level: "moderate",
           goal: "perder_grasa",
-        },
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data: createdProfile, error: profileError } = await supabase
-        .from("profiles")
-        .upsert(newProfile, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (profileError) {
+          preferences: {
+            gender: "male",
+            activity: "moderate",
+            goal: "perder_grasa",
+          },
+          updated_at: new Date().toISOString(),
+        });
+      } catch (profileError) {
         console.error("Error creando perfil:", profileError);
-      }
-
-      if (createdProfile) {
-        localStorage.setItem(
-          "nutricoach_profile",
-          JSON.stringify(createdProfile)
-        );
       }
     }
 

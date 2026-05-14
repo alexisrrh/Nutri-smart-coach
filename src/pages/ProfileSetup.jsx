@@ -15,6 +15,7 @@ import {
   Activity,
   Target,
 } from "lucide-react";
+import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
 import BottomNav from "../components/BottomNav";
 import {
@@ -88,9 +89,9 @@ export function ProfileSetup() {
     await supabase.auth.signOut();
 
     clearCachedProfile();
-    localStorage.removeItem("smart_diet_plan");
-    localStorage.removeItem("smart_diet_progress");
-    localStorage.removeItem("nutricoach_meals");
+    localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
+    localStorage.removeItem(STORAGE_KEYS.DIET_PROGRESS);
+    localStorage.removeItem(STORAGE_KEYS.MEALS);
 
     navigate("/");
   }
