@@ -222,9 +222,9 @@ export default function FoodPhoto() {
 }
 
 async function prepareImageForUpload(file) {
-  const maxSize = 4 * 1024 * 1024;
+  const targetSize = 1.2 * 1024 * 1024;
 
-  if (file.size <= maxSize && !isHeicImage(file)) {
+  if (file.size <= targetSize && !isHeicImage(file)) {
     return file;
   }
 
@@ -234,7 +234,7 @@ async function prepareImageForUpload(file) {
 
   const compressed = await compressImage(file);
 
-  if (compressed.size > maxSize) {
+  if (compressed.size > targetSize) {
     throw new Error("La imagen sigue siendo demasiado pesada.");
   }
 
@@ -258,7 +258,7 @@ function compressImage(file) {
       URL.revokeObjectURL(objectUrl);
 
       const canvas = document.createElement("canvas");
-      const maxWidth = 1280;
+      const maxWidth = 1024;
       const scale = Math.min(1, maxWidth / image.width);
 
       canvas.width = Math.round(image.width * scale);
@@ -292,7 +292,7 @@ function compressImage(file) {
           resolve(compressedFile);
         },
         "image/jpeg",
-        0.82
+        0.74
       );
     };
 
