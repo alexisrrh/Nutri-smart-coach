@@ -67,7 +67,30 @@ app.get("/health", (req, res) => {
   });
 });
 
+function createTimingLogger(label) {
+  const start = performance.now();
+  let previous = start;
+  const marks = {};
+
+  return {
+    mark(name) {
+      const now = performance.now();
+      marks[name] = Math.round(now - previous);
+      previous = now;
+    },
+    done(extra = {}) {
+      console.info(`[timing:${label}]`, {
+        ...marks,
+        total: Math.round(performance.now() - start),
+        ...extra,
+      });
+    },
+  };
+}
+
 app.post("/analyze-food", upload.single("image"), async (req, res) => {
+  const timing = createTimingLogger("analyze-food");
+
   try {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
@@ -90,14 +113,18 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
     const goal = req.body.goal || "perder_grasa";
     const userId = req.body.user_id || null;
     const imageHash = createImageHash(req.file.buffer);
+    timing.mark("hash");
 
     if (userId) {
       const existingAnalysis = await findMealAnalysisByImageHash({
         userId,
         imageHash,
       });
+      timing.mark("lookup");
 
       if (existingAnalysis) {
+        timing.done({ reused: true });
+
         return res.json({
           ...existingAnalysis,
           image_hash: imageHash,
@@ -106,6 +133,8 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
           saved: true,
         });
       }
+    } else {
+      timing.mark("lookup");
     }
 
     const base64Image = req.file.buffer.toString("base64");
@@ -122,19 +151,14 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
           parts: [
             {
               text: `
-Eres un nutricionista experto para una app fitness llamada NutriSmart Coach.
-
-Analiza SOLO la comida visible en la imagen. Sé consistente, prudente y determinista.
-
-Objetivo del usuario: ${goal}
-
-Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
-
-Estructura exacta:
+Analiza SOLO la comida visible para NutriSmart Coach. Objetivo: ${goal}.
+Devuelve SOLO JSON válido, sin markdown ni texto extra.
+No inventes ingredientes no visibles. Estima porciones visibles de forma conservadora. Si hay duda, baja confidence y explícalo en warning o recommendation. Evita valores extremos salvo evidencia clara.
+JSON exacto:
 {
   "food": "nombre claro de la comida",
-  "description": "descripción breve de lo que se ve en el plato",
-  "portion_estimate": "estimación de porción visible, por ejemplo: 1 plato mediano, 150g arroz, 180g pollo",
+  "description": "breve descripción visible",
+  "portion_estimate": "porción visible estimada",
   "ingredients_detected": ["ingrediente 1", "ingrediente 2"],
   "calories": 0,
   "protein": 0,
@@ -150,25 +174,7 @@ Estructura exacta:
   "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
   "warning": "advertencia breve si aplica; si no aplica, usa string vacío"
 }
-
-Reglas:
-- Identifica únicamente ingredientes visibles o muy claramente inferibles por la imagen.
-- No inventes salsas, aceites, bebidas, guarniciones, toppings o ingredientes ocultos si no se ven.
-- Estima porciones visibles de forma conservadora usando referencias prácticas: plato pequeño/mediano/grande, puñado, taza, pieza, cucharada o gramos aproximados.
-- Si no puedes distinguir un ingrediente, usa nombres genéricos como "proteína visible", "verdura visible" o "salsa no identificada" y baja confidence.
-- calories debe ser número aproximado y realista para la porción visible.
-- protein, carbs, fat, fiber, sugar y sodium deben ser números realistas para esa porción.
-- sodium debe estar en mg.
-- confidence debe ser número del 1 al 100.
-- score debe ser número del 1 al 10.
-- Si la imagen es clara y la comida es común, confidence puede estar entre 70 y 90.
-- Si hay partes tapadas, mala luz, mezcla difícil o porciones inciertas, confidence debe bajar a 40-65.
-- Evita valores extremos: no uses más de 1200 kcal salvo que la porción visible sea claramente muy grande o muy calórica.
-- Evita macros extremos salvo evidencia visual clara.
-- Si hay dudas, explica la incertidumbre en recommendation o warning.
-- Mantén criterios estables: para la misma imagen, deberías devolver cifras muy parecidas.
-- La respuesta debe ayudar al usuario a tomar una decisión real.
-- Ajusta recommendation, improvements y goal_fit según el objetivo.
+Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence 70-90; si incierta 40-65. Mantén criterios estables.
 `,
             },
             {
@@ -181,6 +187,7 @@ Reglas:
         },
       ],
     });
+    timing.mark("Gemini");
 
     const rawText = response.text || "";
     const cleanText = cleanGeminiJson(rawText);
@@ -209,6 +216,7 @@ Reglas:
         userId,
         file: req.file,
       });
+      timing.mark("upload");
 
       savedRecord = await saveMealAnalysis({
         userId,
@@ -217,7 +225,13 @@ Reglas:
         goal,
         analysis,
       });
+      timing.mark("insert");
+    } else {
+      timing.mark("upload");
+      timing.mark("insert");
     }
+
+    timing.done({ reused: false });
 
     return res.json({
       ...(savedRecord || analysis),
@@ -226,6 +240,7 @@ Reglas:
       saved: Boolean(savedRecord),
     });
   } catch (error) {
+    timing.done({ error: true });
     console.error("Error analyze-food completo:", error);
 
     return res.status(500).json({
@@ -236,6 +251,7 @@ Reglas:
 });
 
 app.post("/generate-diet", async (req, res) => {
+  const timing = createTimingLogger("generate-diet");
   const { profile, preferences, user_id } = req.body || {};
   const userId = user_id || profile?.id || profile?.user_id || null;
 
@@ -260,6 +276,10 @@ app.post("/generate-diet", async (req, res) => {
       try {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
+          config: {
+            temperature: 0.2,
+            topP: 0.4,
+          },
           contents: [
             {
               role: "user",
@@ -271,6 +291,7 @@ app.post("/generate-diet", async (req, res) => {
             },
           ],
         });
+        timing.mark("Gemini");
 
         const rawText = response.text || "";
         const cleanText = cleanGeminiJson(rawText);
@@ -281,12 +302,20 @@ app.post("/generate-diet", async (req, res) => {
         }
 
         week = normalizeGeneratedDiet(data.week, dietConfig);
+        timing.mark("normalize");
       } catch (error) {
         console.error("Error Gemini generate-diet:", error);
         week = createFallbackDiet(profile, preferences, dietConfig);
         usedFallback = true;
         warning = error.message || "Gemini falló generando dieta";
+        timing.mark("Gemini");
+        timing.mark("normalize");
       }
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      timing.mark("Gemini");
+      timing.mark("normalize");
     }
 
     let savedPlan = null;
@@ -309,7 +338,13 @@ app.post("/generate-diet", async (req, res) => {
         profile,
         preferences,
       });
+
+      timing.mark("save");
+    } else {
+      timing.mark("save");
     }
+
+    timing.done({ usedFallback });
 
     return res.json({
       week,
@@ -319,6 +354,7 @@ app.post("/generate-diet", async (req, res) => {
       diet_plan_id: savedPlan?.id || null,
     });
   } catch (error) {
+    timing.done({ error: true });
     console.error("Error generate-diet completo:", error);
 
     const dietConfig = buildDietConfig(preferences);
@@ -696,42 +732,13 @@ Si la dieta es sin carbohidratos, low carb o keto:
 `;
 
   return `
-Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
-
-Crea una dieta personalizada para NutriSmartCoach.
-
-Perfil del usuario:
-${JSON.stringify(profile)}
-
-Preferencias:
-${JSON.stringify(preferences || {})}
-
-Configuración obligatoria:
-- Genera exactamente ${dietConfig.days} días.
-- Los días deben ser: ${dayNames.join(", ")}.
-- Genera exactamente ${dietConfig.mealsPerDay} comidas por día.
-- Si son 2 comidas al día, interpreta que el usuario hace ayuno intermitente.
-- Si hay ayuno intermitente, usa horarios tipo 13:00 y 20:00.
-- Si son 3 comidas: desayuno, comida y cena.
-- Si son 4 comidas: desayuno, comida, merienda y cena.
-- Si son 5 o 6 comidas: añade snacks saludables.
-- Ajusta calorías, proteína, carbohidratos y grasa según el objetivo.
-- Incluye cantidades exactas en details.
-- Usa comida fácil, realista y económica si el presupuesto es bajo.
-- No repitas la misma comida todos los días.
-- Mantén valores nutricionales realistas.
-
-Alimentos disponibles en casa:
-${dietConfig.homeFoods || "No especificado"}
-
-Reglas sobre alimentos en casa:
-- Si el usuario indicó alimentos disponibles, intenta construir la dieta usando principalmente esos alimentos.
-- Si falta algo importante, puedes incluirlo, pero que sea común y económico.
-- No inventes alimentos raros.
-
+Devuelve SOLO JSON válido, sin markdown ni texto extra.
+Crea dieta para NutriSmartCoach con perfil=${JSON.stringify(profile)} y preferencias=${JSON.stringify(preferences || {})}.
+Obligatorio: exactamente ${dietConfig.days} días (${dayNames.join(", ")}), exactamente ${dietConfig.mealsPerDay} comidas/día, macros realistas, cantidades claras en details, comida común y práctica, sin repetir la misma comida todos los días.
+Horarios: 2 comidas = ayuno 13:00/20:00; 3 = desayuno/comida/cena; 4 = desayuno/comida/merienda/cena; 5-6 = añade snacks.
+Alimentos en casa: ${dietConfig.homeFoods || "No especificado"}. Úsalos principalmente si existen.
 ${dietConfig.isLowCarb ? forbiddenLowCarb : ""}
-
-Formato exacto:
+JSON exacto:
 {
   "week": [
     {
