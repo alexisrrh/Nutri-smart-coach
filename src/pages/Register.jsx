@@ -7,11 +7,22 @@ import {
   Mail,
   Lock,
   User,
-  AlertCircle,
   Sparkles,
   ArrowLeft,
   ArrowRight,
+  Target,
+  ScanLine,
+  Activity,
 } from "lucide-react";
+import {
+  AppShell,
+  FormField,
+  MetaBadge,
+  PrimaryButton,
+  SecondaryButton,
+  StatusBox,
+  SurfaceCard,
+} from "../components/ui";
 
 export function Register() {
   const navigate = useNavigate();
@@ -97,126 +108,247 @@ export function Register() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#06110e] px-4 py-8 text-white font-sans">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,#10b98122,transparent_35%),radial-gradient(circle_at_20%_85%,#38bdf822,transparent_35%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:46px_46px]" />
+    <AppShell withBottomNav={false} contentClassName="!px-3 !pb-4 !pt-2">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <SecondaryButton
+            onClick={() => navigate("/")}
+            icon={<ArrowLeft size={14} />}
+            className="w-auto px-3 py-1.5 text-[10px]"
+          >
+            Inicio
+          </SecondaryButton>
 
-      <div className="relative w-full max-w-md">
-        <button
-          onClick={() => navigate("/")}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
-        >
-          <ArrowLeft size={14} />
-          Inicio
-        </button>
-
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
-          <div className="absolute left-1/2 top-0 h-[2px] w-40 -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
-
-          <div className="mb-8 text-center">
-            <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-400 text-[#06110e] shadow-[0_0_35px_#10b98155]">
-              <UserPlus size={30} />
-            </div>
-
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
-              <Sparkles size={13} />
-              Crea tu cuenta inteligente
-            </div>
-
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter sm:text-4xl">
-              Únete a <br></br> Nutri Smart Coach
-            </h1>
-
-            <p className="mt-4 text-md text-white/50">
-              Empieza a construir tu cambio físico con IA.
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-bold text-red-200">
-              <AlertCircle size={18} className="mt-0.5 shrink-0" />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <Input
-              label="Nombre completo"
-              name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              placeholder="Ej. Alexis Rodríguez"
-              icon={<User size={18} />}
-            />
-
-            <Input
-              label="Correo electrónico"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="tu@email.com"
-              icon={<Mail size={18} />}
-            />
-
-            <Input
-              label="Contraseña"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Mínimo 6 caracteres"
-              icon={<Lock size={18} />}
-            />
-
-            <button
-              disabled={loading}
-              className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.22em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                {loading ? "Creando cuenta..." : "Crear mi cuenta"}
-                {!loading && (
-                  <ArrowRight
-                    size={17}
-                    className="transition group-hover:translate-x-1"
-                  />
-                )}
-              </span>
-            </button>
-          </form>
-
-          <div className="mt-8 border-t border-white/5 pt-6 text-center">
-            <p className="text-sm text-white/45">
-              ¿Ya tienes cuenta?{" "}
-              <Link
-                to="/login"
-                className="font-black text-emerald-300 transition hover:text-white"
-              >
-                Inicia sesión aquí
-              </Link>
-            </p>
-          </div>
+          <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
+            Registro IA
+          </MetaBadge>
         </div>
+
+    
+
+        
+
+        <SurfaceCard className="relative overflow-hidden p-2">
+          <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#10b981]/20 blur-3xl" />
+
+          <div className="relative z-10 pt-2">
+            <div className="ml-10 mb-3 flex items-center gap-5 justify-center">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/35 bg-[#06110c] p-1.5 shadow-[0_0_30px_rgba(16,185,129,0.34)]">
+                <img
+                  src="/favicon.png"
+                  alt="NutriSmart Coach"
+                  className="h-full w-full rounded-2xl object-contain"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#86efac] ml-5">
+                  Nutri Smart Coach
+                </p>
+                <h1 className="mt-1 flex items-center gap-2 text-2xl font-black uppercase italic leading-none tracking-tight text-white">
+                  Crea tu plan inteligente
+                  <UserPlus size={21} className="shrink-0 text-[#86efac]" />
+                </h1>
+              </div>
+            </div>
+
+            <p className="mb-3 text-sm leading-5 text-white/60 text-center">
+              Empieza con objetivos claros, análisis visual y progreso guiado por IA.
+            </p>
+
+            {error && (
+              <StatusBox type="error" className="mb-4 p-3 text-xs leading-5">
+                {error}
+              </StatusBox>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-2.5">
+              <Input
+                label="Nombre"
+                name="nombre"
+                value={form.nombre}
+                onChange={handleChange}
+                placeholder="Ej. Alexis Rodríguez"
+                icon={<User size={16} />}
+              />
+
+              <Input
+                label="Correo"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="tu@email.com"
+                icon={<Mail size={16} />}
+              />
+
+              <Input
+                label="Contraseña"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Mínimo 6 caracteres"
+                icon={<Lock size={16} />}
+              />
+
+              <PrimaryButton
+                disabled={loading}
+                icon={!loading && <ArrowRight size={16} />}
+                type="submit"
+                className="mt-1 py-3"
+              >
+                {loading ? "Creando cuenta..." : "Crear cuenta"}
+              </PrimaryButton>
+            </form>
+
+            <div className="mt-3 rounded-[22px] border border-white/10 bg-black/20 p-2.5 text-center">
+              <p className="text-sm text-white/52">
+                ¿Ya tienes cuenta?{" "}
+                <Link
+                  to="/login"
+                  className="font-black text-[#86efac] transition hover:text-white"
+                >
+                  Iniciar sesión
+                </Link>
+              </p>
+            </div>
+          </div>
+        </SurfaceCard>
+         <div className="pt-2">   <ActiveCore /></div>
+          <div className="pt-2"> 
+<PlanPreview /> </div>
+        <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-white/38">
+          Privacidad segura · Datos protegidos · IA nutricional
+        </p>
       </div>
-    </main>
+   
+    </AppShell>
   );
 }
 
 function Input({ label, icon, ...props }) {
   return (
-    <div>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
+    <FormField label={label} icon={icon}>
+      <input
+        {...props}
+        className="h-11 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/24 focus:border-[#10b981]/55"
+      />
+    </FormField>
+  );
+}
+
+function ActiveCore() {
+  return (
+    <SurfaceCard className="relative overflow-hidden p-2.5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,#22d3ee22,transparent_32%),radial-gradient(circle_at_82%_20%,#10b98124,transparent_36%)]" />
+      <div className="absolute left-0 top-1/2 h-px w-full bg-gradient-to-r from-transparent via-[#10b981]/25 to-transparent" />
+
+      <div className="relative z-10 flex items-center gap-3">
+        <div className="relative grid h-16 w-16 shrink-0 place-items-center">
+          <div className="absolute inset-0 rounded-full bg-[#10b981]/15 blur-xl" />
+          <div className="absolute inset-0 animate-[spin_3.6s_linear_infinite] rounded-full border border-[#10b981]/20 border-t-[#10b981]" />
+          <div className="absolute inset-[8px] animate-[spin_5s_linear_infinite_reverse] rounded-full border border-cyan-300/10 border-b-cyan-300/45" />
+          <div className="absolute inset-[18px] rounded-full border border-white/10 bg-black/35 backdrop-blur-xl" />
+          <div className="relative h-5 w-5 rounded-full bg-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.8)]" />
+          <span className="absolute left-3 top-4 h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_12px_#67e8f9]" />
+          <span className="absolute bottom-4 right-3 h-1.5 w-1.5 animate-pulse rounded-full bg-[#86efac] shadow-[0_0_12px_#86efac]" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex items-center gap-2">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_12px_#10b981]" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#86efac]">
+              AI ACTIVE
+            </p>
+          </div>
+
+          <p className="text-sm font-black uppercase italic leading-5 text-white">
+            Tu nutrición empieza en modo inteligente
+          </p>
+
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            <CoreHighlight icon={<Target size={12} />} label="objetivos claros" />
+            <CoreHighlight icon={<ScanLine size={12} />} label="análisis visual" />
+            <CoreHighlight icon={<Activity size={12} />} label="progreso guiado" />
+          </div>
+        </div>
+      </div>
+    </SurfaceCard>
+  );
+}
+
+function PlanPreview() {
+  return (
+    <SurfaceCard variant="soft" radius="md" className="relative overflow-hidden p-2.5">
+      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[#10b981]/12 blur-2xl" />
+
+      <div className="relative z-10">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#86efac]">
+              Tu primer plan
+            </p>
+            <p className="mt-0.5 text-sm font-bold text-white/58">
+              Base creada por IA
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-right">
+            <p className="text-sm font-black uppercase italic leading-none text-white">
+              Smart
+            </p>
+            <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-cyan-200">
+              setup
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5">
+          <PlanStep icon={<Target size={12} />} label="Objetivo definido" active />
+          <PlanStep icon={<ScanLine size={12} />} label="Dieta inteligente" />
+          <PlanStep icon={<Activity size={12} />} label="Progreso guiado" />
+        </div>
+      </div>
+    </SurfaceCard>
+  );
+}
+
+function PlanStep({ active = false, icon, label }) {
+  return (
+    <div
+      className={`rounded-2xl border px-2 py-2 text-center ${
+        active
+          ? "border-[#10b981]/25 bg-[#10b981]/10"
+          : "border-white/10 bg-black/20"
+      }`}
+    >
+      <div className="mx-auto mb-1 flex justify-center text-[#86efac]">
+        {icon}
+      </div>
+      <p className="text-[10px] font-black uppercase leading-3 text-white/55">
         {label}
       </p>
-
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
-        <span className="text-emerald-300">{icon}</span>
-
-        <input
-          {...props}
-          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5">
+        <div
+          className={`h-full rounded-full ${
+            active ? "w-full bg-[#10b981]" : "w-2/3 bg-gradient-to-r from-[#10b981] to-cyan-300"
+          }`}
         />
       </div>
+    </div>
+  );
+}
+
+function CoreHighlight({ icon, label }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-1.5 text-center">
+      <div className="mx-auto mb-1 flex justify-center text-[#86efac]">
+        {icon}
+      </div>
+      <p className="text-[10px] font-black uppercase leading-3 text-white/55">
+        {label}
+      </p>
     </div>
   );
 }

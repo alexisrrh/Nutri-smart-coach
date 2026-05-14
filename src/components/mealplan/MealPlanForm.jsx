@@ -64,7 +64,7 @@ export function MealPlanForm({
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
               Smart Diet Builder
             </p>
 
@@ -218,7 +218,7 @@ export function MealPlanForm({
 function SelectField({ icon, label, name, value, onChange, children }) {
   return (
     <label className="block min-w-0">
-      <div className="mb-1 flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
@@ -238,7 +238,7 @@ function SelectField({ icon, label, name, value, onChange, children }) {
 function TextField({ icon, label, name, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <div className="mb-1 flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         {label}
       </div>
@@ -258,7 +258,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
 function TextAreaField({ icon, label, name, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <div className="mb-1 flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         {label}
       </div>
@@ -278,11 +278,11 @@ function TextAreaField({ icon, label, name, value, onChange, placeholder }) {
 function SummaryPill({ label, value }) {
   return (
     <div className="min-w-0 rounded-2xl border border-white/10 bg-black/20 px-2 py-2">
-      <p className="text-[7px] font-black uppercase tracking-[0.15em] text-slate-500">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </p>
 
-      <p className="mt-0.5 truncate text-[9px] font-black uppercase text-white">
+      <p className="mt-0.5 truncate text-[10px] font-black uppercase text-white">
         {value}
       </p>
     </div>

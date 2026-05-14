@@ -75,7 +75,7 @@ export function DietSummary({ plan = [], getWeekTotals }) {
       <div className="relative z-10">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
               Resumen nutricional
             </p>
 
@@ -91,7 +91,7 @@ export function DietSummary({ plan = [], getWeekTotals }) {
           <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10 text-center">
             <div>
               <p className="text-lg font-black text-[#10b981]">{mealsCount}</p>
-              <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
+              <p className="text-[10px] font-black uppercase tracking-wide text-white/45">
                 comidas
               </p>
             </div>
@@ -134,12 +134,12 @@ export function DietSummary({ plan = [], getWeekTotals }) {
 
         <div className="mt-3 rounded-[24px] border border-white/10 bg-black/20 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-500">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
               <Activity size={12} className="text-[#10b981]" />
               Distribución macros
             </div>
 
-            <div className="flex gap-2 text-[8px] font-black uppercase text-slate-500">
+            <div className="flex gap-2 text-[10px] font-black uppercase text-slate-500">
               <span>P {percentages.protein}%</span>
               <span>C {percentages.carbs}%</span>
               <span>G {percentages.fat}%</span>
@@ -174,12 +174,12 @@ function SummaryCard({ icon, title, value, unit, detail }) {
           {icon}
         </div>
 
-        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+        <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">
           {unit}
         </span>
       </div>
 
-      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {title}
       </p>
 

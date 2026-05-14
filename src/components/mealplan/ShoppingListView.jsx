@@ -119,7 +119,7 @@ export function ShoppingListView({ plan }) {
                 {progress}%
               </p>
 
-              <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
+              <p className="text-[10px] font-black uppercase tracking-wide text-white/45">
                 listo
               </p>
             </div>
