@@ -14,9 +14,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
 import BottomNav from "../components/BottomNav";
+import {
+  createProgressLog,
+  listProgressLogs,
+} from "../services/progressService";
 
 export function Progress() {
   const navigate = useNavigate();
@@ -35,13 +38,9 @@ export function Progress() {
 
     setLoadingLogs(true);
 
-    const { data, error } = await supabase
-      .from("progress_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    const progressLogs = await listProgressLogs(userId);
 
-    if (!error) setLogs(data || []);
+    setLogs(progressLogs);
 
     setLoadingLogs(false);
   }, [userId]);
@@ -59,21 +58,23 @@ export function Progress() {
     setLoading(true);
     setSaved(false);
 
-    const { error } = await supabase.from("progress_logs").insert({
-      user_id: user.id,
-      peso: Number(peso),
-      nota,
-    });
+    try {
+      await createProgressLog({
+        userId: user.id,
+        weight: peso,
+        note: nota,
+      });
 
-    setLoading(false);
-
-    if (!error) {
       setPeso("");
       setNota("");
       setSaved(true);
       getLogs();
 
       setTimeout(() => setSaved(false), 1800);
+    } catch (error) {
+      console.error("Error guardando progreso:", error);
+    } finally {
+      setLoading(false);
     }
   }
 

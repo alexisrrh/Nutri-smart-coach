@@ -114,6 +114,32 @@ export function normalizeCheckin(data) {
   };
 }
 
+export function normalizeProgressLog(data) {
+  if (!data) return null;
+
+  const weight = toNumberOrNull(data.weight ?? data.peso);
+  const note = data.note || data.notes || data.nota || "";
+  const createdAt = data.created_at || data.createdAt || null;
+
+  return {
+    ...data,
+    id: data.id || null,
+    user_id: data.user_id || null,
+    weight,
+    peso: weight,
+    note,
+    nota: note,
+    created_at: createdAt,
+    createdAt,
+  };
+}
+
+export function normalizeProgressLogs(list) {
+  if (!Array.isArray(list)) return [];
+
+  return list.map(normalizeProgressLog).filter(Boolean);
+}
+
 function normalizeGoal(goal) {
   if (goal === "bajar") return "perder_grasa";
   if (goal === "subir") return "ganar_musculo";
