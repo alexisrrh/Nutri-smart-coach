@@ -18,17 +18,17 @@ export function CheckInHero({
       <div className="relative z-10">
         <div className="mb-3 inline-flex items-center gap-2 rounded-2xl border border-[#10b981]/25 bg-[#0d2218] px-3 py-1.5 text-[9px] font-black uppercase tracking-wide text-[#10b981]">
           <Sparkles size={12} />
-          Weekly Body Check
+          Check-in físico con foto
         </div>
 
         <h1 className="text-3xl font-black uppercase italic leading-[0.9] tracking-tight sm:text-5xl">
-          Controla tu
+          Revisa tu
           <br />
-          <span className="text-[#10b981]">progreso</span>
+          <span className="text-[#10b981]">físico</span>
         </h1>
 
         <p className="mt-3 text-xs leading-5 text-slate-400">
-          Sube una foto semanal, registra tu peso y guarda tu evolución real.
+          Sube una foto semanal y registra medidas para comparar cambios visuales.
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2">

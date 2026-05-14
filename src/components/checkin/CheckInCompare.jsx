@@ -29,7 +29,7 @@ export function CheckInCompare({ history = [] }) {
           </p>
 
           <p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-slate-400">
-            Necesitas al menos 2 check-ins con foto para comparar tu progreso.
+            Necesitas al menos 2 check-ins con foto para comparar cambios físicos.
           </p>
         </div>
       </section>

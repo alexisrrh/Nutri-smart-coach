@@ -54,7 +54,7 @@ export function CheckIn() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      setError("Necesitas iniciar sesión para guardar tu progreso.");
+      setError("Necesitas iniciar sesión para guardar tu check-in físico.");
       setLoadingHistory(false);
       return;
     }

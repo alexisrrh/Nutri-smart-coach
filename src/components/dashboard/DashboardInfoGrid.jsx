@@ -47,7 +47,7 @@ export default function DashboardInfoGrid({
               ? `${formatDate(lastCheckin.created_at)} · ${
                   lastCheckin.body_fat_range || "sin estimación de grasa"
                 }`
-              : "Registra peso, foto y progreso para comparar tu evolución."
+              : "Registra una foto para comparar tu check-in físico."
           }
           badge={hasCheckin ? "Actualizado" : "Pendiente"}
           active={hasCheckin}
@@ -74,7 +74,7 @@ export default function DashboardInfoGrid({
           >
             <CalendarCheck size={18} className="text-emerald-300" />
             <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-white">
-              Progreso
+              Peso y medidas
             </p>
             <p className="mt-1 text-[11px] text-white/40">
               Ver evolución

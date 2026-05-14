@@ -16,7 +16,7 @@ export default function DashboardActions({ navigate }) {
           </p>
 
           <h2 className="mt-0.5 text-lg font-black italic leading-none text-white">
-            Continúa tu progreso
+            Continúa tu plan
           </h2>
         </div>
 
@@ -38,8 +38,8 @@ export default function DashboardActions({ navigate }) {
         <ActionCard
           icon="/icons/bodyscan-icon.png"
           fallbackIcon={UserRoundSearch}
-          label="Body scan"
-          description="Check-in físico"
+          label="Check-in foto"
+          description="Físico con foto"
           badge="BODY"
           onClick={() => navigate("/checkin")}
         />
@@ -57,7 +57,7 @@ export default function DashboardActions({ navigate }) {
           icon="/icons/progreso-icon.png"
           fallbackIcon={ChartNoAxesColumnIncreasing}
           label="Progreso"
-          description="Peso y evolución"
+          description="Peso y medidas"
           badge="TRACK"
           onClick={() => navigate("/progreso")}
         />
