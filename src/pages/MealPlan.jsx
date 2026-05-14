@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AlertTriangle,
-  CheckCircle2,
   Download,
   RefreshCcw,
   Share2,
@@ -10,7 +8,6 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
@@ -27,6 +24,14 @@ import {
   listDietPlans,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
+import {
+  AppShell,
+  MetaBadge,
+  PageHeaderCard,
+  SecondaryButton,
+  StatusBox,
+  SurfaceCard,
+} from "../components/ui";
 
 
 
@@ -214,47 +219,46 @@ export function MealPlan() {
   }
 
   return (
-    <section className="relative min-h-screen overflow-x-hidden bg-[#06110c] pb-32 text-white">
+    <>
       <PrintablePlan plan={plan} />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_35%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:34px_34px]" />
-      <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-[#10b981]/20 blur-[120px]" />
-
-      <main className="relative z-10 mx-auto max-w-md space-y-3 px-3 pt-3 lg:max-w-[520px]">
-        <DietHeroCard
-          hasPlan={hasPlan}
-          completionPercent={completionPercent}
-          completedMeals={completedMeals}
-          totalMeals={totalMeals}
-          handleResetPlan={handleResetPlan}
-          formData={formData}
-        />
-
-        {!profileComplete && (
-          <StatusBox
-            type="error"
-            message="Completa tu perfil para generar una dieta precisa."
-            action={() => navigate("/perfil")}
+      <AppShell contentClassName="!max-w-[520px] px-3">
+        <div className="space-y-3">
+          <DietHeroCard
+            hasPlan={hasPlan}
+            completionPercent={completionPercent}
+            completedMeals={completedMeals}
+            totalMeals={totalMeals}
+            handleResetPlan={handleResetPlan}
+            formData={formData}
           />
-        )}
 
-        {errorMessage && <StatusBox type="error" message={errorMessage} />}
-        {notice && !errorMessage && <StatusBox type="success" message={notice} />}
+          {!profileComplete && (
+            <StatusBox
+              type="error"
+              action={() => navigate("/perfil")}
+              actionLabel="Completar perfil"
+            >
+              Completa tu perfil para generar una dieta precisa.
+            </StatusBox>
+          )}
 
-        <MealPlanForm
-          formData={formData}
-          setFormData={setFormData}
-          loading={loading}
-          handleSubmit={handleSubmit}
-          DIET_TYPES={DIET_TYPES}
-          GOAL_TYPES={GOAL_TYPES}
-          BUDGET_TYPES={BUDGET_TYPES}
-          PLAN_DAYS={PLAN_DAYS}
-          MEALS_PER_DAY={MEALS_PER_DAY}
-        />
+          {errorMessage && <StatusBox type="error">{errorMessage}</StatusBox>}
+          {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
-        <section className="overflow-hidden rounded-[34px] border border-white/10 bg-[#07170f] shadow-[0_30px_120px_rgba(16,185,129,0.08)]">
+          <MealPlanForm
+            formData={formData}
+            setFormData={setFormData}
+            loading={loading}
+            handleSubmit={handleSubmit}
+            DIET_TYPES={DIET_TYPES}
+            GOAL_TYPES={GOAL_TYPES}
+            BUDGET_TYPES={BUDGET_TYPES}
+            PLAN_DAYS={PLAN_DAYS}
+            MEALS_PER_DAY={MEALS_PER_DAY}
+          />
+
+          <SurfaceCard className="overflow-hidden p-0" radius="xl">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 p-3">
             <div>
               <div className="flex items-center gap-2">
@@ -319,11 +323,10 @@ export function MealPlan() {
               </div>
             )}
           </div>
-        </section>
-      </main>
-
-      <BottomNav />
-    </section>
+          </SurfaceCard>
+        </div>
+      </AppShell>
+    </>
   );
 }
 
@@ -336,39 +339,23 @@ function DietHeroCard({
   formData,
 }) {
   return (
-    <header className="relative overflow-hidden rounded-[34px] border border-[#10b981]/20 bg-[#07170f] p-5 shadow-[0_30px_120px_rgba(16,185,129,0.12)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98124,transparent_42%)]" />
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#10b981]/20 blur-3xl" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:30px_30px]" />
-
-      <div className="relative z-10">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_14px_#10b981]" />
-            <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
-              Smart Diet IA
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleResetPlan}
-            disabled={!hasPlan}
-            className="inline-flex items-center gap-1 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-[#10b981] disabled:opacity-30"
-          >
-            <RefreshCcw size={11} />
-            {hasPlan ? "Nueva" : "Crear"}
-          </button>
-        </div>
-
-        <h1 className="text-[34px] font-black uppercase italic leading-none">
-          Dieta
-          <span className="block text-[#10b981]">personalizada</span>
-        </h1>
-
-        <p className="mt-3 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
-          Plan inteligente por objetivo, días, comidas, presupuesto y alimentos disponibles.
-        </p>
+    <PageHeaderCard
+      badge="Smart Diet IA"
+      badgeIcon={<Sparkles size={14} />}
+      icon={<Sparkles size={18} />}
+      title="Dieta personalizada"
+      description="Plan inteligente por objetivo, días, comidas, presupuesto y alimentos disponibles."
+    >
+      <div className="mt-4">
+        <SecondaryButton
+          type="button"
+          onClick={handleResetPlan}
+          disabled={!hasPlan}
+          icon={<RefreshCcw size={14} />}
+          className="w-full"
+        >
+          {hasPlan ? "Nueva dieta" : "Crear dieta"}
+        </SecondaryButton>
 
         <div className="mt-5 grid grid-cols-3 gap-2">
           <HeroMini label="Días" value={formData?.planDays || "7"} />
@@ -380,11 +367,9 @@ function DietHeroCard({
         </div>
 
         {hasPlan && (
-          <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-3">
+          <SurfaceCard variant="soft" radius="md" className="mt-4 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                Progreso semanal
-              </p>
+              <MetaBadge variant="neutral">Progreso semanal</MetaBadge>
 
               <p className="text-sm font-black text-[#10b981]">
                 {completionPercent}%
@@ -401,86 +386,48 @@ function DietHeroCard({
             <p className="mt-2 text-[10px] normal-case text-slate-500">
               {completedMeals}/{totalMeals} comidas completadas
             </p>
-          </div>
+          </SurfaceCard>
         )}
       </div>
-    </header>
+    </PageHeaderCard>
   );
 }
 
 function HeroMini({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5">
-      <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+    <SurfaceCard variant="soft" radius="sm" className="p-2.5">
+      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white/45">
         {label}
       </p>
 
       <p className="mt-1 text-xs font-black uppercase text-white">
         {value}
       </p>
-    </div>
+    </SurfaceCard>
   );
 }
 
 function ActionButton({ icon, label, onClick, active = false, disabled = false }) {
   return (
-    <button
+    <SecondaryButton
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-2xl border px-2.5 py-2 text-[8px] font-black uppercase tracking-wide transition active:scale-[0.97] disabled:opacity-30 ${
+      icon={icon}
+      className={`w-auto px-2.5 py-2 text-[10px] tracking-wide disabled:opacity-30 ${
         active
-          ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
+          ? "border-[#10b981] bg-[#10b981] text-[#06110c] hover:bg-[#10b981] hover:text-[#06110c]"
           : "border-white/10 bg-white/[0.04] text-slate-300"
       }`}
     >
-      <span className="flex items-center gap-1">
-        {icon}
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function StatusBox({ type, message, action }) {
-  const isError = type === "error";
-
-  return (
-    <div
-      className={`rounded-[26px] border p-3 text-[11px] font-bold normal-case leading-5 ${
-        isError
-          ? "border-amber-400/20 bg-amber-500/10 text-amber-100"
-          : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-100"
-      }`}
-    >
-      <div className="flex items-start gap-2">
-        {isError ? (
-          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-        ) : (
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-        )}
-
-        <div>
-          <p>{message}</p>
-
-          {action && (
-            <button
-              type="button"
-              onClick={action}
-              className="mt-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]"
-            >
-              Completar perfil
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+      {label}
+    </SecondaryButton>
   );
 }
 
 function EmptyPlan() {
   return (
-    <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
+    <SurfaceCard variant="soft" radius="lg" className="border-dashed p-6 text-center">
       <Sparkles className="mx-auto mb-3 text-[#10b981]" size={30} />
 
       <p className="text-sm font-black uppercase">
@@ -490,7 +437,7 @@ function EmptyPlan() {
       <p className="mx-auto mt-2 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
         Elige objetivo, días, comidas y preferencias para crear tu dieta.
       </p>
-    </div>
+    </SurfaceCard>
   );
 }
 
