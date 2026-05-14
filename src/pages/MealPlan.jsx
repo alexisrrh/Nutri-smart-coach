@@ -10,17 +10,24 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
-import { API_URL } from "../config/api";
 import BottomNav from "../components/BottomNav";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
 import { ShoppingListView } from "../components/mealplan/ShoppingListView";
 import { PrintablePlan } from "../components/mealplan/PrintablePlan";
+import {
+  cacheDietProgress,
+  clearDietPlanCache,
+  clearDietProgress,
+  generateDietPlan,
+  getCachedDietPlan,
+  getDietPlanWeek,
+  getDietProgress,
+  listDietPlans,
+} from "../services/dietService";
 
 const PROFILE_KEY = "nutricoach_profile";
-const PLAN_KEY = "smart_diet_plan";
-const PROGRESS_KEY = "smart_diet_progress";
 
 
 
@@ -67,13 +74,9 @@ export function MealPlan() {
   const [formData, setFormData] = useState(createInitialFormData);
 
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState(() =>
-    normalizePlan(safeParse(localStorage.getItem(PLAN_KEY), []))
-  );
+  const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
   const [activeDay, setActiveDay] = useState(0);
-  const [progress, setProgress] = useState(() =>
-    safeParse(localStorage.getItem(PROGRESS_KEY), {})
-  );
+  const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
   const [profile] = useState(() =>
     safeParse(localStorage.getItem(PROFILE_KEY), null)
@@ -97,6 +100,26 @@ export function MealPlan() {
 
   const completionPercent =
     totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0;
+
+  useEffect(() => {
+    const userId = profile?.id || profile?.user_id;
+
+    if (!userId) return;
+
+    Promise.resolve().then(async () => {
+      try {
+        const dietPlans = await listDietPlans(userId);
+        const activePlan = dietPlans[0];
+
+        if (activePlan) {
+          setPlan(getDietPlanWeek(activePlan));
+          setActiveDay(0);
+        }
+      } catch (error) {
+        console.error("Error cargando dietas:", error);
+      }
+    });
+  }, [profile]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -124,23 +147,13 @@ export function MealPlan() {
         exclusions: formData.exclusions || "",
       };
 
-      const response = await fetch(`${API_URL}/generate-diet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile: savedProfile,
-          preferences: payloadPreferences,
-          user_id: savedProfile?.id || savedProfile?.user_id || "",
-        }),
+      const data = await generateDietPlan({
+        profile: savedProfile,
+        preferences: payloadPreferences,
+        userId: savedProfile?.id || savedProfile?.user_id || "",
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.detail || "Error generando dieta.");
-      }
-
-      const cleanPlan = normalizePlan(data.week || []);
+      const cleanPlan = data.week || [];
 
       if (!cleanPlan.length) {
         throw new Error("No se pudo generar una dieta válida.");
@@ -150,8 +163,7 @@ export function MealPlan() {
       setProgress({});
       setActiveDay(0);
 
-      localStorage.setItem(PLAN_KEY, JSON.stringify(cleanPlan));
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
+      cacheDietProgress({});
 
       setNotice(
         data.usedFallback
@@ -174,14 +186,14 @@ export function MealPlan() {
     setNotice("");
     setErrorMessage("");
 
-    localStorage.removeItem(PLAN_KEY);
-    localStorage.removeItem(PROGRESS_KEY);
+    clearDietPlanCache();
+    clearDietProgress();
   }
 
   function toggleMeal(mealId) {
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(updated));
+      cacheDietProgress(updated);
       return updated;
     });
   }
@@ -613,35 +625,6 @@ function GeneratingDietLoader({ formData }) {
   );
 }
 
-function normalizePlan(weekArray) {
-  if (!Array.isArray(weekArray)) return [];
-
-  return weekArray.map((day, dayIndex) => {
-    const mealsArray = Array.isArray(day?.meals)
-      ? day.meals
-      : Object.values(day?.meals || {});
-
-    return {
-      day: day?.day || `Día ${dayIndex + 1}`,
-      meals: mealsArray.map((meal, index) => ({
-        id: meal?.id || `${day?.day || dayIndex}-${index}`,
-        time: meal?.time || defaultMealTime(index, mealsArray.length),
-        name: meal?.name || defaultMealName(index, mealsArray.length),
-        food: meal?.food || meal?.title || "Comida",
-        title: meal?.food || meal?.title || "Comida",
-        details: meal?.details || "",
-        ingredients: meal?.details
-          ? meal.details.split(",").map((item) => item.trim()).filter(Boolean)
-          : [],
-        calories: Number(meal?.calories || meal?.kcal || 0),
-        protein: Number(meal?.protein || 0),
-        carbs: Number(meal?.carbs || 0),
-        fat: Number(meal?.fat || 0),
-      })),
-    };
-  });
-}
-
 function getWeekTotals(plan) {
   return (plan || []).reduce(
     (totals, day) => {
@@ -692,24 +675,6 @@ function createInitialFormData() {
     homeFoods: "",
     exclusions: "",
   };
-}
-
-function defaultMealTime(index, total = 4) {
-  if (total === 2) return ["13:00", "20:00"][index] || "13:00";
-  if (total === 3) return ["08:30", "14:00", "20:30"][index] || "08:30";
-  if (total === 5) return ["08:00", "11:30", "14:30", "18:00", "21:00"][index] || "08:00";
-  if (total >= 6) return ["08:00", "10:30", "13:30", "16:30", "19:30", "22:00"][index] || "08:00";
-
-  return ["08:00", "13:30", "17:30", "21:00"][index] || "08:00";
-}
-
-function defaultMealName(index, total = 4) {
-  if (total === 2) return ["Comida 1", "Comida 2"][index] || `Comida ${index + 1}`;
-  if (total === 3) return ["Desayuno", "Comida", "Cena"][index] || `Comida ${index + 1}`;
-  if (total === 5) return ["Desayuno", "Snack", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
-  if (total >= 6) return ["Desayuno", "Snack 1", "Comida", "Snack 2", "Cena", "Extra"][index] || `Comida ${index + 1}`;
-
-  return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
 }
 
 function safeParse(value, fallback) {
