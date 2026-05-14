@@ -24,14 +24,7 @@ import {
   listDietPlans,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
-import {
-  AppShell,
-  SecondaryButton,
-  StatusBox,
-  SurfaceCard,
-} from "../components/ui";
-
-
+import { AppShell, SecondaryButton, StatusBox, SurfaceCard } from "../components/ui";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -74,7 +67,6 @@ export function MealPlan() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState(createInitialFormData);
-
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
   const [activeDay, setActiveDay] = useState(0);
@@ -86,7 +78,9 @@ export function MealPlan() {
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
   const hasPlan = plan.length > 0;
-  const safeActiveDay = hasPlan ? Math.max(0, Math.min(activeDay, plan.length - 1)) : 0;
+  const safeActiveDay = hasPlan
+    ? Math.max(0, Math.min(activeDay, plan.length - 1))
+    : 0;
 
   const completedMeals = useMemo(
     () => Object.values(progress).filter(Boolean).length,
@@ -103,7 +97,6 @@ export function MealPlan() {
 
   useEffect(() => {
     const userId = profile?.id || profile?.user_id;
-
     if (!userId) return;
 
     Promise.resolve().then(async () => {
@@ -162,7 +155,6 @@ export function MealPlan() {
       setPlan(cleanPlan);
       setProgress({});
       setActiveDay(0);
-
       cacheDietProgress({});
 
       setNotice(
@@ -185,7 +177,6 @@ export function MealPlan() {
     setShowShopping(false);
     setNotice("");
     setErrorMessage("");
-
     clearDietPlanCache();
     clearDietProgress();
   }
@@ -247,7 +238,7 @@ export function MealPlan() {
           {errorMessage && <StatusBox type="error">{errorMessage}</StatusBox>}
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
-          {(!hasPlan || loading) && (
+          {!hasPlan && !loading && (
             <div className="min-h-0 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <MealPlanForm
                 formData={formData}
@@ -263,7 +254,10 @@ export function MealPlan() {
             </div>
           )}
 
-          <SurfaceCard className="flex min-h-0 flex-1 flex-col overflow-hidden p-0" radius="lg">
+          <SurfaceCard
+            className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-2"
+            radius="lg"
+          >
             <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2.5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -277,6 +271,8 @@ export function MealPlan() {
                   <p className="mt-1 truncate text-[10px] normal-case text-slate-500">
                     {hasPlan
                       ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
+                      : loading
+                      ? "La IA está creando tu plan personalizado."
                       : "Tu dieta aparecerá aquí."}
                   </p>
                 </div>
@@ -323,7 +319,7 @@ export function MealPlan() {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2.5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {loading && <GeneratingDietLoader formData={formData} />}
 
               {!loading && !hasPlan && <EmptyPlan />}
@@ -426,9 +422,7 @@ function EmptyPlan() {
         <Sparkles size={20} />
       </div>
 
-      <p className="text-sm font-black uppercase">
-        Tu dieta aparecerá aquí
-      </p>
+      <p className="text-sm font-black uppercase">Tu dieta aparecerá aquí</p>
 
       <p className="mx-auto mt-1.5 max-w-xs text-xs normal-case leading-4 text-slate-400">
         Configura tus preferencias y genera un plan inteligente.
@@ -469,96 +463,72 @@ function GeneratingDietLoader({ formData }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-[26px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-[0_30px_90px_rgba(16,185,129,0.12)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98126,transparent_42%)]" />
-      <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#10b981]/20 blur-3xl" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:30px_30px]" />
+    <div className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#07170f]/95 p-3 shadow-[0_18px_50px_rgba(16,185,129,0.10)]">
+      <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#10b981]/16 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98118,transparent_45%)]" />
 
       <div className="relative z-10">
-        <div className="mb-3 overflow-hidden rounded-[24px] border border-white/10 bg-black/25 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
-                Smart Diet IA
-              </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+              Smart Diet IA
+            </p>
 
-              <h3 className="mt-1 text-xl font-black uppercase italic leading-none">
-                Creando tu dieta
-              </h3>
+            <h3 className="mt-1 text-lg font-black uppercase italic leading-none text-white">
+              Creando tu dieta
+            </h3>
 
-              <p className="mt-1.5 text-xs normal-case leading-4 text-slate-400">
-                {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
-                {Number(formData?.mealsPerDay) === 2 ? "ayuno intermitente" : "plan personalizado"}
-              </p>
-            </div>
-
-            <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-[22px] border border-[#10b981]/25 bg-[#10b981]/10">
-              <div className="absolute inset-1 animate-spin rounded-[18px] border-2 border-transparent border-t-[#10b981]" />
-              <div className="absolute inset-4 animate-pulse rounded-2xl bg-[#10b981]/10" />
-
-              <span className="relative text-lg font-black text-[#10b981]">
-                {percent}%
-              </span>
-            </div>
+            <p className="mt-1 text-xs leading-4 text-slate-400">
+              {formData?.planDays} días · {formData?.mealsPerDay} comidas/día
+            </p>
           </div>
 
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full bg-[#10b981] transition-all duration-500"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-
-          <div className="mt-3 flex items-center justify-between text-[10px] font-bold normal-case text-slate-500">
-            <span className="inline-flex items-center gap-1">
-              <Timer size={12} />
-              {seconds}s
-            </span>
-
-            <span className="text-[#10b981]">
-              {percent < 96 ? "Procesando..." : "Finalizando..."}
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/25 bg-[#10b981]/10 shadow-[0_0_22px_rgba(16,185,129,0.12)]">
+            <span className="text-base font-black text-[#10b981]">
+              {percent}%
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_14px_rgba(16,185,129,0.45)] transition-all duration-500"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {steps.map((step, index) => {
             const completed = index < activeStep;
             const active = index === activeStep;
 
             return (
-              <div
+              <span
                 key={step}
-                className={`rounded-2xl border px-1 py-2 text-center ${
+                className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide transition ${
                   completed
-                    ? "border-[#10b981]/25 bg-[#10b981]/10"
+                    ? "bg-[#10b981] text-[#06110c]"
                     : active
-                    ? "border-[#10b981]/40 bg-[#10b981]/5"
-                    : "border-white/5 bg-black/10"
+                    ? "border border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
+                    : "border border-white/8 bg-white/[0.035] text-white/35"
                 }`}
               >
-                <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${
-                    completed
-                      ? "bg-[#10b981] text-[#06110c]"
-                      : active
-                      ? "animate-pulse border border-[#10b981] text-[#10b981]"
-                      : "border border-white/10 text-slate-600"
-                  }`}
-                >
-                  {completed ? "✓" : index + 1}
-                </div>
-
-                <p
-                  className={`truncate text-[10px] font-black uppercase tracking-tight ${
-                    completed || active ? "text-white" : "text-slate-600"
-                  }`}
-                >
-                  {step}
-                </p>
-              </div>
+                {completed ? "✓ " : ""}
+                {step}
+              </span>
             );
           })}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-slate-500">
+          <span className="inline-flex items-center gap-1">
+            <Timer size={12} />
+            {seconds}s
+          </span>
+
+          <span className="text-[#10b981]">
+            {percent < 96 ? "Procesando..." : "Finalizando..."}
+          </span>
         </div>
       </div>
     </div>
