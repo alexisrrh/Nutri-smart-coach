@@ -68,7 +68,7 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
+      <div className="rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 text-center">
         <ShoppingBag
           className="mx-auto mb-3 text-[#10b981]"
           size={30}
@@ -93,29 +93,29 @@ export function ShoppingListView({ plan }) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[32px] border border-[#10b981]/15 bg-[#07170f] p-4 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[#10b981]/15 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/15 bg-[#07170f] p-2.5 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
+      <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[#10b981]/15 blur-3xl" />
 
       <div className="relative z-10">
-        <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+        <header className="mb-2 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
               <ShoppingBag size={14} />
               Compra semanal
             </div>
 
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-white">
               Lista inteligente
             </h3>
 
-            <p className="mt-1 text-[11px] normal-case text-slate-500">
+            <p className="mt-1 text-xs normal-case text-slate-500">
               {checkedCount}/{totalItems} productos comprados
             </p>
           </div>
 
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10">
             <div className="text-center">
-              <p className="text-lg font-black text-[#10b981]">
+              <p className="text-base font-black text-[#10b981]">
                 {progress}%
               </p>
 
@@ -126,20 +126,20 @@ export function ShoppingListView({ plan }) {
           </div>
         </header>
 
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/5">
+        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mb-2 flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((category) => (
             <button
               key={category.key}
               type="button"
               onClick={() => setActiveCategory(category.key)}
-              className={`flex shrink-0 items-center gap-2 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-2xl border px-2.5 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
                 activeCategory === category.key
                   ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                   : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"
@@ -165,7 +165,7 @@ export function ShoppingListView({ plan }) {
                 key={item.id}
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                className={`group relative overflow-hidden rounded-[24px] border p-3 text-left transition-all ${
+                className={`group relative overflow-hidden rounded-[20px] border p-2.5 text-left transition-all ${
                   isChecked
                     ? "border-[#10b981]/25 bg-[#10b981]/5 opacity-70"
                     : "border-white/10 bg-black/20 hover:border-[#10b981]/20 hover:bg-black/30"
@@ -184,7 +184,7 @@ export function ShoppingListView({ plan }) {
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`truncate text-[11px] font-black uppercase tracking-wide ${
+                      className={`truncate text-[10px] font-black uppercase tracking-wide ${
                         isChecked
                           ? "text-slate-500 line-through"
                           : "text-white"
@@ -193,7 +193,7 @@ export function ShoppingListView({ plan }) {
                       {item.name}
                     </p>
 
-                    <p className="mt-1 text-[11px] font-bold normal-case text-[#10b981]">
+                    <p className="mt-0.5 text-xs font-bold normal-case text-[#10b981]">
                       {item.amount}
                     </p>
                   </div>
