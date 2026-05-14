@@ -16,12 +16,9 @@ import {
   getWeightDiff,
   safeParse,
 } from "../components/checkin/checkinUtils";
+import { createCheckin, listCheckins } from "../services/checkinService";
 
 const PROFILE_KEY = "nutricoach_profile";
-
-const API_URL =
-  import.meta.env.VITE_API_URL?.trim() ||
-  "https://nutricoach-backend-frlc.onrender.com";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -66,20 +63,9 @@ export function CheckIn() {
 
     setUser(user);
 
-    const { data, error } = await supabase
-      .from("checkins")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    const checkins = await listCheckins(user.id);
 
-    if (error) {
-      console.error("Error cargando checkins:", error);
-      setError("No se pudo cargar tu historial de progreso.");
-      setLoadingHistory(false);
-      return;
-    }
-
-    setHistory(data || []);
+    setHistory(checkins);
     setLoadingHistory(false);
   }, []);
 
@@ -142,30 +128,17 @@ export function CheckIn() {
     try {
       setLoading(true);
 
-      const formData = new FormData();
-
-      formData.append("user_id", user.id);
-      formData.append("image", file);
-      formData.append("weight", form.weight);
-      formData.append("waist", form.waist);
-      formData.append("chest", form.chest);
-      formData.append("hips", form.hips);
-      formData.append("notes", form.notes);
-
-      const response = await fetch(`${API_URL}/checkins`, {
-        method: "POST",
-        body: formData,
+      const checkin = await createCheckin({
+        userId: user.id,
+        image: file,
+        weight: form.weight,
+        waist: form.waist,
+        chest: form.chest,
+        hips: form.hips,
+        notes: form.notes,
       });
 
-      const data = await response.json();
-
-      console.log("RESPUESTA CHECKIN:", data);
-
-      if (!response.ok) {
-        throw new Error(data.detail || data.error || "No se pudo guardar.");
-      }
-
-      setHistory((prev) => [data.checkin, ...prev]);
+      setHistory((prev) => [checkin, ...prev]);
 
       setFile(null);
       setPreview(null);
