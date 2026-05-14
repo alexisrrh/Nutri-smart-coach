@@ -60,7 +60,7 @@ export default function AIHeroCard({
           </div>
         </div>
 
-        <div className="mb-2 space-y-1.5">
+        <div className="mb-3 space-y-1.5">
           <QuickInlineStat
             icon={<Flame size={14} />}
             label="Kcal"
@@ -88,14 +88,14 @@ export default function AIHeroCard({
             accent="text-white"
           />
         </div>
-<div className="flex justify-center">
-        <HeroActionButton
-          primary
-          title="ESCANEAR"
-          subtitle="calorias"
-          icon="/icons/scan-icon.png"
-          onClick={() => navigate("/foto-comida")}
-        />
+        <div className="flex justify-center pt-1">
+          <HeroActionButton
+            primary
+            title="Escanear"
+            subtitle="calorías"
+            icon="/icons/scan-icon.png"
+            onClick={() => navigate("/foto-comida")}
+          />
         </div>
       </div>
     </section>
@@ -158,9 +158,9 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
   return (
     <button
       onClick={onClick}
-      className={`group relative mx-auto min-h-[58px] w-70%] overflow-hidden rounded-[1.25rem] border p-2 transition duration-300 active:scale-[0.98] ${
+      className={`group relative mx-auto min-h-[64px] w-full max-w-[330px] overflow-hidden rounded-[1.35rem] border px-4 py-2.5 transition duration-300 active:scale-[0.98] ${
         primary
-          ? "border-emerald-400/20 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] text-[#03110d] shadow-[0_12px_30px_rgba(16,185,129,0.16)]"
+          ? "border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] text-white shadow-[0_16px_36px_rgba(16,185,129,0.22)] hover:border-emerald-200/40 hover:shadow-[0_18px_42px_rgba(16,185,129,0.3)]"
           : "border-white/10 bg-white/[0.055] text-white hover:border-emerald-600/30 hover:bg-emerald-500/10"
       }`}
     >
@@ -173,7 +173,7 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
       <div className="relative z-10 flex h-full items-center justify-center gap-2.5">
         <div
           className={`relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-[1rem] ${
-            primary ? "bg-[#06110e]/12" : "bg-emerald-500/10"
+            primary ? "bg-[#06110e]/35" : "bg-emerald-500/10"
           }`}
         >
           <span
@@ -191,14 +191,14 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
           <img
             src={icon}
             alt={title}
-            className="relative z-10 h-12 w-10 object-cover"
+            className="relative z-10 h-10 w-10 object-contain"
           />
         </div>
 
         <div className="flex flex-col items-center justify-center text-center">
           <p
             className={`text-[12px] font-black uppercase tracking-[0.16em] ${
-              primary? "text-white" : "text-white"
+              primary ? "text-white" : "text-white"
             }`}
           >
             {title}
