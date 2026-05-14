@@ -5,8 +5,6 @@ import {
   Save,
   UserRound,
   ChevronDown,
-  AlertCircle,
-  CheckCircle2,
   LogOut,
   Sparkles,
   Ruler,
@@ -17,12 +15,21 @@ import {
 } from "lucide-react";
 import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
-import BottomNav from "../components/BottomNav";
 import {
   clearCachedProfile,
   getProfile,
   saveProfile,
 } from "../services/profileService";
+import {
+  AppShell,
+  FormField,
+  MetaBadge,
+  PageHeaderCard,
+  PrimaryButton,
+  SecondaryButton,
+  StatusBox,
+  SurfaceCard,
+} from "../components/ui";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -151,90 +158,74 @@ export function ProfileSetup() {
 
   if (loadingProfile) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-[#06110e] text-white">
-        <div className="text-center">
+      <AppShell withBottomNav={false}>
+        <SurfaceCard className="mt-40 p-6 text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-emerald-400/30 bg-emerald-400/10" />
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">
             Cargando perfil...
           </p>
-        </div>
-      </section>
+        </SurfaceCard>
+      </AppShell>
     );
   }
 
   return (
-    <section className="min-h-screen bg-[#06110e] px-4 py-5 pb-32 text-white font-sans">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-5 flex items-center justify-between">
-          <button
+    <AppShell>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <SecondaryButton
+            type="button"
             onClick={() => navigate("/dashboard")}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 transition hover:border-emerald-400/40 hover:text-emerald-300"
+            icon={<ArrowLeft size={14} />}
+            className="w-auto px-3 py-2 text-[10px]"
           >
-            <ArrowLeft size={14} />
             Dashboard
-          </button>
+          </SecondaryButton>
 
-          <button
+          <SecondaryButton
+            type="button"
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 rounded-full border border-red-400/10 bg-red-400/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-300/60 transition hover:border-red-400/30 hover:text-red-300"
+            icon={<LogOut size={14} />}
+            className="w-auto border-red-400/15 bg-red-400/10 px-3 py-2 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
           >
-            <LogOut size={14} />
             Salir
-          </button>
+          </SecondaryButton>
         </div>
 
-        <div className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl sm:p-7">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">
-                <Sparkles size={13} />
-                Configuración inteligente
-              </div>
+        <PageHeaderCard
+          badge="Configuración inteligente"
+          badgeIcon={<Sparkles size={14} />}
+          icon={<UserRound size={18} />}
+          title="Perfil personal"
+          description="Ajusta tus datos para que NutriCoach calcule mejor tus metas, macros y recomendaciones."
+        >
+          <SurfaceCard variant="soft" radius="md" className="mt-4 flex items-center gap-3 p-4">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#10b981] text-[#06110e] shadow-[0_0_25px_#10b98155]">
+              <UserRound size={24} />
+            </div>
 
-              <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl">
-                Perfil personal
-              </h1>
-
-              <p className="mt-2 max-w-xl text-sm text-white/50">
-                Ajusta tus datos para que NutriCoach calcule mejor tus metas,
-                macros y recomendaciones.
+            <div className="min-w-0">
+              <MetaBadge variant="neutral">Usuario</MetaBadge>
+              <p className="mt-2 truncate text-sm font-bold text-white">
+                {user?.email}
               </p>
             </div>
-
-            <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-black/20 p-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400 text-[#06110e] shadow-[0_0_25px_#10b98155]">
-                <UserRound size={26} />
-              </div>
-
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-white/35">
-                  Usuario
-                </p>
-                <p className="max-w-[180px] truncate text-sm font-bold text-white">
-                  {user?.email}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+          </SurfaceCard>
+        </PageHeaderCard>
 
         {error && (
-          <AlertBox type="error" icon={<AlertCircle size={17} />}>
+          <StatusBox type="error" className="mt-4">
             {error}
-          </AlertBox>
+          </StatusBox>
         )}
 
         {saved && (
-          <AlertBox type="success" icon={<CheckCircle2 size={17} />}>
+          <StatusBox type="success" className="mt-4">
             Perfil actualizado con éxito.
-          </AlertBox>
+          </StatusBox>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl backdrop-blur-xl sm:p-7"
-        >
-          <div className="mb-6 grid gap-4 md:grid-cols-2">
+        <SurfaceCard as="form" onSubmit={handleSubmit} className="mt-4 p-4">
+          <div className="mb-5 grid gap-4">
             <Input
               icon={<UserRound size={16} />}
               label="Nombre y apellido"
@@ -256,7 +247,7 @@ export function ProfileSetup() {
             />
           </div>
 
-          <div className="mb-6 grid gap-4 md:grid-cols-3">
+          <div className="mb-5 grid gap-4">
             <Input
               icon={<Calendar size={16} />}
               label="Edad"
@@ -291,7 +282,7 @@ export function ProfileSetup() {
             />
           </div>
 
-          <div className="mb-7 grid gap-4 md:grid-cols-2">
+          <div className="mb-6 grid gap-4">
             <CustomSelect
               icon={<Activity size={16} />}
               label="Nivel de actividad"
@@ -317,37 +308,15 @@ export function ProfileSetup() {
             />
           </div>
 
-          <button
+          <PrimaryButton
             type="submit"
             disabled={loading}
-            className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.24em] text-[#06110e] shadow-[0_20px_45px_#10b98122] transition hover:scale-[1.01] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            icon={<Save size={17} />}
           >
-            <div className="relative z-10 flex items-center justify-center gap-3">
-              <Save size={17} />
-              {loading ? "Guardando..." : "Guardar cambios"}
-            </div>
-          </button>
-        </form>
-      </div>
-
-      <BottomNav />
-    </section>
-  );
-}
-
-function AlertBox({ type, icon, children }) {
-  const styles =
-    type === "error"
-      ? "border-red-400/20 bg-red-400/10 text-red-200"
-      : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
-
-  return (
-    <div
-      className={`mb-5 flex items-start gap-3 rounded-2xl border p-4 text-sm font-bold ${styles}`}
-    >
-      <span className="mt-0.5 shrink-0">{icon}</span>
-      {children}
-    </div>
+            {loading ? "Guardando..." : "Guardar cambios"}
+          </PrimaryButton>
+        </SurfaceCard>
+    </AppShell>
   );
 }
 
@@ -368,11 +337,8 @@ function CustomSelect({ icon, label, value, options, onChange }) {
   }, []);
 
   return (
-    <div className="relative" ref={containerRef}>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
-        {label}
-      </p>
-
+    <FormField label={label} className="relative" icon={icon}>
+      <div ref={containerRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -416,17 +382,14 @@ function CustomSelect({ icon, label, value, options, onChange }) {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </FormField>
   );
 }
 
 function Input({ label, icon, suffix, ...props }) {
   return (
-    <div>
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/35">
-        {label}
-      </p>
-
+    <FormField label={label} icon={icon}>
       <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition focus-within:border-emerald-400/50">
         <span className="text-emerald-300">{icon}</span>
 
@@ -436,11 +399,11 @@ function Input({ label, icon, suffix, ...props }) {
         />
 
         {suffix && (
-          <span className="text-xs font-black uppercase tracking-widest text-white/30">
+          <span className="text-xs font-black uppercase tracking-widest text-white/45">
             {suffix}
           </span>
         )}
       </div>
-    </div>
+    </FormField>
   );
 }
