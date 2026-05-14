@@ -13,7 +13,9 @@ import { supabase } from "../lib/supabase";
 import {
   analyzeMeal,
   cacheMeal,
+  deleteMeal,
   getCachedMeals,
+  removeMealFromCache,
 } from "../services/mealService";
 
 export default function FoodPhoto() {
@@ -133,6 +135,41 @@ export default function FoodPhoto() {
     }
   }
 
+  async function discardAnalysis() {
+    if (!result) return;
+
+    try {
+      setLoading(true);
+      setError("");
+
+      if (result.id) {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          console.warn("No se pudo obtener usuario Supabase:", userError.message);
+        }
+
+        if (user?.id) {
+          await deleteMeal(result.id, user.id);
+        }
+      }
+
+      setMeals(removeMealFromCache(result));
+      resetScanner();
+    } catch (error) {
+      console.error("Error descartando análisis:", error);
+      setError(
+        error?.message ||
+          "No se pudo descartar el análisis. Inténtalo de nuevo."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <FoodPageLayout>
       <div className="space-y-2">
@@ -161,6 +198,14 @@ export default function FoodPhoto() {
             <NutritionInsights result={result} />
             <SmartSwapCard result={result} />
             <DailyGoalCard totals={totals} goals={goals} />
+
+            <button
+              type="button"
+              onClick={discardAnalysis}
+              className="w-full rounded-[18px] border border-red-400/20 bg-red-400/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+            >
+              Descartar análisis
+            </button>
 
             <button
               type="button"

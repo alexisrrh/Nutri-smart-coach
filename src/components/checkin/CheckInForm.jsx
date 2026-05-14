@@ -26,11 +26,11 @@ export function CheckInForm({
 
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]">
-                Nuevo check-in
+                Check-in físico
               </p>
 
               <h2 className="text-xl font-black uppercase italic">
-                Body Scan
+                Foto y medidas
               </h2>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function CheckInForm({
                 </p>
 
                 <p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-slate-400">
-                  Frontal, buena luz y misma distancia semanal.
+                  Frontal, buena luz y misma distancia para comparar tu físico.
                 </p>
               </div>
             )}

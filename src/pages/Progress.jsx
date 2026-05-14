@@ -129,7 +129,7 @@ export function Progress() {
               </h1>
 
               <p className="mt-2 max-w-xl text-sm text-white/50">
-                Registra tu peso, guarda notas y revisa cómo está cambiando tu cuerpo.
+                Registra peso y medidas para ver tu evolución corporal.
               </p>
             </div>
 
@@ -204,7 +204,7 @@ export function Progress() {
                   Nuevo registro
                 </h2>
                 <p className="text-xs text-white/40">
-                  Añade tu peso de hoy.
+                  Añade tu peso y una nota de medidas.
                 </p>
               </div>
             </div>
@@ -252,7 +252,7 @@ export function Progress() {
               >
                 <span className="flex items-center justify-center gap-3">
                   <Save size={17} />
-                  {loading ? "Guardando..." : "Guardar progreso"}
+                  {loading ? "Guardando..." : "Guardar peso"}
                 </span>
               </button>
             </div>
@@ -391,7 +391,7 @@ function EmptyState() {
       </h3>
 
       <p className="mx-auto mt-2 max-w-sm text-sm text-white/45">
-        Añade tu primer peso para empezar a medir tu evolución.
+        Añade tu primer peso para empezar a medir tu evolución de peso y medidas.
       </p>
     </div>
   );

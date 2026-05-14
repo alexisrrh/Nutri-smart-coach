@@ -51,11 +51,11 @@ export function CheckInLoader({ loading }) {
         <div className="mb-4 flex items-center justify-between gap-3 rounded-[30px] border border-white/10 bg-black/25 p-4">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[#10b981]">
-              Body Check IA
+              Check-in físico IA
             </p>
 
             <h3 className="mt-1 text-2xl font-black uppercase italic leading-none">
-              Guardando progreso
+              Guardando foto
             </h3>
 
             <p className="mt-2 text-[11px] leading-4 text-slate-400">

@@ -179,9 +179,9 @@ export function Home() {
           {/* MENÚ INFERIOR TÁCTIL ACTUALIZADO */}
         <div className="relative z-10 mt-5 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
           <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" active />
-          <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="BodyScanner" />
+          <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" />
           <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-          <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Progresos" />
+          <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" />
         </div>
 
 

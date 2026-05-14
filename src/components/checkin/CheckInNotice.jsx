@@ -11,7 +11,7 @@ export function CheckInNotice() {
 
         <p className="text-xs leading-5 text-amber-100/80">
           Usa una foto parecida cada semana: misma luz, distancia y postura.
-          Así el progreso será más fácil de comparar.
+          Así el check-in físico será más fácil de comparar.
         </p>
       </div>
     </div>
