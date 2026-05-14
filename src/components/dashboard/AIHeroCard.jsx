@@ -91,8 +91,8 @@ export default function AIHeroCard({
         <div className="flex justify-center pt-1">
           <HeroActionButton
             primary
-            title="Escanear"
-            subtitle="calorías"
+            title="Escanear calorías"
+            subtitle="Analizar comida"
             icon="/icons/scan-icon.png"
             onClick={() => navigate("/foto-comida")}
           />
@@ -195,9 +195,9 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
           />
         </div>
 
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex min-w-0 flex-col items-center justify-center text-center">
           <p
-            className={`text-[12px] font-black uppercase tracking-[0.16em] ${
+            className={`text-sm font-black uppercase leading-tight tracking-[0.12em] ${
               primary ? "text-white" : "text-white"
             }`}
           >
@@ -205,8 +205,8 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
           </p>
 
           <p
-            className={`mt-1 text-[9px] leading-tight ${
-              primary ? "text-white" : "text-white"
+            className={`mt-1 text-[11px] font-bold leading-tight ${
+              primary ? "text-emerald-100/85" : "text-white/70"
             }`}
           >
             {subtitle}
