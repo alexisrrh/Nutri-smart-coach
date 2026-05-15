@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
+import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
 
-import DashboardLayout from "../components/dashboard/DashboardLayout";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
 import DashboardActions from "../components/dashboard/DashboardActions";
@@ -133,31 +133,48 @@ export function Dashboard() {
 
   if (loadingData) {
     return (
-      <DashboardLayout>
-        <DashboardHeader loadingData={loadingData} navigate={navigate} />
-        <DashboardSkeleton />
-      </DashboardLayout>
+      <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
+        <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
+          <div className="shrink-0">
+            <DashboardHeader loadingData={loadingData} navigate={navigate} />
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-col gap-1">
+              <DashboardSkeleton />
+            </div>
+          </div>
+        </div>
+      </AppShell>
     );
   }
 
   return (
-    <DashboardLayout>
-      <DashboardHeader loadingData={loadingData} navigate={navigate} />
+    <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
+      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
+        <div className="shrink-0">
+          <DashboardHeader loadingData={loadingData} navigate={navigate} />
+        </div>
 
-      <AIHeroCard
-  firstName={firstName}
-  nutritionScore={nutritionScore}
-  totals={totals}
-  goals={goals}
-  navigate={navigate}
-  smartTip={smartTip}
-  todayMeals={todayMeals}
-/>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex flex-col gap-1">
+            <AIHeroCard
+              firstName={firstName}
+              nutritionScore={nutritionScore}
+              totals={totals}
+              goals={goals}
+              navigate={navigate}
+              smartTip={smartTip}
+              todayMeals={todayMeals}
+            />
 
-      <DashboardMotivationCard message={motivationMessage} />
+            <DashboardMotivationCard message={motivationMessage} />
 
-      <DashboardActions navigate={navigate} />
-    </DashboardLayout>
+            <DashboardActions navigate={navigate} />
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }
 
