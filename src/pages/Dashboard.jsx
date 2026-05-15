@@ -163,19 +163,19 @@ export function Dashboard() {
 
 function DashboardMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[1.2rem] border border-emerald-300/15 bg-[#07170f]/92 px-3 py-2.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
+    <section className="relative overflow-hidden rounded-[1rem] border border-emerald-300/15 bg-[#07170f]/92 px-2.5 py-2 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
 
-      <div className="relative z-10 flex items-start gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
-          <Sparkles size={15} />
+      <div className="relative z-10 flex items-center gap-2">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+          <Sparkles size={13} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-300/65">
+          <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/65">
             Impulso IA
           </p>
-          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold leading-4 text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-[1.25] text-white/72">
             {message}
           </p>
         </div>

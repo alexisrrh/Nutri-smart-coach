@@ -15,7 +15,7 @@ export default function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative min-h-[88px] overflow-hidden rounded-[1.5rem] p-3 text-left transition-all duration-300 active:scale-[0.98] ${
+      className={`group relative min-h-[72px] overflow-hidden rounded-[1.35rem] p-2.5 text-left transition-all duration-300 active:scale-[0.98] ${
         featured
           ? "border border-emerald-400/30 bg-emerald-400 text-[#06110e] shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
           : "border border-white/10 bg-[#07170f] hover:border-emerald-400/30 hover:bg-[#0b1d17]"
@@ -30,7 +30,7 @@ export default function ActionCard({
 
       <div className="relative z-10 flex h-full flex-col items-center justify-between">
         <div
-          className={`relative grid h-14 w-14 place-items-center overflow-hidden rounded-[1.15rem] ${
+          className={`relative grid h-12 w-12 place-items-center overflow-hidden rounded-[1rem] ${
             featured
               ? "bg-[#06110e]/10"
               : "bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.12)]"
@@ -46,8 +46,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-10 w-10 brightness-0 contrast-200"
-                  : "h-10 w-10"
+                  ? "h-8 w-8 brightness-0 contrast-200"
+                  : "h-8 w-8"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";
@@ -60,14 +60,14 @@ export default function ActionCard({
                 featured ? "text-[#06110e]" : "text-emerald-300"
               }`}
             >
-              <FallbackIcon size={28} strokeWidth={2.4} />
+              <FallbackIcon size={24} strokeWidth={2.4} />
             </span>
           )}
         </div>
 
-        <div className="mt-2 text-center">
+        <div className="mt-1.5 text-center">
           <h3
-            className={`text-[11px] font-black uppercase tracking-[0.16em] ${
+            className={`text-[10px] font-black uppercase tracking-[0.16em] ${
               featured ? "text-[#06110e]" : "text-white"
             }`}
           >
