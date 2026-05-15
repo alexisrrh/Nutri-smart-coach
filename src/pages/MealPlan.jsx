@@ -92,8 +92,29 @@ export function MealPlan() {
     [plan]
   );
 
+  const weekTotals = useMemo(() => getWeekTotals(plan), [plan]);
+
   const completionPercent =
     totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0;
+
+  const motivationMessage = useMemo(
+    () =>
+      getDietMotivationMessage({
+        completedMeals,
+        totalMeals,
+        completionPercent,
+        goal: formData.goal || profile?.goal || profile?.objetivo,
+        totals: weekTotals,
+      }),
+    [
+      completedMeals,
+      totalMeals,
+      completionPercent,
+      formData.goal,
+      profile,
+      weekTotals,
+    ]
+  );
 
   useEffect(() => {
     const userId = profile?.id || profile?.user_id;
@@ -329,13 +350,17 @@ export function MealPlan() {
                   <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
 
                   {!showShopping ? (
-                    <DayDietView
-                      plan={plan}
-                      activeDay={safeActiveDay}
-                      setActiveDay={setActiveDay}
-                      progress={progress}
-                      toggleMeal={toggleMeal}
-                    />
+                    <>
+                      <DietMotivationCard message={motivationMessage} />
+
+                      <DayDietView
+                        plan={plan}
+                        activeDay={safeActiveDay}
+                        setActiveDay={setActiveDay}
+                        progress={progress}
+                        toggleMeal={toggleMeal}
+                      />
+                    </>
                   ) : (
                     <ShoppingListView plan={plan} />
                   )}
@@ -412,6 +437,30 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       </span>
       {label}
     </button>
+  );
+}
+
+function DietMotivationCard({ message }) {
+  return (
+    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f]/95 px-3 py-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b9811f,transparent_42%)]" />
+
+      <div className="relative z-10 flex items-start gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={15} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            Coach IA
+          </p>
+
+          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold normal-case leading-4 text-white/75">
+            {message}
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -572,6 +621,54 @@ function getWeekTotals(plan) {
     },
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
+}
+
+function getDietMotivationMessage({
+  completedMeals,
+  totalMeals,
+  completionPercent,
+  goal,
+  totals,
+}) {
+  const normalizedGoal = String(goal || "").toLowerCase();
+  const protein = Math.round(Number(totals?.protein || 0));
+  const calories = Math.round(Number(totals?.calories || 0));
+
+  if (!totalMeals) {
+    return "Tu plan está listo para convertirse en una rutina sostenible.";
+  }
+
+  if (completionPercent >= 85) {
+    return "Vas por muy buen camino: la constancia vale más que la perfección.";
+  }
+
+  if (completionPercent >= 50) {
+    return "Cada comida completada refuerza tu adherencia semanal.";
+  }
+
+  if (completedMeals > 0) {
+    return "Buen inicio. Mantener el ritmo hará que el plan sea más fácil de seguir.";
+  }
+
+  if (normalizedGoal.includes("lose") || normalizedGoal.includes("perder")) {
+    return "Completar esta semana ayuda a construir una base sólida de constancia.";
+  }
+
+  if (normalizedGoal.includes("gain") || normalizedGoal.includes("ganar")) {
+    return protein > 0
+      ? `Tu plan prioriza proteína y estructura para apoyar tu progreso.`
+      : "Tu plan está diseñado para sostener entrenamiento y recuperación.";
+  }
+
+  if (normalizedGoal.includes("maintain") || normalizedGoal.includes("mantener")) {
+    return "Tu plan busca ayudarte a mantener constancia sin complicarte.";
+  }
+
+  if (calories > 0) {
+    return "Tu semana ya tiene estructura. Ahora toca convertirla en hábito.";
+  }
+
+  return "Tu plan está diseñado para ayudarte a comer con más intención.";
 }
 
 function isProfileComplete(profile) {
