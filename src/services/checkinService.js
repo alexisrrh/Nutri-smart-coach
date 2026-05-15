@@ -92,6 +92,31 @@ export async function createCheckin({
   return checkin;
 }
 
+export async function deleteCheckin(checkinId, userId) {
+  if (!checkinId) {
+    throw new Error("Falta el check-in a borrar.");
+  }
+
+  if (!userId) {
+    throw new Error("Necesitas iniciar sesión para borrar el check-in.");
+  }
+
+  const data = await request(
+    `/checkins/${checkinId}?user_id=${encodeURIComponent(userId)}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  const updatedCheckins = getCachedCheckins().filter(
+    (item) => String(item.id) !== String(checkinId)
+  );
+
+  cacheCheckins(updatedCheckins);
+
+  return data;
+}
+
 function normalizeCheckins(checkins) {
   if (!Array.isArray(checkins)) return [];
 

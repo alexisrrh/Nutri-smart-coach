@@ -417,7 +417,7 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
 
 function EmptyPlan() {
   return (
-    <div className="rounded-[24px] bg-white/[0.035] p-4 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+    <div className="min-h-[220px]  rounded-[24px] bg-white/[0.035] p-4 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
       <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
         <Sparkles size={20} />
       </div>
