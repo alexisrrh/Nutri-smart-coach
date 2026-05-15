@@ -134,7 +134,7 @@ export function Dashboard() {
   if (loadingData) {
     return (
       <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
+        <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden overscroll-none bg-[#06110e]">
           <div className="shrink-0">
             <DashboardHeader loadingData={loadingData} navigate={navigate} />
           </div>
@@ -149,7 +149,7 @@ export function Dashboard() {
 
   return (
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
+      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden overscroll-none bg-[#06110e]">
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
@@ -169,7 +169,7 @@ export function Dashboard() {
             <DashboardMotivationCard message={motivationMessage} />
           </div>
 
-          <div className="mt-auto">
+          <div className="pt-0.5">
             <DashboardActions navigate={navigate} />
           </div>
         </div>
