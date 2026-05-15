@@ -30,7 +30,7 @@ export default function ActionCard({
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center gap-0.5">
         <div
-          className={`relative grid h-[68px] w-[68px] place-items-center overflow-hidden rounded-[1rem] ${
+          className={`relative grid h-[75px] w-[75px] place-items-center overflow-hidden rounded-[1rem] ${
             featured
               ? "bg-[#06110e]/10 shadow-[0_0_32px_rgba(255,255,255,0.08)]"
               : "bg-emerald-500/12 shadow-[0_0_34px_rgba(16,185,129,0.22)]"
@@ -46,8 +46,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-[68px] w-[68px] brightness-0 contrast-200"
-                  : "h-[68px] w-[68px]"
+                  ? "h-[75px] w-[75px] brightness-0 contrast-200"
+                  : "h-[75px] w-[75px]"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";
