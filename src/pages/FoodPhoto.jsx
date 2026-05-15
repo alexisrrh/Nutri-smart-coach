@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-import FoodPageLayout from "../components/food/FoodPageLayout";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
@@ -8,6 +7,7 @@ import FoodResultCard from "../components/food/FoodResultCard";
 import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
+import { AppShell } from "../components/ui";
 
 import { supabase } from "../lib/supabase";
 import {
@@ -171,7 +171,7 @@ export default function FoodPhoto() {
   }
 
   return (
-    <FoodPageLayout>
+    <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
       <div className="flex h-full min-h-0 flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
 
@@ -223,7 +223,7 @@ export default function FoodPhoto() {
           </>
         )}
       </div>
-    </FoodPageLayout>
+    </AppShell>
   );
 }
 
