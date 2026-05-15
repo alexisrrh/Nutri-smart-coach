@@ -15,7 +15,7 @@ export default function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative min-h-[72px] overflow-hidden rounded-[1.35rem] p-2.5 text-left transition-all duration-300 active:scale-[0.98] ${
+      className={`group relative min-h-[58px] overflow-hidden rounded-[1.2rem] p-1.5 text-left transition-all duration-300 active:scale-[0.98] ${
         featured
           ? "border border-emerald-400/30 bg-emerald-400 text-[#06110e] shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
           : "border border-white/10 bg-[#07170f] hover:border-emerald-400/30 hover:bg-[#0b1d17]"
@@ -30,7 +30,7 @@ export default function ActionCard({
 
       <div className="relative z-10 flex h-full flex-col items-center justify-between">
         <div
-          className={`relative grid h-12 w-12 place-items-center overflow-hidden rounded-[1rem] ${
+          className={`relative grid h-10 w-10 place-items-center overflow-hidden rounded-[0.85rem] ${
             featured
               ? "bg-[#06110e]/10"
               : "bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.12)]"
@@ -46,8 +46,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-8 w-8 brightness-0 contrast-200"
-                  : "h-8 w-8"
+                  ? "h-6 w-6 brightness-0 contrast-200"
+                  : "h-6 w-6"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";
@@ -65,9 +65,9 @@ export default function ActionCard({
           )}
         </div>
 
-        <div className="mt-1.5 text-center">
+        <div className="mt-1 text-center">
           <h3
-            className={`text-[10px] font-black uppercase tracking-[0.16em] ${
+            className={`text-[9px] font-black uppercase tracking-[0.16em] ${
               featured ? "text-[#06110e]" : "text-white"
             }`}
           >
@@ -75,7 +75,7 @@ export default function ActionCard({
           </h3>
 
           <p
-            className={`mt-1 text-[9px] leading-tight ${
+            className={`mt-0.5 text-[7px] leading-tight ${
               featured ? "text-[#06110e]/70" : "text-white/45"
             }`}
           >
