@@ -13,35 +13,35 @@ export default function AIHeroCard({
   todayMeals,
 }) {
   return (
-    <section className="relative overflow-hidden rounded-[1.2rem] border border-emerald-400/15 bg-[#07170f] p-2 shadow-[0_18px_60px_rgba(16,185,129,0.1)]">
+    <section className="relative overflow-hidden rounded-[1.1rem] border border-emerald-400/15 bg-[#07170f] p-[0.7rem] shadow-[0_18px_60px_rgba(16,185,129,0.1)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98122,transparent_38%)]" />
       <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-emerald-400/18 blur-3xl" />
 
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-1">
           <div>
-            <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/70">
+            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300/70">
               Tu coach de hoy
             </p>
 
-            <h1 className="mt-0.5 text-[22px] font-black italic leading-none tracking-tight">
+            <h1 className="mt-0.5 text-[24px] font-black italic leading-none tracking-tight">
               Hola,{" "}
               <span className="text-emerald-300">
                 {firstName || "crack"}
               </span>
             </h1>
 
-            <p className="mt-1 max-w-[220px] text-[10px] leading-[1.3] text-white/58">
+            <p className="mt-1 max-w-[220px] text-[11px] leading-[1.28] text-white/60">
               {smartTip}
             </p>
           </div>
 
-          <div className="scale-[0.44] -translate-y-1">
+          <div className="scale-[0.47] -translate-y-1">
             <AIOrb />
           </div>
         </div>
 
-        <div className="-mt-1.5 mb-1 rounded-[0.9rem] border border-white/10 bg-black/20 px-2 py-1">
+        <div className="-mt-1 mb-1 rounded-[0.9rem] border border-white/10 bg-black/20 px-2 py-1">
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="mb-0.5 flex items-center gap-1.5 text-[7px] font-black uppercase tracking-widest text-white/40">
@@ -49,12 +49,12 @@ export default function AIHeroCard({
                 AI Score
               </p>
 
-              <p className="max-w-[170px] text-[9px] leading-[1.25] text-white/66">
+              <p className="max-w-[170px] text-[10px] leading-[1.25] text-white/66">
                 Según tus comidas y actividad diaria.
               </p>
             </div>
 
-            <div className="scale-[0.45]">
+            <div className="scale-[0.48]">
               <AIScoreRing score={nutritionScore} />
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function AIHeroCard({
 
         <div className="mb-1.5 grid grid-cols-3 gap-1">
           <QuickInlineStat
-            icon={<Flame size={11} />}
+            icon={<Flame size={12} />}
             label="Kcal"
             current={totals.calories}
             goal={goals.calories}
@@ -71,7 +71,7 @@ export default function AIHeroCard({
           />
 
           <QuickInlineStat
-            icon={<Dumbbell size={11} />}
+            icon={<Dumbbell size={12} />}
             label="Proteína"
             current={totals.protein}
             goal={goals.protein}
@@ -80,7 +80,7 @@ export default function AIHeroCard({
           />
 
           <QuickInlineStat
-            icon={<TrendingUp size={11} />}
+            icon={<TrendingUp size={12} />}
             label="Comidas"
             current={todayMeals.length}
             goal={6}
@@ -116,17 +116,17 @@ function QuickInlineStat({
   const left = Math.max(0, safeGoal - safeCurrent);
 
   return (
-    <div className="rounded-[0.85rem] border border-white/10 bg-white/[0.03] px-2 py-[0.31rem]">
+    <div className="rounded-[0.85rem] border border-white/10 bg-white/[0.03] px-2 py-[0.34rem]">
       <div className="mb-0.5 flex items-center justify-between gap-1">
         <div className="flex min-w-0 items-center gap-1.5">
           <div className="text-emerald-300">{icon}</div>
 
-          <p className="truncate text-[7px] font-black uppercase tracking-[0.14em] text-white/45">
+          <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-white/45">
             {label}
           </p>
         </div>
 
-        <p className={`text-[10px] font-black italic leading-none ${accent}`}>
+        <p className={`text-[11px] font-black italic leading-none ${accent}`}>
           {Math.round(safeCurrent)}
           {unit}
           <span className="ml-0.5 text-[8px] text-white/35">
