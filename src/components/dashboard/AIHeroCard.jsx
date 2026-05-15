@@ -20,18 +20,18 @@ export default function AIHeroCard({
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-1">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300/70">
+            <p className="text-[10px] pt-2 font-black uppercase tracking-[0.16em] text-emerald-300/70">
               Tu coach de hoy
             </p>
 
-            <h1 className="mt-0.5 text-[24px] font-black italic leading-none tracking-tight">
+            <h1 className="mt-0.5 text-[26px] font-black italic leading-none tracking-tight">
               Hola,{" "}
               <span className="text-emerald-300">
                 {firstName || "crack"}
               </span>
             </h1>
 
-            <p className="mt-1 max-w-[220px] text-[11px] leading-[1.28] text-white/60">
+            <p className="mt-1 max-w-[220px] text-[12px] leading-[1.28] text-white/60 py-2">
               {smartTip}
             </p>
           </div>
@@ -41,26 +41,26 @@ export default function AIHeroCard({
           </div>
         </div>
 
-        <div className="-mt-1 mb-1 rounded-[0.9rem] border border-white/10 bg-black/20 px-2 py-1">
+        <div className="-mt-5 mb-3 rounded-[0.9rem] border border-white/10 bg-black/20 px-3 py-0">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="mb-0.5 flex items-center gap-1.5 text-[7px] font-black uppercase tracking-widest text-white/40">
-                <Sparkles size={9} className="text-emerald-300" />
+              <p className="mb-0.5 flex items-center gap-2 text-[12px] font-black uppercase tracking-widest text-white/40">
+                <Sparkles size={9} className="text-emerald-300 " />
                 AI Score
               </p>
 
-              <p className="max-w-[170px] text-[10px] leading-[1.25] text-white/66">
+              <p className="max-w-[170px] text-[12px] leading-[1.25] text-white/66">
                 Según tus comidas y actividad diaria.
               </p>
             </div>
 
-            <div className="scale-[0.48]">
+            <div className="scale-[0.85]">
               <AIScoreRing score={nutritionScore} />
             </div>
           </div>
         </div>
 
-        <div className="mb-1.5 grid grid-cols-3 gap-1">
+        <div className="mb-1.5 grid grid-cols-3 gap-1 pb-2">
           <QuickInlineStat
             icon={<Flame size={12} />}
             label="Kcal"
@@ -88,7 +88,7 @@ export default function AIHeroCard({
             accent="text-white"
           />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center ">
           <HeroActionButton
             primary
             title="Escanear calorías"
@@ -101,7 +101,6 @@ export default function AIHeroCard({
     </section>
   );
 }
-
 function QuickInlineStat({
   icon,
   label,
@@ -112,43 +111,53 @@ function QuickInlineStat({
 }) {
   const safeGoal = Number(goal || 0);
   const safeCurrent = Number(current || 0);
-  const progress = safeGoal > 0 ? Math.min(100, (safeCurrent / safeGoal) * 100) : 0;
+
+  const progress =
+    safeGoal > 0
+      ? Math.min(100, (safeCurrent / safeGoal) * 100)
+      : 0;
+
   const left = Math.max(0, safeGoal - safeCurrent);
 
   return (
-    <div className="rounded-[0.85rem] border border-white/10 bg-white/[0.03] px-2 py-[0.34rem]">
-      <div className="mb-0.5 flex items-center justify-between gap-1">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <div className="text-emerald-300">{icon}</div>
+    <div className="rounded-[0.9rem] border border-white/10 bg-white/[0.03] px-2 py-1.5">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1">
+          <div className="shrink-0 text-emerald-300">
+            {icon}
+          </div>
 
-          <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-white/45">
+          <p className="truncate text-[8px] font-black uppercase tracking-[0.08em] text-white/45">
             {label}
           </p>
         </div>
 
-        <p className={`text-[11px] font-black italic leading-none ${accent}`}>
+        <p className="shrink-0 text-[8px] font-bold text-white/35">
+          {left > 0
+            ? `Faltan ${Math.round(left)}${unit}`
+            : "Completado"}
+        </p>
+      </div>
+
+      <div className="mb-1">
+        <p
+          className={`text-[13px] font-black italic leading-none ${accent}`}
+        >
           {Math.round(safeCurrent)}
           {unit}
-          <span className="ml-0.5 text-[8px] text-white/35">
+
+          <span className="ml-1 text-[11px] text-white/35">
             / {safeGoal}
             {unit}
           </span>
         </p>
       </div>
 
-      <div className="h-1 overflow-hidden rounded-full bg-white/5">
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
         <div
           className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300 transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
-      </div>
-
-      <div className="mt-0.5 flex justify-end">
-        <p className="text-[6px] font-bold text-white/35">
-          {left > 0
-            ? `Faltan ${Math.round(left)}${unit}`
-            : "Objetivo completado"}
-        </p>
       </div>
     </div>
   );
@@ -158,7 +167,7 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
   return (
     <button
       onClick={onClick}
-      className={`group relative mx-auto min-h-[46px] w-full max-w-[330px] overflow-hidden rounded-[1.15rem] border px-2.5 py-1.5 transition duration-300 active:scale-[0.98] ${
+      className={`group relative mx-auto min-h-[50px] w-full max-w-[330px] overflow-hidden rounded-[1.15rem] border px-2.5 py-3.5 transition duration-300 active:scale-[0.98] ${
         primary
           ? "border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] text-white shadow-[0_16px_36px_rgba(16,185,129,0.22)] hover:border-emerald-200/40 hover:shadow-[0_18px_42px_rgba(16,185,129,0.3)]"
           : "border-white/10 bg-white/[0.055] text-white hover:border-emerald-600/30 hover:bg-emerald-500/10"
@@ -170,9 +179,9 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
         }`}
       />
 
-      <div className="relative z-10 flex h-full items-center justify-center gap-2">
+      <div className="relative z-10 flex h-full items-center justify-center gap-6">
         <div
-          className={`relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] ${
+          className={`relative grid h-15 w-15 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] ${
             primary ? "bg-[#06110e]/35" : "bg-emerald-500/10"
           }`}
         >
@@ -191,13 +200,13 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
           <img
             src={icon}
             alt={title}
-            className="relative z-10 h-8 w-8 object-contain"
+            className="relative z-14 h-14 w-14 object-cover"
           />
         </div>
 
         <div className="flex min-w-0 flex-col items-center justify-center text-center">
           <p
-            className={`text-[10px] font-black uppercase leading-tight tracking-[0.12em] ${
+            className={`text-[12px] font-black uppercase leading-tight tracking-[0.12em] ${
               primary ? "text-white" : "text-white"
             }`}
           >
@@ -205,7 +214,7 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
           </p>
 
           <p
-            className={`mt-0.5 text-[9px] font-bold leading-tight ${
+            className={`mt-0.5 text-[10px] font-bold leading-tight ${
               primary ? "text-emerald-100/85" : "text-white/70"
             }`}
           >

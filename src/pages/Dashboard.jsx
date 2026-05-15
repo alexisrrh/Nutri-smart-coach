@@ -175,7 +175,7 @@ export function Dashboard() {
 
             </div>
 
-            <div className="shrink-0">
+            <div className="shrink-0 pb-2 pt-2">
               <DashboardMotivationCard message={motivationMessage} />
             </div>
 
@@ -200,11 +200,11 @@ function DashboardMotivationCard({ message }) {
         </div>
 
         <div className="min-w-0">
-          <p className="text-[7px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
             Impulso IA
           </p>
 
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-[1.2] text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[11px] font-bold leading-[1.2] text-white/72">
             {message}
           </p>
         </div>

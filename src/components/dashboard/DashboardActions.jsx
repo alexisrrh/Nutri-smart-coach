@@ -8,19 +8,19 @@ import {
 
 export default function DashboardActions({ navigate }) {
   return (
-    <section className="flex h-full min-h-0 flex-col">
+    <section className="flex h-full min-h-0 flex-col ">
       <div className="flex items-end justify-between px-1 pb-1">
         <div>
-          <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/55">
+          <p className=" ml-28 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300/55 text-center pb-1">
             Más herramientas
           </p>
 
-          <h2 className="mt-0.5 text-[12px] font-black italic leading-none text-white">
+          <h2 className=" ml-30 mt-0.5 text-[14px] font-black italic leading-none text-white  pb-1">
             Continúa tu plan
           </h2>
         </div>
 
-        <div className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.16em] text-emerald-300">
+        <div className="rounded-full border border-emerald-800/15 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
           IA
         </div>
       </div>
