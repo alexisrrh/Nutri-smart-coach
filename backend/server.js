@@ -1217,6 +1217,78 @@ app.get("/checkins/:userId", async (req, res) => {
   }
 });
 
+app.delete("/checkins/:checkinId", async (req, res) => {
+  try {
+    const { checkinId } = req.params;
+    const userId = req.query.user_id;
+
+    if (!checkinId) {
+      return res.status(400).json({ error: "Falta checkinId" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: "Falta user_id" });
+    }
+
+    const { data: checkin, error: fetchError } = await supabase
+      .from("checkins")
+      .select("id, image_url")
+      .eq("id", checkinId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (fetchError) {
+      return res.status(500).json({
+        error: "No se pudo cargar el check-in",
+        detail: fetchError.message,
+      });
+    }
+
+    if (!checkin) {
+      return res.status(404).json({
+        error: "Check-in no encontrado",
+      });
+    }
+
+    if (checkin.image_url) {
+      const imagePath = getSupabaseStoragePath({
+        publicUrl: checkin.image_url,
+        bucket: "checkins",
+      });
+
+      if (imagePath) {
+        const { error: storageError } = await supabase.storage
+          .from("checkins")
+          .remove([imagePath]);
+
+        if (storageError) {
+          console.error("Error borrando imagen de check-in:", storageError);
+        }
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("checkins")
+      .delete()
+      .eq("id", checkinId)
+      .eq("user_id", userId);
+
+    if (deleteError) {
+      return res.status(500).json({
+        error: "No se pudo borrar el check-in",
+        detail: deleteError.message,
+      });
+    }
+
+    return res.json({ ok: true, deleted_id: checkinId });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error borrando check-in",
+      detail: error.message,
+    });
+  }
+});
+
 app.get("/diet-plans/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
