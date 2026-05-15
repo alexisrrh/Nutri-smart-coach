@@ -362,7 +362,6 @@ function SettingSelect({ icon, label, value, options, onChange }) {
         setIsOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -426,7 +425,7 @@ function SettingRow({ label, icon, suffix, ...props }) {
 
         <input
           {...props}
-          className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+          className="w-full bg-transparent text-xs font-bold text-white outline-none placeholder:text-white/20"
         />
 
         {suffix && (
