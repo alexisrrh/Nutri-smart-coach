@@ -201,10 +201,10 @@ export function Meals() {
   return (
     <AppShell
       className="overflow-hidden"
-      contentClassName="flex h-dvh flex-col px-2 pb-[88px] pt-2"
+      contentClassName="px-2 pt-2"
     >
-      <section className="flex h-[calc(100dvh-98px)] min-h-0 flex-col gap-2.5">
-        <div className="shrink-0 space-y-2.5">
+      <section className="flex h-full min-h-0 flex-col gap-1">
+        <div className="shrink-0 space-y-1.5">
           <HistoryHeader
             onBack={() => navigate("/dashboard")}
             onScan={() => navigate("/foto-comida")}
@@ -220,7 +220,7 @@ export function Meals() {
             </StatusBox>
           )}
 
-          <SurfaceCard className="p-2.5" radius="md" variant="soft">
+          <SurfaceCard className="p-2" radius="md" variant="soft">
             <div className="grid grid-cols-3 gap-1 rounded-2xl bg-black/25 p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
               <FilterButton active={filter === "today"} onClick={() => setFilter("today")}>
                 Hoy
@@ -233,7 +233,7 @@ export function Meals() {
               </FilterButton>
             </div>
 
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <Search
                 size={14}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[#10b981]/70"
@@ -242,36 +242,36 @@ export function Meals() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar comida..."
-                className="h-10 w-full rounded-2xl bg-[#081713]/90 pl-9 pr-3 text-xs font-bold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] outline-none transition placeholder:text-white/28 focus:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]"
+                className="h-9 w-full rounded-2xl bg-[#081713]/90 pl-9 pr-3 text-[11px] font-bold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] outline-none transition placeholder:text-white/28 focus:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]"
               />
             </div>
           </SurfaceCard>
         </div>
 
-        <SurfaceCard className="flex min-h-0 flex-1 flex-col p-2.5" radius="lg">
-          <div className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.06] pb-2">
+        <SurfaceCard className="flex min-h-0 flex-1 flex-col p-2" radius="lg">
+          <div className="mb-1.5 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.06] pb-1.5">
             <div>
-              <h2 className="text-sm font-black uppercase italic tracking-tight">
+              <h2 className="text-[13px] font-black uppercase italic tracking-tight">
                 Timeline IA
               </h2>
-              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-white/45">
+              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/45">
                 {filteredMeals.length} comida{filteredMeals.length !== 1 ? "s" : ""} mostrada
                 {filteredMeals.length !== 1 ? "s" : ""}
               </p>
             </div>
 
             {meals.length > 0 && (
-              <button
-                onClick={clearMeals}
-                className="inline-flex items-center gap-1.5 rounded-full bg-red-400/10 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-red-300/75 transition hover:bg-red-400/15 hover:text-red-200"
-              >
-                <Trash2 size={12} />
-                Limpiar
+                <button
+                  onClick={clearMeals}
+                className="inline-flex items-center gap-1.5 rounded-full bg-red-400/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-red-300/75 transition hover:bg-red-400/15 hover:text-red-200"
+                >
+                  <Trash2 size={12} />
+                  Limpiar
               </button>
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredMeals.length === 0 ? (
               <Empty onClick={() => navigate("/foto-comida")} />
             ) : (
@@ -307,19 +307,19 @@ export function Meals() {
 
 function HistoryHeader({ onBack, onScan }) {
   return (
-    <SurfaceCard as="header" className="overflow-hidden p-2.5" radius="lg">
+    <SurfaceCard as="header" className="overflow-hidden p-2" radius="lg">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
-            <Sparkles size={12} />
+          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <Sparkles size={11} />
             Historial IA
           </div>
 
-          <h1 className="text-[26px] font-black uppercase italic leading-none text-white">
+          <h1 className="text-[22px] font-black uppercase italic leading-none text-white">
             Historial
           </h1>
 
-          <p className="mt-1 text-xs leading-4 text-white/60">
+          <p className="mt-0.5 text-[11px] leading-4 text-white/60">
             Tus comidas analizadas.
           </p>
         </div>
@@ -357,28 +357,28 @@ function IconAction({ children, onClick, label, active = false }) {
 
 function MacroSummary({ totals, mealsCount }) {
   return (
-    <SurfaceCard className="p-2.5" radius="lg">
-      <div className="mb-2 flex items-center justify-between gap-2">
+    <SurfaceCard className="p-2" radius="lg">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#10b981]">
             Resumen
           </p>
 
-          <p className="mt-0.5 text-xs text-white/55">
+          <p className="mt-0.5 text-[11px] text-white/55">
             {mealsCount} análisis filtrado{mealsCount !== 1 ? "s" : ""}
           </p>
         </div>
 
-        <div className="grid h-9 w-9 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
-          <Flame size={16} />
+        <div className="grid h-8 w-8 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+          <Flame size={15} />
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
-        <SummaryChip icon={<Flame size={12} />} title="Kcal" value={totals.calories} />
-        <SummaryChip icon={<Beef size={12} />} title="Prot" value={totals.protein} unit="g" />
-        <SummaryChip icon={<Wheat size={12} />} title="Carbs" value={totals.carbs} unit="g" />
-        <SummaryChip icon={<Droplets size={12} />} title="Grasa" value={totals.fat} unit="g" />
+      <div className="grid grid-cols-4 gap-1">
+        <SummaryChip icon={<Flame size={11} />} title="Kcal" value={totals.calories} />
+        <SummaryChip icon={<Beef size={11} />} title="Prot" value={totals.protein} unit="g" />
+        <SummaryChip icon={<Wheat size={11} />} title="Carbs" value={totals.carbs} unit="g" />
+        <SummaryChip icon={<Droplets size={11} />} title="Grasa" value={totals.fat} unit="g" />
       </div>
     </SurfaceCard>
   );
@@ -386,19 +386,19 @@ function MacroSummary({ totals, mealsCount }) {
 
 function MealsMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f]/95 px-3 py-2.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
+    <section className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
 
-      <div className="relative z-10 flex items-start gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
-          <Sparkles size={15} />
+      <div className="relative z-10 flex items-start gap-2">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={13} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
             Coach IA
           </p>
-          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold leading-4 text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-white/72">
             {message}
           </p>
         </div>
@@ -409,14 +409,14 @@ function MealsMotivationCard({ message }) {
 
 function SummaryChip({ icon, title, value, unit = "" }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-white/[0.04] p-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-      <div className="mb-1 text-[#10b981]">{icon}</div>
-      <p className="text-[10px] font-black uppercase tracking-tight text-white/42">
+    <div className="min-w-0 rounded-2xl bg-white/[0.04] p-1.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+      <div className="mb-0.5 text-[#10b981]">{icon}</div>
+      <p className="text-[9px] font-black uppercase tracking-tight text-white/42">
         {title}
       </p>
-      <p className="mt-0.5 truncate text-sm font-black text-white">
+      <p className="mt-0.5 truncate text-[13px] font-black text-white">
         {Math.round(Number(value) || 0)}
-        <span className="ml-0.5 text-[10px] text-[#10b981]/65">{unit}</span>
+        <span className="ml-0.5 text-[9px] text-[#10b981]/65">{unit}</span>
       </p>
     </div>
   );
@@ -470,7 +470,7 @@ function FilterButton({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-wide transition ${
+      className={`rounded-xl px-3 py-1.5 text-[9px] font-black uppercase tracking-wide transition ${
         active
           ? "bg-[#10b981] text-[#06110e] shadow-[0_0_18px_rgba(16,185,129,0.16)]"
           : "text-white/55 hover:bg-white/[0.06] hover:text-white"
