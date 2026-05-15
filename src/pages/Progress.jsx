@@ -114,8 +114,8 @@ export function Progress() {
   }, [logs]);
 
   return (
-    <AppShell contentClassName="px-2 pb-[92px] pt-2">
-      <div className="flex h-[calc(100dvh-100px)] min-h-0 flex-col gap-2 overflow-hidden">
+    <AppShell contentClassName="px-2 pt-2">
+      <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         <div className="shrink-0">
         <button
           onClick={() => navigate("/dashboard")}
@@ -145,7 +145,7 @@ export function Progress() {
         </PageHeaderCard>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <section className="grid grid-cols-2 gap-3">
           <StatCard
             icon={<Scale size={18} />}
