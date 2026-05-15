@@ -15,7 +15,7 @@ export default function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative min-h-[42px] overflow-hidden rounded-[0.8rem] px-1.25 py-1 text-left transition-all duration-300 active:scale-[0.98] ${
+     className={`group relative flex h-full min-h-0 flex-col items-center justify-center overflow-hidden rounded-[0.8rem] px-1 py-0.5 text-center transition-all duration-300 active:scale-[0.98] ${
         featured
           ? "border border-emerald-400/30 bg-emerald-400 text-[#06110e] shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
           : "bg-transparent"
@@ -30,7 +30,7 @@ export default function ActionCard({
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center gap-0.5">
         <div
-          className={`relative grid h-20 w-20 place-items-center overflow-hidden rounded-[1rem] ${
+          className={`relative grid h-[68px] w-[68px] place-items-center overflow-hidden rounded-[1rem] ${
             featured
               ? "bg-[#06110e]/10 shadow-[0_0_32px_rgba(255,255,255,0.08)]"
               : "bg-emerald-500/12 shadow-[0_0_34px_rgba(16,185,129,0.22)]"
@@ -46,8 +46,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-20 w-20 brightness-0 contrast-200"
-                  : "h-20 w-20"
+                  ? "h-[68px] w-[68px] brightness-0 contrast-200"
+                  : "h-[68px] w-[68px]"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";

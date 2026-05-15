@@ -8,14 +8,14 @@ import {
 
 export default function DashboardActions({ navigate }) {
   return (
-    <section className="space-y-1">
-      <div className="flex items-end justify-between px-1">
+    <section className="flex h-full min-h-0 flex-col">
+      <div className="flex items-end justify-between px-1 pb-1">
         <div>
           <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/55">
             Más herramientas
           </p>
 
-          <h2 className="mt-0.5 text-[13px] font-black italic leading-none text-white">
+          <h2 className="mt-0.5 text-[12px] font-black italic leading-none text-white">
             Continúa tu plan
           </h2>
         </div>
@@ -25,13 +25,12 @@ export default function DashboardActions({ navigate }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1">
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
           label="Plan dieta"
           description="Dieta personalizada"
-          badge="PLAN"
           onClick={() => navigate("/plan-comidas")}
         />
 
@@ -40,7 +39,6 @@ export default function DashboardActions({ navigate }) {
           fallbackIcon={UserRoundSearch}
           label="Check-in foto"
           description="Físico con foto"
-          badge="BODY"
           onClick={() => navigate("/checkin")}
         />
 
@@ -49,7 +47,6 @@ export default function DashboardActions({ navigate }) {
           fallbackIcon={ScanLine}
           label="Historial"
           description="Comidas guardadas"
-          badge="LOG"
           onClick={() => navigate("/comidas")}
         />
 
@@ -58,7 +55,6 @@ export default function DashboardActions({ navigate }) {
           fallbackIcon={ChartNoAxesColumnIncreasing}
           label="Progreso"
           description="Peso y medidas"
-          badge="TRACK"
           onClick={() => navigate("/progreso")}
         />
       </div>

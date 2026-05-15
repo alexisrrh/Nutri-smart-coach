@@ -62,7 +62,6 @@ export function Dashboard() {
   useEffect(() => {
     const savedProfile = getCachedProfile();
 
-    // Cargar backend en segundo plano
     Promise.resolve().then(() => {
       loadRemoteDashboardData(savedProfile);
     });
@@ -128,18 +127,25 @@ export function Dashboard() {
         proteinGoal: goals.protein,
         firstName,
       }),
-    [todayMeals.length, activeDiet, nutritionScore, totals.protein, goals.protein, firstName]
+    [
+      todayMeals.length,
+      activeDiet,
+      nutritionScore,
+      totals.protein,
+      goals.protein,
+      firstName,
+    ]
   );
 
   if (loadingData) {
     return (
       <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden overscroll-none bg-[#06110e]">
+        <div className="flex h-full min-h-0 flex-col gap-1 bg-[#06110e]">
           <div className="shrink-0">
             <DashboardHeader loadingData={loadingData} navigate={navigate} />
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col gap-1">
+          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
             <DashboardSkeleton />
           </div>
         </div>
@@ -149,13 +155,13 @@ export function Dashboard() {
 
   return (
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden overscroll-none bg-[#06110e]">
+      <div className="flex h-full min-h-0 flex-col gap-1 bg-[#06110e]">
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-1">
-          <div className="flex flex-col gap-1">
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
+          <div className="shrink-0">
             <AIHeroCard
               firstName={firstName}
               nutritionScore={nutritionScore}
@@ -165,11 +171,13 @@ export function Dashboard() {
               smartTip={smartTip}
               todayMeals={todayMeals}
             />
+          </div>
 
+          <div className="shrink-0">
             <DashboardMotivationCard message={motivationMessage} />
           </div>
 
-          <div className="min-h-18 flex-1 pt-1.5 pb-10">
+          <div className="min-h-0 flex-1 pt-1">
             <DashboardActions navigate={navigate} />
           </div>
         </div>
@@ -180,19 +188,20 @@ export function Dashboard() {
 
 function DashboardMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[1rem] border border-emerald-300/15 bg-[#07170f]/92 px-2.5 py-2 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
+    <section className="relative overflow-hidden rounded-[0.9rem] border border-emerald-300/10 bg-[#07170f]/90 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
 
       <div className="relative z-10 flex items-center gap-2">
-        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
-          <Sparkles size={13} />
+        <div className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+          <Sparkles size={12} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/65">
+          <p className="text-[7px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
             Impulso IA
           </p>
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-[1.25] text-white/72">
+
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-[1.2] text-white/72">
             {message}
           </p>
         </div>
@@ -211,7 +220,9 @@ function getDashboardMotivationMessage({
 }) {
   const name = firstName ? `${firstName}, ` : "";
   const proteinProgress =
-    Number(proteinGoal || 0) > 0 ? Number(protein || 0) / Number(proteinGoal) : 0;
+    Number(proteinGoal || 0) > 0
+      ? Number(protein || 0) / Number(proteinGoal)
+      : 0;
 
   if (nutritionScore >= 8) {
     return `${name}vas por buen camino: mantén esta racha.`;
