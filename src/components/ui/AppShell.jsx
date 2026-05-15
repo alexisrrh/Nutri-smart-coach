@@ -10,11 +10,11 @@ export default function AppShell({
   const shellWidthClass = wide ? "max-w-[520px]" : "max-w-[430px]";
 
   return (
-    <main className={`min-h-screen w-full bg-[#030a08] text-white md:flex md:items-center md:justify-center md:p-6 ${className}`}>
-      <section className={`relative mx-auto min-h-screen w-full ${shellWidthClass} overflow-hidden bg-[#06110e] px-4 pb-32 pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:border-[#1f2937] md:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] ${contentClassName}`}>
+    <main className={`h-[100svh] w-full overflow-hidden bg-[#030a08] text-white md:flex md:items-center md:justify-center md:p-6 ${className}`}>
+      <section className={`relative mx-auto flex h-full min-h-0 w-full ${shellWidthClass} flex-col overflow-hidden bg-[#06110e] px-4 pb-[var(--bottom-nav-space)] pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:border-[#1f2937] md:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] ${contentClassName}`}>
         <AppBackground />
 
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10 min-h-0 flex-1">{children}</div>
 
         {withBottomNav && <BottomNav />}
       </section>

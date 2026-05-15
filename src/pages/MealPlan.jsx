@@ -233,11 +233,10 @@ export function MealPlan() {
       <PrintablePlan plan={plan} />
 
       <AppShell
-        wide
         className="overflow-hidden"
-        contentClassName="px-2 pb-[82px] pt-2"
+        contentClassName="px-2 pb-[92px] pt-2"
       >
-        <div className="flex h-[calc(100dvh-92px)] min-h-0 flex-col gap-1.5">
+        <div className="flex h-[calc(100dvh-100px)] min-h-0 flex-col gap-1.5">
           <DietHeroCard
             hasPlan={hasPlan}
             completionPercent={completionPercent}
@@ -260,7 +259,7 @@ export function MealPlan() {
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
           {!hasPlan && !loading && (
-            <div className="min-h-0 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 overflow-y-auto pb-6 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <MealPlanForm
                 formData={formData}
                 setFormData={setFormData}
