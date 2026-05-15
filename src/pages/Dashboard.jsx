@@ -139,10 +139,8 @@ export function Dashboard() {
             <DashboardHeader loadingData={loadingData} navigate={navigate} />
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex flex-col gap-1">
-              <DashboardSkeleton />
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col gap-1">
+            <DashboardSkeleton />
           </div>
         </div>
       </AppShell>
@@ -156,7 +154,7 @@ export function Dashboard() {
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-1">
           <div className="flex flex-col gap-1">
             <AIHeroCard
               firstName={firstName}
@@ -169,7 +167,9 @@ export function Dashboard() {
             />
 
             <DashboardMotivationCard message={motivationMessage} />
+          </div>
 
+          <div className="mt-auto">
             <DashboardActions navigate={navigate} />
           </div>
         </div>

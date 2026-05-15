@@ -8,14 +8,14 @@ import {
 
 export default function DashboardActions({ navigate }) {
   return (
-    <section className="space-y-1.5">
+    <section className="space-y-1">
       <div className="flex items-end justify-between px-1">
         <div>
           <p className="text-[7px] font-black uppercase tracking-[0.2em] text-emerald-300/55">
             Más herramientas
           </p>
 
-          <h2 className="mt-0.5 text-[15px] font-black italic leading-none text-white">
+          <h2 className="mt-0.5 text-[13px] font-black italic leading-none text-white">
             Continúa tu plan
           </h2>
         </div>
@@ -25,7 +25,7 @@ export default function DashboardActions({ navigate }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-2 gap-1">
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
