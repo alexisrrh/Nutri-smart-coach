@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Camera, Utensils, LineChart, ShieldCheck, ArrowLeft, TrendingUp, Calendar, Award, ArrowRight } from "lucide-react";
+import { Camera, Utensils, LineChart, ShieldCheck, TrendingUp, Calendar, Award, ArrowRight } from "lucide-react";
 
 export function Progreso() {
   return (
@@ -64,8 +64,8 @@ export function Progreso() {
 
             {/* GRÁFICO CON DESCRIPCIÓN */}
             <div className="mb-1 px-1 flex flex-col">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Control de peso IA</h3>
-              <p className="text-[10px] text-white/30 leading-normal mt-0.5">Graficamos tus variaciones semanales analizando tendencias reales por encima de las fluctuaciones diarias de líquidos.</p>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Evolución de peso y medidas</h3>
+              <p className="text-[10px] text-white/30 leading-normal mt-0.5">Graficamos tus variaciones semanales de peso y medidas por encima de las fluctuaciones diarias de líquidos.</p>
             </div>
             
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 mb-4 backdrop-blur-md">
@@ -125,9 +125,9 @@ export function Progreso() {
           {/* MENÚ INFERIOR TÁCTIL SINCRONIZADO CON HOME Y DIETAS */}
           <div className="relative z-10 mt-5 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
             <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" />
-            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="BodyScanner" />
+            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" />
             <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-            <DashboardTab bro to="/progresohome" icon={<LineChart size={16} />} title="Progresos" active />
+            <DashboardTab bro to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" active />
           </div>
 
         </section>

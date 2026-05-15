@@ -115,11 +115,11 @@ export function BodyScaner() {
               </span>
             </h1>
             <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-emerald-300/60">
-              Análisis Corporal Inteligente
+              Check-in físico con foto
             </p>
 
             <p className="mt-4 text-xs leading-relaxed text-white/60 px-3">
-              Nuestra tecnología de visión artificial analiza tus fotos de progreso para estimar de forma inteligente métricas clave de tu evolución física.
+              Sube fotos comparables para revisar cambios físicos visibles y medidas clave.
             </p>
 
             {/* LISTA DE CARACTERÍSTICAS */}
@@ -156,9 +156,9 @@ export function BodyScaner() {
           {/* MENÚ INFERIOR TÁCTIL */}
           <div className="relative z-10 mt-5 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
             <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" />
-            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="BodyScanner" active />
+            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" active />
             <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-            <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Progresos" />
+            <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" />
           </div>
 
         </section>

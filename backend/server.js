@@ -67,7 +67,30 @@ app.get("/health", (req, res) => {
   });
 });
 
+function createTimingLogger(label) {
+  const start = performance.now();
+  let previous = start;
+  const marks = {};
+
+  return {
+    mark(name) {
+      const now = performance.now();
+      marks[name] = Math.round(now - previous);
+      previous = now;
+    },
+    done(extra = {}) {
+      console.info(`[timing:${label}]`, {
+        ...marks,
+        total: Math.round(performance.now() - start),
+        ...extra,
+      });
+    },
+  };
+}
+
 app.post("/analyze-food", upload.single("image"), async (req, res) => {
+  const timing = createTimingLogger("analyze-food");
+
   try {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
@@ -89,29 +112,53 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
 
     const goal = req.body.goal || "perder_grasa";
     const userId = req.body.user_id || null;
+    const imageHash = createImageHash(req.file.buffer);
+    timing.mark("hash");
+
+    if (userId) {
+      const existingAnalysis = await findMealAnalysisByImageHash({
+        userId,
+        imageHash,
+      });
+      timing.mark("lookup");
+
+      if (existingAnalysis) {
+        timing.done({ reused: true });
+
+        return res.json({
+          ...existingAnalysis,
+          image_hash: imageHash,
+          image_url: existingAnalysis.image_url || null,
+          reused: true,
+          saved: true,
+        });
+      }
+    } else {
+      timing.mark("lookup");
+    }
+
     const base64Image = req.file.buffer.toString("base64");
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
+      config: {
+        temperature: 0.1,
+        topP: 0.3,
+      },
       contents: [
         {
           role: "user",
           parts: [
             {
               text: `
-Eres un nutricionista experto para una app fitness llamada NutriSmart Coach.
-
-Analiza la comida de la imagen con el máximo detalle posible.
-
-Objetivo del usuario: ${goal}
-
-Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
-
-Estructura exacta:
+Analiza SOLO la comida visible para NutriSmart Coach. Objetivo: ${goal}.
+Devuelve SOLO JSON válido, sin markdown ni texto extra.
+No inventes ingredientes no visibles. Estima porciones visibles de forma conservadora. Si hay duda, baja confidence y explícalo en warning o recommendation. Evita valores extremos salvo evidencia clara.
+JSON exacto:
 {
   "food": "nombre claro de la comida",
-  "description": "descripción breve de lo que se ve en el plato",
-  "portion_estimate": "estimación de porción visible, por ejemplo: 1 plato mediano, 150g arroz, 180g pollo",
+  "description": "breve descripción visible",
+  "portion_estimate": "porción visible estimada",
   "ingredients_detected": ["ingrediente 1", "ingrediente 2"],
   "calories": 0,
   "protein": 0,
@@ -127,18 +174,7 @@ Estructura exacta:
   "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
   "warning": "advertencia breve si aplica; si no aplica, usa string vacío"
 }
-
-Reglas:
-- calories debe ser número aproximado.
-- protein, carbs, fat, fiber, sugar y sodium deben ser números.
-- sodium debe estar en mg.
-- confidence debe ser número del 1 al 100.
-- score debe ser número del 1 al 10.
-- Sé prudente: si no se ve claro, baja confidence.
-- No inventes ingredientes invisibles.
-- Si hay dudas, dilo en recommendation o warning.
-- La respuesta debe ayudar al usuario a tomar una decisión real.
-- Ajusta recommendation, improvements y goal_fit según el objetivo.
+Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence 70-90; si incierta 40-65. Mantén criterios estables.
 `,
             },
             {
@@ -151,6 +187,7 @@ Reglas:
         },
       ],
     });
+    timing.mark("Gemini");
 
     const rawText = response.text || "";
     const cleanText = cleanGeminiJson(rawText);
@@ -179,21 +216,31 @@ Reglas:
         userId,
         file: req.file,
       });
+      timing.mark("upload");
 
       savedRecord = await saveMealAnalysis({
         userId,
         imageUrl,
+        imageHash,
         goal,
         analysis,
       });
+      timing.mark("insert");
+    } else {
+      timing.mark("upload");
+      timing.mark("insert");
     }
 
+    timing.done({ reused: false });
+
     return res.json({
-      ...analysis,
+      ...(savedRecord || analysis),
+      image_hash: imageHash,
       image_url: imageUrl,
       saved: Boolean(savedRecord),
     });
   } catch (error) {
+    timing.done({ error: true });
     console.error("Error analyze-food completo:", error);
 
     return res.status(500).json({
@@ -204,6 +251,7 @@ Reglas:
 });
 
 app.post("/generate-diet", async (req, res) => {
+  const timing = createTimingLogger("generate-diet");
   const { profile, preferences, user_id } = req.body || {};
   const userId = user_id || profile?.id || profile?.user_id || null;
 
@@ -228,6 +276,10 @@ app.post("/generate-diet", async (req, res) => {
       try {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
+          config: {
+            temperature: 0.2,
+            topP: 0.4,
+          },
           contents: [
             {
               role: "user",
@@ -239,6 +291,7 @@ app.post("/generate-diet", async (req, res) => {
             },
           ],
         });
+        timing.mark("Gemini");
 
         const rawText = response.text || "";
         const cleanText = cleanGeminiJson(rawText);
@@ -249,12 +302,20 @@ app.post("/generate-diet", async (req, res) => {
         }
 
         week = normalizeGeneratedDiet(data.week, dietConfig);
+        timing.mark("normalize");
       } catch (error) {
         console.error("Error Gemini generate-diet:", error);
         week = createFallbackDiet(profile, preferences, dietConfig);
         usedFallback = true;
         warning = error.message || "Gemini falló generando dieta";
+        timing.mark("Gemini");
+        timing.mark("normalize");
       }
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      timing.mark("Gemini");
+      timing.mark("normalize");
     }
 
     let savedPlan = null;
@@ -277,7 +338,13 @@ app.post("/generate-diet", async (req, res) => {
         profile,
         preferences,
       });
+
+      timing.mark("save");
+    } else {
+      timing.mark("save");
     }
+
+    timing.done({ usedFallback });
 
     return res.json({
       week,
@@ -287,6 +354,7 @@ app.post("/generate-diet", async (req, res) => {
       diet_plan_id: savedPlan?.id || null,
     });
   } catch (error) {
+    timing.done({ error: true });
     console.error("Error generate-diet completo:", error);
 
     const dietConfig = buildDietConfig(preferences);
@@ -385,7 +453,7 @@ async function uploadImageToSupabase({ bucket, userId, file }) {
   const extension = getFileExtension(file.mimetype);
   const filePath = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
@@ -413,8 +481,40 @@ async function uploadImageToSupabase({ bucket, userId, file }) {
   return publicData.publicUrl;
 }
 
+function getSupabaseStoragePath({ publicUrl, bucket }) {
+  try {
+    const url = new URL(publicUrl);
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const markerIndex = url.pathname.indexOf(marker);
 
-async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
+    if (markerIndex === -1) return null;
+
+    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+  } catch {
+    return null;
+  }
+}
+
+
+async function findMealAnalysisByImageHash({ userId, imageHash }) {
+  if (!userId || !imageHash) return null;
+
+  const { data, error } = await supabase
+    .from("meal_analyses")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("image_hash", imageHash)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error buscando análisis por image_hash:", error);
+    throw new Error("No se pudo comprobar si la imagen ya fue analizada");
+  }
+
+  return data || null;
+}
+
+async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis }) {
   if (!userId) return null;
 
   const { data, error } = await supabase
@@ -422,6 +522,7 @@ async function saveMealAnalysis({ userId, imageUrl, goal, analysis }) {
     .insert({
       user_id: userId,
       image_url: imageUrl,
+      image_hash: imageHash,
       goal,
       food: analysis.food,
       description: analysis.description,
@@ -631,42 +732,13 @@ Si la dieta es sin carbohidratos, low carb o keto:
 `;
 
   return `
-Devuelve SOLO JSON válido. No uses markdown. No escribas texto fuera del JSON.
-
-Crea una dieta personalizada para NutriSmartCoach.
-
-Perfil del usuario:
-${JSON.stringify(profile)}
-
-Preferencias:
-${JSON.stringify(preferences || {})}
-
-Configuración obligatoria:
-- Genera exactamente ${dietConfig.days} días.
-- Los días deben ser: ${dayNames.join(", ")}.
-- Genera exactamente ${dietConfig.mealsPerDay} comidas por día.
-- Si son 2 comidas al día, interpreta que el usuario hace ayuno intermitente.
-- Si hay ayuno intermitente, usa horarios tipo 13:00 y 20:00.
-- Si son 3 comidas: desayuno, comida y cena.
-- Si son 4 comidas: desayuno, comida, merienda y cena.
-- Si son 5 o 6 comidas: añade snacks saludables.
-- Ajusta calorías, proteína, carbohidratos y grasa según el objetivo.
-- Incluye cantidades exactas en details.
-- Usa comida fácil, realista y económica si el presupuesto es bajo.
-- No repitas la misma comida todos los días.
-- Mantén valores nutricionales realistas.
-
-Alimentos disponibles en casa:
-${dietConfig.homeFoods || "No especificado"}
-
-Reglas sobre alimentos en casa:
-- Si el usuario indicó alimentos disponibles, intenta construir la dieta usando principalmente esos alimentos.
-- Si falta algo importante, puedes incluirlo, pero que sea común y económico.
-- No inventes alimentos raros.
-
+Devuelve SOLO JSON válido, sin markdown ni texto extra.
+Crea dieta para NutriSmartCoach con perfil=${JSON.stringify(profile)} y preferencias=${JSON.stringify(preferences || {})}.
+Obligatorio: exactamente ${dietConfig.days} días (${dayNames.join(", ")}), exactamente ${dietConfig.mealsPerDay} comidas/día, macros realistas, cantidades claras en details, comida común y práctica, sin repetir la misma comida todos los días.
+Horarios: 2 comidas = ayuno 13:00/20:00; 3 = desayuno/comida/cena; 4 = desayuno/comida/merienda/cena; 5-6 = añade snacks.
+Alimentos en casa: ${dietConfig.homeFoods || "No especificado"}. Úsalos principalmente si existen.
 ${dietConfig.isLowCarb ? forbiddenLowCarb : ""}
-
-Formato exacto:
+JSON exacto:
 {
   "week": [
     {
@@ -1115,6 +1187,10 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function createImageHash(buffer) {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
+}
+
 app.get("/checkins/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -1188,6 +1264,139 @@ app.get("/meal-analyses/:userId", async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: "Error cargando análisis de comida",
+      detail: error.message,
+    });
+  }
+});
+
+app.delete("/meal-analyses/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Falta userId" });
+    }
+
+    const { data: meals, error: fetchError } = await supabase
+      .from("meal_analyses")
+      .select("id, image_url")
+      .eq("user_id", userId);
+
+    if (fetchError) {
+      return res.status(500).json({
+        error: "No se pudieron cargar los análisis de comida",
+        detail: fetchError.message,
+      });
+    }
+
+    const imagePaths = (meals || [])
+      .map((meal) =>
+        meal.image_url
+          ? getSupabaseStoragePath({
+              publicUrl: meal.image_url,
+              bucket: "food-photos",
+            })
+          : null
+      )
+      .filter(Boolean);
+
+    if (imagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("food-photos")
+        .remove(imagePaths);
+
+      if (storageError) {
+        console.error("Error borrando imágenes de comidas:", storageError);
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("meal_analyses")
+      .delete()
+      .eq("user_id", userId);
+
+    if (deleteError) {
+      return res.status(500).json({
+        error: "No se pudieron borrar los análisis de comida",
+        detail: deleteError.message,
+      });
+    }
+
+    return res.json({ ok: true, deleted: meals?.length || 0 });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error borrando historial de comidas",
+      detail: error.message,
+    });
+  }
+});
+
+app.delete("/meal-analyses/:mealId", async (req, res) => {
+  try {
+    const { mealId } = req.params;
+    const userId = req.query.user_id;
+
+    if (!mealId) {
+      return res.status(400).json({ error: "Falta mealId" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: "Falta user_id" });
+    }
+
+    const { data: meal, error: fetchError } = await supabase
+      .from("meal_analyses")
+      .select("id, image_url")
+      .eq("id", mealId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (fetchError) {
+      return res.status(500).json({
+        error: "No se pudo cargar el análisis de comida",
+        detail: fetchError.message,
+      });
+    }
+
+    if (!meal) {
+      return res.status(404).json({
+        error: "Análisis de comida no encontrado",
+      });
+    }
+
+    if (meal.image_url) {
+      const imagePath = getSupabaseStoragePath({
+        publicUrl: meal.image_url,
+        bucket: "food-photos",
+      });
+
+      if (imagePath) {
+        const { error: storageError } = await supabase.storage
+          .from("food-photos")
+          .remove([imagePath]);
+
+        if (storageError) {
+          console.error("Error borrando imagen de comida:", storageError);
+        }
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("meal_analyses")
+      .delete()
+      .eq("id", mealId);
+
+    if (deleteError) {
+      return res.status(500).json({
+        error: "No se pudo borrar el análisis de comida",
+        detail: deleteError.message,
+      });
+    }
+
+    return res.json({ ok: true, deleted_id: mealId });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error borrando análisis de comida",
       detail: error.message,
     });
   }

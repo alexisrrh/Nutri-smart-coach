@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
-import { Navbar } from "../components/Navbar";
-import { supabase } from "../lib/supabase";
-import { useAuth } from "../context/AuthContext";
+import { Calculator as CalculatorIcon, Flame, Ruler, Scale, Target, UserRound } from "lucide-react";
+import { useAuth } from "../context/useAuth";
+import { getProfile } from "../services/profileService";
+import {
+  AppShell,
+  FormField,
+  MetaBadge,
+  PageHeaderCard,
+  PrimaryButton,
+  StatCard,
+  SurfaceCard,
+} from "../components/ui";
 
 export function Calculator() {
   const { user } = useAuth();
@@ -19,26 +28,22 @@ export function Calculator() {
 
   // 🔥 CARGAR DATOS DEL PERFIL
   useEffect(() => {
-    async function getProfile() {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    async function loadProfile() {
+      const profile = await getProfile(user.id);
 
-      if (data) {
+      if (profile) {
         setForm({
-          peso: data.peso || "",
-          altura: data.altura || "",
-          edad: data.edad || "",
-          genero: data.genero || "hombre",
-          actividad: "1.55",
-          objetivo: data.objetivo || "mantener",
+          peso: profile.weight || "",
+          altura: profile.height || "",
+          edad: profile.age || "",
+          genero: profile.gender || "male",
+          actividad: getActivityFactor(profile.activity_level),
+          objetivo: profile.goal || "mantener_peso",
         });
       }
     }
 
-    if (user) getProfile();
+    if (user) loadProfile();
   }, [user]);
 
   function calcular(e) {
@@ -51,7 +56,7 @@ export function Calculator() {
 
     let bmr;
 
-    if (form.genero === "hombre") {
+    if (form.genero === "hombre" || form.genero === "male") {
       bmr = 10 * peso + 6.25 * altura - 5 * edad + 5;
     } else {
       bmr = 10 * peso + 6.25 * altura - 5 * edad - 161;
@@ -59,8 +64,13 @@ export function Calculator() {
 
     let calorias = bmr * actividad;
 
-    if (form.objetivo === "bajar") calorias -= 400;
-    if (form.objetivo === "subir") calorias += 300;
+    if (form.objetivo === "bajar" || form.objetivo === "perder_grasa") {
+      calorias -= 400;
+    }
+
+    if (form.objetivo === "subir" || form.objetivo === "ganar_musculo") {
+      calorias += 300;
+    }
 
     const proteina = peso * 2;
 
@@ -71,59 +81,99 @@ export function Calculator() {
   }
 
   return (
-    <main className="min-h-screen bg-[#07130d] text-white">
-      <Navbar />
+    <AppShell>
+      <PageHeaderCard
+        badge="Perfil"
+        badgeIcon={<CalculatorIcon size={14} />}
+        icon={<Target size={18} />}
+        title="Calculadora nutricional"
+        description="Calcula tus calorías y proteína usando los datos guardados en tu perfil."
+      />
 
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-32">
-        <h1 className="text-4xl font-bold md:text-6xl">
-          Calculadora nutricional
-        </h1>
+      <SurfaceCard as="form" onSubmit={calcular} className="mt-4 p-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <MetaBadge variant="neutral">Datos base</MetaBadge>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">Tu perfil</h2>
+          </div>
 
-        <p className="mt-4 text-white/60">
-          Calculado automáticamente según tu perfil.
-        </p>
-
-        <div className="mt-10 grid gap-8 md:grid-cols-2">
-          <form
-            onSubmit={calcular}
-            className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6"
-          >
-            <input value={form.peso} readOnly className="input" />
-            <input value={form.altura} readOnly className="input" />
-            <input value={form.edad} readOnly className="input" />
-
-            <button className="w-full rounded-xl bg-emerald-400 py-3 font-bold text-black">
-              Calcular
-            </button>
-          </form>
-
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-bold">Resultado</h2>
-
-            {resultado ? (
-              <div className="mt-8 space-y-6">
-                <div>
-                  <p className="text-white/50">Calorías</p>
-                  <h3 className="text-5xl font-bold text-emerald-300">
-                    {resultado.calorias}
-                  </h3>
-                </div>
-
-                <div>
-                  <p className="text-white/50">Proteína</p>
-                  <h3 className="text-5xl font-bold text-emerald-300">
-                    {resultado.proteina}g
-                  </h3>
-                </div>
-              </div>
-            ) : (
-              <p className="mt-8 text-white/60">
-                Pulsa calcular para ver resultados.
-              </p>
-            )}
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.04] text-[#86efac]">
+            <UserRound size={20} />
           </div>
         </div>
-      </section>
-    </main>
+
+        <div className="grid gap-3">
+          <ReadOnlyField label="Peso" value={form.peso} unit="kg" Icon={Scale} />
+          <ReadOnlyField label="Altura" value={form.altura} unit="cm" Icon={Ruler} />
+          <ReadOnlyField label="Edad" value={form.edad} unit="años" Icon={UserRound} />
+        </div>
+
+        <PrimaryButton type="submit" icon={<CalculatorIcon size={17} />} className="mt-4">
+          Calcular
+        </PrimaryButton>
+      </SurfaceCard>
+
+      <SurfaceCard variant="soft" className="mt-4 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <MetaBadge variant="cyan">Resultado</MetaBadge>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">
+              Objetivo diario
+            </h2>
+          </div>
+
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
+            <Flame size={20} />
+          </div>
+        </div>
+
+        {resultado ? (
+          <div className="mt-5 grid gap-3">
+            <StatCard
+              label="Calorías"
+              value={resultado.calorias}
+              unit="kcal"
+              icon={<Flame size={18} />}
+              tone="emerald"
+            />
+            <StatCard
+              label="Proteína"
+              value={resultado.proteina}
+              unit="g"
+              icon={<Target size={18} />}
+              tone="cyan"
+            />
+          </div>
+        ) : (
+          <SurfaceCard variant="soft" radius="md" className="mt-5 p-4">
+            <p className="text-sm leading-6 text-white/62">
+              Pulsa calcular para ver tu objetivo diario recomendado.
+            </p>
+          </SurfaceCard>
+        )}
+      </SurfaceCard>
+    </AppShell>
   );
+}
+
+function ReadOnlyField({ label, value, unit, Icon }) {
+  return (
+    <FormField label={label} icon={<Icon size={15} />}>
+      <div className="flex items-end gap-2">
+        <input
+          value={value}
+          readOnly
+          className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-tight text-white outline-none"
+        />
+        <span className="pb-1 text-sm font-bold text-[#86efac]">{unit}</span>
+      </div>
+    </FormField>
+  );
+}
+
+function getActivityFactor(activityLevel) {
+  if (activityLevel === "low" || activityLevel === "sedentaria") return "1.2";
+  if (activityLevel === "high" || activityLevel === "alta") return "1.725";
+
+  return "1.55";
 }

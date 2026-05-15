@@ -4,26 +4,26 @@ export default function MealHistorySlider({ meals = [] }) {
   if (!meals.length) return null;
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
+    <section className="space-y-2">
+      <div className="flex items-center justify-between px-1">
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.24em] text-[#10b981]">
+          <p className="text-[7px] font-black uppercase tracking-[0.22em] text-[#10b981]">
             Historial IA
           </p>
 
-          <h2 className="mt-1 text-lg font-black uppercase italic">
+          <h2 className="mt-0.5 text-base font-black uppercase italic">
             Últimos escaneos
           </h2>
         </div>
 
-        <div className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1">
-          <span className="text-[8px] font-black uppercase tracking-widest text-[#10b981]">
+        <div className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1">
+          <span className="text-[7px] font-black uppercase tracking-widest text-[#10b981]">
             {meals.length} comidas
           </span>
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {meals.map((meal, index) => (
           <MealCard key={meal.id || index} meal={meal} />
         ))}
@@ -34,70 +34,76 @@ export default function MealHistorySlider({ meals = [] }) {
 
 function MealCard({ meal }) {
   const score = Number(meal.score || 0);
+  const image = meal.image || meal.image_url;
 
   return (
-    <div className="w-[220px] shrink-0 overflow-hidden rounded-[28px] border border-white/10 bg-[#07170f]">
-      {/* IMAGE */}
-      <div className="relative h-[150px] overflow-hidden">
-        {meal.image_url ? (
+    <div className="w-[170px] shrink-0 overflow-hidden rounded-[20px] border border-white/10 bg-[#07170f]">
+      <div className="relative h-[105px] overflow-hidden">
+        {image ? (
           <img
-            src={meal.image_url}
-            alt={meal.food}
+            src={image}
+            alt={meal.food || "Comida"}
             className="h-full w-full object-cover"
           />
         ) : (
           <div className="grid h-full place-items-center bg-black/20">
-            <Sparkles size={28} className="text-[#10b981]" />
+            <Sparkles size={22} className="text-[#10b981]" />
           </div>
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#06110c] via-transparent to-transparent" />
 
-        <div className="absolute right-3 top-3 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1 backdrop-blur-xl">
-          <span className="text-[9px] font-black text-[#10b981]">
+        <div className="absolute right-2 top-2 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-0.5 backdrop-blur-xl">
+          <span className="text-[8px] font-black text-[#10b981]">
             {score}/10
           </span>
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="p-3">
-        <p className="truncate text-sm font-black uppercase italic text-white">
+      <div className="p-2.5">
+        <p className="truncate text-xs font-black uppercase italic text-white">
           {meal.food || "Comida"}
         </p>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-widest text-white/35">
+            <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
               kcal
             </p>
 
-            <p className="text-xl font-black text-[#10b981]">
+            <p className="text-base font-black text-[#10b981]">
               {Math.round(meal.calories || 0)}
             </p>
           </div>
 
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-widest text-white/35">
-              proteína
+          <div className="text-right">
+            <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+              prot
             </p>
 
-            <p className="text-lg font-black text-white">
+            <p className="text-base font-black text-white">
               {Math.round(meal.protein || 0)}g
             </p>
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 text-[9px] text-slate-500">
-          <Clock3 size={11} />
+        <div className="mt-2 flex items-center gap-1.5 text-[8px] text-slate-500">
+          <Clock3 size={10} />
 
-          <span>
-            {meal.created_at
-              ? new Date(meal.created_at).toLocaleDateString("es-ES")
-              : "Reciente"}
-          </span>
+          <span>{formatMealDate(meal)}</span>
         </div>
       </div>
     </div>
   );
+}
+
+function formatMealDate(meal) {
+  const date = meal.created_at || meal.createdAt;
+
+  if (!date) return "Reciente";
+
+  return new Date(date).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "short",
+  });
 }

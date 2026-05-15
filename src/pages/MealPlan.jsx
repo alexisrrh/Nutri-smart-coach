@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AlertTriangle,
-  CheckCircle2,
   Download,
   RefreshCcw,
   Share2,
@@ -10,19 +8,23 @@ import {
   Sparkles,
   Timer,
 } from "lucide-react";
-import { API_URL } from "../config/api";
-import BottomNav from "../components/BottomNav";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
 import { ShoppingListView } from "../components/mealplan/ShoppingListView";
 import { PrintablePlan } from "../components/mealplan/PrintablePlan";
-
-const PROFILE_KEY = "nutricoach_profile";
-const PLAN_KEY = "smart_diet_plan";
-const PROGRESS_KEY = "smart_diet_progress";
-
-
+import {
+  cacheDietProgress,
+  clearDietPlanCache,
+  clearDietProgress,
+  generateDietPlan,
+  getCachedDietPlan,
+  getDietPlanWeek,
+  getDietProgress,
+  listDietPlans,
+} from "../services/dietService";
+import { getCachedProfile } from "../services/profileService";
+import { AppShell, SecondaryButton, StatusBox, SurfaceCard } from "../components/ui";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -64,52 +66,21 @@ const MEALS_PER_DAY = [
 export function MealPlan() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    dietType: "balanced",
-    goal: "lose_fat",
-    planDays: "7",
-    mealsPerDay: "4",
-    budget: "medium",
-    cookingLevel: "easy",
-    homeFoods: "",
-    exclusions: "",
-  });
-
+  const [formData, setFormData] = useState(createInitialFormData);
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState([]);
+  const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
   const [activeDay, setActiveDay] = useState(0);
-  const [progress, setProgress] = useState({});
+  const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
-  const [profile, setProfile] = useState(null);
+  const [profile] = useState(getCachedProfile);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
 
-  useEffect(() => {
-    const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
-    const savedPlan = normalizePlan(safeParse(localStorage.getItem(PLAN_KEY), []));
-    const savedProgress = safeParse(localStorage.getItem(PROGRESS_KEY), {});
-
-    setProfile(savedProfile);
-    setPlan(savedPlan);
-    setProgress(savedProgress);
-
-    if (savedProfile?.goal || savedProfile?.objetivo) {
-      setFormData((prev) => ({
-        ...prev,
-        goal: mapProfileGoalToForm(savedProfile.goal || savedProfile.objetivo),
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (plan.length > 0 && activeDay >= plan.length) {
-      setActiveDay(0);
-    }
-  }, [plan, activeDay]);
-
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
   const hasPlan = plan.length > 0;
-  const safeActiveDay = hasPlan ? Math.max(0, Math.min(activeDay, plan.length - 1)) : 0;
+  const safeActiveDay = hasPlan
+    ? Math.max(0, Math.min(activeDay, plan.length - 1))
+    : 0;
 
   const completedMeals = useMemo(
     () => Object.values(progress).filter(Boolean).length,
@@ -124,6 +95,25 @@ export function MealPlan() {
   const completionPercent =
     totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0;
 
+  useEffect(() => {
+    const userId = profile?.id || profile?.user_id;
+    if (!userId) return;
+
+    Promise.resolve().then(async () => {
+      try {
+        const dietPlans = await listDietPlans(userId);
+        const activePlan = dietPlans[0];
+
+        if (activePlan) {
+          setPlan(getDietPlanWeek(activePlan));
+          setActiveDay(0);
+        }
+      } catch (error) {
+        console.error("Error cargando dietas:", error);
+      }
+    });
+  }, [profile]);
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -133,7 +123,7 @@ export function MealPlan() {
     setShowShopping(false);
 
     try {
-      const savedProfile = safeParse(localStorage.getItem(PROFILE_KEY), null);
+      const savedProfile = getCachedProfile();
 
       if (!isProfileComplete(savedProfile)) {
         throw new Error("Completa tu perfil antes de generar una dieta.");
@@ -150,23 +140,13 @@ export function MealPlan() {
         exclusions: formData.exclusions || "",
       };
 
-      const response = await fetch(`${API_URL}/generate-diet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile: savedProfile,
-          preferences: payloadPreferences,
-          user_id: savedProfile?.id || savedProfile?.user_id || "",
-        }),
+      const data = await generateDietPlan({
+        profile: savedProfile,
+        preferences: payloadPreferences,
+        userId: savedProfile?.id || savedProfile?.user_id || "",
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.detail || "Error generando dieta.");
-      }
-
-      const cleanPlan = normalizePlan(data.week || []);
+      const cleanPlan = data.week || [];
 
       if (!cleanPlan.length) {
         throw new Error("No se pudo generar una dieta válida.");
@@ -175,9 +155,7 @@ export function MealPlan() {
       setPlan(cleanPlan);
       setProgress({});
       setActiveDay(0);
-
-      localStorage.setItem(PLAN_KEY, JSON.stringify(cleanPlan));
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
+      cacheDietProgress({});
 
       setNotice(
         data.usedFallback
@@ -199,15 +177,14 @@ export function MealPlan() {
     setShowShopping(false);
     setNotice("");
     setErrorMessage("");
-
-    localStorage.removeItem(PLAN_KEY);
-    localStorage.removeItem(PROGRESS_KEY);
+    clearDietPlanCache();
+    clearDietProgress();
   }
 
   function toggleMeal(mealId) {
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(updated));
+      cacheDietProgress(updated);
       return updated;
     });
   }
@@ -231,116 +208,144 @@ export function MealPlan() {
   }
 
   return (
-    <section className="relative min-h-screen overflow-x-hidden bg-[#06110c] pb-32 text-white">
+    <>
       <PrintablePlan plan={plan} />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_35%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:34px_34px]" />
-      <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-[#10b981]/20 blur-[120px]" />
-
-      <main className="relative z-10 mx-auto max-w-md space-y-3 px-3 pt-3 lg:max-w-[520px]">
-        <DietHeroCard
-          hasPlan={hasPlan}
-          completionPercent={completionPercent}
-          completedMeals={completedMeals}
-          totalMeals={totalMeals}
-          handleResetPlan={handleResetPlan}
-          formData={formData}
-        />
-
-        {!profileComplete && (
-          <StatusBox
-            type="error"
-            message="Completa tu perfil para generar una dieta precisa."
-            action={() => navigate("/perfil")}
+      <AppShell
+        wide
+        className="overflow-hidden"
+        contentClassName="px-2 pb-[82px] pt-2"
+      >
+        <div className="flex h-[calc(100dvh-92px)] min-h-0 flex-col gap-1.5">
+          <DietHeroCard
+            hasPlan={hasPlan}
+            completionPercent={completionPercent}
+            completedMeals={completedMeals}
+            totalMeals={totalMeals}
+            handleResetPlan={handleResetPlan}
           />
-        )}
 
-        {errorMessage && <StatusBox type="error" message={errorMessage} />}
-        {notice && !errorMessage && <StatusBox type="success" message={notice} />}
+          {!profileComplete && (
+            <StatusBox
+              type="error"
+              action={() => navigate("/perfil")}
+              actionLabel="Completar perfil"
+            >
+              Completa tu perfil para generar una dieta precisa.
+            </StatusBox>
+          )}
 
-        <MealPlanForm
-          formData={formData}
-          setFormData={setFormData}
-          loading={loading}
-          handleSubmit={handleSubmit}
-          DIET_TYPES={DIET_TYPES}
-          GOAL_TYPES={GOAL_TYPES}
-          BUDGET_TYPES={BUDGET_TYPES}
-          PLAN_DAYS={PLAN_DAYS}
-          MEALS_PER_DAY={MEALS_PER_DAY}
-        />
+          {errorMessage && <StatusBox type="error">{errorMessage}</StatusBox>}
+          {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
-        <section className="overflow-hidden rounded-[34px] border border-white/10 bg-[#07170f] shadow-[0_30px_120px_rgba(16,185,129,0.08)]">
-          <div className="flex items-center justify-between gap-2 border-b border-white/10 p-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <Sparkles size={15} className="text-[#10b981]" />
-                <h2 className="text-sm font-black uppercase italic">
-                  Plan generado
-                </h2>
-              </div>
-
-              <p className="mt-1 text-[10px] normal-case text-slate-500">
-                {hasPlan
-                  ? `${plan.length} días · ${totalMeals} comidas`
-                  : "Configura y genera tu dieta."}
-              </p>
-            </div>
-
-            <div className="flex gap-1.5">
-              <ActionButton
-                icon={<ShoppingCart size={13} />}
-                label={showShopping ? "Dieta" : "Compra"}
-                onClick={() => setShowShopping((prev) => !prev)}
-                active={showShopping}
-                disabled={!hasPlan}
-              />
-
-              <ActionButton
-                icon={<Download size={13} />}
-                label="PDF"
-                onClick={() => window.print()}
-                disabled={!hasPlan}
-              />
-
-              <ActionButton
-                icon={<Share2 size={13} />}
-                label="Enviar"
-                onClick={handleShare}
-                disabled={!hasPlan}
+          {!hasPlan && !loading && (
+            <div className="min-h-0 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <MealPlanForm
+                formData={formData}
+                setFormData={setFormData}
+                loading={loading}
+                handleSubmit={handleSubmit}
+                DIET_TYPES={DIET_TYPES}
+                GOAL_TYPES={GOAL_TYPES}
+                BUDGET_TYPES={BUDGET_TYPES}
+                PLAN_DAYS={PLAN_DAYS}
+                MEALS_PER_DAY={MEALS_PER_DAY}
               />
             </div>
-          </div>
+          )}
 
-          <div className="p-3">
-            {loading && <GeneratingDietLoader formData={formData} />}
+          <SurfaceCard
+            className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-2"
+            radius="lg"
+          >
+            <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-[#10b981]" />
+                    <h2 className="text-sm font-black uppercase italic">
+                      {showShopping ? "Lista de compra" : "Plan generado"}
+                    </h2>
+                  </div>
 
-            {!loading && !hasPlan && <EmptyPlan />}
+                  <p className="mt-1 truncate text-[10px] normal-case text-slate-500">
+                    {hasPlan
+                      ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
+                      : loading
+                      ? "La IA está creando tu plan personalizado."
+                      : "Tu dieta aparecerá aquí."}
+                  </p>
+                </div>
 
-            {!loading && hasPlan && (
-              <div className="space-y-4">
-                <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
-
-                {!showShopping ? (
-                  <DayDietView
-                    plan={plan}
-                    activeDay={safeActiveDay}
-                    setActiveDay={setActiveDay}
-                    progress={progress}
-                    toggleMeal={toggleMeal}
-                  />
-                ) : (
-                  <ShoppingListView plan={plan} />
+                {hasPlan && (
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-center shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22),0_0_24px_rgba(16,185,129,0.08)]">
+                    <span className="text-xs font-black text-[#10b981]">
+                      {completionPercent}%
+                    </span>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </section>
-      </main>
 
-      <BottomNav />
-    </section>
+              {hasPlan && (
+                <>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_16px_rgba(16,185,129,0.55)] transition-all"
+                      style={{ width: `${completionPercent}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-1.5">
+                    <ActionButton
+                      icon={<ShoppingCart size={13} />}
+                      label={showShopping ? "Dieta" : "Compra"}
+                      onClick={() => setShowShopping((prev) => !prev)}
+                      active={showShopping}
+                    />
+
+                    <ActionButton
+                      icon={<Download size={13} />}
+                      label="PDF"
+                      onClick={() => window.print()}
+                    />
+
+                    <ActionButton
+                      icon={<Share2 size={13} />}
+                      label="Enviar"
+                      onClick={handleShare}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto p-2.5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {loading && <GeneratingDietLoader formData={formData} />}
+
+              {!loading && !hasPlan && <EmptyPlan />}
+
+              {!loading && hasPlan && (
+                <div className="space-y-2.5">
+                  <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
+
+                  {!showShopping ? (
+                    <DayDietView
+                      plan={plan}
+                      activeDay={safeActiveDay}
+                      setActiveDay={setActiveDay}
+                      progress={progress}
+                      toggleMeal={toggleMeal}
+                    />
+                  ) : (
+                    <ShoppingListView plan={plan} />
+                  )}
+                </div>
+              )}
+            </div>
+          </SurfaceCard>
+        </div>
+      </AppShell>
+    </>
   );
 }
 
@@ -350,92 +355,43 @@ function DietHeroCard({
   completedMeals,
   totalMeals,
   handleResetPlan,
-  formData,
 }) {
   return (
-    <header className="relative overflow-hidden rounded-[34px] border border-[#10b981]/20 bg-[#07170f] p-5 shadow-[0_30px_120px_rgba(16,185,129,0.12)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98124,transparent_42%)]" />
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#10b981]/20 blur-3xl" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:30px_30px]" />
-
-      <div className="relative z-10">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_14px_#10b981]" />
-            <p className="text-[8px] font-black uppercase tracking-[0.28em] text-[#10b981]">
-              Smart Diet IA
-            </p>
+    <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2.5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <Sparkles size={12} />
+            Smart Diet IA
           </div>
 
-          <button
-            type="button"
-            onClick={handleResetPlan}
-            disabled={!hasPlan}
-            className="inline-flex items-center gap-1 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-[#10b981] disabled:opacity-30"
-          >
-            <RefreshCcw size={11} />
-            {hasPlan ? "Nueva" : "Crear"}
-          </button>
+          <h1 className="text-[24px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
+            Dieta personalizada
+          </h1>
+
+          <p className="mt-1 text-xs leading-4 text-white/60">
+            {hasPlan
+              ? `${completedMeals}/${totalMeals} comidas completadas · ${completionPercent}% semanal`
+              : "Plan por objetivo, días, comidas y alimentos disponibles."}
+          </p>
         </div>
 
-        <h1 className="text-[34px] font-black uppercase italic leading-none">
-          Dieta
-          <span className="block text-[#10b981]">personalizada</span>
-        </h1>
-
-        <p className="mt-3 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
-          Plan inteligente por objetivo, días, comidas, presupuesto y alimentos disponibles.
-        </p>
-
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <HeroMini label="Días" value={formData?.planDays || "7"} />
-          <HeroMini label="Comidas" value={formData?.mealsPerDay || "4"} />
-          <HeroMini
-            label="Modo"
-            value={Number(formData?.mealsPerDay) === 2 ? "Ayuno" : "Smart"}
-          />
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={18} />
         </div>
-
-        {hasPlan && (
-          <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-3">
-            <div className="flex items-center justify-between">
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                Progreso semanal
-              </p>
-
-              <p className="text-sm font-black text-[#10b981]">
-                {completionPercent}%
-              </p>
-            </div>
-
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
-              <div
-                className="h-full rounded-full bg-[#10b981] transition-all"
-                style={{ width: `${completionPercent}%` }}
-              />
-            </div>
-
-            <p className="mt-2 text-[10px] normal-case text-slate-500">
-              {completedMeals}/{totalMeals} comidas completadas
-            </p>
-          </div>
-        )}
       </div>
-    </header>
-  );
-}
 
-function HeroMini({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-2.5">
-      <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
-        {label}
-      </p>
-
-      <p className="mt-1 text-xs font-black uppercase text-white">
-        {value}
-      </p>
-    </div>
+      {hasPlan && (
+        <SecondaryButton
+          type="button"
+          onClick={handleResetPlan}
+          icon={<RefreshCcw size={14} />}
+          className="mt-3 w-full py-2.5 text-[10px]"
+        >
+          Nueva dieta
+        </SecondaryButton>
+      )}
+    </SurfaceCard>
   );
 }
 
@@ -445,67 +401,31 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-2xl border px-2.5 py-2 text-[8px] font-black uppercase tracking-wide transition active:scale-[0.97] disabled:opacity-30 ${
+      className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-2xl px-2 text-[10px] font-black uppercase tracking-wide shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] transition active:scale-[0.98] disabled:opacity-30 ${
         active
-          ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-          : "border-white/10 bg-white/[0.04] text-slate-300"
+          ? "bg-[#10b981] text-[#06110c] shadow-[0_0_22px_rgba(16,185,129,0.18)]"
+          : "bg-white/[0.045] text-slate-300 hover:bg-[#10b981]/10 hover:text-white"
       }`}
     >
-      <span className="flex items-center gap-1">
+      <span className={active ? "text-[#06110c]" : "text-[#10b981]"}>
         {icon}
-        {label}
       </span>
+      {label}
     </button>
-  );
-}
-
-function StatusBox({ type, message, action }) {
-  const isError = type === "error";
-
-  return (
-    <div
-      className={`rounded-[26px] border p-3 text-[11px] font-bold normal-case leading-5 ${
-        isError
-          ? "border-amber-400/20 bg-amber-500/10 text-amber-100"
-          : "border-[#10b981]/20 bg-[#10b981]/10 text-emerald-100"
-      }`}
-    >
-      <div className="flex items-start gap-2">
-        {isError ? (
-          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-        ) : (
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-        )}
-
-        <div>
-          <p>{message}</p>
-
-          {action && (
-            <button
-              type="button"
-              onClick={action}
-              className="mt-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]"
-            >
-              Completar perfil
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }
 
 function EmptyPlan() {
   return (
-    <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
-      <Sparkles className="mx-auto mb-3 text-[#10b981]" size={30} />
+    <div className="rounded-[24px] bg-white/[0.035] p-4 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+      <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
+        <Sparkles size={20} />
+      </div>
 
-      <p className="text-sm font-black uppercase">
-        Sin dieta generada
-      </p>
+      <p className="text-sm font-black uppercase">Tu dieta aparecerá aquí</p>
 
-      <p className="mx-auto mt-2 max-w-xs text-[11px] normal-case leading-5 text-slate-400">
-        Elige objetivo, días, comidas y preferencias para crear tu dieta.
+      <p className="mx-auto mt-1.5 max-w-xs text-xs normal-case leading-4 text-slate-400">
+        Configura tus preferencias y genera un plan inteligente.
       </p>
     </div>
   );
@@ -518,9 +438,6 @@ function GeneratingDietLoader({ formData }) {
   const steps = ["Perfil", "Macros", "Menú", "Porciones", "Compra"];
 
   useEffect(() => {
-    setPercent(7);
-    setSeconds(0);
-
     const progressInterval = setInterval(() => {
       setPercent((prev) => {
         if (prev >= 96) return prev;
@@ -546,59 +463,58 @@ function GeneratingDietLoader({ formData }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-[34px] border border-[#10b981]/20 bg-[#07170f] p-4 shadow-[0_30px_90px_rgba(16,185,129,0.12)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98126,transparent_42%)]" />
-      <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#10b981]/20 blur-3xl" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:30px_30px]" />
+    <div className="relative overflow-hidden rounded-[26px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_42%)]" />
+      <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#10b981]/18 blur-3xl" />
 
       <div className="relative z-10">
-        <div className="mb-5 overflow-hidden rounded-[30px] border border-white/10 bg-black/25 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[#10b981]">
-                Smart Diet IA
-              </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+              Smart Diet IA
+            </p>
 
-              <h3 className="mt-1 text-2xl font-black uppercase italic leading-none">
-                Creando tu dieta
-              </h3>
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+              Creando tu dieta
+            </h3>
 
-              <p className="mt-2 text-[11px] normal-case leading-4 text-slate-400">
-                {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
-                {Number(formData?.mealsPerDay) === 2 ? "ayuno intermitente" : "plan personalizado"}
-              </p>
-            </div>
-
-            <div className="relative grid h-20 w-20 shrink-0 place-items-center rounded-[28px] border border-[#10b981]/25 bg-[#10b981]/10">
-              <div className="absolute inset-1 animate-spin rounded-[24px] border-2 border-transparent border-t-[#10b981]" />
-              <div className="absolute inset-4 animate-pulse rounded-2xl bg-[#10b981]/10" />
-
-              <span className="relative text-2xl font-black text-[#10b981]">
-                {percent}%
-              </span>
-            </div>
+            <p className="mt-1.5 text-xs normal-case leading-4 text-slate-400">
+              {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
+              {Number(formData?.mealsPerDay) === 2
+                ? "ayuno intermitente"
+                : "plan personalizado"}
+            </p>
           </div>
 
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full bg-[#10b981] transition-all duration-500"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
+          <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-[22px] border border-[#10b981]/25 bg-[#10b981]/10">
+            <div className="absolute inset-1 animate-spin rounded-[18px] border-2 border-transparent border-t-[#10b981]" />
+            <div className="absolute inset-4 animate-pulse rounded-2xl bg-[#10b981]/10" />
 
-          <div className="mt-3 flex items-center justify-between text-[10px] font-bold normal-case text-slate-500">
-            <span className="inline-flex items-center gap-1">
-              <Timer size={12} />
-              {seconds}s
-            </span>
-
-            <span className="text-[#10b981]">
-              {percent < 96 ? "Procesando..." : "Finalizando..."}
+            <span className="relative text-lg font-black text-[#10b981]">
+              {percent}%
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
+          <div
+            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-[10px] font-bold normal-case text-slate-500">
+          <span className="inline-flex items-center gap-1">
+            <Timer size={12} />
+            {seconds}s
+          </span>
+
+          <span className="text-[#10b981]">
+            {percent < 96 ? "Procesando..." : "Finalizando..."}
+          </span>
+        </div>
+
+        <div className="mt-3 grid grid-cols-5 gap-1.5">
           {steps.map((step, index) => {
             const completed = index < activeStep;
             const active = index === activeStep;
@@ -615,7 +531,7 @@ function GeneratingDietLoader({ formData }) {
                 }`}
               >
                 <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${
+                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${
                     completed
                       ? "bg-[#10b981] text-[#06110c]"
                       : active
@@ -627,7 +543,7 @@ function GeneratingDietLoader({ formData }) {
                 </div>
 
                 <p
-                  className={`truncate text-[7px] font-black uppercase tracking-tight ${
+                  className={`truncate text-[10px] font-black uppercase tracking-tight ${
                     completed || active ? "text-white" : "text-slate-600"
                   }`}
                 >
@@ -640,35 +556,6 @@ function GeneratingDietLoader({ formData }) {
       </div>
     </div>
   );
-}
-
-function normalizePlan(weekArray) {
-  if (!Array.isArray(weekArray)) return [];
-
-  return weekArray.map((day, dayIndex) => {
-    const mealsArray = Array.isArray(day?.meals)
-      ? day.meals
-      : Object.values(day?.meals || {});
-
-    return {
-      day: day?.day || `Día ${dayIndex + 1}`,
-      meals: mealsArray.map((meal, index) => ({
-        id: meal?.id || `${day?.day || dayIndex}-${index}`,
-        time: meal?.time || defaultMealTime(index, mealsArray.length),
-        name: meal?.name || defaultMealName(index, mealsArray.length),
-        food: meal?.food || meal?.title || "Comida",
-        title: meal?.food || meal?.title || "Comida",
-        details: meal?.details || "",
-        ingredients: meal?.details
-          ? meal.details.split(",").map((item) => item.trim()).filter(Boolean)
-          : [],
-        calories: Number(meal?.calories || meal?.kcal || 0),
-        protein: Number(meal?.protein || 0),
-        carbs: Number(meal?.carbs || 0),
-        fat: Number(meal?.fat || 0),
-      })),
-    };
-  });
 }
 
 function getWeekTotals(plan) {
@@ -706,30 +593,21 @@ function mapProfileGoalToForm(goal) {
   return goal || "lose_fat";
 }
 
-function defaultMealTime(index, total = 4) {
-  if (total === 2) return ["13:00", "20:00"][index] || "13:00";
-  if (total === 3) return ["08:30", "14:00", "20:30"][index] || "08:30";
-  if (total === 5) return ["08:00", "11:30", "14:30", "18:00", "21:00"][index] || "08:00";
-  if (total >= 6) return ["08:00", "10:30", "13:30", "16:30", "19:30", "22:00"][index] || "08:00";
+function createInitialFormData() {
+  const savedProfile = getCachedProfile();
 
-  return ["08:00", "13:30", "17:30", "21:00"][index] || "08:00";
-}
-
-function defaultMealName(index, total = 4) {
-  if (total === 2) return ["Comida 1", "Comida 2"][index] || `Comida ${index + 1}`;
-  if (total === 3) return ["Desayuno", "Comida", "Cena"][index] || `Comida ${index + 1}`;
-  if (total === 5) return ["Desayuno", "Snack", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
-  if (total >= 6) return ["Desayuno", "Snack 1", "Comida", "Snack 2", "Cena", "Extra"][index] || `Comida ${index + 1}`;
-
-  return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
-}
-
-function safeParse(value, fallback) {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
+  return {
+    dietType: "balanced",
+    goal: mapProfileGoalToForm(
+      savedProfile?.goal || savedProfile?.objetivo || "lose_fat"
+    ),
+    planDays: "7",
+    mealsPerDay: "4",
+    budget: "medium",
+    cookingLevel: "easy",
+    homeFoods: "",
+    exclusions: "",
+  };
 }
 
 function buildShareText(plan) {

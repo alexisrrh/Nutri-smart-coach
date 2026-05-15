@@ -53,7 +53,7 @@ export function Navbar() {
           <NavItem to="/plan-comidas" icon={<Flame size={16} />} label="Plan" linkClass={linkClass} activeClass={activeClass} />
           <NavItem to="/comidas" icon={<Utensils size={16} />} label="Comidas" linkClass={linkClass} activeClass={activeClass} />
           <NavItem to="/foto-comida" icon={<Camera size={16} />} label="Foto IA" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/progreso" icon={<LineChart size={16} />} label="Progreso" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/progreso" icon={<LineChart size={16} />} label="Peso y medidas" linkClass={linkClass} activeClass={activeClass} />
         </div>
 
         <button

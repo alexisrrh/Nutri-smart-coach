@@ -1,44 +1,55 @@
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 export default function SmartSwapCard({ result }) {
+  const [open, setOpen] = useState(false);
+
   if (!result) return null;
 
   const improvements = Array.isArray(result.improvements)
-    ? result.improvements.slice(0, 2)
+    ? result.improvements.slice(0, 1)
     : [];
 
   if (improvements.length === 0) return null;
 
-  return (
-    <section className="mt-2 rounded-[26px] bg-black/20 p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles size={14} className="text-[#10b981]" />
+  const text = cleanText(improvements[0]);
 
-          <p className="text-[8px] font-black uppercase tracking-[0.24em] text-[#10b981]">
-            Ajustes IA
+  return (
+    <section className="rounded-[20px] border border-white/10 bg-black/20 p-2.5">
+      <div className="mb-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Sparkles size={12} className="text-[#10b981]" />
+
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            Ajuste IA
           </p>
         </div>
 
-        <span className="text-[8px] font-black uppercase tracking-widest text-white/30">
-          smart
+        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+          Smart
         </span>
       </div>
 
-      <div className="grid gap-2">
-        {improvements.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#10b981]/10 px-3 py-2.5"
-          >
-            <p className="text-[10px] normal-case leading-4 text-emerald-100/85">
-              {cleanText(item)}
-            </p>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-2 rounded-[16px] bg-[#10b981]/10 px-2.5 py-2 text-left"
+      >
+        <p
+          className={`text-xs leading-4 text-emerald-100/85 ${
+            open ? "" : "line-clamp-2"
+          }`}
+        >
+          {text}
+        </p>
 
-            <ArrowRight size={14} className="shrink-0 text-[#10b981]" />
-          </div>
-        ))}
-      </div>
+        <ArrowRight
+          size={12}
+          className={`shrink-0 text-[#10b981] transition ${
+            open ? "rotate-90" : ""
+          }`}
+        />
+      </button>
     </section>
   );
 }

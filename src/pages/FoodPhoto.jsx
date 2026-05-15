@@ -1,141 +1,170 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { API_URL } from "../config/api";
+import { useEffect, useMemo, useState } from "react";
+
+import FoodPageLayout from "../components/food/FoodPageLayout";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
 import FoodResultCard from "../components/food/FoodResultCard";
-import FoodTags from "../components/food/FoodTags";
+import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
-import RecentMealsSlider from "../components/food/RecentMealsSlider";
-import FoodPageLayout from "../components/food/FoodPageLayout";
-import heic2any from "heic2any";
+import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
+
+import { supabase } from "../lib/supabase";
 import {
-  saveMealToLocalStorage,
-  safeParse,
-} from "../components/food/foodUtils";
-
-
-
-const MEALS_KEY = "nutricoach_meals";
+  analyzeMeal,
+  cacheMeal,
+  deleteMeal,
+  getCachedMeals,
+  removeMealFromCache,
+} from "../services/mealService";
 
 export default function FoodPhoto() {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [meals, setMeals] = useState([]);
+  const [meals, setMeals] = useState(getCachedMeals);
 
   useEffect(() => {
-    const storedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
-    setMeals(storedMeals);
-  }, []);
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
-async function handleImage(event) {
-  const selectedFile = event.target.files?.[0];
+  const totals = useMemo(() => {
+    return meals.reduce(
+      (acc, meal) => {
+        acc.calories += Number(meal.calories || 0);
+        acc.protein += Number(meal.protein || 0);
+        return acc;
+      },
+      { calories: 0, protein: 0 }
+    );
+  }, [meals]);
 
-  if (!selectedFile) return;
+  const goals = {
+    calories: 2600,
+    protein: 170,
+  };
 
-  setError("");
+  function resetScanner() {
+    if (preview) URL.revokeObjectURL(preview);
 
-  const MAX_SIZE_MB = 8;
-
-  if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-    setError("La imagen es demasiado grande. Usa una foto menor a 8MB.");
-    return;
+    setImage(null);
+    setPreview("");
+    setResult(null);
+    setError("");
+    setLoading(false);
   }
 
-  let finalFile = selectedFile;
-
-  try {
-    const isHeic =
-      selectedFile.type === "image/heic" ||
-      selectedFile.type === "image/heif" ||
-      selectedFile.name.toLowerCase().endsWith(".heic") ||
-      selectedFile.name.toLowerCase().endsWith(".heif");
-
-    // Convertir HEIC/HEIF a JPG
-    if (isHeic) {
-      const convertedBlob = await heic2any({
-        blob: selectedFile,
-        toType: "image/jpeg",
-        quality: 0.85,
-      });
-
-      finalFile = new File(
-        [Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob],
-        selectedFile.name.replace(/\.[^/.]+$/, ".jpg"),
-        {
-          type: "image/jpeg",
-        }
-      );
-    }
+  async function handleImage(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     const allowedTypes = [
       "image/jpeg",
+      "image/jpg",
       "image/png",
       "image/webp",
+      "image/heic",
+      "image/heif",
     ];
 
-    if (!allowedTypes.includes(finalFile.type)) {
-      setError(
-        "Formato no compatible. Usa JPG, PNG, WEBP o HEIC."
-      );
+    const isValid =
+      allowedTypes.includes(file.type) ||
+      /\.(jpg|jpeg|png|webp|heic|heif)$/i.test(file.name);
+
+    if (!isValid) {
+      setError("Formato no compatible. Usa JPG, PNG, WEBP o HEIC.");
       return;
     }
 
-    setFile(finalFile);
-    setPreview(URL.createObjectURL(finalFile));
-    setResult(null);
+    try {
+      setError("");
+      setResult(null);
 
-  } catch (error) {
-    console.error("Error procesando imagen:", error);
-    setError("No se pudo procesar la imagen.");
+      const preparedImage = await prepareImageForUpload(file);
+
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+
+      setImage(preparedImage);
+      setPreview(URL.createObjectURL(preparedImage));
+    } catch (error) {
+      console.error("Error preparando imagen:", error);
+      setError("No se pudo preparar la imagen. Intenta con otra foto.");
+    }
   }
-}
 
   async function analyzeFood() {
-    if (!file) {
-      setError("Sube una imagen primero.");
-      return;
+    if (!image || loading) return;
+
+    try {
+      setLoading(true);
+      setResult(null);
+      setError("");
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.warn("No se pudo obtener usuario Supabase:", userError.message);
+      }
+
+      const mealToSave = await analyzeMeal({
+        image,
+        goal: "perder_grasa",
+        userId: user?.id,
+      });
+
+      setResult(mealToSave);
+      setMeals(cacheMeal(mealToSave, preview));
+    } catch (error) {
+      console.error("Error analizando comida:", error);
+
+      setError(
+        error?.message ||
+          "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo."
+      );
+    } finally {
+      setLoading(false);
     }
+  }
+
+  async function discardAnalysis() {
+    if (!result) return;
 
     try {
       setLoading(true);
       setError("");
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      if (result.id) {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      const formData = new FormData();
-      formData.append("image", file);
+        if (userError) {
+          console.warn("No se pudo obtener usuario Supabase:", userError.message);
+        }
 
-      if (user?.id) {
-        formData.append("user_id", user.id);
-      }
-console.log("API:", API_URL);
-console.log("URL FINAL:", `${API_URL}/analyze-food`);
-      const response = await fetch(`${API_URL}/analyze-food`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.detail || "Error analizando imagen");
+        if (user?.id) {
+          await deleteMeal(result.id, user.id);
+        }
       }
 
-      setResult(data);
-      saveMealToLocalStorage(data, preview);
-
-      const updatedMeals = safeParse(localStorage.getItem(MEALS_KEY), []);
-      setMeals(updatedMeals);
-    } catch (err) {
-      console.error("Error frontend:", err);
-      setError(err.message || "No se pudo analizar la comida.");
+      setMeals(removeMealFromCache(result));
+      resetScanner();
+    } catch (error) {
+      console.error("Error descartando análisis:", error);
+      setError(
+        error?.message ||
+          "No se pudo descartar el análisis. Inténtalo de nuevo."
+      );
     } finally {
       setLoading(false);
     }
@@ -143,34 +172,141 @@ console.log("URL FINAL:", `${API_URL}/analyze-food`);
 
   return (
     <FoodPageLayout>
-      <AIScanHero />
+      <div className="flex h-full min-h-0 flex-col gap-2">
+        {(!result || loading) && <AIScanHero />}
 
-      {!loading && !result && (
-        <FoodUploadCard
-          preview={preview}
-          handleImage={handleImage}
-          analyzeFood={analyzeFood}
-          loading={loading}
-        />
-      )}
+        {!result && !loading && (
+          <FoodUploadCard
+            preview={preview}
+            handleImage={handleImage}
+            analyzeFood={analyzeFood}
+            loading={loading}
+          />
+        )}
 
-      {loading && <FoodScannerLoader preview={preview} />}
+        {error && (
+          <div className="shrink-0 rounded-[18px] border border-red-400/20 bg-red-400/10 p-2.5 text-xs leading-4 text-red-200">
+            {error}
+          </div>
+        )}
 
-      {!loading && result && (
-        <>
-          <FoodResultCard result={result} preview={preview} />
-          <FoodTags result={result} />
-          <SmartSwapCard result={result} />
-        </>
-      )}
+        {loading && <FoodScannerLoader preview={preview} />}
 
-      <RecentMealsSlider meals={meals} />
+        {result && !loading && (
+          <>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="space-y-2">
+                <FoodResultCard result={result} preview={preview} />
+                <NutritionInsights result={result} />
+                <SmartSwapCard result={result} />
+                <DailyGoalCard totals={totals} goals={goals} />
+              </div>
+            </div>
 
-      {error && (
-        <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-[11px] font-bold text-red-300">
-          {error}
-        </div>
-      )}
+            <div className="grid shrink-0 grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={resetScanner}
+                className="rounded-[18px] border border-[#10b981]/25 bg-[#10b981] px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-[#04110b] shadow-[0_14px_40px_rgba(16,185,129,0.20)] transition active:scale-[0.98] hover:bg-emerald-300"
+              >
+                Analizar otra comida
+              </button>
+
+              <button
+                type="button"
+                onClick={discardAnalysis}
+                className="rounded-[18px] border border-red-400/20 bg-red-400/10 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+              >
+                Descartar análisis
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </FoodPageLayout>
   );
+}
+
+async function prepareImageForUpload(file) {
+  const targetSize = 1.2 * 1024 * 1024;
+
+  if (file.size <= targetSize && !isHeicImage(file)) {
+    return file;
+  }
+
+  if (isHeicImage(file)) {
+    return file;
+  }
+
+  const compressed = await compressImage(file);
+
+  if (compressed.size > targetSize) {
+    throw new Error("La imagen sigue siendo demasiado pesada.");
+  }
+
+  return compressed;
+}
+
+function isHeicImage(file) {
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    /\.(heic|heif)$/i.test(file.name)
+  );
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const canvas = document.createElement("canvas");
+      const maxWidth = 1024;
+      const scale = Math.min(1, maxWidth / image.width);
+
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        reject(new Error("No se pudo procesar la imagen."));
+        return;
+      }
+
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("No se pudo comprimir la imagen."));
+            return;
+          }
+
+          const compressedFile = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, ".jpg"),
+            {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            }
+          );
+
+          resolve(compressedFile);
+        },
+        "image/jpeg",
+        0.74
+      );
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("No se pudo cargar la imagen."));
+    };
+
+    image.src = objectUrl;
+  });
 }

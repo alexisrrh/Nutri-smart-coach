@@ -68,7 +68,7 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-[30px] border border-dashed border-white/10 bg-black/20 p-6 text-center">
+      <div className="rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 text-center">
         <ShoppingBag
           className="mx-auto mb-3 text-[#10b981]"
           size={30}
@@ -93,53 +93,53 @@ export function ShoppingListView({ plan }) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[32px] border border-[#10b981]/15 bg-[#07170f] p-4 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[#10b981]/15 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/15 bg-[#07170f] p-2.5 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
+      <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[#10b981]/15 blur-3xl" />
 
       <div className="relative z-10">
-        <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+        <header className="mb-2 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
               <ShoppingBag size={14} />
               Compra semanal
             </div>
 
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-white">
               Lista inteligente
             </h3>
 
-            <p className="mt-1 text-[11px] normal-case text-slate-500">
+            <p className="mt-1 text-xs normal-case text-slate-500">
               {checkedCount}/{totalItems} productos comprados
             </p>
           </div>
 
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10">
             <div className="text-center">
-              <p className="text-lg font-black text-[#10b981]">
+              <p className="text-base font-black text-[#10b981]">
                 {progress}%
               </p>
 
-              <p className="text-[7px] font-black uppercase tracking-widest text-white/40">
+              <p className="text-[10px] font-black uppercase tracking-wide text-white/45">
                 listo
               </p>
             </div>
           </div>
         </header>
 
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/5">
+        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mb-2 flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((category) => (
             <button
               key={category.key}
               type="button"
               onClick={() => setActiveCategory(category.key)}
-              className={`flex shrink-0 items-center gap-2 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-2xl border px-2.5 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
                 activeCategory === category.key
                   ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                   : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"
@@ -165,7 +165,7 @@ export function ShoppingListView({ plan }) {
                 key={item.id}
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                className={`group relative overflow-hidden rounded-[24px] border p-3 text-left transition-all ${
+                className={`group relative overflow-hidden rounded-[20px] border p-2.5 text-left transition-all ${
                   isChecked
                     ? "border-[#10b981]/25 bg-[#10b981]/5 opacity-70"
                     : "border-white/10 bg-black/20 hover:border-[#10b981]/20 hover:bg-black/30"
@@ -184,7 +184,7 @@ export function ShoppingListView({ plan }) {
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`truncate text-[11px] font-black uppercase tracking-wide ${
+                      className={`truncate text-[10px] font-black uppercase tracking-wide ${
                         isChecked
                           ? "text-slate-500 line-through"
                           : "text-white"
@@ -193,7 +193,7 @@ export function ShoppingListView({ plan }) {
                       {item.name}
                     </p>
 
-                    <p className="mt-1 text-[11px] font-bold normal-case text-[#10b981]">
+                    <p className="mt-0.5 text-xs font-bold normal-case text-[#10b981]">
                       {item.amount}
                     </p>
                   </div>
@@ -227,18 +227,22 @@ function buildShoppingGroups(plan = []) {
 
         if (!parsed.name) return;
 
-        const key = normalizeName(parsed.name);
+        const normalized = normalizeIngredientName(parsed.name);
+        const unitGroup = getUnitGroup(parsed.unit);
+        const key = `${normalized.key}:${unitGroup}`;
 
         if (!itemsMap.has(key)) {
           itemsMap.set(key, {
             id: key,
-            name: toTitleCase(parsed.name),
-            category: categorizeIngredient(parsed.name),
+            name: normalized.label,
+            category: categorizeIngredient(normalized.key),
+            unitGroup,
             grams: 0,
             ml: 0,
             units: 0,
             portions: 0,
             unknown: 0,
+            unknownLabels: [],
           });
         }
 
@@ -255,7 +259,10 @@ function buildShoppingGroups(plan = []) {
           item.units += parsed.value;
         else if (parsed.unit === "portion")
           item.portions += parsed.value;
-        else item.unknown += 1;
+        else {
+          item.unknown += 1;
+          item.unknownLabels.push(parsed.rawAmount || ingredient);
+        }
       });
     });
   });
@@ -308,7 +315,7 @@ function parseIngredient(rawIngredient) {
       : String(rawIngredient).trim();
 
   const match = text.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
+    /^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|gramos?|ml|l|litros?|unidad(?:es)?|ud|uds|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
   );
 
   if (!match) {
@@ -325,15 +332,22 @@ function parseIngredient(rawIngredient) {
 
   const unitText = (match[2] || "").toLowerCase();
 
-  const name = (match[3] || text).trim();
+  const matchedName = (match[3] || "").trim();
+  const name = matchedName || getNameFromUnitText(unitText) || text;
 
-  if (unitText === "g") return { name, value, unit: "g" };
+  if (unitText === "g" || unitText === "gr" || unitText.startsWith("gramo")) {
+    return { name, value, unit: "g" };
+  }
   if (unitText === "kg") return { name, value, unit: "kg" };
   if (unitText === "ml") return { name, value, unit: "ml" };
-  if (unitText === "l") return { name, value, unit: "l" };
+  if (unitText === "l" || unitText.startsWith("litro")) {
+    return { name, value, unit: "l" };
+  }
 
   if (
     unitText.includes("unidad") ||
+    unitText === "ud" ||
+    unitText === "uds" ||
     unitText.includes("pieza") ||
     unitText.includes("huevo") ||
     unitText.includes("rebanada") ||
@@ -387,14 +401,22 @@ function formatAmount(item) {
   }
 
   if (parts.length === 0 && item.unknown > 0) {
-    parts.push(`${item.unknown} vez/semana`);
+    parts.push(formatUnknownAmount(item));
   }
 
   return parts.join(" + ") || "cantidad semanal";
 }
 
+function getNameFromUnitText(unitText) {
+  if (/^huevo(?:s)?$/.test(unitText)) return "huevos";
+  if (/^pl[aá]tano(?:s)?$/.test(unitText)) return "plátanos";
+  if (/^banana(?:s)?$/.test(unitText)) return "bananas";
+
+  return "";
+}
+
 function categorizeIngredient(name = "") {
-  const text = name.toLowerCase();
+  const text = normalizeText(name);
 
   if (
     [
@@ -460,13 +482,97 @@ function categorizeIngredient(name = "") {
 }
 
 function normalizeName(name = "") {
-  return String(name)
+  return removePreparationWords(removeEmbeddedAmounts(normalizeText(name)));
+}
+
+function normalizeIngredientName(name = "") {
+  const key = normalizeName(name);
+  const canonicalKey = getCanonicalIngredientKey(key);
+
+  return {
+    key: canonicalKey,
+    label: CANONICAL_INGREDIENT_LABELS[canonicalKey] || toTitleCase(canonicalKey),
+  };
+}
+
+function getCanonicalIngredientKey(key) {
+  if (/^huevos?$/.test(key)) return "huevos";
+  if (/^patatas?$/.test(key)) return "patata";
+
+  if (key === "arroz") return "arroz";
+  if (key === "patata") return "patata";
+  if (key === "avena") return "avena";
+  if (key === "pasta integral") return "pasta integral";
+
+  if (key === "pan integral" || key === "pan centeno" || key === "pan de centeno") {
+    return "pan integral";
+  }
+
+  if (
+    key === "pollo" ||
+    key === "pechuga pollo" ||
+    key === "pechuga de pollo" ||
+    key === "pollo plancha" ||
+    key === "pollo a la plancha"
+  ) {
+    return "pollo";
+  }
+
+  return key;
+}
+
+function getUnitGroup(unit) {
+  if (unit === "g" || unit === "kg") return "weight";
+  if (unit === "ml" || unit === "l") return "volume";
+  if (unit === "unit") return "unit";
+  if (unit === "portion") return "portion";
+
+  return "unknown";
+}
+
+function normalizeText(text = "") {
+  return String(text)
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
+    .replace(/\((?:\d+(?:[.,]\d+)?)\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\)/gi, " ")
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\b/gi, " ")
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function removeEmbeddedAmounts(text) {
+  return String(text)
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:kg|g|gr|gramos?|ml|l|litros?|ud|uds|unidad(?:es)?)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function removePreparationWords(text) {
+  return String(text)
+    .replace(/\bpara pure\b/g, " ")
+    .replace(/\ba la plancha\b/g, " ")
+    .replace(
+      /\b(cocido|cocida|crudo|cruda|blanco|blanca|molido|molida|troceado|troceada)\b/g,
+      " "
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatUnknownAmount(item) {
+  const uniqueLabels = Array.from(
+    new Set(
+      item.unknownLabels
+        .map((label) => String(label).trim())
+        .filter(Boolean)
+    )
+  );
+
+  if (uniqueLabels.length === 1) return uniqueLabels[0];
+
+  return `${item.unknown} vez/semana`;
 }
 
 function toTitleCase(text = "") {
@@ -484,3 +590,14 @@ function toTitleCase(text = "") {
 function formatNumber(number) {
   return Number(number.toFixed(1)).toString();
 }
+
+const CANONICAL_INGREDIENT_LABELS = {
+  arroz: "Arroz",
+  avena: "Avena",
+  huevos: "Huevos",
+  "pan integral": "Pan integral",
+  pasta: "Pasta",
+  "pasta integral": "Pasta integral",
+  patata: "Patata",
+  pollo: "Pollo",
+};

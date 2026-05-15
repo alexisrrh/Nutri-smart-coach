@@ -16,10 +16,11 @@ export function DayDietView({
   progress = {},
   toggleMeal,
 }) {
-  if (!Array.isArray(plan) || plan.length === 0) return null;
-
-  const safeActiveDay = Math.max(0, Math.min(activeDay, plan.length - 1));
-  const activeDayData = plan[safeActiveDay] || plan[0];
+  const hasPlan = Array.isArray(plan) && plan.length > 0;
+  const safeActiveDay = hasPlan
+    ? Math.max(0, Math.min(activeDay, plan.length - 1))
+    : 0;
+  const activeDayData = hasPlan ? plan[safeActiveDay] || plan[0] : null;
 
   const mealsArray = useMemo(() => {
     if (!activeDayData?.meals) return [];
@@ -30,6 +31,8 @@ export function DayDietView({
 
   const dayTotals = useMemo(() => getDayTotals(mealsArray), [mealsArray]);
 
+  if (!hasPlan) return null;
+
   const completed = mealsArray.filter((meal, index) =>
     Boolean(progress?.[getMealId(activeDayData?.day, meal, index)])
   ).length;
@@ -38,14 +41,14 @@ export function DayDietView({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="space-y-2.5">
+      <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {plan.map((dayData, index) => (
           <button
             key={`${dayData.day}-${index}`}
             type="button"
             onClick={() => setActiveDay(index)}
-            className={`shrink-0 rounded-2xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition ${
+            className={`shrink-0 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition ${
               safeActiveDay === index
                 ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_18px_rgba(16,185,129,0.28)]"
                 : "border-white/10 bg-black/20 text-slate-400 hover:border-[#10b981]/30 hover:text-white"
@@ -56,40 +59,40 @@ export function DayDietView({
         ))}
       </div>
 
-      <div className="relative overflow-hidden rounded-[30px] border border-[#10b981]/15 bg-[#07170f] p-3">
-        <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#10b981]/15 blur-3xl" />
+      <div className="relative overflow-hidden rounded-[24px] border border-[#10b981]/15 bg-[#07170f] p-2.5">
+        <div className="absolute -right-14 -top-14 h-28 w-28 rounded-full bg-[#10b981]/15 blur-3xl" />
 
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[8px] font-black uppercase tracking-[0.25em] text-[#10b981]">
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
                 Plan diario
               </span>
 
-              <h3 className="mt-1 truncate text-2xl font-black uppercase italic leading-none text-white">
+              <h3 className="mt-0.5 truncate text-xl font-black uppercase italic leading-none text-white">
                 {activeDayData?.day || "Día"}
               </h3>
 
-              <p className="mt-1 text-[11px] normal-case text-slate-500">
+              <p className="mt-1 text-xs normal-case text-slate-500">
                 {completed}/{total} comidas · {percentage}% completado
               </p>
             </div>
 
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[24px] border border-[#10b981]/20 bg-[#10b981]/10">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10">
               <span className="text-lg font-black text-[#10b981]">
                 {percentage}%
               </span>
             </div>
           </div>
 
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/5">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
             <div
               className="h-full rounded-full bg-[#10b981] transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-4 gap-1.5">
+          <div className="mt-2 grid grid-cols-4 gap-1.5">
             <DayMacro icon={<Flame size={13} />} value={Math.round(dayTotals.calories)} label="kcal" />
             <DayMacro icon={<Beef size={13} />} value={`${Math.round(dayTotals.protein)}g`} label="prot" />
             <DayMacro icon={<Wheat size={13} />} value={`${Math.round(dayTotals.carbs)}g`} label="carb" />
@@ -98,7 +101,7 @@ export function DayDietView({
         </div>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {mealsArray.map((meal, index) => {
           const mealId = getMealId(activeDayData?.day, meal, index);
           const isCompleted = Boolean(progress?.[mealId]);
@@ -115,9 +118,9 @@ export function DayDietView({
                   : "border-white/10 bg-black/20"
               }`}
             >
-              <div className="flex items-start justify-between gap-3 p-3">
+              <div className="flex items-start justify-between gap-2.5 p-2.5">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-500">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-wide text-slate-500">
                     <span className="inline-flex items-center gap-1 text-[#10b981]">
                       <Utensils size={11} />
                       {mealName}
@@ -132,10 +135,15 @@ export function DayDietView({
                       <Flame size={10} />
                       {Math.round(Number(meal.calories || meal.kcal || 0))} kcal
                     </span>
+
+                    <span className="inline-flex items-center gap-1 text-emerald-200/80">
+                      <Beef size={10} />
+                      {Math.round(Number(meal.protein || 0))}g prot
+                    </span>
                   </div>
 
                   <h4
-                    className={`mt-2 text-[15px] font-black uppercase italic leading-tight tracking-tight ${
+                    className={`mt-1.5 line-clamp-2 text-[14px] font-black uppercase italic leading-tight tracking-tight ${
                       isCompleted ? "text-white/45 line-through" : "text-white"
                     }`}
                   >
@@ -146,7 +154,7 @@ export function DayDietView({
                 <button
                   type="button"
                   onClick={() => toggleMeal?.(mealId)}
-                  className={`shrink-0 rounded-2xl border px-3 py-2 text-[8px] font-black uppercase tracking-wider transition active:scale-95 ${
+                  className={`shrink-0 rounded-2xl border px-2.5 py-2 text-[10px] font-black uppercase tracking-wide transition active:scale-95 ${
                     isCompleted
                       ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                       : "border-white/10 bg-[#0d2218] text-slate-300 hover:bg-white/5"
@@ -163,9 +171,9 @@ export function DayDietView({
                 </button>
               </div>
 
-              <div className="border-t border-white/10 px-3 pb-3 pt-2">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-500">
+              <div className="border-t border-white/10 px-2.5 pb-2.5 pt-2">
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
                     Porciones
                   </p>
 
@@ -177,7 +185,7 @@ export function DayDietView({
                 </div>
 
                 {ingredients.length > 0 ? (
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {ingredients.map((item, idx) => (
                       <IngredientPill key={`${mealId}-ing-${idx}`} item={item} />
                     ))}
@@ -200,7 +208,7 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/10 bg-[#0d2218]/70 px-3 py-1.5">
+    <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/10 bg-[#0d2218]/70 px-2.5 py-1.5">
       <span className="max-w-[130px] truncate text-[11px] font-bold normal-case text-slate-300">
         {name}
       </span>
@@ -214,10 +222,10 @@ function IngredientPill({ item }) {
 
 function DayMacro({ icon, value, label }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-2 text-center">
-      <div className="mx-auto mb-1 flex justify-center text-[#10b981]">{icon}</div>
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-1.5 text-center">
+      <div className="mx-auto mb-0.5 flex justify-center text-[#10b981]">{icon}</div>
       <p className="text-xs font-black text-white">{value}</p>
-      <p className="text-[7px] font-black uppercase tracking-widest text-slate-500">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </p>
     </div>
@@ -226,8 +234,8 @@ function DayMacro({ icon, value, label }) {
 
 function MiniMacro({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-1">
-      <span className="text-[8px] font-black uppercase text-slate-500">{label}</span>
+    <div className="rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-0.5">
+      <span className="text-[10px] font-black uppercase text-slate-500">{label}</span>
       <span className="ml-1 text-[10px] font-black text-white">{value}</span>
     </div>
   );

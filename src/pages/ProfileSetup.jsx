@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Save,
   UserRound,
   ChevronDown,
-  AlertCircle,
-  CheckCircle2,
   LogOut,
   Sparkles,
   Ruler,
@@ -15,10 +12,22 @@ import {
   Activity,
   Target,
 } from "lucide-react";
+import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
-import BottomNav from "../components/BottomNav";
-
-const PROFILE_KEY = "nutricoach_profile";
+import {
+  clearCachedProfile,
+  getProfile,
+  saveProfile,
+} from "../services/profileService";
+import {
+  AppShell,
+  FormField,
+  MetaBadge,
+  PrimaryButton,
+  SecondaryButton,
+  StatusBox,
+  SurfaceCard,
+} from "../components/ui";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -38,11 +47,7 @@ export function ProfileSetup() {
     goal: "perder_grasa",
   });
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
+  const loadProfile = useCallback(async () => {
     setLoadingProfile(true);
     setError("");
 
@@ -53,73 +58,45 @@ export function ProfileSetup() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        localStorage.removeItem(PROFILE_KEY);
+        clearCachedProfile();
         navigate("/login");
         return;
       }
 
       setUser(user);
 
-      const localProfile = JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error("Error cargando perfil:", profileError);
-        setError("No se pudo cargar el perfil.");
-      }
-
-      const profile = profileData || localProfile;
+      const profile = await getProfile(user.id);
 
       setForm({
         name: profile?.name || "",
-        age: profile?.age || profile?.edad || "",
-        weight: profile?.weight || profile?.peso || "",
-        height: profile?.height || profile?.altura || "",
+        age: profile?.age || "",
+        weight: profile?.weight || "",
+        height: profile?.height || "",
         gender: profile?.gender || "male",
-        activity:
-          profile?.activity_level ||
-          profile?.activity ||
-          profile?.actividad ||
-          "moderate",
-        goal: profile?.goal || profile?.objetivo || "perder_grasa",
+        activity: profile?.activity_level || "moderate",
+        goal: profile?.goal || "perder_grasa",
       });
-
-      if (profileData) {
-        localStorage.setItem(
-          PROFILE_KEY,
-          JSON.stringify({
-            ...profileData,
-            user_id: user.id,
-            id: user.id,
-            activity: profileData.activity_level,
-            objetivo: profileData.goal,
-            peso: profileData.weight,
-            altura: profileData.height,
-            edad: profileData.age,
-          })
-        );
-      }
-    } catch (err) {
-      console.error(err);
+    } catch (profileError) {
+      console.error("Error cargando perfil:", profileError);
+      setError("No se pudo cargar el perfil.");
     } finally {
       setLoadingProfile(false);
     }
-  }
+  }, [navigate]);
+
+  useEffect(() => {
+    Promise.resolve().then(loadProfile);
+  }, [loadProfile]);
 
   async function handleLogout() {
     if (!window.confirm("¿Cerrar sesión?")) return;
 
     await supabase.auth.signOut();
 
-    localStorage.removeItem(PROFILE_KEY);
-    localStorage.removeItem("smart_diet_plan");
-    localStorage.removeItem("smart_diet_progress");
-    localStorage.removeItem("nutricoach_meals");
+    clearCachedProfile();
+    localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
+    localStorage.removeItem(STORAGE_KEYS.DIET_PROGRESS);
+    localStorage.removeItem(STORAGE_KEYS.MEALS);
 
     navigate("/");
   }
@@ -148,8 +125,9 @@ export function ProfileSetup() {
         return;
       }
 
-      const profileToSave = {
+      await saveProfile({
         id: currentUser.id,
+        user_id: currentUser.id,
         email: currentUser.email,
         name: form.name.trim(),
         age: Number(form.age),
@@ -164,37 +142,13 @@ export function ProfileSetup() {
           goal: form.goal,
         },
         updated_at: new Date().toISOString(),
-      };
-
-      const { data, error: saveError } = await supabase
-        .from("profiles")
-        .upsert(profileToSave, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (saveError) {
-        console.error("Error guardando perfil:", saveError);
-        setError(saveError.message || "No se pudo guardar el perfil.");
-        return;
-      }
-
-      const localProfile = {
-        ...data,
-        id: currentUser.id,
-        user_id: currentUser.id,
-        activity: data.activity_level,
-        objetivo: data.goal,
-        peso: data.weight,
-        altura: data.height,
-        edad: data.age,
-      };
-
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile));
+      });
 
       setSaved(true);
       setTimeout(() => navigate("/dashboard"), 800);
-    } catch (err) {
-      console.error(err);
+    } catch (saveError) {
+      console.error("Error guardando perfil:", saveError);
+      setError(saveError.message || "No se pudo guardar el perfil.");
     } finally {
       setLoading(false);
     }
@@ -202,222 +156,202 @@ export function ProfileSetup() {
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex justify-center items-center p-0">
-        <section className="w-full max-w-md h-screen bg-[#06110e] text-white flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
-          <div className="text-center px-6">
-            <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-full border-2 border-emerald-400/30 bg-emerald-400/10 flex items-center justify-center">
-              <Activity className="h-6 w-6 text-emerald-400 animate-spin" style={{ animationDuration: '3s' }} />
-            </div>
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-300">
-              Sincronizando Perfil...
-            </p>
-          </div>
-        </section>
-      </div>
+      <AppShell withBottomNav={false} contentClassName="px-2 pt-2">
+        <SurfaceCard className="mt-28 p-5 text-center">
+          <div className="mx-auto mb-3 h-12 w-12 animate-pulse rounded-3xl bg-emerald-400/10 shadow-[0_0_24px_rgba(16,185,129,0.16)]" />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+            Cargando perfil...
+          </p>
+        </SurfaceCard>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex justify-center items-center p-0">
-      <section className="w-full max-w-md h-screen md:h-[92vh] md:rounded-3xl md:border md:border-zinc-800/80 bg-[#06110e] text-white font-sans flex flex-col relative overflow-hidden shadow-2xl">
-        
-        {/* Header Superior Móvil */}
-        <div className="sticky top-0 bg-[#06110e]/95 backdrop-blur-md z-40 px-4 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/70 transition active:scale-95"
-          >
-            <ArrowLeft size={12} />
-            Atrás
-          </button>
+    <AppShell contentClassName="px-2 pb-[88px] pt-2">
+      <div className="flex h-[calc(100dvh-98px)] min-h-0 flex-col gap-2.5">
+        <ProfileHero user={user} goal={form.goal} />
 
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400">NutriSmartCoach</span>
+        {error && <StatusBox type="error">{error}</StatusBox>}
+        {saved && <StatusBox type="success">Perfil actualizado con éxito.</StatusBox>}
 
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 rounded-full border border-red-400/10 bg-red-400/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-300/70 transition active:scale-95"
-          >
-            <LogOut size={12} />
-            Salir
-          </button>
-        </div>
-
-        {/* Zona de contenido con scroll vertical (Sin pb forzados) */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 scrollbar-none">
-          
-          {/* Ficha informativa superior */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-xl backdrop-blur-xl">
-            <div className="flex flex-col gap-4">
-              <div>
-                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.15em] text-emerald-300">
-                  <Sparkles size={11} />
-                  Configuración inteligente
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="space-y-2.5 pb-2">
+            <SurfaceCard className="p-2.5" radius="lg" variant="soft">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+                    Información básica
+                  </p>
+                  <p className="mt-0.5 text-xs text-white/55">
+                    Base para tus metas y macros.
+                  </p>
                 </div>
-                <h1 className="text-3xl font-black uppercase italic tracking-tighter">
-                  Perfil personal
-                </h1>
-                <p className="mt-1 text-xs text-white/50 leading-relaxed">
-                  Ajusta tus datos para calcular mejor tus metas, macros y recomendaciones.
-                </p>
+                <MetaBadge variant="neutral">AI Profile</MetaBadge>
               </div>
 
-              <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-black/20 p-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-400 text-[#06110e] shadow-[0_0_15px_#10b98144]">
-                  <UserRound size={20} />
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/35">
-                    Usuario conectado
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                <StatPill label="Peso" value={form.weight} unit="kg" />
+                <StatPill label="Altura" value={form.height} unit="cm" />
+                <StatPill label="Edad" value={form.age} unit="años" />
+                <StatPill label="Objetivo" value={goalLabel(form.goal)} />
+                <StatPill label="Kcal" value={goalKcal(form.goal, form.weight)} unit="obj" accent />
+                <StatPill label="Prot" value={goalProtein(form.weight)} unit="g" accent />
+              </div>
+            </SurfaceCard>
+
+            <SurfaceCard as="form" onSubmit={handleSubmit} className="p-2.5" radius="lg">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+                    Objetivo fitness
                   </p>
-                  <p className="truncate text-xs font-bold text-white">
-                    {user?.email}
-                  </p>
+                  <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight">
+                    Edita tus metas
+                  </h2>
                 </div>
+                <MetaBadge variant="neutral">Editable</MetaBadge>
+              </div>
+
+              <div className="space-y-1.5">
+                <SettingRow
+                  icon={<UserRound size={15} />}
+                  label="Nombre"
+                  name="name"
+                  value={form.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  placeholder="Ej. Alexis Rodríguez"
+                />
+
+                <SettingSelect
+                  icon={<UserRound size={15} />}
+                  label="Género"
+                  value={form.gender}
+                  options={[
+                    { id: "male", label: "Hombre" },
+                    { id: "female", label: "Mujer" },
+                  ]}
+                  onChange={(val) => handleChange("gender", val)}
+                />
+
+                <div className="grid grid-cols-3 gap-1.5">
+                  <SettingRow
+                    icon={<Calendar size={15} />}
+                    label="Edad"
+                    name="age"
+                    type="number"
+                    value={form.age}
+                    onChange={(e) => handleChange("age", e.target.value)}
+                  />
+                  <SettingRow
+                    icon={<Weight size={15} />}
+                    label="Peso"
+                    name="weight"
+                    type="number"
+                    step="0.1"
+                    value={form.weight}
+                    onChange={(e) => handleChange("weight", e.target.value)}
+                    suffix="kg"
+                  />
+                  <SettingRow
+                    icon={<Ruler size={15} />}
+                    label="Altura"
+                    name="height"
+                    type="number"
+                    value={form.height}
+                    onChange={(e) => handleChange("height", e.target.value)}
+                    suffix="cm"
+                  />
+                </div>
+
+                <SettingSelect
+                  icon={<Activity size={15} />}
+                  label="Actividad"
+                  value={form.activity}
+                  options={[
+                    { id: "low", label: "Sedentario" },
+                    { id: "moderate", label: "Moderada" },
+                    { id: "high", label: "Alta" },
+                  ]}
+                  onChange={(val) => handleChange("activity", val)}
+                />
+
+                <SettingSelect
+                  icon={<Target size={15} />}
+                  label="Objetivo"
+                  value={form.goal}
+                  options={[
+                    { id: "perder_grasa", label: "Perder grasa" },
+                    { id: "ganar_musculo", label: "Ganar músculo" },
+                    { id: "mantener_peso", label: "Mantener peso" },
+                  ]}
+                  onChange={(val) => handleChange("goal", val)}
+                />
+              </div>
+
+              <PrimaryButton
+                type="submit"
+                disabled={loading}
+                icon={<Save size={17} />}
+                className="mt-2.5 py-3.5 text-[11px]"
+              >
+                {loading ? "Guardando..." : "Guardar cambios"}
+              </PrimaryButton>
+
+              <SecondaryButton
+                type="button"
+                onClick={handleLogout}
+                icon={<LogOut size={14} />}
+                className="mt-2 py-3 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
+              >
+                Cerrar sesión
+              </SecondaryButton>
+            </SurfaceCard>
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
+function ProfileHero({ user, goal }) {
+  return (
+    <SurfaceCard className="relative overflow-hidden p-3" radius="lg">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#10b9811f,transparent_42%),radial-gradient(circle_at_75%_15%,#22d3ee14,transparent_30%)]" />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
+            AI Profile
+          </MetaBadge>
+
+          <div className="mt-3 flex items-center gap-3">
+            <div className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[28px] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_28px_rgba(16,185,129,0.16)]">
+              <UserRound size={30} />
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+                Perfil personal
+              </p>
+              <h1 className="truncate text-[24px] font-black uppercase italic leading-none text-white">
+                {user?.email?.split("@")[0] || "Tu perfil"}
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                <MetaBadge variant="neutral">{goalLabel(goal)}</MetaBadge>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                  Objetivo actual
+                </span>
               </div>
             </div>
           </div>
-
-          {error && (
-            <AlertBox type="error" icon={<AlertCircle size={15} />}>
-              {error}
-            </AlertBox>
-          )}
-
-          {saved && (
-            <AlertBox type="success" icon={<CheckCircle2 size={15} />}>
-              Perfil actualizado con éxito.
-            </AlertBox>
-          )}
-
-          {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            <Input
-              icon={<UserRound size={16} />}
-              label="Nombre y apellido"
-              name="name"
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Ej. Alexis Rodríguez"
-            />
-
-            {/* FILA 1: Género y Edad juntos */}
-            <div className="grid grid-cols-2 gap-3">
-              <CustomSelect
-                icon={<UserRound size={16} />}
-                label="Género"
-                value={form.gender}
-                options={[
-                  { id: "male", label: "Hombre" },
-                  { id: "female", label: "Mujer" },
-                ]}
-                onChange={(val) => handleChange("gender", val)}
-              />
-
-              <Input
-                icon={<Calendar size={16} />}
-                label="Edad"
-                name="age"
-                type="number"
-                value={form.age}
-                onChange={(e) => handleChange("age", e.target.value)}
-                required
-              />
-            </div>
-
-            {/* FILA 2: Peso y Altura juntos */}
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                icon={<Weight size={16} />}
-                label="Peso"
-                name="weight"
-                type="number"
-                step="0.1"
-                value={form.weight}
-                onChange={(e) => handleChange("weight", e.target.value)}
-                required
-                suffix="kg"
-              />
-
-              <Input
-                icon={<Ruler size={16} />}
-                label="Altura"
-                name="height"
-                type="number"
-                value={form.height}
-                onChange={(e) => handleChange("height", e.target.value)}
-                required
-                suffix="cm"
-              />
-            </div>
-
-            {/* Nivel de actividad y Objetivo Fitness */}
-            <CustomSelect
-              icon={<Activity size={16} />}
-              label="Nivel de actividad"
-              value={form.activity}
-              options={[
-                { id: "low", label: "Sedentario" },
-                { id: "moderate", label: "Moderada · 3-5 días" },
-                { id: "high", label: "Alta · atleta" },
-              ]}
-              onChange={(val) => handleChange("activity", val)}
-            />
-
-            <CustomSelect
-              icon={<Target size={16} />}
-              label="Objetivo fitness"
-              value={form.goal}
-              options={[
-                { id: "perder_grasa", label: "Perder grasa" },
-                { id: "ganar_musculo", label: "Ganar músculo" },
-                { id: "mantener_peso", label: "Mantener peso" },
-              ]}
-              onChange={(val) => handleChange("goal", val)}
-            />
-
-            {/* Botón de guardar cambios */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full overflow-hidden rounded-2xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-[0.2em] text-[#06110e] shadow-[0_15px_35px_#10b98115] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <div className="relative z-10 flex items-center justify-center gap-2">
-                <Save size={15} />
-                {loading ? "Guardando..." : "Guardar cambios"}
-              </div>
-            </button>
-          </form>
         </div>
-
-        {/* Zona Inferior Estática para el Menú (Actúa como marco fijo de la app) */}
-        <div className="shrink-0 w-full bg-[#06110e] border-t border-white/5 py-4 px-4 min-h-[80px] flex items-center justify-center relative">
-          <BottomNav />
-        </div>
-        
-      </section>
-    </div>
+      </div>
+    </SurfaceCard>
   );
 }
 
-
-// SUB-COMPONENTES AUXILIARES INTEGRADOS
-
-function AlertBox({ type, icon, children }) {
-  const styles =
-    type === "error"
-      ? "border-red-400/20 bg-red-400/10 text-red-200"
-      : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
-
-  return (
-    <div className={`flex items-start gap-3 rounded-2xl border p-4 text-xs font-bold ${styles}`}>
-      <span className="mt-0.5 shrink-0">{icon}</span>
-      <p>{children}</p>
-    </div>
-  );
-}
-
-function CustomSelect({ icon, label, value, options, onChange }) {
+function SettingSelect({ icon, label, value, options, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const selectedOption = options.find((opt) => opt.id === value);
@@ -433,66 +367,61 @@ function CustomSelect({ icon, label, value, options, onChange }) {
   }, []);
 
   return (
-    <div className="relative" ref={containerRef}>
-      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-white/35">
-        {label}
-      </p>
-
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition ${
-          isOpen
-            ? "border-emerald-400/50 bg-emerald-400/10"
-            : "border-white/10 bg-black/20"
-        }`}
-      >
-        <span className="flex items-center gap-3 text-xs font-bold text-white">
-          <span className="text-emerald-300">{icon}</span>
-          {selectedOption?.label}
-        </span>
-        <ChevronDown
-          size={14}
-          className={`text-emerald-300 transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
+    <FormField label={label} icon={icon}>
+      <div ref={containerRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex h-11 w-full items-center justify-between rounded-2xl px-3 text-left transition shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] ${
+            isOpen
+              ? "bg-[#10b981]/10 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]"
+              : "bg-[#0b1d15]/90 hover:bg-[#0f241b]"
           }`}
-        />
-      </button>
+        >
+          <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
+            <span className="text-[#10b981]">{icon}</span>
+            <span className="truncate">{selectedOption?.label}</span>
+          </span>
 
-      {isOpen && (
-        <div className="absolute z-50 mt-1.5 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b1713] shadow-[0_15px_40px_rgba(0,0,0,0.6)] backdrop-blur-3xl">
-          {options.map((opt) => (
-            <button
-              type="button"
-              key={opt.id}
-              onClick={() => {
-                onChange(opt.id);
-                setIsOpen(false);
-              }}
-              className={`block w-full px-4 py-3.5 text-left text-[11px] font-black uppercase tracking-wider transition ${
-                value === opt.id
-                  ? "bg-emerald-400 text-[#06110e]"
-                  : "text-white/60 hover:bg-white/5"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+          <ChevronDown
+            size={16}
+            className={`text-[#10b981] transition-transform duration-300 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl bg-[#07170f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl">
+            {options.map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => {
+                  onChange(opt.id);
+                  setIsOpen(false);
+                }}
+                className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-emerald-400 hover:text-[#06110e] ${
+                  value === opt.id
+                    ? "bg-emerald-400/10 text-emerald-300"
+                    : "text-white/55"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </FormField>
   );
 }
 
-function Input({ label, icon, suffix, ...props }) {
+function SettingRow({ label, icon, suffix, ...props }) {
   return (
-    <div className="w-full">
-      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-white/35">
-        {label}
-      </p>
-
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 transition focus-within:border-emerald-400/50">
-        <span className="text-emerald-300">{icon}</span>
+    <FormField label={label} icon={icon}>
+      <div className="flex items-center gap-3 rounded-2xl bg-[#0b1d15]/90 px-3 py-3 transition shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] focus-within:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]">
+        <span className="text-[#10b981]">{icon}</span>
 
         <input
           {...props}
@@ -500,11 +429,49 @@ function Input({ label, icon, suffix, ...props }) {
         />
 
         {suffix && (
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+          <span className="text-xs font-black uppercase tracking-widest text-white/45">
             {suffix}
           </span>
         )}
       </div>
+    </FormField>
+  );
+}
+
+function StatPill({ label, value, unit = "", accent = false }) {
+  return (
+    <div
+      className={`rounded-2xl px-2.5 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
+        accent ? "bg-[#10b981]/10" : "bg-white/[0.04]"
+      }`}
+    >
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/42">
+        {label}
+      </p>
+      <p className={`mt-0.5 text-sm font-black ${accent ? "text-emerald-100" : "text-white"}`}>
+        {value || "—"}
+        {unit && <span className="ml-1 text-[10px] text-[#10b981]/60">{unit}</span>}
+      </p>
     </div>
   );
+}
+
+function goalLabel(goal) {
+  if (goal === "ganar_musculo") return "Ganar músculo";
+  if (goal === "mantener_peso") return "Mantener peso";
+  return "Perder grasa";
+}
+
+function goalKcal(goal, weight) {
+  const base = Number(weight) ? Math.round(Number(weight) * 28) : 0;
+
+  if (!base) return "—";
+  if (goal === "ganar_musculo") return `${base + 250}`;
+  if (goal === "mantener_peso") return `${base}`;
+  return `${base - 300}`;
+}
+
+function goalProtein(weight) {
+  const base = Number(weight) ? Math.round(Number(weight) * 2) : 0;
+  return base || "—";
 }

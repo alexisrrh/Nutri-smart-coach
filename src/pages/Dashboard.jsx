@@ -8,43 +8,25 @@ import AIHeroCard from "../components/dashboard/AIHeroCard";
 import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
-import { API_URL } from "../config/api";
-import { STORAGE_KEYS } from "../config/storageKeys";
+import { getCachedDietPlans, listDietPlans } from "../services/dietService";
+import { getCachedMeals, listMeals } from "../services/mealService";
+import { getCachedProfile, getProfile } from "../services/profileService";
 
 import {
   getGoals,
   getSmartTip,
   getFirstName,
-  safeParse,
 } from "../components/dashboard/dashboardUtils";
 
 export function Dashboard() {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(null);
-  const [meals, setMeals] = useState([]);
-  const [dietPlans, setDietPlans] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [profile, setProfile] = useState(getCachedProfile);
+  const [meals, setMeals] = useState(getCachedMeals);
+  const [dietPlans, setDietPlans] = useState(getCachedDietPlans);
+  const [loadingData] = useState(false);
 
-  useEffect(() => {
-    const savedProfile = safeParse(
-      localStorage.getItem(STORAGE_KEYS.PROFILE),
-      null
-    );
-
-    const localMeals = safeParse(localStorage.getItem(STORAGE_KEYS.MEALS), []);
-
-    setProfile(savedProfile);
-    setMeals(Array.isArray(localMeals) ? localMeals : []);
-
-    // Mostrar dashboard inmediatamente
-    setLoadingData(false);
-
-    // Cargar backend en segundo plano
-    loadRemoteDashboardData(savedProfile, localMeals);
-  }, []);
-
-  async function loadRemoteDashboardData(savedProfile, localMeals) {
+  async function loadRemoteDashboardData(savedProfile) {
     try {
       const {
         data: { user },
@@ -54,27 +36,36 @@ export function Dashboard() {
 
       if (!userId) return;
 
-      const [mealsRes, dietsRes] = await Promise.allSettled([
-        fetch(`${API_URL}/meal-analyses/${userId}`),
-        fetch(`${API_URL}/diet-plans/${userId}`),
+      const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
+        getProfile(userId),
+        listMeals(userId),
+        listDietPlans(userId),
       ]);
 
-      if (mealsRes.status === "fulfilled" && mealsRes.value.ok) {
-        const data = await mealsRes.value.json();
-        const remoteMeals = data.meal_analyses || localMeals || [];
-
-        setMeals(Array.isArray(remoteMeals) ? remoteMeals : []);
-        localStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(remoteMeals));
+      if (profileRes.status === "fulfilled" && profileRes.value) {
+        setProfile(profileRes.value);
       }
 
-      if (dietsRes.status === "fulfilled" && dietsRes.value.ok) {
-        const data = await dietsRes.value.json();
-        setDietPlans(data.diet_plans || []);
+      if (mealsRes.status === "fulfilled") {
+        setMeals(mealsRes.value);
+      }
+
+      if (dietsRes.status === "fulfilled") {
+        setDietPlans(dietsRes.value);
       }
     } catch (error) {
       console.error("Error cargando dashboard remoto:", error);
     }
   }
+
+  useEffect(() => {
+    const savedProfile = getCachedProfile();
+
+    // Cargar backend en segundo plano
+    Promise.resolve().then(() => {
+      loadRemoteDashboardData(savedProfile);
+    });
+  }, []);
 
   const goals = useMemo(() => getGoals(profile), [profile]);
 
