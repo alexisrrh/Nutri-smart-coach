@@ -194,31 +194,31 @@ export default function FoodPhoto() {
 
         {result && !loading && (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto pb-[140px] pr-0.5 [scrollbar-width:none] md:pb-[150px] [&::-webkit-scrollbar]:hidden">
               <div className="space-y-2">
                 <FoodResultCard result={result} preview={preview} />
                 <NutritionInsights result={result} />
                 <SmartSwapCard result={result} />
                 <DailyGoalCard totals={totals} goals={goals} />
+
+                <div className="mb-6 mt-3 grid grid-cols-2 gap-2 md:mb-10">
+                  <button
+                    type="button"
+                    onClick={resetScanner}
+                    className="rounded-[18px] border border-[#10b981]/25 bg-[#10b981] px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-[#04110b] shadow-[0_14px_40px_rgba(16,185,129,0.20)] transition active:scale-[0.98] hover:bg-emerald-300"
+                  >
+                    Analizar otra comida
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={discardAnalysis}
+                    className="rounded-[18px] border border-red-400/20 bg-red-400/10 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+                  >
+                    Descartar análisis
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div className="grid shrink-0 grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={resetScanner}
-                className="rounded-[18px] border border-[#10b981]/25 bg-[#10b981] px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-[#04110b] shadow-[0_14px_40px_rgba(16,185,129,0.20)] transition active:scale-[0.98] hover:bg-emerald-300"
-              >
-                Analizar otra comida
-              </button>
-
-              <button
-                type="button"
-                onClick={discardAnalysis}
-                className="rounded-[18px] border border-red-400/20 bg-red-400/10 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
-              >
-                Descartar análisis
-              </button>
             </div>
           </>
         )}
