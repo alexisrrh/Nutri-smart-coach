@@ -2,6 +2,7 @@
 
 :root {
   color-scheme: dark;
+  --bottom-nav-space: calc(96px + env(safe-area-inset-bottom));
 }
 
 * {
