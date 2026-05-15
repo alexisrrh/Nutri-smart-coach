@@ -258,8 +258,8 @@ export function MealPlan() {
           {errorMessage && <StatusBox type="error">{errorMessage}</StatusBox>}
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
-          {!hasPlan && !loading && (
-            <div className="min-h-0 overflow-y-auto pb-4 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {!hasPlan && !loading ? (
+            <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <MealPlanForm
                 formData={formData}
                 setFormData={setFormData}
@@ -272,12 +272,11 @@ export function MealPlan() {
                 MEALS_PER_DAY={MEALS_PER_DAY}
               />
             </div>
-          )}
-
-          <SurfaceCard
-            className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-1"
-            radius="lg"
-          >
+          ) : (
+            <SurfaceCard
+              className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-1"
+              radius="lg"
+            >
             <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -342,8 +341,6 @@ export function MealPlan() {
             <div className="min-h-0 flex-1 overflow-y-auto p-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {loading && <GeneratingDietLoader formData={formData} />}
 
-              {!loading && !hasPlan && <EmptyPlan />}
-
               {!loading && hasPlan && (
                 <div className="space-y-2">
                   <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
@@ -366,7 +363,8 @@ export function MealPlan() {
                 </div>
               )}
             </div>
-          </SurfaceCard>
+            </SurfaceCard>
+          )}
         </div>
       </AppShell>
     </>
@@ -460,22 +458,6 @@ function DietMotivationCard({ message }) {
         </div>
       </div>
     </section>
-  );
-}
-
-function EmptyPlan() {
-  return (
-    <div className="min-h-[200px] rounded-[22px] bg-white/[0.035] p-3.5 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-      <div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
-        <Sparkles size={18} />
-      </div>
-
-      <p className="text-[13px] font-black uppercase">Tu dieta aparecerá aquí</p>
-
-      <p className="mx-auto mt-1 max-w-xs text-[11px] normal-case leading-4 text-slate-400">
-        Configura tus preferencias y genera un plan inteligente.
-      </p>
-    </div>
   );
 }
 
