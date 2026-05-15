@@ -234,9 +234,9 @@ export function MealPlan() {
 
       <AppShell
         className="overflow-hidden"
-        contentClassName="px-2 pb-[92px] pt-2"
+        contentClassName="px-2 pt-2"
       >
-        <div className="flex h-[calc(100dvh-100px)] min-h-0 flex-col gap-1.5">
+        <div className="flex h-full min-h-0 flex-col gap-1">
           <DietHeroCard
             hasPlan={hasPlan}
             completionPercent={completionPercent}
@@ -259,7 +259,7 @@ export function MealPlan() {
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
           {!hasPlan && !loading && (
-            <div className="min-h-0 overflow-y-auto pb-6 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 overflow-y-auto pb-4 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <MealPlanForm
                 formData={formData}
                 setFormData={setFormData}
@@ -275,20 +275,20 @@ export function MealPlan() {
           )}
 
           <SurfaceCard
-            className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-2"
+            className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-1"
             radius="lg"
           >
-            <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2.5">
+            <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-[#10b981]" />
-                    <h2 className="text-sm font-black uppercase italic">
+                    <Sparkles size={13} className="text-[#10b981]" />
+                    <h2 className="text-[13px] font-black uppercase italic">
                       {showShopping ? "Lista de compra" : "Plan generado"}
                     </h2>
                   </div>
 
-                  <p className="mt-1 truncate text-[10px] normal-case text-slate-500">
+                  <p className="mt-0.5 truncate text-[9px] normal-case text-slate-500">
                     {hasPlan
                       ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
                       : loading
@@ -298,8 +298,8 @@ export function MealPlan() {
                 </div>
 
                 {hasPlan && (
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-center shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22),0_0_24px_rgba(16,185,129,0.08)]">
-                    <span className="text-xs font-black text-[#10b981]">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-center shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22),0_0_24px_rgba(16,185,129,0.08)]">
+                    <span className="text-[10px] font-black text-[#10b981]">
                       {completionPercent}%
                     </span>
                   </div>
@@ -308,29 +308,29 @@ export function MealPlan() {
 
               {hasPlan && (
                 <>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                  <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_16px_rgba(16,185,129,0.55)] transition-all"
                       style={{ width: `${completionPercent}%` }}
                     />
                   </div>
 
-                  <div className="mt-2 grid grid-cols-3 gap-1.5">
+                  <div className="mt-1.5 grid grid-cols-3 gap-1">
                     <ActionButton
-                      icon={<ShoppingCart size={13} />}
+                      icon={<ShoppingCart size={12} />}
                       label={showShopping ? "Dieta" : "Compra"}
                       onClick={() => setShowShopping((prev) => !prev)}
                       active={showShopping}
                     />
 
                     <ActionButton
-                      icon={<Download size={13} />}
+                      icon={<Download size={12} />}
                       label="PDF"
                       onClick={() => window.print()}
                     />
 
                     <ActionButton
-                      icon={<Share2 size={13} />}
+                      icon={<Share2 size={12} />}
                       label="Enviar"
                       onClick={handleShare}
                     />
@@ -339,13 +339,13 @@ export function MealPlan() {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-2.5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {loading && <GeneratingDietLoader formData={formData} />}
 
               {!loading && !hasPlan && <EmptyPlan />}
 
               {!loading && hasPlan && (
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
 
                   {!showShopping ? (
@@ -381,27 +381,27 @@ function DietHeroCard({
   handleResetPlan,
 }) {
   return (
-    <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2.5">
+    <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
-            <Sparkles size={12} />
+          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <Sparkles size={11} />
             Smart Diet IA
           </div>
 
-          <h1 className="text-[24px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
+          <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
             Dieta personalizada
           </h1>
 
-          <p className="mt-1 text-xs leading-4 text-white/60">
+          <p className="mt-0.5 text-[10px] leading-4 text-white/60">
             {hasPlan
               ? `${completedMeals}/${totalMeals} comidas completadas · ${completionPercent}% semanal`
               : "Plan por objetivo, días, comidas y alimentos disponibles."}
           </p>
         </div>
 
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
-          <Sparkles size={18} />
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={16} />
         </div>
       </div>
 
@@ -409,8 +409,8 @@ function DietHeroCard({
         <SecondaryButton
           type="button"
           onClick={handleResetPlan}
-          icon={<RefreshCcw size={14} />}
-          className="mt-3 w-full py-2.5 text-[10px]"
+          icon={<RefreshCcw size={13} />}
+          className="mt-2.5 w-full py-2 text-[9px]"
         >
           Nueva dieta
         </SecondaryButton>
@@ -441,20 +441,20 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
 
 function DietMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f]/95 px-3 py-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <section className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b9811f,transparent_42%)]" />
 
-      <div className="relative z-10 flex items-start gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
-          <Sparkles size={15} />
+      <div className="relative z-10 flex items-start gap-2">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={13} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
             Coach IA
           </p>
 
-          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold normal-case leading-4 text-white/75">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold normal-case leading-[1.25] text-white/75">
             {message}
           </p>
         </div>
@@ -465,14 +465,14 @@ function DietMotivationCard({ message }) {
 
 function EmptyPlan() {
   return (
-    <div className="min-h-[220px]  rounded-[24px] bg-white/[0.035] p-4 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-      <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
-        <Sparkles size={20} />
+    <div className="min-h-[200px] rounded-[22px] bg-white/[0.035] p-3.5 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+      <div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.10)]">
+        <Sparkles size={18} />
       </div>
 
-      <p className="text-sm font-black uppercase">Tu dieta aparecerá aquí</p>
+      <p className="text-[13px] font-black uppercase">Tu dieta aparecerá aquí</p>
 
-      <p className="mx-auto mt-1.5 max-w-xs text-xs normal-case leading-4 text-slate-400">
+      <p className="mx-auto mt-1 max-w-xs text-[11px] normal-case leading-4 text-slate-400">
         Configura tus preferencias y genera un plan inteligente.
       </p>
     </div>
@@ -511,22 +511,22 @@ function GeneratingDietLoader({ formData }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-[26px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
+    <div className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_42%)]" />
       <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#10b981]/18 blur-3xl" />
 
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
               Smart Diet IA
             </p>
 
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-[18px] font-black uppercase italic leading-none text-white">
               Creando tu dieta
             </h3>
 
-            <p className="mt-1.5 text-xs normal-case leading-4 text-slate-400">
+            <p className="mt-1 text-[11px] normal-case leading-4 text-slate-400">
               {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
               {Number(formData?.mealsPerDay) === 2
                 ? "ayuno intermitente"
@@ -534,24 +534,24 @@ function GeneratingDietLoader({ formData }) {
             </p>
           </div>
 
-          <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-[22px] border border-[#10b981]/25 bg-[#10b981]/10">
-            <div className="absolute inset-1 animate-spin rounded-[18px] border-2 border-transparent border-t-[#10b981]" />
-            <div className="absolute inset-4 animate-pulse rounded-2xl bg-[#10b981]/10" />
+          <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/25 bg-[#10b981]/10">
+            <div className="absolute inset-1 animate-spin rounded-[16px] border-2 border-transparent border-t-[#10b981]" />
+            <div className="absolute inset-3.5 animate-pulse rounded-2xl bg-[#10b981]/10" />
 
-            <span className="relative text-lg font-black text-[#10b981]">
+            <span className="relative text-[15px] font-black text-[#10b981]">
               {percent}%
             </span>
           </div>
         </div>
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[10px] font-bold normal-case text-slate-500">
+        <div className="mt-2.5 flex items-center justify-between text-[9px] font-bold normal-case text-slate-500">
           <span className="inline-flex items-center gap-1">
             <Timer size={12} />
             {seconds}s
@@ -562,7 +562,7 @@ function GeneratingDietLoader({ formData }) {
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-5 gap-1.5">
+        <div className="mt-2.5 grid grid-cols-5 gap-1">
           {steps.map((step, index) => {
             const completed = index < activeStep;
             const active = index === activeStep;
@@ -570,7 +570,7 @@ function GeneratingDietLoader({ formData }) {
             return (
               <div
                 key={step}
-                className={`rounded-2xl border px-1 py-2 text-center ${
+                className={`rounded-2xl border px-1 py-1.5 text-center ${
                   completed
                     ? "border-[#10b981]/25 bg-[#10b981]/10"
                     : active
@@ -579,7 +579,7 @@ function GeneratingDietLoader({ formData }) {
                 }`}
               >
                 <div
-                  className={`mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${
+                  className={`mx-auto mb-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[8px] font-black ${
                     completed
                       ? "bg-[#10b981] text-[#06110c]"
                       : active
@@ -591,7 +591,7 @@ function GeneratingDietLoader({ formData }) {
                 </div>
 
                 <p
-                  className={`truncate text-[10px] font-black uppercase tracking-tight ${
+                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
                     completed || active ? "text-white" : "text-slate-600"
                   }`}
                 >
