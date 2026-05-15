@@ -15,30 +15,30 @@ export default function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative min-h-[58px] overflow-hidden rounded-[1.2rem] p-1.5 text-left transition-all duration-300 active:scale-[0.98] ${
+      className={`group relative min-h-[30px] overflow-hidden rounded-[0.8rem] px-1.25 py-1 text-left transition-all duration-300 active:scale-[0.98] ${
         featured
           ? "border border-emerald-400/30 bg-emerald-400 text-[#06110e] shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
-          : "border border-white/10 bg-[#07170f] hover:border-emerald-400/30 hover:bg-[#0b1d17]"
+          : "bg-transparent"
       }`}
     >
       {!featured && (
         <>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98118,transparent_55%)] opacity-0 transition duration-500 group-hover:opacity-100" />
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-500/10 blur-3xl" />
+      
         </>
       )}
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-between">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-0.5">
         <div
-          className={`relative grid h-10 w-10 place-items-center overflow-hidden rounded-[0.85rem] ${
+          className={`relative grid h-20 w-20 place-items-center overflow-hidden rounded-[1rem] ${
             featured
-              ? "bg-[#06110e]/10"
-              : "bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.12)]"
+              ? "bg-[#06110e]/10 shadow-[0_0_32px_rgba(255,255,255,0.08)]"
+              : "bg-emerald-500/12 shadow-[0_0_34px_rgba(16,185,129,0.22)]"
           }`}
         >
           <span className="pointer-events-none absolute -inset-5 z-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)] animate-[spin_2.8s_linear_infinite]" />
-          <span className="pointer-events-none absolute inset-[3px] z-[1] rounded-[1rem] bg-[#07170f]" />
-          <span className="pointer-events-none absolute inset-[3px] z-[2] rounded-[1rem] border border-emerald-500/25" />
+          <span className="pointer-events-none absolute inset-[2px] z-[1] rounded-[0.95rem] bg-[#07170f]" />
+          <span className="pointer-events-none absolute inset-[2px] z-[2] rounded-[0.95rem] border border-emerald-500/25" />
 
           {icon && !imageError ? (
             <img
@@ -46,8 +46,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-6 w-6 brightness-0 contrast-200"
-                  : "h-6 w-6"
+                  ? "h-20 w-20 brightness-0 contrast-200"
+                  : "h-20 w-20"
               }`}
               onError={(e) => {
                 e.currentTarget.style.display = "none";
@@ -65,9 +65,9 @@ export default function ActionCard({
           )}
         </div>
 
-        <div className="mt-1 text-center">
+        <div className="-mt-0.2 text-center">
           <h3
-            className={`text-[9px] font-black uppercase tracking-[0.16em] ${
+            className={`text-[8px] font-black uppercase tracking-[0.12em] ${
               featured ? "text-[#06110e]" : "text-white"
             }`}
           >
@@ -75,8 +75,8 @@ export default function ActionCard({
           </h3>
 
           <p
-            className={`mt-0.5 text-[7px] leading-tight ${
-              featured ? "text-[#06110e]/70" : "text-white/45"
+            className={`mt-0.25 text-[5px] leading-tight ${
+              featured ? "text-[#06110e]/58" : "text-white/34"
             }`}
           >
             {description}
