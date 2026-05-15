@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -50,6 +51,7 @@ export function CheckIn() {
   const [sheetMode, setSheetMode] = useState("detail");
   const [showMeasures, setShowMeasures] = useState(false);
   const [deletingCheckinId, setDeletingCheckinId] = useState(null);
+  const [pendingDeleteCheckin, setPendingDeleteCheckin] = useState(null);
 
   const loadData = useCallback(async () => {
     setLoadingHistory(true);
@@ -204,27 +206,31 @@ export function CheckIn() {
     }
   }
 
-  async function handleSavedCheckinDelete(event, checkin) {
+  function handleSavedCheckinDelete(event, checkin) {
     event.stopPropagation();
 
     if (!checkin?.id || deletingCheckinId) return;
 
-    const confirmed = window.confirm("¿Quieres borrar este check-in?");
+    setPendingDeleteCheckin(checkin);
+  }
 
-    if (!confirmed) return;
+  async function confirmDeleteCheckin() {
+    if (!pendingDeleteCheckin?.id || !user || deletingCheckinId) return;
+
+    const checkinId = pendingDeleteCheckin.id;
 
     try {
-      setDeletingCheckinId(checkin.id);
+      setDeletingCheckinId(checkinId);
       setError("");
       setMessage("");
 
-      await deleteCheckin(checkin.id, user?.id);
+      await deleteCheckin(checkinId, user.id);
 
       setHistory((prev) =>
-        prev.filter((item) => String(item.id) !== String(checkin.id))
+        prev.filter((item) => String(item.id) !== String(checkinId))
       );
 
-      if (String(selectedCheckin?.id) === String(checkin.id)) {
+      if (String(selectedCheckin?.id) === String(checkinId)) {
         closeSheet();
       }
 
@@ -233,6 +239,7 @@ export function CheckIn() {
       console.error(err);
       setError(err.message || "No se pudo borrar el check-in.");
     } finally {
+      setPendingDeleteCheckin(null);
       setDeletingCheckinId(null);
     }
   }
@@ -586,6 +593,14 @@ export function CheckIn() {
             onClose={closeSheet}
           />
         )}
+
+        {pendingDeleteCheckin && (
+          <DeleteCheckinConfirmSheet
+            loading={deletingCheckinId === pendingDeleteCheckin.id}
+            onCancel={() => setPendingDeleteCheckin(null)}
+            onConfirm={confirmDeleteCheckin}
+          />
+        )}
       </div>
     </AppShell>
   );
@@ -697,6 +712,70 @@ function CompareChip({ label, value }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function DeleteCheckinConfirmSheet({ loading, onCancel, onConfirm }) {
+  return createPortal(
+    <>
+      <div
+        className="fixed inset-0 z-[998] bg-black/65 backdrop-blur-sm"
+        role="presentation"
+        onClick={loading ? undefined : onCancel}
+      />
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Borrar check-in"
+        className="fixed inset-x-0 bottom-[96px] z-[999] mx-auto w-full max-w-[430px] px-3"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="rounded-t-[30px] border border-white/10 bg-[#07170f]/95 p-3 pb-4 shadow-[0_-18px_60px_rgba(0,0,0,0.46)] ring-1 ring-emerald-300/10">
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/15" />
+
+          <div className="rounded-[24px] border border-red-400/15 bg-red-400/[0.06] p-3">
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-red-300/20 bg-red-400/10 text-red-200">
+                <Trash2 size={17} />
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-red-200/80">
+                  Borrar check-in
+                </p>
+                <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+                  Borrar check-in
+                </h3>
+                <p className="mt-2 text-xs leading-4 text-white/60">
+                  Esta foto y su análisis se eliminarán permanentemente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3 text-[10px] font-black uppercase tracking-[0.13em] text-white/70 transition hover:bg-white/[0.08] disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={loading}
+              className="rounded-2xl border border-red-300/20 bg-red-400/15 px-3 py-3 text-[10px] font-black uppercase tracking-[0.13em] text-red-100 transition hover:bg-red-400/25 disabled:opacity-50"
+            >
+              {loading ? "Borrando..." : "Borrar"}
+            </button>
+          </div>
+        </div>
+      </section>
+    </>,
+    document.body
   );
 }
 
