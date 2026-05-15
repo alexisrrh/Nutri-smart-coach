@@ -261,10 +261,10 @@ export function CheckIn() {
 
   return (
     <AppShell contentClassName="px-2 pb-[88px] pt-2">
-      <div className="flex h-[calc(100dvh-90px)] min-h-0 flex-col gap-1.5 overflow-hidden">
+      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
         <div className="flex shrink-0 items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-300">
-            <Sparkles size={12} />
+          <div className="inline-flex items-center gap-1 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-emerald-300">
+            <Sparkles size={11} />
             AI Body Analysis
           </div>
 
@@ -272,28 +272,28 @@ export function CheckIn() {
             type="button"
             onClick={handleLogout}
             icon={<LogOut size={13} />}
-            className="w-auto border-white/10 bg-white/[0.025] px-2 py-1 text-[0px] text-white/45 hover:border-red-300/25 hover:bg-red-400/10 hover:text-red-200 [&_svg]:h-3.5 [&_svg]:w-3.5"
+            className="w-auto border-white/10 bg-white/[0.025] px-2 py-0.5 text-[0px] text-white/45 hover:border-red-300/25 hover:bg-red-400/10 hover:text-red-200 [&_svg]:h-3 [&_svg]:w-3"
           >
             Salir
           </SecondaryButton>
         </div>
 
-        <section className="shrink-0 rounded-[20px] border border-white/10 bg-[#07170f]/95 p-2 shadow-[0_12px_34px_rgba(16,185,129,0.08)]">
+        <section className="shrink-0 rounded-[18px] border border-white/10 bg-[#07170f]/95 p-2 shadow-[0_12px_34px_rgba(16,185,129,0.08)]">
           <div className="flex items-center gap-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[16px] border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-              <Activity size={19} />
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+              <Activity size={17} />
             </div>
 
             <div className="min-w-0">
-              <h1 className="text-[20px] font-black uppercase italic leading-[0.9] tracking-tight text-white">
+              <h1 className="text-[18px] font-black uppercase italic leading-[0.9] tracking-tight text-white">
                 Check-in
               </h1>
 
-              <p className="mt-0.5 text-[10px] leading-3 text-white/50">
+              <p className="mt-0.5 text-[9px] leading-3 text-white/50">
                 Foto corporal, IA y comparación semanal.
               </p>
 
-              <span className="mt-1 inline-flex rounded-full border border-emerald-400/15 bg-black/20 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-emerald-300">
+              <span className="mt-1 inline-flex rounded-full border border-emerald-400/15 bg-black/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-wide text-emerald-300">
                 {formatGoal(goal)}
               </span>
             </div>
@@ -304,28 +304,28 @@ export function CheckIn() {
         <CheckInAlert type="success" text={message} />
 
         <main className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex min-h-full flex-col gap-1.5">
-            <section className="shrink-0 overflow-hidden rounded-[24px] border border-emerald-300/15 bg-[#07170f]/95 p-2.5 shadow-[0_18px_48px_rgba(16,185,129,0.10)] ring-1 ring-white/[0.03]">
-              <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex min-h-full flex-col gap-1">
+            <section className="shrink-0 overflow-hidden rounded-[22px] border border-emerald-300/15 bg-[#07170f]/95 p-2 shadow-[0_18px_48px_rgba(16,185,129,0.10)] ring-1 ring-white/[0.03]">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">
                     Check-in físico
                   </p>
-                  <h2 className="text-base font-black uppercase italic leading-none text-white">
+                  <h2 className="text-[15px] font-black uppercase italic leading-none text-white">
                     {preview ? "Foto actual" : "Sube tu foto corporal"}
                   </h2>
                 </div>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[9px] font-black uppercase text-white/55">
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[8px] font-black uppercase text-white/55">
                   Frontal / lateral
                 </span>
               </div>
 
-              <div className="grid grid-cols-[124px_1fr] gap-2">
+              <div className="grid grid-cols-[112px_1fr] gap-1.5">
                 <div className="min-w-0">
                   <label
                     htmlFor="checkin-photo"
-                    className="group relative block h-[132px] cursor-pointer overflow-hidden rounded-[20px] border border-dashed border-emerald-300/25 bg-black/25 ring-1 ring-white/[0.04] transition hover:border-emerald-300/45"
+                    className="group relative block h-[120px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed border-emerald-300/25 bg-black/25 ring-1 ring-white/[0.04] transition hover:border-emerald-300/45"
                   >
                     {preview ? (
                       <>
@@ -339,13 +339,13 @@ export function CheckIn() {
                     ) : (
                       <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_top,#10b9811f,transparent_55%)] text-center">
                         <div className="px-2">
-                          <div className="mx-auto grid h-10 w-10 place-items-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
-                            <ImagePlus size={24} />
+                          <div className="mx-auto grid h-9 w-9 place-items-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+                            <ImagePlus size={21} />
                           </div>
-                          <p className="mt-2 text-[10px] font-black uppercase tracking-wide text-white/75">
+                          <p className="mt-1.5 text-[9px] font-black uppercase tracking-wide text-white/75">
                             Sube tu foto corporal
                           </p>
-                          <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-white/35">
+                          <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-white/35">
                             Toca para elegir
                           </p>
                         </div>
@@ -361,7 +361,7 @@ export function CheckIn() {
                     />
 
                     {preview && (
-                      <div className="absolute inset-x-2 bottom-2 rounded-full bg-black/55 px-2 py-1 text-center text-[9px] font-black uppercase tracking-wide text-emerald-200 backdrop-blur">
+                      <div className="absolute inset-x-2 bottom-2 rounded-full bg-black/55 px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-emerald-200 backdrop-blur">
                         Foto lista
                       </div>
                     )}
@@ -370,15 +370,15 @@ export function CheckIn() {
                   <div className="mt-1.5">
                     <label
                       htmlFor="checkin-photo"
-                      className="block rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-2 py-1.5 text-center text-[9px] font-black uppercase tracking-wide text-emerald-100/80 transition hover:bg-emerald-300/[0.10]"
+                      className="block rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-2 py-1 text-center text-[8px] font-black uppercase tracking-wide text-emerald-100/80 transition hover:bg-emerald-300/[0.10]"
                     >
                       {preview ? "Cambiar" : "Subir"}
                     </label>
                   </div>
                 </div>
 
-                <div className="flex min-w-0 flex-col gap-2">
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
                     <InputBox
                       label="Peso"
                       value={form.weight}
@@ -390,19 +390,19 @@ export function CheckIn() {
                     <button
                       type="button"
                       onClick={() => setShowMeasures((prev) => !prev)}
-                      className="rounded-2xl border border-white/10 bg-white/[0.045] px-2.5 py-2 text-left ring-1 ring-white/[0.02]"
+                      className="rounded-2xl border border-white/10 bg-white/[0.045] px-2.5 py-1.5 text-left ring-1 ring-white/[0.02]"
                     >
-                      <p className="text-[10px] font-black uppercase tracking-wide text-white/40">
+                      <p className="text-[9px] font-black uppercase tracking-wide text-white/40">
                         Medidas
                       </p>
-                      <p className="mt-1 text-sm font-black uppercase text-white">
+                      <p className="mt-0.5 text-[13px] font-black uppercase text-white">
                         Opcional
                       </p>
                     </button>
                   </div>
 
                   {showMeasures && (
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-1">
                       <InputBox
                         label="Cint."
                         value={form.waist}
@@ -431,7 +431,7 @@ export function CheckIn() {
                     type="button"
                     onClick={saveCheckIn}
                     disabled={loading}
-                    className="mt-auto rounded-2xl border border-emerald-200/30 bg-gradient-to-r from-emerald-300 to-cyan-200 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.13em] text-[#04110b] shadow-[0_14px_34px_rgba(16,185,129,0.28)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+                    className="mt-auto rounded-2xl border border-emerald-200/30 bg-gradient-to-r from-emerald-300 to-cyan-200 px-3 py-2.5 text-[9px] font-black uppercase leading-3 tracking-[0.13em] text-[#04110b] shadow-[0_14px_34px_rgba(16,185,129,0.28)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                   >
                     {loading ? "Analizando..." : "Analizar cuerpo con IA"}
                   </button>
@@ -441,48 +441,48 @@ export function CheckIn() {
 
             <CheckInLoader loading={loading} />
 
-            <section className="shrink-0 rounded-[20px] border border-white/10 bg-white/[0.035] p-2">
-              <div className="grid grid-cols-4 gap-1.5">
+            <section className="shrink-0 rounded-[18px] border border-white/10 bg-white/[0.035] p-1.5">
+              <div className="grid grid-cols-4 gap-1">
                 <MiniMetric
-                  icon={<Scale size={12} />}
+                  icon={<Scale size={11} />}
                   label="Peso"
                   value={lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
                 />
                 <MiniMetric
-                  icon={<TrendingUp size={12} />}
+                  icon={<TrendingUp size={11} />}
                   label="Cambio"
                   value={weightDiff || "—"}
                 />
                 <MiniMetric
-                  icon={<Target size={12} />}
+                  icon={<Target size={11} />}
                   label="Grasa"
                   value={shortFatValue(lastCheckin)}
                 />
                 <MiniMetric
-                  icon={<Sparkles size={12} />}
+                  icon={<Sparkles size={11} />}
                   label="Conf."
                   value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
                 />
               </div>
             </section>
 
-            <section className="shrink-0 overflow-hidden rounded-[24px] border border-white/10 bg-[#07170f]/95 p-2.5 shadow-[0_16px_44px_rgba(0,0,0,0.20)] ring-1 ring-emerald-300/[0.04]">
-              <div className="mb-1.5 flex items-center justify-between">
+            <section className="shrink-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2 shadow-[0_16px_44px_rgba(0,0,0,0.20)] ring-1 ring-emerald-300/[0.04]">
+              <div className="mb-1 flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">
                     Comparación semanal
                   </p>
-                  <h3 className="text-xs font-black uppercase italic text-white">
+                  <h3 className="text-[11px] font-black uppercase italic text-white">
                     Anterior vs actual
                   </h3>
                 </div>
 
-                <span className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-300">
+                <span className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase text-emerald-300">
                   IA visual
                 </span>
               </div>
 
-              <div className="relative grid grid-cols-2 gap-1.5">
+              <div className="relative grid grid-cols-2 gap-1">
                 <CompareTile
                   title="Anterior"
                   checkin={previousCheckin}
@@ -498,15 +498,15 @@ export function CheckIn() {
                   onClick={() => openCheckinSheet(lastCheckin)}
                 />
 
-                <div className="pointer-events-none absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/10 bg-black/35 text-[8px] font-black uppercase text-emerald-100/55 backdrop-blur-xl">
+                <div className="pointer-events-none absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/10 bg-black/35 text-[7px] font-black uppercase text-emerald-100/55 backdrop-blur-xl">
                   VS
                 </div>
               </div>
 
-              <div className="mt-1.5 rounded-[18px] border border-cyan-200/10 bg-cyan-200/[0.045] px-2.5 py-2 ring-1 ring-white/[0.025]">
+              <div className="mt-1 rounded-[16px] border border-cyan-200/10 bg-cyan-200/[0.045] px-2 py-1.5 ring-1 ring-white/[0.025]">
                 <div className="flex items-start gap-2">
-                  <Sparkles size={12} className="mt-0.5 shrink-0 text-cyan-200/80" />
-                  <p className="line-clamp-2 text-[10px] font-bold leading-4 text-white/70">
+                  <Sparkles size={11} className="mt-0.5 shrink-0 text-cyan-200/80" />
+                  <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-white/70">
                     {aiMotivation}
                   </p>
                 </div>
@@ -521,13 +521,13 @@ export function CheckIn() {
               )}
             </section>
 
-            <section className="shrink-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2">
-              <div className="mb-1.5 flex items-center justify-between">
+            <section className="shrink-0 overflow-hidden rounded-[20px] border border-white/10 bg-[#07170f]/95 p-1.5">
+              <div className="mb-1 flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">
                     Timeline semanal
                   </p>
-                  <h3 className="text-xs font-black uppercase italic text-white">
+                  <h3 className="text-[11px] font-black uppercase italic text-white">
                     {history.length || 0} registros
                   </h3>
                 </div>
@@ -535,7 +535,7 @@ export function CheckIn() {
                 {lastCheckin && (
                   <button
                     onClick={openAnalysisSheet}
-                    className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-white/45 transition hover:text-white/70"
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[7px] font-black uppercase tracking-wide text-white/45 transition hover:text-white/70"
                   >
                     Ver análisis
                   </button>
@@ -543,15 +543,15 @@ export function CheckIn() {
               </div>
 
               {loadingHistory ? (
-                <p className="py-4 text-center text-xs font-bold text-white/45">
+                <p className="py-3 text-center text-[11px] font-bold text-white/45">
                   Cargando historial...
                 </p>
               ) : history.length === 0 ? (
-                <p className="py-4 text-center text-xs font-bold text-white/45">
+                <p className="py-3 text-center text-[11px] font-bold text-white/45">
                   Tu historial aparecerá aquí.
                 </p>
               ) : (
-                <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {history.map((item, index) => (
                     <div
                       key={item.id || index}
@@ -564,9 +564,9 @@ export function CheckIn() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="relative w-[84px] shrink-0 cursor-pointer overflow-hidden rounded-[16px] bg-white/[0.035] text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25"
+                      className="relative w-[80px] shrink-0 cursor-pointer overflow-hidden rounded-[15px] bg-white/[0.035] text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25"
                     >
-                      <div className="relative h-[52px] overflow-hidden bg-black/25">
+                      <div className="relative h-[48px] overflow-hidden bg-black/25">
                         {getCheckinImage(item) ? (
                           <>
                             <img
@@ -590,17 +590,17 @@ export function CheckIn() {
                         disabled={deletingCheckinId === item.id}
                         className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full border border-white/15 bg-black/55 text-white/65 backdrop-blur-xl transition hover:border-red-300/35 hover:bg-red-400/20 hover:text-red-100 disabled:opacity-45"
                       >
-                        <Trash2 size={10} />
+                        <Trash2 size={9} />
                       </button>
 
-                      <div className="p-1.5 pt-1">
-                        <p className="text-[9px] font-black uppercase text-emerald-300">
+                      <div className="p-1.25 pt-0.75">
+                        <p className="text-[8px] font-black uppercase text-emerald-300">
                           Reg {index + 1}
                         </p>
-                        <p className="mt-0.5 truncate text-[9px] font-bold text-white/45">
+                        <p className="mt-0.5 truncate text-[8px] font-bold text-white/45">
                           {formatDate(item.created_at || item.createdAt)}
                         </p>
-                        <p className="mt-0.5 text-xs font-black text-white">
+                        <p className="mt-0.5 text-[11px] font-black text-white">
                           {item.weight ? `${item.weight}kg` : "—"}
                         </p>
                       </div>
@@ -634,20 +634,20 @@ export function CheckIn() {
 
 function InputBox({ label, value, onChange, placeholder, suffix }) {
   return (
-    <label className="block rounded-2xl border border-white/10 bg-black/20 px-2.5 py-2">
-      <span className="text-[10px] font-black uppercase tracking-wide text-white/40">
+    <label className="block rounded-2xl border border-white/10 bg-black/20 px-2.5 py-1.5">
+      <span className="text-[9px] font-black uppercase tracking-wide text-white/40">
         {label}
       </span>
-      <div className="mt-1 flex items-center gap-1">
+      <div className="mt-0.5 flex items-center gap-1">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-sm font-black text-white outline-none placeholder:text-white/20"
+          className="min-w-0 flex-1 bg-transparent text-[13px] font-black text-white outline-none placeholder:text-white/20"
         />
         {suffix && (
-          <span className="text-[10px] font-black uppercase text-emerald-300/70">
+          <span className="text-[9px] font-black uppercase text-emerald-300/70">
             {suffix}
           </span>
         )}
@@ -658,12 +658,12 @@ function InputBox({ label, value, onChange, placeholder, suffix }) {
 
 function MiniMetric({ icon, label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-1.5">
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-1.5 py-1">
       <div className="mb-0.5 text-emerald-300">{icon}</div>
-      <p className="truncate text-[9px] font-black uppercase tracking-wide text-white/35">
+      <p className="truncate text-[8px] font-black uppercase tracking-wide text-white/35">
         {label}
       </p>
-      <p className="truncate text-[11px] font-black text-white">{value}</p>
+      <p className="truncate text-[10px] font-black text-white">{value}</p>
     </div>
   );
 }
@@ -674,9 +674,9 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
       type="button"
       onClick={onClick}
       disabled={!checkin && !image}
-      className="group overflow-hidden rounded-[20px] bg-black/20 text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25 disabled:opacity-70"
+      className="group overflow-hidden rounded-[18px] bg-black/20 text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25 disabled:opacity-70"
     >
-      <div className="relative h-[96px] overflow-hidden bg-black/25">
+      <div className="relative h-[88px] overflow-hidden bg-black/25">
         {image ? (
           <>
             <img
@@ -685,20 +685,20 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10" />
-            <div className="absolute left-2 top-2 rounded-full border border-white/15 bg-black/55 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-white/80 backdrop-blur">
+            <div className="absolute left-2 top-2 rounded-full border border-white/15 bg-black/55 px-2 py-0.5 text-[7px] font-black uppercase tracking-wide text-white/80 backdrop-blur">
               {title}
             </div>
-            <div className="absolute bottom-2 left-2 rounded-full border border-emerald-100/25 bg-emerald-300/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#04110b] shadow-[0_8px_22px_rgba(16,185,129,0.22)]">
+            <div className="absolute bottom-2 left-2 rounded-full border border-emerald-100/25 bg-emerald-300/90 px-2 py-0.5 text-[7px] font-black uppercase tracking-wide text-[#04110b] shadow-[0_8px_22px_rgba(16,185,129,0.22)]">
               {checkin ? formatDate(checkin.created_at || checkin.createdAt) : "Sin registro"}
             </div>
           </>
         ) : (
           <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_top,#10b98118,transparent_58%)] text-center">
             <div>
-              <div className="mx-auto grid h-8 w-8 place-items-center rounded-2xl border border-emerald-300/15 bg-emerald-300/10 text-emerald-300">
-                <Camera size={18} />
+              <div className="mx-auto grid h-7 w-7 place-items-center rounded-2xl border border-emerald-300/15 bg-emerald-300/10 text-emerald-300">
+                <Camera size={16} />
               </div>
-              <p className="mt-1.5 text-[9px] font-black uppercase text-white/55">
+              <p className="mt-1 text-[8px] font-black uppercase text-white/55">
                 {emptyText}
               </p>
             </div>
@@ -732,11 +732,11 @@ function WeeklyCompareSummary({ previousCheckin, lastCheckin, weightDiff }) {
 
 function CompareChip({ label, value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-300/10 bg-emerald-300/[0.055] px-2 py-1 ring-1 ring-white/[0.025]">
-      <span className="text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
+    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-300/10 bg-emerald-300/[0.055] px-1.5 py-0.5 ring-1 ring-white/[0.025]">
+      <span className="text-[7px] font-black uppercase tracking-wide text-emerald-100/45">
         {label}
       </span>
-      <span className="max-w-[104px] truncate text-[10px] font-black text-white">
+      <span className="max-w-[104px] truncate text-[8px] font-black text-white">
         {value}
       </span>
     </div>
