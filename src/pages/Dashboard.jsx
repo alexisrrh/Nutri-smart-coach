@@ -144,8 +144,7 @@ export function Dashboard() {
           <div className="shrink-0">
             <DashboardHeader loadingData={loadingData} navigate={navigate} />
           </div>
-
-          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
+<div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <DashboardSkeleton />
           </div>
         </div>
@@ -177,9 +176,9 @@ export function Dashboard() {
             <DashboardMotivationCard message={motivationMessage} />
           </div>
 
-          <div className="min-h-0 flex-1 pt-1">
-            <DashboardActions navigate={navigate} />
-          </div>
+          <div className="min-h-[190px] flex-1 pt-1">
+  <DashboardActions navigate={navigate} />
+</div>
         </div>
       </div>
     </AppShell>
