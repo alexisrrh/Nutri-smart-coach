@@ -253,11 +253,16 @@ export function CheckIn() {
   const goal = profile?.goal || profile?.objetivo || "ganar_musculo";
   const lastImage = getCheckinImage(lastCheckin);
   const previousImage = getCheckinImage(previousCheckin);
+  const aiMotivation = getCheckinMotivation({
+    lastCheckin,
+    previousCheckin,
+    weightDiff,
+  });
 
   return (
     <AppShell contentClassName="px-2 pb-[88px] pt-2">
       <div className="flex h-[calc(100dvh-90px)] min-h-0 flex-col gap-1.5 overflow-hidden">
-        <div className="flex shrink-0 items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between gap-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-300">
             <Sparkles size={12} />
             AI Body Analysis
@@ -267,28 +272,28 @@ export function CheckIn() {
             type="button"
             onClick={handleLogout}
             icon={<LogOut size={13} />}
-            className="w-auto border-red-400/15 bg-red-400/10 px-2.5 py-1.5 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
+            className="w-auto border-white/10 bg-white/[0.025] px-2 py-1 text-[0px] text-white/45 hover:border-red-300/25 hover:bg-red-400/10 hover:text-red-200 [&_svg]:h-3.5 [&_svg]:w-3.5"
           >
             Salir
           </SecondaryButton>
         </div>
 
-        <section className="shrink-0 rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2.5 shadow-[0_14px_38px_rgba(16,185,129,0.10)]">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[18px] border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-              <Activity size={21} />
+        <section className="shrink-0 rounded-[20px] border border-white/10 bg-[#07170f]/95 p-2 shadow-[0_12px_34px_rgba(16,185,129,0.08)]">
+          <div className="flex items-center gap-2">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[16px] border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+              <Activity size={19} />
             </div>
 
             <div className="min-w-0">
-              <h1 className="text-[22px] font-black uppercase italic leading-[0.9] tracking-tight text-white">
+              <h1 className="text-[20px] font-black uppercase italic leading-[0.9] tracking-tight text-white">
                 Check-in
               </h1>
 
-              <p className="mt-1 text-[11px] leading-3 text-white/55">
+              <p className="mt-0.5 text-[10px] leading-3 text-white/50">
                 Foto corporal, IA y comparación semanal.
               </p>
 
-              <span className="mt-1.5 inline-flex rounded-full border border-emerald-400/15 bg-black/20 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-emerald-300">
+              <span className="mt-1 inline-flex rounded-full border border-emerald-400/15 bg-black/20 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-emerald-300">
                 {formatGoal(goal)}
               </span>
             </div>
@@ -300,7 +305,7 @@ export function CheckIn() {
 
         <main className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full flex-col gap-1.5">
-            <section className="shrink-0 rounded-[22px] border border-emerald-400/15 bg-[#07170f]/95 p-2.5 shadow-[0_14px_38px_rgba(16,185,129,0.08)]">
+            <section className="shrink-0 overflow-hidden rounded-[24px] border border-emerald-300/15 bg-[#07170f]/95 p-2.5 shadow-[0_18px_48px_rgba(16,185,129,0.10)] ring-1 ring-white/[0.03]">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
@@ -320,18 +325,23 @@ export function CheckIn() {
                 <div className="min-w-0">
                   <label
                     htmlFor="checkin-photo"
-                    className="group relative block h-[132px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed border-emerald-400/25 bg-black/20"
+                    className="group relative block h-[132px] cursor-pointer overflow-hidden rounded-[20px] border border-dashed border-emerald-300/25 bg-black/25 ring-1 ring-white/[0.04] transition hover:border-emerald-300/45"
                   >
                     {preview ? (
-                      <img
-                        src={preview}
-                        alt="Foto actual"
-                        className="h-full w-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={preview}
+                          alt="Foto actual"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                      </>
                     ) : (
-                      <div className="grid h-full place-items-center text-center">
+                      <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_top,#10b9811f,transparent_55%)] text-center">
                         <div className="px-2">
-                          <ImagePlus className="mx-auto text-emerald-300" size={28} />
+                          <div className="mx-auto grid h-10 w-10 place-items-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+                            <ImagePlus size={24} />
+                          </div>
                           <p className="mt-2 text-[10px] font-black uppercase tracking-wide text-white/75">
                             Sube tu foto corporal
                           </p>
@@ -360,7 +370,7 @@ export function CheckIn() {
                   <div className="mt-1.5">
                     <label
                       htmlFor="checkin-photo"
-                      className="block rounded-xl border border-white/10 bg-white/[0.05] px-2 py-1.5 text-center text-[9px] font-black uppercase tracking-wide text-white/70"
+                      className="block rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-2 py-1.5 text-center text-[9px] font-black uppercase tracking-wide text-emerald-100/80 transition hover:bg-emerald-300/[0.10]"
                     >
                       {preview ? "Cambiar" : "Subir"}
                     </label>
@@ -380,7 +390,7 @@ export function CheckIn() {
                     <button
                       type="button"
                       onClick={() => setShowMeasures((prev) => !prev)}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-2.5 py-2 text-left"
+                      className="rounded-2xl border border-white/10 bg-white/[0.045] px-2.5 py-2 text-left ring-1 ring-white/[0.02]"
                     >
                       <p className="text-[10px] font-black uppercase tracking-wide text-white/40">
                         Medidas
@@ -421,7 +431,7 @@ export function CheckIn() {
                     type="button"
                     onClick={saveCheckIn}
                     disabled={loading}
-                    className="mt-auto rounded-2xl bg-emerald-400 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.13em] text-[#04110b] shadow-[0_12px_35px_rgba(16,185,129,0.22)] transition active:scale-[0.98] disabled:opacity-50"
+                    className="mt-auto rounded-2xl border border-emerald-200/30 bg-gradient-to-r from-emerald-300 to-cyan-200 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.13em] text-[#04110b] shadow-[0_14px_34px_rgba(16,185,129,0.28)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                   >
                     {loading ? "Analizando..." : "Analizar cuerpo con IA"}
                   </button>
@@ -456,7 +466,7 @@ export function CheckIn() {
               </div>
             </section>
 
-            <section className="shrink-0 rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2.5">
+            <section className="shrink-0 overflow-hidden rounded-[24px] border border-white/10 bg-[#07170f]/95 p-2.5 shadow-[0_16px_44px_rgba(0,0,0,0.20)] ring-1 ring-emerald-300/[0.04]">
               <div className="mb-1.5 flex items-center justify-between">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
@@ -472,12 +482,12 @@ export function CheckIn() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="relative grid grid-cols-2 gap-1.5">
                 <CompareTile
                   title="Anterior"
                   checkin={previousCheckin}
                   image={previousImage}
-                  emptyText={history.length ? "Sin foto previa" : "Pendiente"}
+                  emptyText={history.length ? "Primer check-in" : "Pendiente"}
                   onClick={() => openCheckinSheet(previousCheckin)}
                 />
                 <CompareTile
@@ -487,6 +497,19 @@ export function CheckIn() {
                   emptyText="Sube foto"
                   onClick={() => openCheckinSheet(lastCheckin)}
                 />
+
+                <div className="pointer-events-none absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/10 bg-black/35 text-[8px] font-black uppercase text-emerald-100/55 backdrop-blur-xl">
+                  VS
+                </div>
+              </div>
+
+              <div className="mt-1.5 rounded-[18px] border border-cyan-200/10 bg-cyan-200/[0.045] px-2.5 py-2 ring-1 ring-white/[0.025]">
+                <div className="flex items-start gap-2">
+                  <Sparkles size={12} className="mt-0.5 shrink-0 text-cyan-200/80" />
+                  <p className="line-clamp-2 text-[10px] font-bold leading-4 text-white/70">
+                    {aiMotivation}
+                  </p>
+                </div>
               </div>
 
               {previousCheckin && lastCheckin && (
@@ -498,7 +521,7 @@ export function CheckIn() {
               )}
             </section>
 
-            <section className="shrink-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2.5">
+            <section className="shrink-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f]/95 p-2">
               <div className="mb-1.5 flex items-center justify-between">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
@@ -512,7 +535,7 @@ export function CheckIn() {
                 {lastCheckin && (
                   <button
                     onClick={openAnalysisSheet}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[9px] font-black uppercase text-white/60"
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-white/45 transition hover:text-white/70"
                   >
                     Ver análisis
                   </button>
@@ -541,15 +564,18 @@ export function CheckIn() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="relative w-[92px] shrink-0 cursor-pointer overflow-hidden rounded-[16px] border border-white/10 bg-white/[0.04] text-left"
+                      className="relative w-[84px] shrink-0 cursor-pointer overflow-hidden rounded-[16px] bg-white/[0.035] text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25"
                     >
-                      <div className="h-[58px] bg-black/25">
+                      <div className="relative h-[52px] overflow-hidden bg-black/25">
                         {getCheckinImage(item) ? (
-                          <img
-                            src={getCheckinImage(item)}
-                            alt={`Registro ${index + 1}`}
-                            className="h-full w-full object-cover"
-                          />
+                          <>
+                            <img
+                              src={getCheckinImage(item)}
+                              alt={`Registro ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                          </>
                         ) : (
                           <div className="grid h-full place-items-center text-emerald-300">
                             <Camera size={18} />
@@ -562,12 +588,12 @@ export function CheckIn() {
                         onClick={(event) => handleSavedCheckinDelete(event, item)}
                         aria-label="Borrar check-in guardado"
                         disabled={deletingCheckinId === item.id}
-                        className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full border border-white/15 bg-black/60 text-white/70 backdrop-blur-xl transition hover:border-red-300/35 hover:bg-red-400/20 hover:text-red-100 disabled:opacity-45"
+                        className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full border border-white/15 bg-black/55 text-white/65 backdrop-blur-xl transition hover:border-red-300/35 hover:bg-red-400/20 hover:text-red-100 disabled:opacity-45"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={10} />
                       </button>
 
-                      <div className="p-1.5">
+                      <div className="p-1.5 pt-1">
                         <p className="text-[9px] font-black uppercase text-emerald-300">
                           Reg {index + 1}
                         </p>
@@ -648,9 +674,9 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
       type="button"
       onClick={onClick}
       disabled={!checkin && !image}
-      className="group overflow-hidden rounded-[18px] bg-black/20 text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25 disabled:opacity-70"
+      className="group overflow-hidden rounded-[20px] bg-black/20 text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25 disabled:opacity-70"
     >
-      <div className="relative h-[88px] overflow-hidden bg-black/25">
+      <div className="relative h-[96px] overflow-hidden bg-black/25">
         {image ? (
           <>
             <img
@@ -662,15 +688,17 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
             <div className="absolute left-2 top-2 rounded-full border border-white/15 bg-black/55 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-white/80 backdrop-blur">
               {title}
             </div>
-            <div className="absolute bottom-2 left-2 rounded-full bg-emerald-400/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#04110b]">
+            <div className="absolute bottom-2 left-2 rounded-full border border-emerald-100/25 bg-emerald-300/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#04110b] shadow-[0_8px_22px_rgba(16,185,129,0.22)]">
               {checkin ? formatDate(checkin.created_at || checkin.createdAt) : "Sin registro"}
             </div>
           </>
         ) : (
-          <div className="grid h-full place-items-center text-center">
+          <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_top,#10b98118,transparent_58%)] text-center">
             <div>
-              <Camera className="mx-auto text-emerald-300" size={22} />
-              <p className="mt-1 text-[9px] font-black uppercase text-white/45">
+              <div className="mx-auto grid h-8 w-8 place-items-center rounded-2xl border border-emerald-300/15 bg-emerald-300/10 text-emerald-300">
+                <Camera size={18} />
+              </div>
+              <p className="mt-1.5 text-[9px] font-black uppercase text-white/55">
                 {emptyText}
               </p>
             </div>
@@ -683,7 +711,7 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
 
 function WeeklyCompareSummary({ previousCheckin, lastCheckin, weightDiff }) {
   return (
-    <div className="mt-1.5 flex flex-wrap gap-1.5">
+    <div className="mt-2 flex flex-wrap gap-1.5">
       <CompareChip
         label="Peso"
         value={`${formatKg(previousCheckin?.weight)} → ${formatKg(lastCheckin?.weight)}`}
@@ -704,8 +732,8 @@ function WeeklyCompareSummary({ previousCheckin, lastCheckin, weightDiff }) {
 
 function CompareChip({ label, value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-2 py-1">
-      <span className="text-[8px] font-black uppercase tracking-wide text-white/35">
+    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-300/10 bg-emerald-300/[0.055] px-2 py-1 ring-1 ring-white/[0.025]">
+      <span className="text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
         {label}
       </span>
       <span className="max-w-[104px] truncate text-[10px] font-black text-white">
@@ -719,7 +747,7 @@ function DeleteCheckinConfirmSheet({ loading, onCancel, onConfirm }) {
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[998] bg-black/65 backdrop-blur-sm"
+        className="fixed inset-0 z-[9998] bg-black/65 backdrop-blur-sm"
         role="presentation"
         onClick={loading ? undefined : onCancel}
       />
@@ -727,7 +755,7 @@ function DeleteCheckinConfirmSheet({ loading, onCancel, onConfirm }) {
         role="dialog"
         aria-modal="true"
         aria-label="Borrar check-in"
-        className="fixed inset-x-0 bottom-[96px] z-[999] mx-auto w-full max-w-[430px] px-3"
+        className="fixed inset-x-0 bottom-[112px] z-[9999] mx-auto w-full max-w-[430px] px-3"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="rounded-t-[30px] border border-white/10 bg-[#07170f]/95 p-3 pb-4 shadow-[0_-18px_60px_rgba(0,0,0,0.46)] ring-1 ring-emerald-300/10">
@@ -804,6 +832,28 @@ function formatGoal(goal) {
   if (goal === "ganar_musculo") return "Objetivo · Ganar músculo";
   if (goal === "mantener_peso") return "Objetivo · Mantener";
   return "Objetivo · Perder grasa";
+}
+
+function getCheckinMotivation({ lastCheckin, previousCheckin, weightDiff }) {
+  if (!lastCheckin) {
+    return "Tu primer registro marcará el punto de partida.";
+  }
+
+  const visualText = String(lastCheckin.visual_changes || "").toLowerCase();
+
+  if (visualText.includes("mejor")) {
+    return "Tu constancia empieza a reflejarse visualmente.";
+  }
+
+  if (previousCheckin && weightDiff && weightDiff !== "—") {
+    return "Buen progreso semanal. Mantén el mismo ritmo.";
+  }
+
+  if (previousCheckin) {
+    return "Se empieza a formar una referencia clara de evolución.";
+  }
+
+  return "Primer check-in guardado. La constancia hará visible el progreso.";
 }
 
 function formatKg(value) {

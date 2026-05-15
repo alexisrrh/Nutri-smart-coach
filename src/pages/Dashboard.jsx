@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
@@ -117,6 +118,19 @@ export function Dashboard() {
     Boolean(activeDiet)
   );
 
+  const motivationMessage = useMemo(
+    () =>
+      getDashboardMotivationMessage({
+        mealsCount: todayMeals.length,
+        hasActiveDiet: Boolean(activeDiet),
+        nutritionScore,
+        protein: totals.protein,
+        proteinGoal: goals.protein,
+        firstName,
+      }),
+    [todayMeals.length, activeDiet, nutritionScore, totals.protein, goals.protein, firstName]
+  );
+
   if (loadingData) {
     return (
       <DashboardLayout>
@@ -140,8 +154,63 @@ export function Dashboard() {
   todayMeals={todayMeals}
 />
 
+      <DashboardMotivationCard message={motivationMessage} />
 
       <DashboardActions navigate={navigate} />
     </DashboardLayout>
   );
+}
+
+function DashboardMotivationCard({ message }) {
+  return (
+    <section className="relative overflow-hidden rounded-[1.2rem] border border-emerald-300/15 bg-[#07170f]/92 px-3 py-2.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
+
+      <div className="relative z-10 flex items-start gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+          <Sparkles size={15} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-300/65">
+            Impulso IA
+          </p>
+          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold leading-4 text-white/72">
+            {message}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function getDashboardMotivationMessage({
+  mealsCount,
+  hasActiveDiet,
+  nutritionScore,
+  protein,
+  proteinGoal,
+  firstName,
+}) {
+  const name = firstName ? `${firstName}, ` : "";
+  const proteinProgress =
+    Number(proteinGoal || 0) > 0 ? Number(protein || 0) / Number(proteinGoal) : 0;
+
+  if (nutritionScore >= 8) {
+    return `${name}vas por buen camino: mantén esta racha.`;
+  }
+
+  if (mealsCount > 0 && proteinProgress >= 0.6) {
+    return "Buen avance hoy. Cada registro te da más control semanal.";
+  }
+
+  if (mealsCount > 0) {
+    return "Cada comida registrada mejora tu claridad para decidir mejor.";
+  }
+
+  if (hasActiveDiet) {
+    return "Completa tu próxima comida y mantén tu semana activa.";
+  }
+
+  return "Hoy es buen día para empezar con una acción pequeña.";
 }
