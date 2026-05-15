@@ -102,6 +102,38 @@ export function Meals() {
     );
   }, [filteredMeals]);
 
+  const scoredMealsCount = useMemo(
+    () => filteredMeals.filter((meal) => Number(meal.score) > 0).length,
+    [filteredMeals]
+  );
+
+  const recommendedMealsCount = useMemo(
+    () => filteredMeals.filter((meal) => Boolean(meal.recommendation)).length,
+    [filteredMeals]
+  );
+
+  const motivationMessage = useMemo(
+    () =>
+      getMealsMotivationMessage({
+        filteredCount: filteredMeals.length,
+        totalCount: meals.length,
+        totals,
+        filter,
+        search,
+        scoredMealsCount,
+        recommendedMealsCount,
+      }),
+    [
+      filteredMeals.length,
+      meals.length,
+      totals,
+      filter,
+      search,
+      scoredMealsCount,
+      recommendedMealsCount,
+    ]
+  );
+
   async function deleteMeal(mealToDelete) {
     if (!mealToDelete) return;
 
@@ -179,6 +211,8 @@ export function Meals() {
           />
 
           <MacroSummary totals={totals} mealsCount={filteredMeals.length} />
+
+          <MealsMotivationCard message={motivationMessage} />
 
           {remoteError && (
             <StatusBox type="info" className="text-xs leading-5">
@@ -350,6 +384,29 @@ function MacroSummary({ totals, mealsCount }) {
   );
 }
 
+function MealsMotivationCard({ message }) {
+  return (
+    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f]/95 px-3 py-2.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
+
+      <div className="relative z-10 flex items-start gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+          <Sparkles size={15} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            Coach IA
+          </p>
+          <p className="mt-0.5 line-clamp-2 text-[11px] font-bold leading-4 text-white/72">
+            {message}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SummaryChip({ icon, title, value, unit = "" }) {
   return (
     <div className="min-w-0 rounded-2xl bg-white/[0.04] p-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
@@ -363,6 +420,50 @@ function SummaryChip({ icon, title, value, unit = "" }) {
       </p>
     </div>
   );
+}
+
+function getMealsMotivationMessage({
+  filteredCount,
+  totalCount,
+  totals,
+  filter,
+  search,
+  scoredMealsCount,
+  recommendedMealsCount,
+}) {
+  if (search && filteredCount === 0) {
+    return "Prueba otro término para revisar tus registros.";
+  }
+
+  if (totalCount === 0) {
+    return "Escanea una comida para empezar a construir tu historial.";
+  }
+
+  if (filteredCount === 0) {
+    return "Tu historial tiene datos; cambia el filtro para ver más comidas.";
+  }
+
+  if (recommendedMealsCount > 0) {
+    return "Revisar tus análisis te ayuda a decidir con más intención.";
+  }
+
+  if (scoredMealsCount >= 3) {
+    return "Tu historial empieza a mostrar patrones útiles.";
+  }
+
+  if (filter === "today") {
+    return "Cada comida registrada mejora tu control nutricional.";
+  }
+
+  if (filter === "week") {
+    return "Buen trabajo: estás construyendo conciencia sobre lo que comes.";
+  }
+
+  if (Number(totals?.protein || 0) > 0 || Number(totals?.calories || 0) > 0) {
+    return "Sigue escaneando: más datos te dan más claridad.";
+  }
+
+  return "Tu historial convierte cada registro en una señal útil.";
 }
 
 function FilterButton({ active, onClick, children }) {
