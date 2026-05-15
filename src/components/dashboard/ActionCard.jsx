@@ -15,7 +15,7 @@ export default function ActionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative min-h-[30px] overflow-hidden rounded-[0.8rem] px-1.25 py-1 text-left transition-all duration-300 active:scale-[0.98] ${
+      className={`group relative min-h-[42px] overflow-hidden rounded-[0.8rem] px-1.25 py-1 text-left transition-all duration-300 active:scale-[0.98] ${
         featured
           ? "border border-emerald-400/30 bg-emerald-400 text-[#06110e] shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
           : "bg-transparent"

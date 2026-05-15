@@ -169,7 +169,7 @@ export function Dashboard() {
             <DashboardMotivationCard message={motivationMessage} />
           </div>
 
-          <div className="pt-0.5">
+          <div className="min-h-0 flex-1 pt-0.5">
             <DashboardActions navigate={navigate} />
           </div>
         </div>
