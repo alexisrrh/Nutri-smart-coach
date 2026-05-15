@@ -83,8 +83,10 @@ select {
 html,
 body,
 #root {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
   background: #06110e;
-  overscroll-behavior: none;
+}
+
+body {
+  overflow-x: hidden;
 }
