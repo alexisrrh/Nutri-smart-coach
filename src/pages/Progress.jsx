@@ -114,10 +114,12 @@ export function Progress() {
   }, [logs]);
 
   return (
-    <AppShell>
+    <AppShell contentClassName="px-2 pb-[92px] pt-2">
+      <div className="flex h-[calc(100dvh-100px)] min-h-0 flex-col gap-2 overflow-hidden">
+        <div className="shrink-0">
         <button
           onClick={() => navigate("/dashboard")}
-          className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/60 transition hover:border-emerald-400/40 hover:text-emerald-300"
+          className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/60 transition hover:border-emerald-400/40 hover:text-emerald-300"
         >
           <ArrowLeft size={14} />
           Dashboard
@@ -141,8 +143,10 @@ export function Progress() {
             </p>
           </SurfaceCard>
         </PageHeaderCard>
+        </div>
 
-        <section className="mt-4 grid grid-cols-2 gap-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6">
+        <section className="grid grid-cols-2 gap-3">
           <StatCard
             icon={<Scale size={18} />}
             label="Actual"
@@ -287,6 +291,8 @@ export function Progress() {
             )}
           </SurfaceCard>
         </section>
+        </div>
+      </div>
     </AppShell>
   );
 }
