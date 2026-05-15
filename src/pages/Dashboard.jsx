@@ -34,7 +34,6 @@ export function Dashboard() {
       } = await supabase.auth.getUser();
 
       const userId = user?.id || savedProfile?.id || savedProfile?.user_id;
-
       if (!userId) return;
 
       const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
@@ -61,10 +60,7 @@ export function Dashboard() {
 
   useEffect(() => {
     const savedProfile = getCachedProfile();
-
-    Promise.resolve().then(() => {
-      loadRemoteDashboardData(savedProfile);
-    });
+    Promise.resolve().then(() => loadRemoteDashboardData(savedProfile));
   }, []);
 
   const goals = useMemo(() => getGoals(profile), [profile]);
@@ -75,7 +71,6 @@ export function Dashboard() {
     return meals.filter((meal) => {
       const date = meal.created_at || meal.createdAt;
       if (!date) return false;
-
       return new Date(date).toDateString() === today;
     });
   }, [meals]);
@@ -101,9 +96,8 @@ export function Dashboard() {
 
     return Math.min(
       10,
-      Math.round(
-        (proteinScore + caloriesScore + carbsScore + fatScore) * 10
-      ) / 10
+      Math.round((proteinScore + caloriesScore + carbsScore + fatScore) * 10) /
+        10
     );
   }, [totals, goals]);
 
@@ -191,7 +185,7 @@ export function Dashboard() {
 
 function DashboardMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[0.9rem] border border-emerald-300/10 bg-[#07170f]/90 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
+    <section className="relative overflow-hidden rounded-[0.9rem] border border-emerald-300/10 bg-[#07170f]/90 px-2.5 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
 
       <div className="relative z-10 flex items-center gap-2">
@@ -200,11 +194,11 @@ function DashboardMotivationCard({ message }) {
         </div>
 
         <div className="min-w-0">
-          <p className="text-[7px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
             Impulso IA
           </p>
 
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-[1.2] text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[11px] font-bold leading-[1.2] text-white/75">
             {message}
           </p>
         </div>
