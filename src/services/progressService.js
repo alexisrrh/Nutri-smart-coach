@@ -5,45 +5,53 @@ import { normalizeProgressLog, normalizeProgressLogs } from "./normalizers";
 
 const PROGRESS_LOGS_KEY = STORAGE_KEYS.PROGRESS_LOGS;
 
-export function getCachedProgressLogs() {
-  return normalizeProgressLogs(getCache(PROGRESS_LOGS_KEY, []));
+function getProgressLogsKey(userId) {
+  return userId ? `${PROGRESS_LOGS_KEY}:${userId}` : PROGRESS_LOGS_KEY;
 }
 
-export function cacheProgressLogs(logs) {
+export function getCachedProgressLogs(userId) {
+  return normalizeProgressLogs(getCache(getProgressLogsKey(userId), []));
+}
+
+export function cacheProgressLogs(userId, logs) {
   const normalizedLogs = normalizeProgressLogs(logs);
 
-  setCache(PROGRESS_LOGS_KEY, normalizedLogs);
+  setCache(getProgressLogsKey(userId), normalizedLogs);
 
   return normalizedLogs;
 }
 
-export function cacheProgressLog(log) {
+export function cacheProgressLog(userId, log) {
   const normalizedLog = normalizeProgressLog(log);
 
-  if (!normalizedLog) return getCachedProgressLogs();
+  if (!normalizedLog) return getCachedProgressLogs(userId);
 
-  const previousLogs = getCachedProgressLogs();
+  const previousLogs = getCachedProgressLogs(userId);
   const logsWithoutDuplicate = previousLogs.filter(
     (item) => item.id !== normalizedLog.id
   );
   const updatedLogs = [normalizedLog, ...logsWithoutDuplicate];
 
-  cacheProgressLogs(updatedLogs);
+  cacheProgressLogs(userId, updatedLogs);
 
   return updatedLogs;
 }
 
-export function clearProgressLogsCache() {
-  removeCache(PROGRESS_LOGS_KEY);
+export function clearProgressLogsCache(userId) {
+  removeCache(getProgressLogsKey(userId));
 }
 
 export async function listProgressLogs(
   userId,
-  { fallbackToCache = true } = {}
+  { fallbackToCache = true, includeMeta = false } = {}
 ) {
-  const cachedLogs = getCachedProgressLogs();
+  const cachedLogs = getCachedProgressLogs(userId);
 
-  if (!userId) return cachedLogs;
+  if (!userId) {
+    return includeMeta
+      ? { logs: cachedLogs, fromCache: true, error: null }
+      : cachedLogs;
+  }
 
   try {
     const { data, error } = await supabase
@@ -55,19 +63,28 @@ export async function listProgressLogs(
     if (error) throw error;
 
     const remoteLogs = normalizeProgressLogs(data || []);
-    cacheProgressLogs(remoteLogs);
+    cacheProgressLogs(userId, remoteLogs);
 
-    return remoteLogs;
+    return includeMeta
+      ? { logs: remoteLogs, fromCache: false, error: null }
+      : remoteLogs;
   } catch (error) {
-    if (fallbackToCache) return cachedLogs;
+    if (fallbackToCache) {
+      return includeMeta
+        ? { logs: cachedLogs, fromCache: true, error }
+        : cachedLogs;
+    }
+
     throw error;
   }
 }
 
 export async function createProgressLog({ userId, weight, note }) {
+  const normalizedWeight = validateWeight(weight);
+
   const payload = {
     user_id: userId,
-    peso: Number(weight),
+    peso: normalizedWeight,
     nota: note,
   };
 
@@ -85,7 +102,29 @@ export async function createProgressLog({ userId, weight, note }) {
     throw new Error("No se pudo guardar el progreso.");
   }
 
-  cacheProgressLog(progressLog);
+  cacheProgressLog(userId, progressLog);
 
   return progressLog;
+}
+
+function validateWeight(weight) {
+  if (weight === null || weight === undefined || weight === "") {
+    throw new Error("Introduce tu peso actual.");
+  }
+
+  const normalizedWeight = Number(weight);
+
+  if (Number.isNaN(normalizedWeight)) {
+    throw new Error("Introduce un peso válido.");
+  }
+
+  if (normalizedWeight <= 0) {
+    throw new Error("El peso debe ser mayor que 0.");
+  }
+
+  if (normalizedWeight < 25 || normalizedWeight > 350) {
+    throw new Error("Introduce un peso entre 25 y 350 kg.");
+  }
+
+  return normalizedWeight;
 }

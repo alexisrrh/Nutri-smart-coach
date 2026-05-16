@@ -5,40 +5,44 @@ import { normalizeCheckin } from "./normalizers";
 
 const CHECKINS_KEY = STORAGE_KEYS.CHECKINS;
 
-export function getCachedCheckins() {
-  return normalizeCheckins(getCache(CHECKINS_KEY, []));
+function getCheckinsKey(userId) {
+  return userId ? `${CHECKINS_KEY}:${userId}` : CHECKINS_KEY;
 }
 
-export function cacheCheckins(checkins) {
+export function getCachedCheckins(userId) {
+  return normalizeCheckins(getCache(getCheckinsKey(userId), []));
+}
+
+export function cacheCheckins(userId, checkins) {
   const normalizedCheckins = normalizeCheckins(checkins);
 
-  setCache(CHECKINS_KEY, normalizedCheckins);
+  setCache(getCheckinsKey(userId), normalizedCheckins);
 
   return normalizedCheckins;
 }
 
-export function cacheCheckin(checkin) {
+export function cacheCheckin(userId, checkin) {
   const normalizedCheckin = normalizeCheckin(checkin);
 
-  if (!normalizedCheckin) return getCachedCheckins();
+  if (!normalizedCheckin) return getCachedCheckins(userId);
 
-  const previousCheckins = getCachedCheckins();
+  const previousCheckins = getCachedCheckins(userId);
   const checkinsWithoutDuplicate = previousCheckins.filter(
     (item) => item.id !== normalizedCheckin.id
   );
   const updatedCheckins = [normalizedCheckin, ...checkinsWithoutDuplicate];
 
-  cacheCheckins(updatedCheckins);
+  cacheCheckins(userId, updatedCheckins);
 
   return updatedCheckins;
 }
 
-export function clearCheckinsCache() {
-  removeCache(CHECKINS_KEY);
+export function clearCheckinsCache(userId) {
+  removeCache(getCheckinsKey(userId));
 }
 
 export async function listCheckins(userId, { fallbackToCache = true } = {}) {
-  const cachedCheckins = getCachedCheckins();
+  const cachedCheckins = getCachedCheckins(userId);
 
   if (!userId) return cachedCheckins;
 
@@ -47,7 +51,7 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
     const remoteCheckins = normalizeCheckins(data?.checkins);
 
     if (remoteCheckins.length > 0 || cachedCheckins.length === 0) {
-      cacheCheckins(remoteCheckins);
+      cacheCheckins(userId, remoteCheckins);
       return remoteCheckins;
     }
 
@@ -87,7 +91,7 @@ export async function createCheckin({
     throw new Error("No se pudo guardar el check-in.");
   }
 
-  cacheCheckin(checkin);
+  cacheCheckin(userId, checkin);
 
   return checkin;
 }
@@ -108,11 +112,11 @@ export async function deleteCheckin(checkinId, userId) {
     }
   );
 
-  const updatedCheckins = getCachedCheckins().filter(
+  const updatedCheckins = getCachedCheckins(userId).filter(
     (item) => String(item.id) !== String(checkinId)
   );
 
-  cacheCheckins(updatedCheckins);
+  cacheCheckins(userId, updatedCheckins);
 
   return data;
 }

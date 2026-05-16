@@ -40,17 +40,25 @@ export function Progress() {
   const [loading, setLoading] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [usingCache, setUsingCache] = useState(false);
 
   const getLogs = useCallback(async () => {
     if (!userId) return;
 
     setLoadingLogs(true);
 
-    const progressLogs = await listProgressLogs(userId);
+    try {
+      const result = await listProgressLogs(userId, { includeMeta: true });
 
-    setLogs(progressLogs);
-
-    setLoadingLogs(false);
+      setLogs(result.logs);
+      setUsingCache(result.fromCache && Boolean(result.error));
+    } catch (error) {
+      console.error("Error cargando progreso:", error);
+      setErrorMessage("No se pudo cargar tu progreso.");
+    } finally {
+      setLoadingLogs(false);
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -65,6 +73,7 @@ export function Progress() {
 
     setLoading(true);
     setSaved(false);
+    setErrorMessage("");
 
     try {
       await createProgressLog({
@@ -81,6 +90,7 @@ export function Progress() {
       setTimeout(() => setSaved(false), 1800);
     } catch (error) {
       console.error("Error guardando progreso:", error);
+      setErrorMessage(error.message || "No se pudo guardar tu progreso.");
     } finally {
       setLoading(false);
     }
@@ -188,6 +198,18 @@ export function Progress() {
         {saved && (
           <StatusBox type="success" className="mt-4">
             Progreso guardado correctamente.
+          </StatusBox>
+        )}
+
+        {errorMessage && (
+          <StatusBox type="error" className="mt-4">
+            {errorMessage}
+          </StatusBox>
+        )}
+
+        {usingCache && !errorMessage && (
+          <StatusBox type="info" className="mt-4">
+            Mostrando progreso guardado en este dispositivo.
           </StatusBox>
         )}
 
