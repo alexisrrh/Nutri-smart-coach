@@ -210,15 +210,15 @@ function MealDetailSheet({ detail, onClose }) {
       <section
         role="dialog"
         aria-modal="true"
-        className="max-h-[72vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-2xl shadow-black/50"
+        className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-2xl shadow-black/50"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-2.5 flex items-start justify-between gap-2.5">
+        <div className="mb-2 flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#10b981]">
               {mealName}
             </p>
-            <h3 className="mt-0.5 line-clamp-2 text-base font-bold normal-case leading-snug text-white">
+            <h3 className="mt-0.5 line-clamp-2 text-[15px] font-bold normal-case leading-snug text-white">
               {foodName}
             </h3>
             {mealTime && (
@@ -233,13 +233,13 @@ function MealDetailSheet({ detail, onClose }) {
             type="button"
             aria-label="Cerrar detalle"
             onClick={onClose}
-            className="grid min-h-8 min-w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-slate-400 transition hover:border-[#10b981]/30 hover:text-white"
+            className="grid min-h-7 min-w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/20 text-slate-400 transition hover:border-[#10b981]/30 hover:text-white"
           >
-            <X size={14} strokeWidth={2.5} />
+            <X size={13} strokeWidth={2.5} />
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {calories > 0 && <DetailMetric label="kcal" value={calories} />}
           {protein > 0 && <DetailMetric label="proteína" value={`${protein}g`} />}
           {carbs > 0 && <DetailMetric label="carbs" value={`${carbs}g`} />}
@@ -247,19 +247,19 @@ function MealDetailSheet({ detail, onClose }) {
         </div>
 
         {foodDetail && (
-          <div className="mt-2.5 rounded-2xl border border-white/10 bg-black/20 p-2.5">
+          <div className="mt-2 rounded-2xl border border-white/10 bg-black/20 p-2">
             <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
               Comida completa
             </p>
-            <p className="mt-1 text-xs font-semibold normal-case leading-snug text-white/90">
+            <p className="mt-0.5 text-[11px] font-semibold normal-case leading-snug text-white/90">
               {foodDetail}
             </p>
           </div>
         )}
 
         {ingredients.length > 0 && (
-          <div className="mt-2.5">
-            <p className="mb-1 text-[9px] font-black uppercase tracking-wide text-slate-500">
+          <div className="mt-2">
+            <p className="mb-0.5 text-[9px] font-black uppercase tracking-wide text-slate-500">
               Ingredientes / porciones
             </p>
             <div className="flex flex-wrap gap-1">
@@ -276,11 +276,11 @@ function MealDetailSheet({ detail, onClose }) {
 
 function DetailMetric({ label, value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-2 py-1">
-      <span className="text-[9px] font-black uppercase tracking-wide text-slate-500">
+    <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-0.5">
+      <span className="text-[8px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </span>
-      <span className="text-[10px] font-black text-white">{value}</span>
+      <span className="text-[9px] font-black text-white">{value}</span>
     </div>
   );
 }
@@ -289,8 +289,8 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-0.5">
-      <span className="max-w-[104px] truncate text-[9px] font-semibold normal-case text-slate-300">
+    <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-px">
+      <span className="max-w-[96px] truncate text-[8px] font-semibold normal-case text-slate-300">
         {name}
       </span>
 
