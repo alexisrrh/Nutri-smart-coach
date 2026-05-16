@@ -4,6 +4,7 @@ import {
   Clock,
   Flame,
   Utensils,
+  X,
 } from "lucide-react";
 
 export function DayDietView({
@@ -195,30 +196,34 @@ function MealDetailSheet({ detail, onClose }) {
   const protein = Math.round(Number(meal.protein || 0));
   const carbs = Math.round(Number(meal.carbs || 0));
   const fat = Math.round(Number(meal.fat || 0));
-  const foodDetail = meal.food || meal.title || meal.description || meal.details;
+  const rawFoodDetail = meal.food || meal.title || meal.description || meal.details;
+  const foodDetail =
+    rawFoodDetail && String(rawFoodDetail).trim().toLowerCase() !== String(foodName).trim().toLowerCase()
+      ? rawFoodDetail
+      : null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-3 pt-8 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <section
         role="dialog"
         aria-modal="true"
-        className="max-h-[82vh] w-full max-w-md overflow-y-auto rounded-[24px] border border-[#10b981]/20 bg-[#07170f] p-4 shadow-2xl shadow-black/50"
+        className="max-h-[72vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-3 shadow-2xl shadow-black/50"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="mb-2.5 flex items-start justify-between gap-2.5">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#10b981]">
               {mealName}
             </p>
-            <h3 className="mt-1 text-lg font-black uppercase italic leading-tight text-white">
+            <h3 className="mt-0.5 line-clamp-2 text-base font-bold normal-case leading-snug text-white">
               {foodName}
             </h3>
             {mealTime && (
-              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold normal-case text-slate-500">
-                <Clock size={12} />
+              <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold normal-case text-slate-500">
+                <Clock size={11} />
                 {mealTime}
               </p>
             )}
@@ -226,14 +231,15 @@ function MealDetailSheet({ detail, onClose }) {
 
           <button
             type="button"
+            aria-label="Cerrar detalle"
             onClick={onClose}
-            className="shrink-0 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:border-[#10b981]/30 hover:text-white"
+            className="grid min-h-8 min-w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-slate-400 transition hover:border-[#10b981]/30 hover:text-white"
           >
-            Cerrar
+            <X size={14} strokeWidth={2.5} />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {calories > 0 && <DetailMetric label="kcal" value={calories} />}
           {protein > 0 && <DetailMetric label="proteína" value={`${protein}g`} />}
           {carbs > 0 && <DetailMetric label="carbs" value={`${carbs}g`} />}
@@ -241,22 +247,22 @@ function MealDetailSheet({ detail, onClose }) {
         </div>
 
         {foodDetail && (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
+          <div className="mt-2.5 rounded-2xl border border-white/10 bg-black/20 p-2.5">
+            <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
               Comida completa
             </p>
-            <p className="mt-1 text-sm font-bold normal-case leading-snug text-white">
+            <p className="mt-1 text-xs font-semibold normal-case leading-snug text-white/90">
               {foodDetail}
             </p>
           </div>
         )}
 
         {ingredients.length > 0 && (
-          <div className="mt-3">
-            <p className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
+          <div className="mt-2.5">
+            <p className="mb-1 text-[9px] font-black uppercase tracking-wide text-slate-500">
               Ingredientes / porciones
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {ingredients.map((item, idx) => (
                 <IngredientPill key={`detail-ing-${idx}`} item={item} />
               ))}
@@ -270,11 +276,11 @@ function MealDetailSheet({ detail, onClose }) {
 
 function DetailMetric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0d2218]/70 p-2">
-      <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
+    <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-2 py-1">
+      <span className="text-[9px] font-black uppercase tracking-wide text-slate-500">
         {label}
-      </p>
-      <p className="mt-0.5 text-sm font-black text-white">{value}</p>
+      </span>
+      <span className="text-[10px] font-black text-white">{value}</span>
     </div>
   );
 }
@@ -283,12 +289,12 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-1">
-      <span className="max-w-[116px] truncate text-[10px] font-bold normal-case text-slate-300">
+    <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-0.5">
+      <span className="max-w-[104px] truncate text-[9px] font-semibold normal-case text-slate-300">
         {name}
       </span>
 
-      <span className="shrink-0 text-[9px] font-black normal-case text-[#10b981]">
+      <span className="shrink-0 text-[8px] font-black normal-case text-[#10b981]">
         {amount}
       </span>
     </div>
