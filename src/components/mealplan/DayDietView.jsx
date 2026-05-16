@@ -60,19 +60,12 @@ export function DayDietView({
               }`}
             >
               {active && (
-                <span
-                  className="absolute -inset-2 animate-spin rounded-full opacity-70"
-                  style={{
-                    background:
-                      "conic-gradient(from 0deg, transparent, rgba(255,255,255,0.75), transparent, rgba(16,185,129,0.15), transparent)",
-                  }}
-                />
+                <>
+                  <span className="absolute -inset-2 z-0 animate-[spin_2.6s_linear_infinite] rounded-[1rem] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)]" />
+                  <span className="absolute inset-[2px] z-[1] rounded-[0.9rem] bg-[#10b981]" />
+                </>
               )}
-              <span
-                className={`relative z-10 grid h-[calc(100%-3px)] w-[calc(100%-3px)] place-items-center rounded-[0.9rem] ${
-                  active ? "bg-[#10b981]" : "bg-[#07170f]/95"
-                }`}
-              >
+              <span className="relative z-10">
                 {miniDay(dayData.day, index)}
               </span>
             </button>
