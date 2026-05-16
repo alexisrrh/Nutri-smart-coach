@@ -25,7 +25,7 @@ import {
   listDietPlans,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
-import { AppShell, SecondaryButton, StatusBox, SurfaceCard } from "../components/ui";
+import { AppShell, StatusBox, SurfaceCard } from "../components/ui";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -243,7 +243,6 @@ export function MealPlan() {
             completionPercent={completionPercent}
             completedMeals={completedMeals}
             totalMeals={totalMeals}
-            handleResetPlan={handleResetPlan}
           />
 
           {!profileComplete && (
@@ -315,7 +314,13 @@ export function MealPlan() {
                     />
                   </div>
 
-                  <div className="mt-1.5 grid grid-cols-3 gap-1">
+                  <div className="mt-1 grid grid-cols-4 gap-1">
+                    <ActionButton
+                      icon={<RefreshCcw size={12} />}
+                      label="Nueva dieta"
+                      onClick={handleResetPlan}
+                    />
+
                     <ActionButton
                       icon={<ShoppingCart size={12} />}
                       label={showShopping ? "Dieta" : "Compra"}
@@ -381,7 +386,6 @@ function DietHeroCard({
   completionPercent,
   completedMeals,
   totalMeals,
-  handleResetPlan,
 }) {
   return (
     <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2">
@@ -407,17 +411,6 @@ function DietHeroCard({
           <Sparkles size={16} />
         </div>
       </div>
-
-      {hasPlan && (
-        <SecondaryButton
-          type="button"
-          onClick={handleResetPlan}
-          icon={<RefreshCcw size={13} />}
-          className="mt-2.5 w-full py-2 text-[9px]"
-        >
-          Nueva dieta
-        </SecondaryButton>
-      )}
     </SurfaceCard>
   );
 }
@@ -428,7 +421,9 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-2xl px-2 text-[10px] font-black uppercase tracking-wide shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] transition active:scale-[0.98] disabled:opacity-30 ${
+      aria-label={label}
+      title={label}
+      className={`grid h-8 w-full place-items-center rounded-xl px-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] transition active:scale-[0.98] disabled:opacity-30 ${
         active
           ? "bg-[#10b981] text-[#06110c] shadow-[0_0_22px_rgba(16,185,129,0.18)]"
           : "bg-white/[0.045] text-slate-300 hover:bg-[#10b981]/10 hover:text-white"
@@ -437,7 +432,6 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       <span className={active ? "text-[#06110c]" : "text-[#10b981]"}>
         {icon}
       </span>
-      {label}
     </button>
   );
 }
