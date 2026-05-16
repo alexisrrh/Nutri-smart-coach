@@ -10,7 +10,6 @@ import {
    Loader2,
    ScanLine,
 } from "lucide-react";
-import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
 import { DayDietView } from "../components/mealplan/DayDietView";
 import { ShoppingListView } from "../components/mealplan/ShoppingListView";
@@ -345,7 +344,11 @@ export function MealPlan() {
 
               {!loading && hasPlan && (
                 <div className="space-y-2">
-                  <DietSummary plan={plan} getWeekTotals={getWeekTotals} />
+                  <CompactDietSummary
+                    daysCount={plan.length}
+                    totalMeals={totalMeals}
+                    totals={weekTotals}
+                  />
 
                   {!showShopping ? (
                     <>
@@ -436,6 +439,34 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       </span>
       {label}
     </button>
+  );
+}
+
+function CompactDietSummary({ daysCount, totalMeals, totals }) {
+  const dailyCalories = daysCount
+    ? Math.round(Number(totals?.calories || 0) / daysCount)
+    : 0;
+  const dailyProtein = daysCount
+    ? Math.round(Number(totals?.protein || 0) / daysCount)
+    : 0;
+
+  return (
+    <section className="rounded-[18px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+      <div className="flex min-w-0 items-center gap-2">
+        <Sparkles size={13} className="shrink-0 text-[#10b981]" />
+
+        <div className="min-w-0">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            Resumen semanal
+          </p>
+
+          <p className="mt-0.5 truncate text-[10px] font-bold normal-case leading-[1.25] text-white/75">
+            {daysCount} días • {totalMeals} comidas • {dailyCalories} kcal/día •{" "}
+            {dailyProtein}g proteína
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 

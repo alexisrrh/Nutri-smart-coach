@@ -101,7 +101,7 @@ export function DayDietView({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {mealsArray.map((meal, index) => {
           const mealId = getMealId(activeDayData?.day, meal, index);
           const isCompleted = Boolean(progress?.[mealId]);
@@ -112,15 +112,15 @@ export function DayDietView({
           return (
             <article
               key={mealId}
-              className={`overflow-hidden rounded-[28px] border transition ${
+              className={`overflow-hidden rounded-[22px] border transition ${
                 isCompleted
                   ? "border-[#10b981]/30 bg-[#10b981]/5 opacity-80"
                   : "border-white/10 bg-black/20"
               }`}
             >
-              <div className="flex items-start justify-between gap-2.5 p-2.5">
+              <div className="flex items-start justify-between gap-2 px-2.5 py-2">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-wide text-slate-500">
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] font-black uppercase tracking-wide text-slate-500">
                     <span className="inline-flex items-center gap-1 text-[#10b981]">
                       <Utensils size={11} />
                       {mealName}
@@ -143,7 +143,7 @@ export function DayDietView({
                   </div>
 
                   <h4
-                    className={`mt-1.5 line-clamp-2 text-[14px] font-black uppercase italic leading-tight tracking-tight ${
+                    className={`mt-1 line-clamp-2 text-[13px] font-black uppercase italic leading-[1.12] tracking-tight ${
                       isCompleted ? "text-white/45 line-through" : "text-white"
                     }`}
                   >
@@ -154,7 +154,7 @@ export function DayDietView({
                 <button
                   type="button"
                   onClick={() => toggleMeal?.(mealId)}
-                  className={`shrink-0 rounded-2xl border px-2.5 py-2 text-[10px] font-black uppercase tracking-wide transition active:scale-95 ${
+                  className={`shrink-0 rounded-xl border px-2 py-1.5 text-[9px] font-black uppercase tracking-wide transition active:scale-95 ${
                     isCompleted
                       ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                       : "border-white/10 bg-[#0d2218] text-slate-300 hover:bg-white/5"
@@ -162,7 +162,7 @@ export function DayDietView({
                 >
                   {isCompleted ? (
                     <span className="inline-flex items-center gap-1">
-                      <CheckCircle2 size={12} />
+                      <CheckCircle2 size={11} />
                       Hecho
                     </span>
                   ) : (
@@ -171,13 +171,13 @@ export function DayDietView({
                 </button>
               </div>
 
-              <div className="border-t border-white/10 px-2.5 pb-2.5 pt-2">
-                <div className="mb-1.5 flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
+              <div className="border-t border-white/10 px-2.5 pb-2 pt-1.5">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
                     Porciones
                   </p>
 
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1">
                     <MiniMacro label="P" value={`${Math.round(Number(meal.protein || 0))}g`} />
                     <MiniMacro label="C" value={`${Math.round(Number(meal.carbs || 0))}g`} />
                     <MiniMacro label="G" value={`${Math.round(Number(meal.fat || 0))}g`} />
@@ -185,13 +185,13 @@ export function DayDietView({
                 </div>
 
                 {ingredients.length > 0 ? (
-                  <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {ingredients.map((item, idx) => (
                       <IngredientPill key={`${mealId}-ing-${idx}`} item={item} />
                     ))}
                   </div>
                 ) : (
-                  <p className="rounded-2xl border border-white/10 bg-[#0d2218]/60 p-2 text-[11px] normal-case text-slate-400">
+                  <p className="rounded-xl border border-white/10 bg-[#0d2218]/60 p-1.5 text-[10px] normal-case text-slate-400">
                     Sin ingredientes detallados.
                   </p>
                 )}
@@ -208,12 +208,12 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/10 bg-[#0d2218]/70 px-2.5 py-1.5">
-      <span className="max-w-[130px] truncate text-[11px] font-bold normal-case text-slate-300">
+    <div className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-1">
+      <span className="max-w-[116px] truncate text-[10px] font-bold normal-case text-slate-300">
         {name}
       </span>
 
-      <span className="shrink-0 text-[10px] font-black normal-case text-[#10b981]">
+      <span className="shrink-0 text-[9px] font-black normal-case text-[#10b981]">
         {amount}
       </span>
     </div>
@@ -234,9 +234,9 @@ function DayMacro({ icon, value, label }) {
 
 function MiniMacro({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0d2218]/70 px-2 py-0.5">
-      <span className="text-[10px] font-black uppercase text-slate-500">{label}</span>
-      <span className="ml-1 text-[10px] font-black text-white">{value}</span>
+    <div className="rounded-lg border border-white/10 bg-[#0d2218]/70 px-1.5 py-0.5">
+      <span className="text-[9px] font-black uppercase text-slate-500">{label}</span>
+      <span className="ml-0.5 text-[9px] font-black text-white">{value}</span>
     </div>
   );
 }

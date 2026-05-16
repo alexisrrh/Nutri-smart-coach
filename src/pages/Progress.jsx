@@ -9,8 +9,10 @@ import {
   Scale,
   Sparkles,
   Target,
+  Trash2,
   TrendingDown,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
@@ -18,7 +20,7 @@ import {
   createProgressLog,
   listProgressLogs,
 } from "../services/progressService";
-import { listCheckins } from "../services/checkinService";
+import { deleteCheckin, listCheckins } from "../services/checkinService";
 import {
   AppShell,
   FormField,
@@ -47,6 +49,8 @@ export function Progress() {
   const [usingCache, setUsingCache] = useState(false);
   const [activeView, setActiveView] = useState("resumen");
   const [showManualForm, setShowManualForm] = useState(false);
+  const [selectedCheckin, setSelectedCheckin] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const getLogs = useCallback(async () => {
     if (!userId) return;
@@ -116,6 +120,33 @@ export function Progress() {
       setErrorMessage(error.message || "No se pudo guardar tu progreso.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDeleteCheckin(checkin) {
+    if (!checkin?.id || !userId || deletingId) return;
+
+    const confirmed = window.confirm("¿Eliminar este check-in?");
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(checkin.id);
+      setErrorMessage("");
+
+      await deleteCheckin(checkin.id, userId);
+
+      setCheckins((prev) =>
+        prev.filter((item) => String(item.id) !== String(checkin.id))
+      );
+
+      if (String(selectedCheckin?.id) === String(checkin.id)) {
+        setSelectedCheckin(null);
+      }
+    } catch (error) {
+      console.error("Error borrando check-in:", error);
+      setErrorMessage(error.message || "No se pudo borrar el check-in.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -297,11 +328,21 @@ export function Progress() {
                   loadingHistory={loadingHistory}
                   logs={logs}
                   sortedCheckinsDesc={sortedCheckinsDesc}
+                  deletingId={deletingId}
+                  onDelete={handleDeleteCheckin}
+                  onSelect={setSelectedCheckin}
                 />
               </>
             )}
           </div>
         </div>
+
+        {selectedCheckin && (
+          <CheckinDetailSheet
+            checkin={selectedCheckin}
+            onClose={() => setSelectedCheckin(null)}
+          />
+        )}
       </div>
     </AppShell>
   );
@@ -457,7 +498,14 @@ function ManualProgressForm({
   );
 }
 
-function ProgressHistorySection({ loadingHistory, logs, sortedCheckinsDesc }) {
+function ProgressHistorySection({
+  loadingHistory,
+  logs,
+  sortedCheckinsDesc,
+  deletingId,
+  onDelete,
+  onSelect,
+}) {
   return (
     <SurfaceCard className="p-4">
       <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
@@ -487,6 +535,9 @@ function ProgressHistorySection({ loadingHistory, logs, sortedCheckinsDesc }) {
               key={checkin.id || `${checkin.created_at}-${index}`}
               checkin={checkin}
               previous={sortedCheckinsDesc[index + 1]}
+              deleting={deletingId === checkin.id}
+              onDelete={onDelete}
+              onSelect={onSelect}
             />
           ))}
         </div>
@@ -507,15 +558,36 @@ function ProgressHistorySection({ loadingHistory, logs, sortedCheckinsDesc }) {
   );
 }
 
-function CheckinHistoryCard({ checkin, previous }) {
+function CheckinHistoryCard({
+  checkin,
+  previous,
+  deleting = false,
+  onDelete,
+  onSelect,
+}) {
   const image = getCheckinImage(checkin);
   const weight = Number(checkin.weight) || 0;
   const weightDiff = getCheckinWeightDiff(checkin, previous);
   const bodyFatRange = checkin.body_fat_range || "";
   const visualChanges = checkin.visual_changes || "";
 
+  function handleKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect?.(checkin);
+    }
+  }
+
   return (
-    <SurfaceCard radius="md" className="overflow-hidden p-0 transition hover:border-emerald-400/25 hover:bg-[#0b1d18]">
+    <SurfaceCard
+      as="div"
+      radius="md"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect?.(checkin)}
+      onKeyDown={handleKeyDown}
+      className="cursor-pointer overflow-hidden p-0 transition hover:border-emerald-400/25 hover:bg-[#0b1d18]"
+    >
       <div className="grid grid-cols-[96px_1fr] gap-3 p-3">
         <div className="relative h-[118px] overflow-hidden rounded-[20px] border border-white/10 bg-black/25">
           {image ? (
@@ -531,6 +603,19 @@ function CheckinHistoryCard({ checkin, previous }) {
           )}
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/75 via-transparent to-black/10" />
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete?.(checkin);
+            }}
+            disabled={deleting}
+            aria-label="Eliminar check-in"
+            className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full border border-red-300/25 bg-black/55 text-red-100/80 backdrop-blur-xl transition hover:bg-red-400/20 hover:text-red-100 disabled:opacity-50"
+          >
+            <Trash2 size={12} />
+          </button>
         </div>
 
         <div className="min-w-0">
@@ -586,6 +671,106 @@ function CheckinMetricPill({ label, value }) {
       <span className="text-white/35">{label}</span>
       <span className="truncate text-emerald-300">{value}</span>
     </span>
+  );
+}
+
+function CheckinDetailSheet({ checkin, onClose }) {
+  const image = getCheckinImage(checkin);
+  const metrics = [
+    { label: "Peso", value: checkin.weight ? `${checkin.weight} kg` : "" },
+    { label: "Cintura", value: checkin.waist ? `${checkin.waist} cm` : "" },
+    { label: "Pecho", value: checkin.chest ? `${checkin.chest} cm` : "" },
+    { label: "Cadera", value: checkin.hips ? `${checkin.hips} cm` : "" },
+    { label: "Grasa", value: checkin.body_fat_range || "" },
+    { label: "Confianza", value: checkin.confidence ? `${checkin.confidence}%` : "" },
+  ].filter((metric) => metric.value);
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[9998] bg-black/65 backdrop-blur-sm"
+        role="presentation"
+        onClick={onClose}
+      />
+
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Análisis completo del check-in"
+        className="fixed inset-x-0 bottom-[92px] z-[9999] mx-auto w-full max-w-[430px] px-3"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="max-h-[78vh] overflow-y-auto rounded-t-[30px] border border-white/10 bg-[#07170f]/95 p-3 pb-4 shadow-[0_-18px_60px_rgba(0,0,0,0.46)] ring-1 ring-emerald-300/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                Check-in
+              </p>
+              <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
+                Análisis completo
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar análisis"
+              className="grid h-9 w-9 place-items-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/70 transition hover:bg-white/[0.08] hover:text-white"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {image && (
+            <div className="relative mb-3 aspect-[4/5] overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
+              <img
+                src={image}
+                alt="Check-in seleccionado"
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/60 via-transparent to-transparent" />
+              <div className="absolute bottom-2 left-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-300 backdrop-blur">
+                {formatCheckinDate(checkin.created_at || checkin.createdAt)}
+              </div>
+            </div>
+          )}
+
+          {metrics.length > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+              {metrics.map((metric) => (
+                <AIInsightChip
+                  key={metric.label}
+                  label={metric.label}
+                  value={metric.value}
+                />
+              ))}
+            </div>
+          )}
+
+          {checkin.visual_changes && (
+            <SurfaceCard variant="soft" radius="md" className="mt-3 p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-300">
+                Cambios visuales
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+                {checkin.visual_changes}
+              </p>
+            </SurfaceCard>
+          )}
+
+          {checkin.recommendation && (
+            <SurfaceCard variant="soft" radius="md" className="mt-3 p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                Recomendación
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+                {checkin.recommendation}
+              </p>
+            </SurfaceCard>
+          )}
+        </div>
+      </section>
+    </>
   );
 }
 
