@@ -41,21 +41,43 @@ export function DayDietView({
 
   return (
     <div className="space-y-2.5">
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {plan.map((dayData, index) => (
-          <button
-            key={`${dayData.day}-${index}`}
-            type="button"
-            onClick={() => setActiveDay(index)}
-            className={`shrink-0 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition ${
-              safeActiveDay === index
-                ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_18px_rgba(16,185,129,0.28)]"
-                : "border-white/10 bg-black/20 text-slate-400 hover:border-[#10b981]/30 hover:text-white"
-            }`}
-          >
-            {shortDay(dayData.day)}
-          </button>
-        ))}
+      <div className="grid grid-cols-7 gap-1">
+        {plan.map((dayData, index) => {
+          const active = safeActiveDay === index;
+          const fullLabel = fullDayLabel(dayData.day, index);
+
+          return (
+            <button
+              key={`${dayData.day}-${index}`}
+              type="button"
+              aria-label={fullLabel}
+              title={fullLabel}
+              onClick={() => setActiveDay(index)}
+              className={`group relative grid h-10 min-w-0 place-items-center overflow-hidden rounded-[1rem] border text-[12px] font-black uppercase leading-none transition active:scale-95 ${
+                active
+                  ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_18px_rgba(16,185,129,0.34)]"
+                  : "border-white/10 bg-black/25 text-emerald-200/55 hover:border-[#10b981]/30 hover:text-emerald-100"
+              }`}
+            >
+              {active && (
+                <span
+                  className="absolute -inset-2 animate-spin rounded-full opacity-70"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, transparent, rgba(255,255,255,0.75), transparent, rgba(16,185,129,0.15), transparent)",
+                  }}
+                />
+              )}
+              <span
+                className={`relative z-10 grid h-[calc(100%-3px)] w-[calc(100%-3px)] place-items-center rounded-[0.9rem] ${
+                  active ? "bg-[#10b981]" : "bg-[#07170f]/95"
+                }`}
+              >
+                {miniDay(dayData.day, index)}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f] px-2.5 py-1.5">
@@ -344,18 +366,32 @@ function splitIngredient(item = "") {
   return { name: name || text, amount };
 }
 
-function shortDay(day = "") {
+function miniDay(day = "", index = 0) {
   const normalized = String(day).toLowerCase();
 
-  if (normalized.startsWith("lunes")) return "Lun";
-  if (normalized.startsWith("martes")) return "Mar";
-  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return "Mié";
-  if (normalized.startsWith("jueves")) return "Jue";
-  if (normalized.startsWith("viernes")) return "Vie";
-  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return "Sáb";
-  if (normalized.startsWith("domingo")) return "Dom";
+  if (normalized.startsWith("lunes")) return "L";
+  if (normalized.startsWith("martes")) return "M";
+  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return "X";
+  if (normalized.startsWith("jueves")) return "J";
+  if (normalized.startsWith("viernes")) return "V";
+  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return "S";
+  if (normalized.startsWith("domingo")) return "D";
 
-  return String(day).slice(0, 3) || "Día";
+  return ["L", "M", "X", "J", "V", "S", "D"][index] || "D";
+}
+
+function fullDayLabel(day = "", index = 0) {
+  const normalized = String(day).toLowerCase();
+
+  if (normalized.startsWith("lunes")) return "Lunes";
+  if (normalized.startsWith("martes")) return "Martes";
+  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return "Miércoles";
+  if (normalized.startsWith("jueves")) return "Jueves";
+  if (normalized.startsWith("viernes")) return "Viernes";
+  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return "Sábado";
+  if (normalized.startsWith("domingo")) return "Domingo";
+
+  return String(day) || ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][index] || "Día";
 }
 
 function defaultMealTime(index, total = 4) {
