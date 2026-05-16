@@ -341,6 +341,13 @@ export function Progress() {
             </div>
           </SurfaceCard>
 
+          <ProgressVisualCompare
+            firstCheckin={stats.firstCheckin}
+            latestCheckin={stats.latestCheckin}
+          />
+
+          <ProgressWeightChart checkins={checkins} />
+
           <SurfaceCard className="p-4">
             <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
               <div>
@@ -379,6 +386,194 @@ export function Progress() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function ProgressWeightChart({ checkins }) {
+  const weightLogs = checkins
+    .filter((checkin) => Number(checkin.weight) > 0)
+    .slice()
+    .reverse();
+  const firstWeight = Number(weightLogs[0]?.weight) || 0;
+  const latestWeight = Number(weightLogs[weightLogs.length - 1]?.weight) || 0;
+  const totalChange =
+    firstWeight && latestWeight
+      ? Number((latestWeight - firstWeight).toFixed(1))
+      : 0;
+  const chartPoints = buildWeightChartPoints(weightLogs);
+  const canChart = weightLogs.length >= 2;
+
+  return (
+    <SurfaceCard className="p-4">
+      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+        <div>
+          <MetaBadge variant="neutral">Check-ins</MetaBadge>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">
+            Evolución de peso
+          </h2>
+        </div>
+
+        <ChartNoAxesColumnIncreasing size={22} className="text-emerald-300" />
+      </div>
+
+      {canChart ? (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            <WeightSummaryChip label="Inicial" value={`${firstWeight} kg`} />
+            <WeightSummaryChip label="Actual" value={`${latestWeight} kg`} />
+            <WeightSummaryChip label="Cambio" value={formatSignedKg(totalChange)} />
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 p-3">
+            <svg
+              viewBox="0 0 320 150"
+              className="h-[150px] w-full"
+              role="img"
+              aria-label="Gráfico de evolución de peso"
+            >
+              <path
+                d="M 16 24 H 304 M 16 75 H 304 M 16 126 H 304"
+                fill="none"
+                stroke="rgba(255,255,255,0.07)"
+                strokeWidth="1"
+              />
+
+              <polyline
+                points={chartPoints}
+                fill="none"
+                stroke="#10b981"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="4"
+              />
+
+              {chartPoints.split(" ").map((point) => {
+                const [x, y] = point.split(",");
+
+                return (
+                  <circle
+                    key={point}
+                    cx={x}
+                    cy={y}
+                    r="4.5"
+                    fill="#07170f"
+                    stroke="#86efac"
+                    strokeWidth="2.5"
+                  />
+                );
+              })}
+            </svg>
+          </div>
+        </>
+      ) : (
+        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+            <ChartNoAxesColumnIncreasing size={25} />
+          </div>
+
+          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
+            Necesitas al menos 2 check-ins con peso para ver la tendencia.
+          </p>
+        </SurfaceCard>
+      )}
+    </SurfaceCard>
+  );
+}
+
+function WeightSummaryChip({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+        {label}
+      </p>
+
+      <p className="mt-1 truncate text-sm font-black text-emerald-300">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
+  const firstImage = getCheckinImage(firstCheckin);
+  const latestImage = getCheckinImage(latestCheckin);
+  const canCompare =
+    firstCheckin &&
+    latestCheckin &&
+    String(firstCheckin.id) !== String(latestCheckin.id) &&
+    firstImage &&
+    latestImage;
+
+  return (
+    <SurfaceCard className="p-4">
+      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+        <div>
+          <MetaBadge variant="neutral">Check-ins</MetaBadge>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">
+            Tu evolución
+          </h2>
+        </div>
+
+        <Sparkles size={22} className="text-emerald-300" />
+      </div>
+
+      {canCompare ? (
+        <div className="grid grid-cols-2 gap-3">
+          <ProgressPhotoTile
+            label="Inicial"
+            image={firstImage}
+            date={firstCheckin.created_at || firstCheckin.createdAt}
+          />
+
+          <ProgressPhotoTile
+            label="Actual"
+            image={latestImage}
+            date={latestCheckin.created_at || latestCheckin.createdAt}
+            active
+          />
+        </div>
+      ) : (
+        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+            <Sparkles size={25} />
+          </div>
+
+          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
+            Necesitas más check-ins para comparar evolución.
+          </p>
+        </SurfaceCard>
+      )}
+    </SurfaceCard>
+  );
+}
+
+function ProgressPhotoTile({ label, image, date, active = false }) {
+  return (
+    <div
+      className={`overflow-hidden rounded-[22px] border bg-black/20 ${
+        active ? "border-emerald-400/25" : "border-white/10"
+      }`}
+    >
+      <div className="relative aspect-[3/4] overflow-hidden bg-black/30">
+        <img
+          src={image}
+          alt={`Foto ${label.toLowerCase()} de progreso`}
+          className="h-full w-full object-cover"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/80 via-transparent to-black/10" />
+
+        <div className="absolute left-2 top-2 rounded-full border border-white/15 bg-black/55 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white/80 backdrop-blur">
+          {label}
+        </div>
+
+        <div className="absolute bottom-2 left-2 right-2 rounded-2xl border border-white/10 bg-black/55 px-2 py-1.5 backdrop-blur">
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-300">
+            {formatCheckinDate(date)}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -453,4 +648,52 @@ function Skeleton() {
   return (
     <SurfaceCard variant="soft" radius="md" className="h-28 animate-pulse" />
   );
+}
+
+function getCheckinImage(checkin) {
+  return (
+    checkin?.image_url ||
+    checkin?.imageUrl ||
+    checkin?.photo_url ||
+    checkin?.photoUrl ||
+    checkin?.image ||
+    ""
+  );
+}
+
+function formatCheckinDate(date) {
+  if (!date) return "Sin fecha";
+
+  return new Date(date).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function buildWeightChartPoints(weightLogs) {
+  const weights = weightLogs.map((checkin) => Number(checkin.weight));
+  const minWeight = Math.min(...weights);
+  const maxWeight = Math.max(...weights);
+  const range = maxWeight - minWeight || 1;
+  const width = 288;
+  const height = 102;
+  const xOffset = 16;
+  const yOffset = 24;
+  const xStep = weightLogs.length > 1 ? width / (weightLogs.length - 1) : 0;
+
+  return weights
+    .map((weight, index) => {
+      const x = xOffset + index * xStep;
+      const y = yOffset + height - ((weight - minWeight) / range) * height;
+
+      return `${Number(x.toFixed(1))},${Number(y.toFixed(1))}`;
+    })
+    .join(" ");
+}
+
+function formatSignedKg(value) {
+  if (!value) return "0 kg";
+
+  return `${value > 0 ? "+" : ""}${value} kg`;
 }
