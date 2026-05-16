@@ -156,22 +156,43 @@ export function MealPlanForm({
         <button
           type="submit"
           disabled={loading}
-          className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#10b981] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#06110c] shadow-[0_20px_60px_rgba(16,185,129,0.22)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="group relative w-full overflow-hidden rounded-[1.15rem] border border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] px-3 py-3 text-white shadow-[0_16px_38px_rgba(16,185,129,0.24)] transition duration-300 hover:border-emerald-200/40 hover:shadow-[0_18px_44px_rgba(16,185,129,0.32)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin" size={15} />
-              Calculando...
-            </>
-          ) : (
-            <>
-              <Sparkles size={15} />
-              Generar dieta con IA
-            </>
-          )}
+          <span className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-white/20 blur-2xl" />
+          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/18 to-transparent transition duration-700 group-hover:translate-x-full" />
 
-          {!loading && (
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/45 to-transparent transition duration-700 group-hover:translate-x-full" />
+          {loading ? (
+            <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[0.95rem] border border-white/10 bg-[#06110e]/35">
+                <Loader2 className="animate-spin text-emerald-100" size={18} />
+              </span>
+
+              <span className="flex min-w-0 flex-col items-start justify-center text-left">
+                <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
+                  Generando dieta...
+                </span>
+                <span className="mt-0.5 text-[10px] font-bold normal-case leading-tight text-emerald-100/80">
+                  Plan personalizado con IA
+                </span>
+              </span>
+            </span>
+          ) : (
+            <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-4">
+              <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] bg-[#06110e]/35">
+                <span className="absolute -inset-4 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_60%,#6ee7b7_72%,transparent_90%,transparent_100%)] opacity-70 animate-[spin_2.5s_linear_infinite]" />
+                <span className="absolute inset-[2px] rounded-[0.9rem] bg-[#07583f]" />
+                <Sparkles className="relative z-10 text-emerald-100" size={22} strokeWidth={2.4} />
+              </span>
+
+              <span className="flex min-w-0 flex-col items-start justify-center text-left">
+                <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
+                  Generar dieta
+                </span>
+                <span className="mt-0.5 text-[10px] font-bold normal-case leading-tight text-emerald-100/85">
+                  Plan personalizado con IA
+                </span>
+              </span>
+            </span>
           )}
         </button>
       </div>
