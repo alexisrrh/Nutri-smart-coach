@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -10,7 +9,6 @@ import {
   Sparkles,
   Target,
   TrendingUp,
-  Trash2,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
@@ -18,7 +16,7 @@ import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { CheckInDetailSheet } from "../components/checkin/CheckInDetailSheet";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
-import { createCheckin, deleteCheckin, listCheckins } from "../services/checkinService";
+import { createCheckin, listCheckins } from "../services/checkinService";
 import {
   clearCachedProfile,
   getCachedProfile,
@@ -44,17 +42,13 @@ export function CheckIn() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [selectedCheckin, setSelectedCheckin] = useState(null);
   const [sheetMode, setSheetMode] = useState("detail");
   const [showMeasures, setShowMeasures] = useState(false);
-  const [deletingCheckinId, setDeletingCheckinId] = useState(null);
-  const [pendingDeleteCheckin, setPendingDeleteCheckin] = useState(null);
 
   const loadData = useCallback(async () => {
-    setLoadingHistory(true);
     setError("");
     setProfile(getCachedProfile());
 
@@ -65,7 +59,6 @@ export function CheckIn() {
 
     if (userError || !user) {
       setError("Necesitas iniciar sesión para guardar tu check-in físico.");
-      setLoadingHistory(false);
       return;
     }
 
@@ -77,8 +70,6 @@ export function CheckIn() {
     } catch (err) {
       console.error(err);
       setError("No se pudo cargar el historial de check-ins.");
-    } finally {
-      setLoadingHistory(false);
     }
   }, []);
 
@@ -109,12 +100,6 @@ export function CheckIn() {
   function openCheckinSheet(checkin) {
     if (!checkin) return;
     setSheetMode("detail");
-    setSelectedCheckin(checkin);
-  }
-
-  function openTimelineAnalysis(checkin) {
-    if (!checkin) return;
-    setSheetMode("analysis");
     setSelectedCheckin(checkin);
   }
 
@@ -203,44 +188,6 @@ export function CheckIn() {
       setError(err.message || "No se pudo guardar el check-in.");
     } finally {
       setLoading(false);
-    }
-  }
-
-  function handleSavedCheckinDelete(event, checkin) {
-    event.stopPropagation();
-
-    if (!checkin?.id || deletingCheckinId) return;
-
-    setPendingDeleteCheckin(checkin);
-  }
-
-  async function confirmDeleteCheckin() {
-    if (!pendingDeleteCheckin?.id || !user || deletingCheckinId) return;
-
-    const checkinId = pendingDeleteCheckin.id;
-
-    try {
-      setDeletingCheckinId(checkinId);
-      setError("");
-      setMessage("");
-
-      await deleteCheckin(checkinId, user.id);
-
-      setHistory((prev) =>
-        prev.filter((item) => String(item.id) !== String(checkinId))
-      );
-
-      if (String(selectedCheckin?.id) === String(checkinId)) {
-        closeSheet();
-      }
-
-      setMessage("Check-in borrado correctamente.");
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "No se pudo borrar el check-in.");
-    } finally {
-      setPendingDeleteCheckin(null);
-      setDeletingCheckinId(null);
     }
   }
 
@@ -525,10 +472,10 @@ export function CheckIn() {
               <div className="mb-1 flex items-center justify-between">
                 <div>
                   <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">
-                    Timeline semanal
+                    Evolución completa
                   </p>
                   <h3 className="text-[11px] font-black uppercase italic text-white">
-                    {history.length || 0} registros
+                    Progreso corporal
                   </h3>
                 </div>
 
@@ -542,72 +489,13 @@ export function CheckIn() {
                 )}
               </div>
 
-              {loadingHistory ? (
-                <p className="py-3 text-center text-[11px] font-bold text-white/45">
-                  Cargando historial...
-                </p>
-              ) : history.length === 0 ? (
-                <p className="py-3 text-center text-[11px] font-bold text-white/45">
-                  Tu historial aparecerá aquí.
-                </p>
-              ) : (
-                <div className="flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {history.map((item, index) => (
-                    <div
-                      key={item.id || index}
-                      onClick={() => openTimelineAnalysis(item)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          openTimelineAnalysis(item);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      className="relative w-[80px] shrink-0 cursor-pointer overflow-hidden rounded-[15px] bg-white/[0.035] text-left ring-1 ring-white/10 transition hover:ring-emerald-300/25"
-                    >
-                      <div className="relative h-[48px] overflow-hidden bg-black/25">
-                        {getCheckinImage(item) ? (
-                          <>
-                            <img
-                              src={getCheckinImage(item)}
-                              alt={`Registro ${index + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                          </>
-                        ) : (
-                          <div className="grid h-full place-items-center text-emerald-300">
-                            <Camera size={18} />
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(event) => handleSavedCheckinDelete(event, item)}
-                        aria-label="Borrar check-in guardado"
-                        disabled={deletingCheckinId === item.id}
-                        className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full border border-white/15 bg-black/55 text-white/65 backdrop-blur-xl transition hover:border-red-300/35 hover:bg-red-400/20 hover:text-red-100 disabled:opacity-45"
-                      >
-                        <Trash2 size={9} />
-                      </button>
-
-                      <div className="p-1.25 pt-0.75">
-                        <p className="text-[8px] font-black uppercase text-emerald-300">
-                          Reg {index + 1}
-                        </p>
-                        <p className="mt-0.5 truncate text-[8px] font-bold text-white/45">
-                          {formatDate(item.created_at || item.createdAt)}
-                        </p>
-                        <p className="mt-0.5 text-[11px] font-black text-white">
-                          {item.weight ? `${item.weight}kg` : "—"}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate("/progreso")}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200/25 bg-emerald-300/[0.10] px-3 py-3 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-100 transition hover:bg-emerald-300/[0.16] active:scale-[0.98]"
+              >
+                Ver progreso completo
+              </button>
             </section>
           </div>
         </main>
@@ -620,13 +508,6 @@ export function CheckIn() {
           />
         )}
 
-        {pendingDeleteCheckin && (
-          <DeleteCheckinConfirmSheet
-            loading={deletingCheckinId === pendingDeleteCheckin.id}
-            onCancel={() => setPendingDeleteCheckin(null)}
-            onConfirm={confirmDeleteCheckin}
-          />
-        )}
       </div>
     </AppShell>
   );
@@ -740,70 +621,6 @@ function CompareChip({ label, value }) {
         {value}
       </span>
     </div>
-  );
-}
-
-function DeleteCheckinConfirmSheet({ loading, onCancel, onConfirm }) {
-  return createPortal(
-    <>
-      <div
-        className="fixed inset-0 z-[9998] bg-black/65 backdrop-blur-sm"
-        role="presentation"
-        onClick={loading ? undefined : onCancel}
-      />
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-label="Borrar check-in"
-        className="fixed inset-x-0 bottom-[112px] z-[9999] mx-auto w-full max-w-[430px] px-3"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="rounded-t-[30px] border border-white/10 bg-[#07170f]/95 p-3 pb-4 shadow-[0_-18px_60px_rgba(0,0,0,0.46)] ring-1 ring-emerald-300/10">
-          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/15" />
-
-          <div className="rounded-[24px] border border-red-400/15 bg-red-400/[0.06] p-3">
-            <div className="flex items-start gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-red-300/20 bg-red-400/10 text-red-200">
-                <Trash2 size={17} />
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-red-200/80">
-                  Borrar check-in
-                </p>
-                <h3 className="mt-1 text-xl font-black uppercase italic leading-none text-white">
-                  Borrar check-in
-                </h3>
-                <p className="mt-2 text-xs leading-4 text-white/60">
-                  Esta foto y su análisis se eliminarán permanentemente.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={loading}
-              className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3 text-[10px] font-black uppercase tracking-[0.13em] text-white/70 transition hover:bg-white/[0.08] disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="button"
-              onClick={onConfirm}
-              disabled={loading}
-              className="rounded-2xl border border-red-300/20 bg-red-400/15 px-3 py-3 text-[10px] font-black uppercase tracking-[0.13em] text-red-100 transition hover:bg-red-400/25 disabled:opacity-50"
-            >
-              {loading ? "Borrando..." : "Borrar"}
-            </button>
-          </div>
-        </div>
-      </section>
-    </>,
-    document.body
   );
 }
 

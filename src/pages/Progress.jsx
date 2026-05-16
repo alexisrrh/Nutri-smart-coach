@@ -45,6 +45,8 @@ export function Progress() {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [usingCache, setUsingCache] = useState(false);
+  const [activeView, setActiveView] = useState("resumen");
+  const [showManualForm, setShowManualForm] = useState(false);
 
   const getLogs = useCallback(async () => {
     if (!userId) return;
@@ -117,11 +119,20 @@ export function Progress() {
     }
   }
 
+  const sortedCheckinsDesc = useMemo(
+    () => sortCheckinsByDate(checkins, "desc"),
+    [checkins]
+  );
+  const sortedCheckinsAsc = useMemo(
+    () => sortCheckinsByDate(checkins, "asc"),
+    [checkins]
+  );
+
   const stats = useMemo(() => {
-    const latestCheckin = checkins[0] || null;
-    const previousCheckin = checkins[1] || null;
-    const firstCheckin = checkins[checkins.length - 1] || null;
-    const totalCheckins = checkins.length;
+    const latestCheckin = sortedCheckinsDesc[0] || null;
+    const previousCheckin = sortedCheckinsDesc[1] || null;
+    const firstCheckin = sortedCheckinsAsc[0] || null;
+    const totalCheckins = sortedCheckinsDesc.length;
 
     if (latestCheckin) {
       const currentWeight = Number(latestCheckin.weight) || 0;
@@ -182,7 +193,7 @@ export function Progress() {
       firstCheckin: null,
       totalCheckins: 0,
     };
-  }, [checkins, logs]);
+  }, [logs, sortedCheckinsAsc, sortedCheckinsDesc]);
 
   const loadingHistory = loadingLogs || loadingCheckins;
 
@@ -216,176 +227,453 @@ export function Progress() {
             </p>
           </SurfaceCard>
         </PageHeaderCard>
+        <ProgressViewTabs activeView={activeView} setActiveView={setActiveView} />
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <section className="grid grid-cols-2 gap-3">
-          <StatCard
-            icon={<Scale size={18} />}
-            label="Actual"
-            value={stats.currentWeight || "--"}
-            unit="kg"
-          />
-
-          <StatCard
-            icon={<Target size={18} />}
-            label="Inicio"
-            value={stats.firstWeight || "--"}
-            unit="kg"
-            tone="cyan"
-          />
-
-          <StatCard
-            icon={
-              stats.direction === "down" ? (
-                <TrendingDown size={18} />
-              ) : (
-                <TrendingUp size={18} />
-              )
-            }
-            label="Cambio"
-            value={stats.change > 0 ? `+${stats.change}` : stats.change || "--"}
-            unit="kg"
-            tone={stats.direction === "down" ? "emerald" : "amber"}
-          />
-
-          <StatCard
-            icon={<ChartNoAxesColumnIncreasing size={18} />}
-            label="Registros"
-            value={stats.totalLogs}
-            unit=""
-            tone="neutral"
-          />
-        </section>
-
-        {saved && (
-          <StatusBox type="success" className="mt-4">
-            Progreso guardado correctamente.
-          </StatusBox>
-        )}
-
-        {errorMessage && (
-          <StatusBox type="error" className="mt-4">
-            {errorMessage}
-          </StatusBox>
-        )}
-
-        {usingCache && !errorMessage && (
-          <StatusBox type="info" className="mt-4">
-            Mostrando progreso guardado en este dispositivo.
-          </StatusBox>
-        )}
-
-        <section className="mt-4 space-y-4">
-          <SurfaceCard as="form" onSubmit={handleSubmit} className="p-4">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981] text-[#06110e]">
-                <Plus size={22} />
-              </div>
-
-              <div>
-                <MetaBadge variant="neutral">Nuevo registro</MetaBadge>
-                <h2 className="mt-2 text-2xl font-black tracking-tight">
-                  Nuevo registro
-                </h2>
-                <p className="mt-1 text-sm leading-5 text-white/55">
-                  Añade tu peso y una nota de medidas.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <FormField label="Peso actual" icon={<Scale size={15} />}>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
-                  <Scale size={17} className="text-emerald-300" />
-                  <input
-                    value={peso}
-                    onChange={(e) => setPeso(e.target.value)}
-                    className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
-                    placeholder="Ej. 72.5"
-                    type="number"
-                    step="0.1"
-                    required
-                  />
-                  <span className="text-xs font-black uppercase tracking-widest text-white/45">
-                    kg
-                  </span>
-                </div>
-              </FormField>
-
-              <FormField label="Nota opcional" icon={<NotebookPen size={15} />}>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
-                  <div className="mb-2 flex items-center gap-2 text-emerald-300">
-                    <NotebookPen size={16} />
-                    <span className="text-xs font-black uppercase tracking-[0.14em] text-white/45">
-                      Cómo te sentiste
-                    </span>
-                  </div>
-
-                  <textarea
-                    value={nota}
-                    onChange={(e) => setNota(e.target.value)}
-                    className="min-h-28 w-full resize-none bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/20"
-                    placeholder="Ej. Me sentí con más energía, bajé abdomen, entrené piernas..."
-                  />
-                </div>
-              </FormField>
-
-              <PrimaryButton
-                type="submit"
-                disabled={loading}
-                icon={<Save size={17} />}
-              >
-                {loading ? "Guardando..." : "Guardar peso"}
-              </PrimaryButton>
-            </div>
-          </SurfaceCard>
-
-          <ProgressVisualCompare
-            firstCheckin={stats.firstCheckin}
-            latestCheckin={stats.latestCheckin}
-          />
-
-          <ProgressWeightChart checkins={checkins} />
-
-          <SurfaceCard className="p-4">
-            <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
-              <div>
-                <MetaBadge variant="neutral">
-                  {logs.length} registro{logs.length !== 1 ? "s" : ""}
-                </MetaBadge>
-                <h2 className="mt-2 text-2xl font-black tracking-tight">
-                  Historial
-                </h2>
-              </div>
-
-              <CalendarDays size={22} className="text-emerald-300" />
-            </div>
-
-            {loadingHistory ? (
-              <div className="space-y-3">
-                <Skeleton />
-                <Skeleton />
-                <Skeleton />
-              </div>
-            ) : logs.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <div className="space-y-3">
-                {logs.map((log, index) => (
-                  <ProgressCard
-                    key={log.id}
-                    log={log}
-                    previous={logs[index + 1]}
-                  />
-                ))}
-              </div>
+          <div className="space-y-4">
+            {saved && (
+              <StatusBox type="success">
+                Progreso guardado correctamente.
+              </StatusBox>
             )}
-          </SurfaceCard>
-        </section>
+
+            {errorMessage && (
+              <StatusBox type="error">
+                {errorMessage}
+              </StatusBox>
+            )}
+
+            {usingCache && !errorMessage && (
+              <StatusBox type="info">
+                Mostrando progreso guardado en este dispositivo.
+              </StatusBox>
+            )}
+
+            {activeView === "resumen" && (
+              <>
+                <ProgressStatsGrid stats={stats} />
+                <ProgressAIInsights
+                  latestCheckin={stats.latestCheckin}
+                  previousCheckin={stats.previousCheckin}
+                />
+              </>
+            )}
+
+            {activeView === "fotos" && (
+              <ProgressVisualCompare
+                firstCheckin={stats.firstCheckin}
+                latestCheckin={stats.latestCheckin}
+              />
+            )}
+
+            {activeView === "grafica" && (
+              <ProgressWeightChart checkins={sortedCheckinsDesc} />
+            )}
+
+            {activeView === "historial" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowManualForm((prev) => !prev)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-400/15"
+                >
+                  <Plus size={14} />
+                  Registro manual
+                </button>
+
+                {showManualForm && (
+                  <ManualProgressForm
+                    peso={peso}
+                    setPeso={setPeso}
+                    nota={nota}
+                    setNota={setNota}
+                    loading={loading}
+                    handleSubmit={handleSubmit}
+                  />
+                )}
+
+                <ProgressHistorySection
+                  loadingHistory={loadingHistory}
+                  logs={logs}
+                  sortedCheckinsDesc={sortedCheckinsDesc}
+                />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function ProgressViewTabs({ activeView, setActiveView }) {
+  const views = [
+    { id: "resumen", label: "Resumen" },
+    { id: "fotos", label: "Fotos" },
+    { id: "grafica", label: "Gráfica" },
+    { id: "historial", label: "Historial" },
+  ];
+
+  return (
+    <div className="mt-2 grid grid-cols-4 gap-1 rounded-[20px] border border-white/10 bg-black/20 p-1">
+      {views.map((view) => {
+        const active = activeView === view.id;
+
+        return (
+          <button
+            key={view.id}
+            type="button"
+            onClick={() => setActiveView(view.id)}
+            className={`rounded-2xl px-1.5 py-2 text-[9px] font-black uppercase tracking-wide transition ${
+              active
+                ? "bg-[#10b981] text-[#06110c]"
+                : "text-white/45 hover:bg-white/[0.05] hover:text-white/75"
+            }`}
+          >
+            {view.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProgressStatsGrid({ stats }) {
+  return (
+    <section className="grid grid-cols-2 gap-3">
+      <StatCard
+        icon={<Scale size={18} />}
+        label="Actual"
+        value={stats.currentWeight || "--"}
+        unit="kg"
+      />
+
+      <StatCard
+        icon={<Target size={18} />}
+        label="Inicio"
+        value={stats.firstWeight || "--"}
+        unit="kg"
+        tone="cyan"
+      />
+
+      <StatCard
+        icon={
+          stats.direction === "down" ? (
+            <TrendingDown size={18} />
+          ) : (
+            <TrendingUp size={18} />
+          )
+        }
+        label="Cambio"
+        value={stats.change > 0 ? `+${stats.change}` : stats.change || "--"}
+        unit="kg"
+        tone={stats.direction === "down" ? "emerald" : "amber"}
+      />
+
+      <StatCard
+        icon={<ChartNoAxesColumnIncreasing size={18} />}
+        label="Registros"
+        value={stats.totalLogs}
+        unit=""
+        tone="neutral"
+      />
+    </section>
+  );
+}
+
+function ManualProgressForm({
+  peso,
+  setPeso,
+  nota,
+  setNota,
+  loading,
+  handleSubmit,
+}) {
+  return (
+    <SurfaceCard as="form" onSubmit={handleSubmit} className="p-4">
+      <div className="mb-5 flex items-center gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981] text-[#06110e]">
+          <Plus size={22} />
+        </div>
+
+        <div>
+          <MetaBadge variant="neutral">Nuevo registro</MetaBadge>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">
+            Nuevo registro
+          </h2>
+          <p className="mt-1 text-sm leading-5 text-white/55">
+            Añade tu peso y una nota de medidas.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <FormField label="Peso actual" icon={<Scale size={15} />}>
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
+            <Scale size={17} className="text-emerald-300" />
+            <input
+              value={peso}
+              onChange={(e) => setPeso(e.target.value)}
+              className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+              placeholder="Ej. 72.5"
+              type="number"
+              step="0.1"
+              required
+            />
+            <span className="text-xs font-black uppercase tracking-widest text-white/45">
+              kg
+            </span>
+          </div>
+        </FormField>
+
+        <FormField label="Nota opcional" icon={<NotebookPen size={15} />}>
+          <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
+            <div className="mb-2 flex items-center gap-2 text-emerald-300">
+              <NotebookPen size={16} />
+              <span className="text-xs font-black uppercase tracking-[0.14em] text-white/45">
+                Cómo te sentiste
+              </span>
+            </div>
+
+            <textarea
+              value={nota}
+              onChange={(e) => setNota(e.target.value)}
+              className="min-h-28 w-full resize-none bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/20"
+              placeholder="Ej. Me sentí con más energía, bajé abdomen, entrené piernas..."
+            />
+          </div>
+        </FormField>
+
+        <PrimaryButton
+          type="submit"
+          disabled={loading}
+          icon={<Save size={17} />}
+        >
+          {loading ? "Guardando..." : "Guardar peso"}
+        </PrimaryButton>
+      </div>
+    </SurfaceCard>
+  );
+}
+
+function ProgressHistorySection({ loadingHistory, logs, sortedCheckinsDesc }) {
+  return (
+    <SurfaceCard className="p-4">
+      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+        <div>
+          <MetaBadge variant="neutral">
+            {sortedCheckinsDesc.length || logs.length} registro
+            {(sortedCheckinsDesc.length || logs.length) !== 1 ? "s" : ""}
+          </MetaBadge>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">
+            Historial
+          </h2>
+        </div>
+
+        <CalendarDays size={22} className="text-emerald-300" />
+      </div>
+
+      {loadingHistory ? (
+        <div className="space-y-3">
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+        </div>
+      ) : sortedCheckinsDesc.length > 0 ? (
+        <div className="space-y-3">
+          {sortedCheckinsDesc.map((checkin, index) => (
+            <CheckinHistoryCard
+              key={checkin.id || `${checkin.created_at}-${index}`}
+              checkin={checkin}
+              previous={sortedCheckinsDesc[index + 1]}
+            />
+          ))}
+        </div>
+      ) : logs.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log, index) => (
+            <ProgressCard
+              key={log.id}
+              log={log}
+              previous={logs[index + 1]}
+            />
+          ))}
+        </div>
+      )}
+    </SurfaceCard>
+  );
+}
+
+function CheckinHistoryCard({ checkin, previous }) {
+  const image = getCheckinImage(checkin);
+  const weight = Number(checkin.weight) || 0;
+  const weightDiff = getCheckinWeightDiff(checkin, previous);
+  const bodyFatRange = checkin.body_fat_range || "";
+  const visualChanges = checkin.visual_changes || "";
+
+  return (
+    <SurfaceCard radius="md" className="overflow-hidden p-0 transition hover:border-emerald-400/25 hover:bg-[#0b1d18]">
+      <div className="grid grid-cols-[96px_1fr] gap-3 p-3">
+        <div className="relative h-[118px] overflow-hidden rounded-[20px] border border-white/10 bg-black/25">
+          {image ? (
+            <img
+              src={image}
+              alt="Check-in de progreso"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-emerald-300">
+              <Scale size={24} />
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/75 via-transparent to-black/10" />
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-300">
+                {formatCheckinDate(checkin.created_at || checkin.createdAt)}
+              </p>
+              <h3 className="mt-1 truncate text-2xl font-black italic text-white">
+                {weight ? `${weight} kg` : "Peso pendiente"}
+              </h3>
+            </div>
+
+            {weightDiff !== null && (
+              <span
+                className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black uppercase ${
+                  weightDiff < 0
+                    ? "bg-emerald-400/10 text-emerald-300"
+                    : weightDiff > 0
+                    ? "bg-amber-400/10 text-amber-200"
+                    : "bg-white/5 text-white/45"
+                }`}
+              >
+                {formatSignedKg(weightDiff)}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {weight > 0 && <CheckinMetricPill label="Peso" value={`${weight} kg`} />}
+            {bodyFatRange && (
+              <CheckinMetricPill label="Grasa" value={bodyFatRange} />
+            )}
+            {checkin.confidence ? (
+              <CheckinMetricPill label="Conf." value={`${checkin.confidence}%`} />
+            ) : null}
+          </div>
+
+          {visualChanges && (
+            <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-white/60">
+              {visualChanges}
+            </p>
+          )}
+        </div>
+      </div>
+    </SurfaceCard>
+  );
+}
+
+function CheckinMetricPill({ label, value }) {
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[9px] font-black uppercase tracking-wide">
+      <span className="text-white/35">{label}</span>
+      <span className="truncate text-emerald-300">{value}</span>
+    </span>
+  );
+}
+
+function ProgressAIInsights({ latestCheckin, previousCheckin }) {
+  const visualChanges = latestCheckin?.visual_changes || "";
+  const recommendation = latestCheckin?.recommendation || "";
+  const bodyFatRange = latestCheckin?.body_fat_range || "";
+  const confidence = latestCheckin?.confidence || "";
+  const hasAnalysis = Boolean(
+    latestCheckin && (visualChanges || recommendation || bodyFatRange || confidence)
+  );
+
+  return (
+    <SurfaceCard className="p-4">
+      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+        <div>
+          <MetaBadge variant="neutral">
+            {previousCheckin ? "Comparación IA" : "Análisis IA"}
+          </MetaBadge>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">
+            Mejoras detectadas
+          </h2>
+        </div>
+
+        <Sparkles size={22} className="text-emerald-300" />
+      </div>
+
+      {hasAnalysis ? (
+        <div className="space-y-3">
+          {visualChanges && (
+            <SurfaceCard variant="soft" radius="md" className="p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-300">
+                Cambios visuales
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+                {visualChanges}
+              </p>
+            </SurfaceCard>
+          )}
+
+          {recommendation && (
+            <SurfaceCard variant="soft" radius="md" className="p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                Recomendación
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+                {recommendation}
+              </p>
+            </SurfaceCard>
+          )}
+
+          {(bodyFatRange || confidence) && (
+            <div className="grid grid-cols-2 gap-2">
+              {bodyFatRange && (
+                <AIInsightChip label="Grasa estimada" value={bodyFatRange} />
+              )}
+              {confidence && (
+                <AIInsightChip label="Confianza" value={`${confidence}%`} />
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+            <Sparkles size={25} />
+          </div>
+
+          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
+            Haz un check-in con foto para ver mejoras detectadas.
+          </p>
+        </SurfaceCard>
+      )}
+    </SurfaceCard>
+  );
+}
+
+function AIInsightChip({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+        {label}
+      </p>
+
+      <p className="mt-1 truncate text-sm font-black text-emerald-300">
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -696,4 +984,37 @@ function formatSignedKg(value) {
   if (!value) return "0 kg";
 
   return `${value > 0 ? "+" : ""}${value} kg`;
+}
+
+function getCheckinWeightDiff(checkin, previous) {
+  const currentWeight = Number(checkin?.weight) || 0;
+  const previousWeight = Number(previous?.weight) || 0;
+
+  if (!currentWeight || !previousWeight) return null;
+
+  return Number((currentWeight - previousWeight).toFixed(1));
+}
+
+function sortCheckinsByDate(checkins, direction = "desc") {
+  return [...checkins]
+    .map((checkin, index) => ({
+      checkin,
+      index,
+      time: getCheckinTime(checkin),
+    }))
+    .sort((a, b) => {
+      if (a.time !== null && b.time !== null && a.time !== b.time) {
+        return direction === "asc" ? a.time - b.time : b.time - a.time;
+      }
+
+      return direction === "asc" ? b.index - a.index : a.index - b.index;
+    })
+    .map(({ checkin }) => checkin);
+}
+
+function getCheckinTime(checkin) {
+  const date = checkin?.created_at || checkin?.createdAt;
+  const time = date ? new Date(date).getTime() : Number.NaN;
+
+  return Number.isNaN(time) ? null : time;
 }
