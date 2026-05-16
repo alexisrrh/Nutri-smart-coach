@@ -41,25 +41,25 @@ export function MealPlanForm({
     >
       <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[#10b981]/12 blur-3xl" />
 
-      <div className="relative z-10 border-b border-white/[0.08] p-3">
-        <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
-            <Sparkles size={16} />
+      <div className="relative z-10 border-b border-white/[0.08] px-3 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#10b981]/10 text-[#10b981]">
+            <Sparkles size={15} />
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
               Smart Diet Builder
             </p>
 
-            <h2 className="mt-0.5 text-base font-black uppercase italic tracking-tight text-white">
+            <h2 className="mt-0.5 text-[15px] font-bold normal-case leading-tight tracking-normal text-white">
               Personaliza tu dieta
             </h2>
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 space-y-2.5 p-3">
+      <div className="relative z-10 space-y-2 p-3">
         <div className="grid grid-cols-2 gap-2">
           <SelectField
             icon={<Target size={14} />}
@@ -109,17 +109,17 @@ export function MealPlanForm({
           options={BUDGET_TYPES}
         />
 
-        <details className="group rounded-[20px] bg-black/20">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-300">
+        <details className="group rounded-[18px] border border-white/10 bg-black/15">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-slate-300">
             <span className="inline-flex items-center gap-1.5">
-              <Home size={13} className="text-[#10b981]" />
+              <Home size={12} className="text-[#10b981]" />
               Preferencias avanzadas
             </span>
 
             <span className="text-[#10b981] transition group-open:rotate-45">+</span>
           </summary>
 
-          <div className="space-y-2 border-t border-white/10 p-2.5">
+          <div className="space-y-2 border-t border-white/10 p-2">
             <SelectField
               icon={<ChefHat size={14} />}
               label="Cocina"
@@ -177,11 +177,15 @@ export function MealPlanForm({
               </span>
             </span>
           ) : (
-            <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-4">
-              <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] bg-[#06110e]/35">
+            <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-9">
+              <span className="relative grid h-18 w-22 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] bg-[#06110e]/35">
                 <span className="absolute -inset-4 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_60%,#6ee7b7_72%,transparent_90%,transparent_100%)] opacity-70 animate-[spin_2.5s_linear_infinite]" />
                 <span className="absolute inset-[2px] rounded-[0.9rem] bg-[#07583f]" />
-                <Sparkles className="relative z-10 text-emerald-100" size={22} strokeWidth={2.4} />
+              <img
+  src="/icons/dieta.png"
+  alt="Generar dieta"
+  className="relative z-10 h-20 w-25 object-cover pb-3"
+/>
               </span>
 
               <span className="flex min-w-0 flex-col items-start justify-center text-left">
@@ -265,7 +269,7 @@ function SelectField({ icon, label, name, value, onChange, options = [] }) {
 
   return (
     <div ref={containerRef} className="relative block min-w-0">
-      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
@@ -276,7 +280,7 @@ function SelectField({ icon, label, name, value, onChange, options = [] }) {
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
         onKeyDown={handleKeyDown}
-        className={`flex h-11 w-full items-center justify-between gap-2 rounded-2xl bg-[#0b1d15]/95 px-3 text-left text-xs font-black uppercase text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] outline-none transition focus:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.55),0_0_0_3px_rgba(16,185,129,0.10)] ${
+        className={`flex h-10 w-full items-center justify-between gap-2 rounded-[1rem] bg-[#0b1d15]/95 px-2.5 text-left text-[11px] font-semibold normal-case leading-tight text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] outline-none transition focus:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.55),0_0_0_3px_rgba(16,185,129,0.10)] ${
           open ? "shadow-[inset_0_0_0_1px_rgba(16,185,129,0.5)]" : ""
         }`}
       >
@@ -303,7 +307,7 @@ function SelectField({ icon, label, name, value, onChange, options = [] }) {
                 role="option"
                 aria-selected={active}
                 onClick={() => selectOption(option.value)}
-                className={`flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-[11px] font-black uppercase transition ${
+              className={`flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-[11px] font-semibold normal-case transition ${
                   active
                     ? "bg-[#10b981] text-[#06110c]"
                     : "text-slate-300 hover:bg-[#10b981]/10 hover:text-white"
@@ -323,7 +327,7 @@ function SelectField({ icon, label, name, value, onChange, options = [] }) {
 function TextField({ icon, label, name, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         {label}
       </div>
@@ -334,7 +338,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="h-10 w-full rounded-2xl border border-white/10 bg-[#0d2218] px-3 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
+        className="h-10 w-full rounded-[1rem] border border-white/10 bg-[#0d2218] px-2.5 text-[11px] font-semibold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
       />
     </label>
   );
@@ -343,7 +347,7 @@ function TextField({ icon, label, name, value, onChange, placeholder }) {
 function TextAreaField({ icon, label, name, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500">
+      <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500">
         <span className="text-[#10b981]">{icon}</span>
         {label}
       </div>
@@ -354,7 +358,7 @@ function TextAreaField({ icon, label, name, value, onChange, placeholder }) {
         onChange={onChange}
         placeholder={placeholder}
         rows={2}
-        className="w-full resize-none rounded-2xl border border-white/10 bg-[#0d2218] px-3 py-2.5 text-xs font-bold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
+        className="w-full resize-none rounded-[1rem] border border-white/10 bg-[#0d2218] px-2.5 py-2 text-[11px] font-semibold normal-case text-white outline-none transition placeholder:text-slate-600 focus:border-[#10b981]"
       />
     </label>
   );
