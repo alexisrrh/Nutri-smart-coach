@@ -141,7 +141,7 @@ export function ShoppingListView({ plan }) {
               aria-label={`Filtrar por ${category.label}`}
               title={category.label}
               onClick={() => setActiveCategory(category.key)}
-              className={`flex h-7 min-w-12 shrink-0 items-center justify-center gap-1 rounded-xl border px-1.5 text-[8px] font-black uppercase tracking-wide transition-all ${
+             className={`flex h-7 min-w-12 shrink-0 items-center justify-center gap-1 rounded-xl border px-1.5 ml-3.5 leading-none text-[8px] font-black uppercase tracking-wide transition-all ${
                 activeCategory === category.key
                   ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                   : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"

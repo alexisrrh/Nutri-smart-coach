@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   CheckCircle2,
+  ChevronRight,
   Clock,
   Flame,
   Utensils,
@@ -149,34 +150,33 @@ export function DayDietView({
                     {foodName}
                   </h4>
 
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setSelectedMealDetail({ meal, mealName, foodName, mealTime, ingredients });
-                    }}
-                    className="mt-0.5 text-[9px] font-semibold normal-case text-[#10b981]/80 transition hover:text-emerald-200"
-                  >
-                    Ver detalle
-                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  aria-label={isCompleted ? "Marcar comida como pendiente" : "Marcar comida como completada"}
-                  title={isCompleted ? "Hecho" : "Marcar"}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    toggleMeal?.(mealId);
-                  }}
-                  className={`grid min-h-9 min-w-9 shrink-0 place-items-center rounded-xl border transition active:scale-95 ${
-                    isCompleted
-                      ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_14px_rgba(16,185,129,0.22)]"
-                      : "border-white/12 bg-white/[0.03] text-slate-500 hover:border-[#10b981]/30 hover:text-[#10b981]"
-                  }`}
-                >
-                  <CheckCircle2 size={15} strokeWidth={2.4} />
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <ChevronRight
+                    size={14}
+                    strokeWidth={2.2}
+                    className="text-white/25"
+                    aria-hidden="true"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label={isCompleted ? "Marcar comida como pendiente" : "Marcar comida como completada"}
+                    title={isCompleted ? "Hecho" : "Marcar"}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleMeal?.(mealId);
+                    }}
+                    className={`grid min-h-9 min-w-9 shrink-0 place-items-center rounded-xl border transition active:scale-95 ${
+                      isCompleted
+                        ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_14px_rgba(16,185,129,0.22)]"
+                        : "border-white/12 bg-white/[0.03] text-slate-500 hover:border-[#10b981]/30 hover:text-[#10b981]"
+                    }`}
+                  >
+                    <CheckCircle2 size={15} strokeWidth={2.4} />
+                  </button>
+                </div>
               </div>
             </article>
           );
