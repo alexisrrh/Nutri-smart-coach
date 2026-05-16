@@ -1,431 +1,269 @@
-import React, { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo } from "react";
 
-const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-const MEAL_TYPES = ['Desayuno', 'Media Mañana', 'Almuerzo', 'Merienda', 'Cena'];
+const SHOPPING_CATEGORIES = [
+  "Proteinas",
+  "Carbohidratos",
+  "Frutas y verduras",
+  "Lacteos",
+  "Otros",
+];
 
-// Diccionario para normalizar los nombres de los días que vienen del backend
-const NORMALIZE_DAYS = {
-  'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miércoles', 'miércoles': 'Miércoles',
-  'jueves': 'Jueves', 'viernes': 'Viernes', 'sabado': 'Sábado', 'sábado': 'Sábado', 'domingo': 'Domingo'
-};
+const PrintablePlan = forwardRef(({ plan }, ref) => {
+  const days = useMemo(() => getPlanDays(plan), [plan]);
+  const summary = useMemo(() => getPlanSummary(days), [days]);
+  const shoppingList = useMemo(() => buildShoppingList(days), [days]);
 
-// Diccionario para mapear los tipos de comida al horario estándar de la rejilla
-const NORMALIZE_MEALS = {
-  'desayuno': 'Desayuno',
-  'mediamanaña': 'Media Mañana', 'mediamanana': 'Media Mañana', 'media mañana': 'Media Mañana',
-  'almuerzo': 'Almuerzo',
-  'merienda': 'Merienda',
-  'cena': 'Cena'
-};
-
-/**
- * Limpia y parsea los ingredientes individuales para acumularlos en la lista de la compra.
- */
-function parseIngredient(rawIngredient) {
-  if (!rawIngredient) return null;
-  const text = String(rawIngredient).trim();
-  
-  // Expresión regular corregida sin espacios que rompan la detección
-  const match = text.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|unidad(?:es)?|huevo(?:s)?|pieza(?:s)?|rebanada(?:s)?|plátano(?:s)?|platano(?:s)?|banana(?:s)?|lata(?:s)?|plato(?:s)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i);
-  
-  if (!match) return { name: text, value: 1, unit: 'unidades' };
-
-  const valueStr = match[1].replace(',', '.');
-  const value = parseFloat(valueStr);
-  const rawUnit = match[2] ? match[2].toLowerCase() : 'unidades';
-  const name = match[3] ? match[3].trim() : text;
-
-  let unit = 'unidades';
-  if (rawUnit.includes('kg')) unit = 'kg';
-  else if (rawUnit.includes('g')) unit = 'g';
-  else if (rawUnit.includes('ml')) unit = 'ml';
-  else if (rawUnit.includes('l')) unit = 'l';
-  else if (rawUnit.includes('huevo')) unit = 'huevos';
-  else if (rawUnit.includes('pieza')) unit = 'piezas';
-  else if (rawUnit.includes('rebanada')) unit = 'rebanadas';
-  
-  return { name: name || text, value: isNaN(value) ? 1 : value, unit };
-}
-
-const PrintablePlan = forwardRef(({ plan, macroAverages }, ref) => {
-
-  // 1. CONVERTIR LA ESTRUCTURA DE MEALPLAN.JSX (DAYS Y MEALS) A MATRIZ HORIZONTAL
-  const indexedPlan = useMemo(() => {
-    const matrix = {};
-    DAYS_OF_WEEK.forEach(d => { matrix[d] = {}; });
-
-    if (!plan) return matrix;
-
-    try {
-      // Si el plan viene empaquetado como objeto que contiene el array (ej: plan.days o plan.plan)
-      const rawDays = Array.isArray(plan) 
-        ? plan 
-        : (plan.days || plan.plan || Object.values(plan));
-
-      if (Array.isArray(rawDays)) {
-        rawDays.forEach(dayObj => {
-          if (!dayObj) return;
-
-          // Obtener el nombre del día y normalizarlo
-          const rawDayName = (dayObj.day || dayObj.dia || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          const cleanDay = NORMALIZE_DAYS[rawDayName];
-          if (!cleanDay) return;
-
-          // Tu estructura guarda las comidas en un array interno llamado '.meals'
-          const mealsArray = dayObj.meals || [];
-          if (Array.isArray(mealsArray)) {
-            mealsArray.forEach(mealObj => {
-              if (!mealObj) return;
-
-              const rawMealType = (mealObj.mealType || mealObj.meal_type || mealObj.type || '').toLowerCase();
-              const cleanMeal = NORMALIZE_MEALS[rawMealType];
-
-              if (cleanMeal) {
-                // Guardamos el objeto entero de la comida en la coordenada [Día][Comida]
-                matrix[cleanDay][cleanMeal] = mealObj;
-              }
-            });
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Error indexando la estructura en PrintablePlan:", error);
-    }
-
-    return matrix;
-  }, [plan]);
-
-  // 2. CONSTRUIR LISTA DE LA COMPRA EXTRAYENDO DE LOS INGREDIENTES Y DETALLES
-  const shoppingList = useMemo(() => {
-    const totals = {};
-    
-    Object.values(indexedPlan).forEach(dayData => {
-      Object.values(dayData).forEach(mealData => {
-        if (!mealData) return;
-
-        // Buscar ingredientes en '.ingredients', '.ingredientes' o parsear desde '.details'
-        const rawIngs = mealData.ingredients || mealData.ingredientes || mealData.details;
-        if (!rawIngs) return;
-
-        const ingredientsArray = Array.isArray(rawIngs)
-          ? rawIngs
-          : typeof rawIngs === 'string'
-          ? rawIngs.split(/[\n,]+/) // Rompe por saltos de línea o comas
-          : [];
-
-        ingredientsArray.forEach(rawIng => {
-          if (!rawIng || String(rawIng).trim() === '') return;
-          const parsed = parseIngredient(rawIng);
-          if (!parsed) return;
-
-          let category = 'Otros';
-          const lowerName = parsed.name.toLowerCase();
-          if (/pollo|pavo|ternera|cerdo|carne|lomo|jamon/i.test(lowerName)) category = 'Carnicería';
-          else if (/pescado|salmon|atun|merluza|bacalao/i.test(lowerName)) category = 'Pescadería';
-          else if (/lechuga|tomate|cebolla|fruta|platano|aguacate|espinaca|verdura|limon/i.test(lowerName)) category = 'Frutería';
-          else if (/leche|queso|yogur|crema|mantequilla/i.test(lowerName)) category = 'Lácteos';
-          else if (/arroz|pasta|pan|harina|avena|cereal|aceite/i.test(lowerName)) category = 'Despensa';
-
-          if (!totals[category]) totals[category] = {};
-          const key = `${parsed.name}_${parsed.unit}`;
-          if (!totals[category][key]) totals[category][key] = { name: parsed.name, value: 0, unit: parsed.unit };
-          totals[category][key].value += parsed.value;
-        });
-      });
-    });
-
-    const formattedList = {};
-    Object.keys(totals).forEach(cat => {
-      formattedList[cat] = Object.values(totals[cat]).map(item => ({
-        name: item.name,
-        amount: item.value % 1 === 0 ? item.value : item.value.toFixed(1),
-        unit: item.unit
-      }));
-    });
-    return formattedList;
-  }, [indexedPlan]);
-
-  if (!plan) return null;
+  if (!days.length) return null;
 
   return (
     <div ref={ref} className="pdf-printable-root">
-      {/* ESTILOS INYECTADOS MODERNOS CON GRID DE 8 COLUMNAS INDESTRUCTIBLE */}
       <style>{`
         .pdf-printable-root {
           display: none !important;
         }
 
         @media print {
-          .pdf-printable-root {
-            display: block !important;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: #1a202c;
-            background: #ffffff;
-            width: 297mm;
-            min-height: 210mm;
-            box-sizing: border-box;
-            padding: 8mm;
+          @page {
+            size: A4;
+            margin: 12mm;
           }
 
-          @page {
-            size: A4 landscape !important;
-            margin: 0 !important;
+          #root > :not(.pdf-printable-root) {
+            display: none !important;
+          }
+
+          .pdf-printable-root {
+            display: block !important;
+            box-sizing: border-box;
+            width: 100%;
+            background: #ffffff !important;
+            color: #111827;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 10.5px;
+            line-height: 1.35;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
           .pdf-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #2b6cb0;
-            padding-bottom: 8px;
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 10px;
             margin-bottom: 12px;
           }
 
-          .pdf-header h1 {
-            font-size: 20px;
+          .pdf-brand {
             margin: 0;
-            color: #2b6cb0;
+            color: #065f46;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 900;
           }
 
-          .pdf-macros {
-            display: flex;
-            gap: 8px;
-          }
-
-          .pdf-macro-pill {
-            background: #f7fafc !important;
-            border: 1px solid #e2e8f0;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 11px;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          /* REJILLA GRID HORIZONTAL */
-          .pdf-calendar-grid {
-            display: grid;
-            grid-template-columns: 95px repeat(7, 1fr);
-            gap: 1px;
-            background: #cbd5e0;
-            border: 1px solid #cbd5e0;
-            margin-bottom: 20px;
-          }
-
-          .pdf-grid-header {
-            background: #edf2f7 !important;
-            color: #4a5568;
-            font-weight: bold;
-            text-align: center;
-            padding: 6px 4px;
-            font-size: 11px;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          .pdf-grid-meal-label {
-            background: #f7fafc !important;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            text-align: center;
-            padding: 5px;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          .pdf-grid-cell {
-            background: #ffffff !important;
-            padding: 6px;
-            min-height: 95px;
-            box-sizing: border-box;
-          }
-
-          .pdf-meal-time {
-            font-size: 9px;
-            color: #2b6cb0;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 2px;
-          }
-
-          .pdf-meal-name {
-            font-size: 10.5px;
+          .pdf-subtitle {
+            margin: 4px 0 0;
+            color: #4b5563;
+            font-size: 12px;
             font-weight: 700;
-            margin: 0 0 4px 0;
-            line-height: 1.2;
-            color: #1a202c;
           }
 
-          .pdf-recipe-box {
-            margin-top: 4px;
-            border-top: 1px dashed #e2e8f0;
-            padding-top: 4px;
+          .pdf-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+            margin-bottom: 14px;
           }
 
-          .pdf-recipe-title {
-            font-size: 8px;
-            text-transform: uppercase;
-            color: #718096;
-            font-weight: bold;
-            margin: 0 0 2px 0;
+          .pdf-summary-card {
+            border: 1px solid #d1fae5;
+            border-radius: 10px;
+            background: #ecfdf5 !important;
+            padding: 7px;
           }
 
-          .pdf-recipe-text {
-            font-size: 8.5px;
-            color: #4a5568;
-            line-height: 1.2;
+          .pdf-summary-label {
             margin: 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
+            color: #047857;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+          }
+
+          .pdf-summary-value {
+            margin: 2px 0 0;
+            color: #111827;
+            font-size: 13px;
+            font-weight: 900;
+          }
+
+          .pdf-day {
+            break-inside: avoid;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 10px;
             overflow: hidden;
           }
 
-          .pdf-empty-cell {
-            color: #cbd5e0;
-            text-align: center;
-            font-size: 12px;
-            display: block;
-            margin-top: 25px;
+          .pdf-day-title {
+            margin: 0;
+            padding: 7px 9px;
+            background: #064e3b !important;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 900;
           }
 
-          .pdf-page-break {
-            page-break-before: always;
-            break-before: page;
+          .pdf-meal-list {
+            padding: 8px;
           }
 
-          .pdf-shop-title {
-            font-size: 15px;
-            color: #2d3748;
-            margin: 0 0 10px 0;
+          .pdf-meal {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 6px 0;
           }
 
-          .pdf-shop-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+          .pdf-meal:last-child {
+            border-bottom: 0;
+          }
+
+          .pdf-meal-top {
+            display: flex;
+            justify-content: space-between;
             gap: 10px;
           }
 
-          .pdf-shop-card {
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            padding: 8px;
-            background: #f7fafc !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          .pdf-shop-card h3 {
-            margin: 0 0 4px 0;
-            font-size: 11px;
-            color: #2b6cb0;
-            border-bottom: 1px solid #cbd5e0;
-            padding-bottom: 2px;
-            text-transform: uppercase;
-          }
-
-          .pdf-shop-card ul {
-            list-style: none;
-            padding: 0;
+          .pdf-meal-name {
             margin: 0;
+            color: #111827;
+            font-size: 11px;
+            font-weight: 800;
           }
 
-          .pdf-shop-card li {
+          .pdf-meal-meta {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 9.5px;
+            font-weight: 700;
+          }
+
+          .pdf-macros {
+            flex-shrink: 0;
+            color: #047857;
+            font-size: 9px;
+            font-weight: 800;
+            text-align: right;
+            white-space: nowrap;
+          }
+
+          .pdf-food {
+            margin: 4px 0 0;
+            color: #374151;
             font-size: 10px;
-            margin-bottom: 3px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+          }
+
+          .pdf-empty {
+            margin: 0;
+            color: #6b7280;
+            font-style: italic;
+          }
+
+          .pdf-shopping {
+            break-before: page;
+            margin-top: 0;
+          }
+
+          .pdf-section-title {
+            margin: 0 0 8px;
+            color: #065f46;
+            font-size: 16px;
+            font-weight: 900;
+          }
+
+          .pdf-shopping-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+          }
+
+          .pdf-shopping-card {
+            break-inside: avoid;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 8px;
+          }
+
+          .pdf-shopping-card h3 {
+            margin: 0 0 5px;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 900;
+          }
+
+          .pdf-shopping-card ul {
+            margin: 0;
+            padding-left: 15px;
+          }
+
+          .pdf-shopping-card li {
+            margin-bottom: 2px;
+            color: #374151;
+            font-size: 9.5px;
           }
         }
       `}</style>
 
-      {/* CABECERA DEL DOCUMENTO */}
       <header className="pdf-header">
-        <h1>Tu Plan Nutricional Semanal + Recetas IA</h1>
-        {macroAverages && (
-          <div className="pdf-macros">
-            <span className="pdf-macro-pill">🔥 {macroAverages.calories || 0} kcal</span>
-            <span className="pdf-macro-pill">🥩 P: {macroAverages.protein || 0}g</span>
-            <span className="pdf-macro-pill">🍞 C: {macroAverages.carbs || 0}g</span>
-            <span className="pdf-macro-pill">🥑 G: {macroAverages.fats || 0}g</span>
-          </div>
-        )}
+        <h1 className="pdf-brand">NutriSmartCoach</h1>
+        <p className="pdf-subtitle">Plan nutricional semanal</p>
       </header>
 
-      {/* REJILLA DEL CALENDARIO HORIZONTAL */}
-      <div className="pdf-calendar-grid">
-        <div className="pdf-grid-header">Horario</div>
-        {DAYS_OF_WEEK.map(day => (
-          <div key={day} className="pdf-grid-header">{day}</div>
-        ))}
+      <section className="pdf-summary" aria-label="Resumen semanal">
+        <SummaryCard label="Dias" value={summary.days} />
+        <SummaryCard label="Comidas" value={summary.meals} />
+        <SummaryCard label="Kcal/dia aprox." value={summary.averageCalories} />
+        <SummaryCard label="Proteina/dia" value={`${summary.averageProtein}g`} />
+      </section>
 
-        {MEAL_TYPES.map(meal => (
-          <React.Fragment key={meal}>
-            {/* Fila lateral de comidas */}
-            <div className="pdf-grid-meal-label">{meal}</div>
-            
-            {DAYS_OF_WEEK.map(day => {
-              // Extraer la comida mapeada desde la matriz de días
-              const mealData = indexedPlan[day][meal] || null;
+      <section>
+        {days.map((day, dayIndex) => {
+          const meals = getMeals(day);
 
-              // Tu frontend mapea los platos bajo el parámetro '.food' o '.title'
-              const foodName = mealData?.food || mealData?.title || mealData?.name || '';
-              const time = mealData?.time || '';
-              const recipeText = mealData?.details || '';
+          return (
+            <article className="pdf-day" key={`${getDayName(day, dayIndex)}-${dayIndex}`}>
+              <h2 className="pdf-day-title">{getDayName(day, dayIndex)}</h2>
+              <div className="pdf-meal-list">
+                {meals.length > 0 ? (
+                  meals.map((meal, mealIndex) => (
+                    <MealRow
+                      key={`${getMealLabel(meal, mealIndex)}-${mealIndex}`}
+                      meal={meal}
+                      mealIndex={mealIndex}
+                    />
+                  ))
+                ) : (
+                  <p className="pdf-empty">Sin comida registrada</p>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </section>
 
-              return (
-                <div key={day} className="pdf-grid-cell">
-                  {mealData && foodName ? (
-                    <div>
-                      {/* Horario de la Comida */}
-                      {time && <span className="pdf-meal-time">🕒 {time}</span>}
-                      
-                      {/* Nombre del plato */}
-                      <p className="pdf-meal-name">{foodName}</p>
-                      
-                      {/* Receta generada por la IA */}
-                      {recipeText && (
-                        <div className="pdf-recipe-box">
-                          <p className="pdf-recipe-title">Receta IA:</p>
-                          <p className="pdf-recipe-text">{recipeText}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="pdf-empty-cell">-</span>
-                  )}
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
-      </div>
-
-      {/* SALTO DE HOJA AUTOMÁTICO */}
-      <div className="pdf-page-break"></div>
-
-      {/* SECCIÓN DE LA LISTA DE LA COMPRA */}
-      {shoppingList && Object.keys(shoppingList).length > 0 && (
-        <section style={{ marginTop: '10px' }}>
-          <h2 className="pdf-shop-title">🛒 Lista de la Compra Semanal</h2>
-          <div className="pdf-shop-grid">
-            {Object.entries(shoppingList).map(([category, items]) => (
-              <div key={category} className="pdf-shop-card">
-                <h3>{category}</h3>
+      {shoppingList.length > 0 && (
+        <section className="pdf-shopping">
+          <h2 className="pdf-section-title">Lista de compra</h2>
+          <div className="pdf-shopping-grid">
+            {shoppingList.map((group) => (
+              <article className="pdf-shopping-card" key={group.category}>
+                <h3>{group.category}</h3>
                 <ul>
-                  {items.map((item, idx) => (
-                    <li key={idx}>
-                      <input type="checkbox" style={{ margin: 0, width: '10px', height: '10px' }} readOnly />
-                      <span>{item.name} ({item.amount} {item.unit})</span>
+                  {group.items.map((item) => (
+                    <li key={item.id}>
+                      {item.name} - {item.amount}
                     </li>
                   ))}
                 </ul>
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -434,8 +272,244 @@ const PrintablePlan = forwardRef(({ plan, macroAverages }, ref) => {
   );
 });
 
-PrintablePlan.displayName = 'PrintablePlan';
+function SummaryCard({ label, value }) {
+  return (
+    <div className="pdf-summary-card">
+      <p className="pdf-summary-label">{label}</p>
+      <p className="pdf-summary-value">{value}</p>
+    </div>
+  );
+}
 
-// Doble exportación compatible con Named y Default Imports para evitar bloqueos en Vite
+function MealRow({ meal, mealIndex }) {
+  const time = meal?.time || defaultMealTime(mealIndex);
+  const label = getMealLabel(meal, mealIndex);
+  const food = meal?.food || meal?.title || meal?.description || "";
+  const calories = Math.round(Number(meal?.calories || meal?.kcal || 0));
+  const protein = Math.round(Number(meal?.protein || 0));
+  const carbs = Math.round(Number(meal?.carbs || 0));
+  const fat = Math.round(Number(meal?.fat || meal?.fats || 0));
+
+  return (
+    <div className="pdf-meal">
+      <div className="pdf-meal-top">
+        <div>
+          <p className="pdf-meal-name">{label}</p>
+          <p className="pdf-meal-meta">{time}</p>
+        </div>
+        <div className="pdf-macros">
+          {calories > 0 && <span>{calories} kcal</span>}
+          {protein > 0 && <span> · P {protein}g</span>}
+          {carbs > 0 && <span> · C {carbs}g</span>}
+          {fat > 0 && <span> · G {fat}g</span>}
+        </div>
+      </div>
+      <p className="pdf-food">{food || "Sin comida registrada"}</p>
+    </div>
+  );
+}
+
+function getPlanDays(plan) {
+  if (Array.isArray(plan)) return plan.filter(Boolean);
+  if (Array.isArray(plan?.week)) return plan.week.filter(Boolean);
+  if (Array.isArray(plan?.days)) return plan.days.filter(Boolean);
+  if (Array.isArray(plan?.plan)) return plan.plan.filter(Boolean);
+  return [];
+}
+
+function getMeals(day) {
+  if (Array.isArray(day?.meals)) return day.meals.filter(Boolean);
+  if (day?.meals && typeof day.meals === "object") {
+    return Object.values(day.meals).filter(Boolean);
+  }
+  return [];
+}
+
+function getDayName(day, index) {
+  return day?.day || day?.dia || `Dia ${index + 1}`;
+}
+
+function getMealLabel(meal, index) {
+  return meal?.name || meal?.mealType || meal?.meal_type || meal?.type || defaultMealName(index);
+}
+
+function defaultMealName(index) {
+  return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
+}
+
+function defaultMealTime(index) {
+  return ["08:00", "13:30", "17:30", "21:00"][index] || "";
+}
+
+function getPlanSummary(days) {
+  const totals = days.reduce(
+    (acc, day) => {
+      const meals = getMeals(day);
+      acc.meals += meals.length;
+      meals.forEach((meal) => {
+        acc.calories += Number(meal?.calories || meal?.kcal || 0);
+        acc.protein += Number(meal?.protein || 0);
+      });
+      return acc;
+    },
+    { meals: 0, calories: 0, protein: 0 }
+  );
+
+  const dayCount = days.length || 1;
+
+  return {
+    days: days.length,
+    meals: totals.meals,
+    averageCalories: Math.round(totals.calories / dayCount),
+    averageProtein: Math.round(totals.protein / dayCount),
+  };
+}
+
+function buildShoppingList(days) {
+  const grouped = new Map();
+
+  days.forEach((day) => {
+    getMeals(day).forEach((meal) => {
+      getIngredients(meal).forEach((ingredient) => {
+        const parsed = parseIngredient(ingredient);
+        if (!parsed.name) return;
+
+        const category = categorizeIngredient(parsed.name);
+        const key = `${category}:${normalizeText(parsed.name)}:${parsed.unit}`;
+
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            id: key,
+            category,
+            name: toTitleCase(parsed.name),
+            unit: parsed.unit,
+            value: 0,
+            unknownLabels: [],
+          });
+        }
+
+        const item = grouped.get(key);
+        item.value += parsed.value;
+        if (parsed.unit === "unidad") item.unknownLabels.push(parsed.raw);
+      });
+    });
+  });
+
+  const byCategory = new Map();
+
+  Array.from(grouped.values()).forEach((item) => {
+    if (!byCategory.has(item.category)) byCategory.set(item.category, []);
+    byCategory.get(item.category).push({
+      id: item.id,
+      name: item.name,
+      amount: formatAmount(item),
+    });
+  });
+
+  return SHOPPING_CATEGORIES.map((category) => ({
+    category,
+    items: (byCategory.get(category) || []).sort((a, b) => a.name.localeCompare(b.name)),
+  })).filter((group) => group.items.length > 0);
+}
+
+function getIngredients(meal) {
+  if (Array.isArray(meal?.ingredients)) return meal.ingredients.filter(Boolean);
+  if (Array.isArray(meal?.ingredientes)) return meal.ingredientes.filter(Boolean);
+  if (meal?.details) {
+    return String(meal.details)
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseIngredient(rawIngredient) {
+  const raw =
+    typeof rawIngredient === "object" && rawIngredient !== null
+      ? `${rawIngredient.amount || rawIngredient.quantity || ""} ${
+          rawIngredient.name || rawIngredient.food || ""
+        }`.trim()
+      : String(rawIngredient || "").trim();
+
+  const match = raw.match(
+    /^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|gramos?|ml|l|litros?|unidad(?:es)?|ud|uds|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|lata(?:s)?|racion(?:es)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
+  );
+
+  if (!match) return { raw, name: raw, value: 1, unit: "unidad" };
+
+  const value = Number(String(match[1]).replace(",", ".")) || 1;
+  const unitText = String(match[2] || "unidad").toLowerCase();
+  const name = (match[3] || raw).trim();
+
+  if (unitText === "kg") return { raw, name, value: value * 1000, unit: "g" };
+  if (unitText === "g" || unitText === "gr" || unitText.startsWith("gramo")) {
+    return { raw, name, value, unit: "g" };
+  }
+  if (unitText === "l" || unitText.startsWith("litro")) return { raw, name, value: value * 1000, unit: "ml" };
+  if (unitText === "ml") return { raw, name, value, unit: "ml" };
+  if (unitText.includes("racion") || unitText.includes("ración")) {
+    return { raw, name, value, unit: "raciones" };
+  }
+
+  return { raw, name, value, unit: "ud" };
+}
+
+function formatAmount(item) {
+  if (item.unit === "g") {
+    return item.value >= 1000
+      ? `${formatNumber(item.value / 1000)} kg`
+      : `${Math.round(item.value)} g`;
+  }
+  if (item.unit === "ml") {
+    return item.value >= 1000
+      ? `${formatNumber(item.value / 1000)} L`
+      : `${Math.round(item.value)} ml`;
+  }
+  if (item.unit === "raciones") return `${Math.round(item.value)} raciones`;
+  return `${Math.round(item.value)} ud`;
+}
+
+function categorizeIngredient(name = "") {
+  const text = normalizeText(name);
+
+  if (/(pollo|pavo|carne|ternera|atun|pescado|salmon|huevo|claras)/.test(text)) {
+    return "Proteinas";
+  }
+  if (/(arroz|pasta|avena|pan|patata|boniato|quinoa|lentejas|garbanzos)/.test(text)) {
+    return "Carbohidratos";
+  }
+  if (/(fruta|verdura|ensalada|brocoli|platano|banana|manzana|aguacate|tomate|lechuga)/.test(text)) {
+    return "Frutas y verduras";
+  }
+  if (/(leche|yogur|queso)/.test(text)) return "Lacteos";
+
+  return "Otros";
+}
+
+function normalizeText(text = "") {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toTitleCase(text = "") {
+  return normalizeText(text)
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatNumber(number) {
+  return Number(number.toFixed(1)).toString();
+}
+
+PrintablePlan.displayName = "PrintablePlan";
+
 export { PrintablePlan };
 export default PrintablePlan;

@@ -717,18 +717,234 @@ function createInitialFormData() {
 }
 
 function buildShareText(plan) {
-  if (!plan?.length) return "NutriSmart Coach - Dieta semanal.";
+  const days = getSharePlanDays(plan);
+  if (!days.length) return "NutriSmartCoach\nPlan nutricional semanal.";
 
-  return plan
-    .map((day) => {
-      const meals = day.meals
-        .map(
-          (meal) =>
-            `${meal.time} · ${meal.name}: ${meal.food} (${meal.calories} kcal)`
-        )
-        .join("\n");
+  const totals = days.reduce(
+    (acc, day) => {
+      const meals = getShareMeals(day);
+      acc.meals += meals.length;
+      meals.forEach((meal) => {
+        acc.calories += Number(meal?.calories || meal?.kcal || 0);
+        acc.protein += Number(meal?.protein || 0);
+      });
+      return acc;
+    },
+    { meals: 0, calories: 0, protein: 0 }
+  );
 
-      return `${day.day}\n${meals}`;
-    })
-    .join("\n\n");
+  const dayCount = days.length || 1;
+  const summary = [
+    "NutriSmartCoach",
+    "Plan nutricional semanal",
+    "",
+    `Resumen: ${days.length} dias · ${totals.meals} comidas · ${Math.round(
+      totals.calories / dayCount
+    )} kcal/dia aprox. · ${Math.round(totals.protein / dayCount)}g proteina/dia`,
+  ];
+
+  const dayLines = days.slice(0, 7).map((day, dayIndex) => {
+    const meals = getShareMeals(day);
+    const mealLines =
+      meals.length > 0
+        ? meals.slice(0, 6).map((meal, mealIndex) => {
+            const time = meal?.time ? `${meal.time} · ` : "";
+            const label =
+              meal?.name ||
+              meal?.mealType ||
+              meal?.meal_type ||
+              meal?.type ||
+              `Comida ${mealIndex + 1}`;
+            const food = meal?.food || meal?.title || meal?.description || "Sin comida registrada";
+            const calories = Number(meal?.calories || meal?.kcal || 0);
+            const protein = Number(meal?.protein || 0);
+            const macros = [
+              calories > 0 ? `${Math.round(calories)} kcal` : "",
+              protein > 0 ? `${Math.round(protein)}g P` : "",
+            ]
+              .filter(Boolean)
+              .join(" · ");
+
+            return `- ${time}${label}: ${food}${macros ? ` (${macros})` : ""}`;
+          })
+        : ["- Sin comida registrada"];
+
+    return `${day?.day || day?.dia || `Dia ${dayIndex + 1}`}\n${mealLines.join("\n")}`;
+  });
+
+  const shoppingGroups = buildShareShoppingGroups(days);
+  const shoppingLines = shoppingGroups.length
+    ? [
+        "",
+        "Lista de compra resumida",
+        ...shoppingGroups.map(
+          (group) =>
+            `${group.category}: ${group.items
+              .slice(0, 6)
+              .map((item) => `${item.name} (${item.amount})`)
+              .join(", ")}${group.items.length > 6 ? "..." : ""}`
+        ),
+      ]
+    : [];
+
+  return [...summary, "", ...dayLines, ...shoppingLines].join("\n");
+}
+
+function getSharePlanDays(plan) {
+  if (Array.isArray(plan)) return plan.filter(Boolean);
+  if (Array.isArray(plan?.week)) return plan.week.filter(Boolean);
+  if (Array.isArray(plan?.days)) return plan.days.filter(Boolean);
+  if (Array.isArray(plan?.plan)) return plan.plan.filter(Boolean);
+  return [];
+}
+
+function getShareMeals(day) {
+  if (Array.isArray(day?.meals)) return day.meals.filter(Boolean);
+  if (day?.meals && typeof day.meals === "object") {
+    return Object.values(day.meals).filter(Boolean);
+  }
+  return [];
+}
+
+function buildShareShoppingGroups(days) {
+  const grouped = new Map();
+
+  days.forEach((day) => {
+    getShareMeals(day).forEach((meal) => {
+      getShareIngredients(meal).forEach((ingredient) => {
+        const parsed = parseShareIngredient(ingredient);
+        if (!parsed.name) return;
+
+        const category = categorizeShareIngredient(parsed.name);
+        const key = `${category}:${normalizeShareText(parsed.name)}:${parsed.unit}`;
+
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            id: key,
+            category,
+            name: toShareTitleCase(parsed.name),
+            unit: parsed.unit,
+            value: 0,
+          });
+        }
+
+        grouped.get(key).value += parsed.value;
+      });
+    });
+  });
+
+  const categories = ["Proteinas", "Carbohidratos", "Frutas y verduras", "Lacteos", "Otros"];
+  const byCategory = new Map();
+
+  Array.from(grouped.values()).forEach((item) => {
+    if (!byCategory.has(item.category)) byCategory.set(item.category, []);
+    byCategory.get(item.category).push({
+      id: item.id,
+      name: item.name,
+      amount: formatShareAmount(item),
+    });
+  });
+
+  return categories
+    .map((category) => ({
+      category,
+      items: (byCategory.get(category) || []).sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+    .filter((group) => group.items.length > 0)
+    .slice(0, 5);
+}
+
+function getShareIngredients(meal) {
+  if (Array.isArray(meal?.ingredients)) return meal.ingredients.filter(Boolean);
+  if (Array.isArray(meal?.ingredientes)) return meal.ingredientes.filter(Boolean);
+  if (meal?.details) {
+    return String(meal.details)
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function parseShareIngredient(rawIngredient) {
+  const raw =
+    typeof rawIngredient === "object" && rawIngredient !== null
+      ? `${rawIngredient.amount || rawIngredient.quantity || ""} ${
+          rawIngredient.name || rawIngredient.food || ""
+        }`.trim()
+      : String(rawIngredient || "").trim();
+
+  const match = raw.match(
+    /^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|gramos?|ml|l|litros?|unidad(?:es)?|ud|uds|pieza(?:s)?|huevo(?:s)?|rebanada(?:s)?|lata(?:s)?|racion(?:es)?|ración|raciones)?\s*(?:de)?\s*(.*)$/i
+  );
+
+  if (!match) return { name: raw, value: 1, unit: "ud" };
+
+  const value = Number(String(match[1]).replace(",", ".")) || 1;
+  const unitText = String(match[2] || "ud").toLowerCase();
+  const name = (match[3] || raw).trim();
+
+  if (unitText === "kg") return { name, value: value * 1000, unit: "g" };
+  if (unitText === "g" || unitText === "gr" || unitText.startsWith("gramo")) {
+    return { name, value, unit: "g" };
+  }
+  if (unitText === "l" || unitText.startsWith("litro")) return { name, value: value * 1000, unit: "ml" };
+  if (unitText === "ml") return { name, value, unit: "ml" };
+  if (unitText.includes("racion") || unitText.includes("ración")) return { name, value, unit: "raciones" };
+
+  return { name, value, unit: "ud" };
+}
+
+function formatShareAmount(item) {
+  if (item.unit === "g") {
+    return item.value >= 1000
+      ? `${formatShareNumber(item.value / 1000)} kg`
+      : `${Math.round(item.value)} g`;
+  }
+  if (item.unit === "ml") {
+    return item.value >= 1000
+      ? `${formatShareNumber(item.value / 1000)} L`
+      : `${Math.round(item.value)} ml`;
+  }
+  if (item.unit === "raciones") return `${Math.round(item.value)} raciones`;
+  return `${Math.round(item.value)} ud`;
+}
+
+function categorizeShareIngredient(name = "") {
+  const text = normalizeShareText(name);
+
+  if (/(pollo|pavo|carne|ternera|atun|pescado|salmon|huevo|claras)/.test(text)) {
+    return "Proteinas";
+  }
+  if (/(arroz|pasta|avena|pan|patata|boniato|quinoa|lentejas|garbanzos)/.test(text)) {
+    return "Carbohidratos";
+  }
+  if (/(fruta|verdura|ensalada|brocoli|platano|banana|manzana|aguacate|tomate|lechuga)/.test(text)) {
+    return "Frutas y verduras";
+  }
+  if (/(leche|yogur|queso)/.test(text)) return "Lacteos";
+
+  return "Otros";
+}
+
+function normalizeShareText(text = "") {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toShareTitleCase(text = "") {
+  return normalizeShareText(text)
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatShareNumber(number) {
+  return Number(number.toFixed(1)).toString();
 }
