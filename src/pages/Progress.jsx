@@ -18,6 +18,7 @@ import {
   createProgressLog,
   listProgressLogs,
 } from "../services/progressService";
+import { listCheckins } from "../services/checkinService";
 import {
   AppShell,
   FormField,
@@ -37,8 +38,10 @@ export function Progress() {
   const [peso, setPeso] = useState("");
   const [nota, setNota] = useState("");
   const [logs, setLogs] = useState([]);
+  const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(true);
+  const [loadingCheckins, setLoadingCheckins] = useState(true);
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [usingCache, setUsingCache] = useState(false);
@@ -61,11 +64,29 @@ export function Progress() {
     }
   }, [userId]);
 
+  const getCheckins = useCallback(async () => {
+    if (!userId) return;
+
+    setLoadingCheckins(true);
+
+    try {
+      const checkinLogs = await listCheckins(userId);
+
+      setCheckins(checkinLogs);
+    } catch (error) {
+      console.error("Error cargando check-ins:", error);
+      setErrorMessage("No se pudieron cargar tus check-ins.");
+    } finally {
+      setLoadingCheckins(false);
+    }
+  }, [userId]);
+
   useEffect(() => {
     if (user) {
       Promise.resolve().then(getLogs);
+      Promise.resolve().then(getCheckins);
     }
-  }, [getLogs, user]);
+  }, [getCheckins, getLogs, user]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -97,13 +118,48 @@ export function Progress() {
   }
 
   const stats = useMemo(() => {
+    const latestCheckin = checkins[0] || null;
+    const previousCheckin = checkins[1] || null;
+    const firstCheckin = checkins[checkins.length - 1] || null;
+    const totalCheckins = checkins.length;
+
+    if (latestCheckin) {
+      const currentWeight = Number(latestCheckin.weight) || 0;
+      const firstWeight = Number(firstCheckin?.weight) || 0;
+      const previousWeight = Number(previousCheckin?.weight) || 0;
+      const weeklyChange = previousWeight
+        ? Number((currentWeight - previousWeight).toFixed(1))
+        : 0;
+      const change = firstWeight
+        ? Number((currentWeight - firstWeight).toFixed(1))
+        : 0;
+
+      return {
+        currentWeight,
+        firstWeight,
+        change,
+        weeklyChange,
+        direction: change < 0 ? "down" : change > 0 ? "up" : "neutral",
+        totalLogs: totalCheckins,
+        latestCheckin,
+        previousCheckin,
+        firstCheckin,
+        totalCheckins,
+      };
+    }
+
     if (!logs.length) {
       return {
         currentWeight: 0,
         firstWeight: 0,
         change: 0,
+        weeklyChange: 0,
         direction: "neutral",
         totalLogs: 0,
+        latestCheckin: null,
+        previousCheckin: null,
+        firstCheckin: null,
+        totalCheckins: 0,
       };
     }
 
@@ -118,10 +174,17 @@ export function Progress() {
       currentWeight,
       firstWeight,
       change,
+      weeklyChange: 0,
       direction: change < 0 ? "down" : change > 0 ? "up" : "neutral",
       totalLogs: logs.length,
+      latestCheckin: null,
+      previousCheckin: null,
+      firstCheckin: null,
+      totalCheckins: 0,
     };
-  }, [logs]);
+  }, [checkins, logs]);
+
+  const loadingHistory = loadingLogs || loadingCheckins;
 
   return (
     <AppShell contentClassName="px-2 pt-2">
@@ -292,7 +355,7 @@ export function Progress() {
               <CalendarDays size={22} className="text-emerald-300" />
             </div>
 
-            {loadingLogs ? (
+            {loadingHistory ? (
               <div className="space-y-3">
                 <Skeleton />
                 <Skeleton />
