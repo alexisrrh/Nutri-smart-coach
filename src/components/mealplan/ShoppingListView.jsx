@@ -19,31 +19,31 @@ export function ShoppingListView({ plan }) {
     {
       key: "proteinas",
       label: "Proteínas",
-      icon: <Beef size={15} />,
+      icon: <Beef size={11} strokeWidth={2.4} />,
       items: shoppingGroups.proteinas,
     },
     {
       key: "carbohidratos",
       label: "Carbos",
-      icon: <Wheat size={15} />,
+      icon: <Wheat size={11} strokeWidth={2.4} />,
       items: shoppingGroups.carbohidratos,
     },
     {
       key: "frutasVerduras",
       label: "Verdes",
-      icon: <Apple size={15} />,
+      icon: <Apple size={11} strokeWidth={2.4} />,
       items: shoppingGroups.frutasVerduras,
     },
     {
       key: "lacteos",
       label: "Lácteos",
-      icon: <Milk size={15} />,
+      icon: <Milk size={11} strokeWidth={2.4} />,
       items: shoppingGroups.lacteos,
     },
     {
       key: "otros",
       label: "Otros",
-      icon: <Package size={15} />,
+      icon: <Package size={11} strokeWidth={2.4} />,
       items: shoppingGroups.otros,
     },
   ].filter((category) => category.items.length > 0);
@@ -68,17 +68,17 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 text-center">
+      <div className="rounded-[20px] border border-dashed border-white/10 bg-black/20 p-3 text-center">
         <ShoppingBag
-          className="mx-auto mb-3 text-[#10b981]"
-          size={30}
+          className="mx-auto mb-2 text-[#10b981]"
+          size={24}
         />
 
-        <p className="text-sm font-black uppercase text-white">
+        <p className="text-xs font-black uppercase text-white">
           Lista vacía
         </p>
 
-        <p className="mt-2 text-[11px] normal-case leading-5 text-slate-400">
+        <p className="mt-1 text-[10px] normal-case leading-4 text-slate-400">
           Genera una dieta con ingredientes para crear la compra.
         </p>
       </div>
@@ -93,70 +93,72 @@ export function ShoppingListView({ plan }) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/15 bg-[#07170f] p-2.5 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
+    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f] px-2.5 py-2 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
       <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[#10b981]/15 blur-3xl" />
 
       <div className="relative z-10">
-        <header className="mb-2 flex items-start justify-between gap-3">
+        <header className="mb-1.5 flex items-start justify-between gap-2.5">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
-              <ShoppingBag size={14} />
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <ShoppingBag size={12} />
               Compra semanal
             </div>
 
-            <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-[15px] font-black uppercase italic leading-none text-white">
               Lista inteligente
             </h3>
 
-            <p className="mt-1 text-xs normal-case text-slate-500">
+            <p className="mt-0.5 text-[10px] normal-case text-slate-500">
               {checkedCount}/{totalItems} productos comprados
             </p>
           </div>
 
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] border border-[#10b981]/20 bg-[#10b981]/10">
             <div className="text-center">
-              <p className="text-base font-black text-[#10b981]">
+              <p className="text-sm font-black text-[#10b981]">
                 {progress}%
               </p>
 
-              <p className="text-[10px] font-black uppercase tracking-wide text-white/45">
+              <p className="text-[8px] font-black uppercase tracking-wide text-white/45">
                 listo
               </p>
             </div>
           </div>
         </header>
 
-        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div className="mb-1.5 h-1 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full rounded-full bg-[#10b981] transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="mb-2 flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mb-1.5 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((category) => (
             <button
               key={category.key}
               type="button"
+              aria-label={`Filtrar por ${category.label}`}
+              title={category.label}
               onClick={() => setActiveCategory(category.key)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-2xl border px-2.5 py-2 text-[10px] font-black uppercase tracking-wide transition-all ${
+              className={`flex h-7 min-w-12 shrink-0 items-center justify-center gap-1 rounded-xl border px-1.5 text-[8px] font-black uppercase tracking-wide transition-all ${
                 activeCategory === category.key
                   ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                   : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"
               }`}
             >
-              {category.icon}
+              <span className="grid h-3.5 w-3.5 shrink-0 place-items-center ">
+                {category.icon}
+              </span>
 
-              {category.label}
-
-              <span className="opacity-70">
+              <span className="min-w-3 text-center leading-none opacity-80">
                 {category.items.length}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {activeItems.map((item) => {
             const isChecked = checkedItems[item.id];
 
@@ -165,26 +167,26 @@ export function ShoppingListView({ plan }) {
                 key={item.id}
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                className={`group relative overflow-hidden rounded-[20px] border p-2.5 text-left transition-all ${
+                className={`group relative overflow-hidden rounded-2xl border px-2 py-1.5 text-left transition-all ${
                   isChecked
                     ? "border-[#10b981]/25 bg-[#10b981]/5 opacity-70"
                     : "border-white/10 bg-black/20 hover:border-[#10b981]/20 hover:bg-black/30"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
                   <div
-                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-xl border transition-all ${
+                    className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg border transition-all ${
                       isChecked
                         ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
                         : "border-white/15 bg-[#0d2218]"
                     }`}
                   >
-                    <Check size={13} strokeWidth={3} />
+                    <Check size={11} strokeWidth={3} />
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`truncate text-[10px] font-black uppercase tracking-wide ${
+                      className={`truncate text-[9px] font-bold normal-case tracking-normal ${
                         isChecked
                           ? "text-slate-500 line-through"
                           : "text-white"
@@ -193,7 +195,7 @@ export function ShoppingListView({ plan }) {
                       {item.name}
                     </p>
 
-                    <p className="mt-0.5 text-xs font-bold normal-case text-[#10b981]">
+                    <p className="truncate text-[9px] font-bold normal-case text-[#10b981]">
                       {item.amount}
                     </p>
                   </div>
