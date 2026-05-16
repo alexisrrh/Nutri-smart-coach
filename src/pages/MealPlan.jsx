@@ -7,6 +7,8 @@ import {
   ShoppingCart,
   Sparkles,
   Timer,
+   Loader2,
+   ScanLine,
 } from "lucide-react";
 import { DietSummary } from "../components/mealplan/DietSummary";
 import { MealPlanForm } from "../components/mealplan/MealPlanForm";
@@ -493,98 +495,99 @@ function GeneratingDietLoader({ formData }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#10b98122,transparent_42%)]" />
-      <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#10b981]/18 blur-3xl" />
+    <section
+      aria-label={`Creando dieta de ${formData?.planDays || "varios"} días`}
+      className="min-h-0 overflow-hidden rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]"
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            Creando dieta
+          </p>
 
-      <div className="relative z-10">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#10b981]">
-              Smart Diet IA
-            </p>
+          <h3 className="mt-0.5 text-base font-black uppercase italic">
+            AI Meal Plan
+          </h3>
+        </div>
 
-            <h3 className="mt-0.5 text-[18px] font-black uppercase italic leading-none text-white">
-              Creando tu dieta
-            </h3>
+      <div className="grid h-10 w-10 place-items-center rounded-xl border border-[#10b981]/25 bg-[#10b981]/10">
+  <ScanLine size={21} className="animate-spin text-[#10b981]" />
+</div>
+      </div>
 
-            <p className="mt-1 text-[11px] normal-case leading-4 text-slate-400">
-              {formData?.planDays} días · {formData?.mealsPerDay} comidas/día ·{" "}
-              {Number(formData?.mealsPerDay) === 2
-                ? "ayuno intermitente"
-                : "plan personalizado"}
-            </p>
-          </div>
+      <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-black/30">
+        <div className="absolute inset-0 bg-[#04110b]/55" />
+        <div className="absolute left-0 right-0 top-0 h-20 animate-[scanner_2.4s_linear_infinite] bg-gradient-to-b from-transparent via-[#10b981]/30 to-transparent" />
 
-          <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/25 bg-[#10b981]/10">
-            <div className="absolute inset-1 animate-spin rounded-[16px] border-2 border-transparent border-t-[#10b981]" />
-            <div className="absolute inset-3.5 animate-pulse rounded-2xl bg-[#10b981]/10" />
+        <div className="relative z-10 grid h-full place-items-center text-center">
+          <div>
+            <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-[20px] border border-[#10b981]/25 bg-black/50 text-[#10b981] backdrop-blur-xl">
+              <Loader2 size={28} className="animate-spin" />
+            </div>
 
-            <span className="relative text-[15px] font-black text-[#10b981]">
+            <p className="text-3xl font-black italic leading-none text-[#10b981]">
               {percent}%
-            </span>
+            </p>
+
+            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
+              Personalizando con IA
+            </p>
+
+            <p className="mt-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold text-white/35">
+              <Timer size={11} />
+              {seconds}s
+            </p>
           </div>
-        </div>
-
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-          <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-
-        <div className="mt-2.5 flex items-center justify-between text-[9px] font-bold normal-case text-slate-500">
-          <span className="inline-flex items-center gap-1">
-            <Timer size={12} />
-            {seconds}s
-          </span>
-
-          <span className="text-[#10b981]">
-            {percent < 96 ? "Procesando..." : "Finalizando..."}
-          </span>
-        </div>
-
-        <div className="mt-2.5 grid grid-cols-5 gap-1">
-          {steps.map((step, index) => {
-            const completed = index < activeStep;
-            const active = index === activeStep;
-
-            return (
-              <div
-                key={step}
-                className={`rounded-2xl border px-1 py-1.5 text-center ${
-                  completed
-                    ? "border-[#10b981]/25 bg-[#10b981]/10"
-                    : active
-                    ? "border-[#10b981]/40 bg-[#10b981]/5"
-                    : "border-white/5 bg-black/10"
-                }`}
-              >
-                <div
-                  className={`mx-auto mb-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[8px] font-black ${
-                    completed
-                      ? "bg-[#10b981] text-[#06110c]"
-                      : active
-                      ? "animate-pulse border border-[#10b981] text-[#10b981]"
-                      : "border border-white/10 text-slate-600"
-                  }`}
-                >
-                  {completed ? "✓" : index + 1}
-                </div>
-
-                <p
-                  className={`truncate text-[8px] font-black uppercase tracking-tight ${
-                    completed || active ? "text-white" : "text-slate-600"
-                  }`}
-                >
-                  {step}
-                </p>
-              </div>
-            );
-          })}
         </div>
       </div>
-    </div>
+
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div
+          className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      <div className="mt-2 grid grid-cols-5 gap-1">
+        {steps.map((step, index) => {
+          const completed = index < activeStep;
+          const active = index === activeStep;
+
+          return (
+            <div
+              key={step}
+              className={`rounded-xl px-1 py-1.5 text-center ${
+                completed
+                  ? "bg-[#10b981]/10"
+                  : active
+                  ? "bg-white/5"
+                  : "bg-black/20"
+              }`}
+            >
+              <div className="mb-0.5 flex justify-center">
+                {completed ? (
+                  <span className="text-[11px] font-black leading-none text-[#10b981]">
+                    ✓
+                  </span>
+                ) : active ? (
+                  <Sparkles size={11} className="text-[#10b981]" />
+                ) : (
+                  <Loader2 size={11} className="text-white/20" />
+                )}
+              </div>
+
+              <p
+                className={`truncate text-[10px] font-black uppercase leading-3 ${
+                  completed || active ? "text-white" : "text-slate-600"
+                }`}
+              >
+                {step}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
