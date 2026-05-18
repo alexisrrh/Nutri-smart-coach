@@ -8,6 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import SmartImage from "../components/ui/SmartImage";
+import { NavNavigation } from "../components/Home/NavNavigation";
 
 export function Home() {
   return (
@@ -158,8 +159,8 @@ export function Home() {
           </div>
 
           {/* BOTÓN DE ACCIÓN Y ESTADÍSTICAS (Ahora cierran la sección intermedia) */}
-          <div className="w-full mt-5">
-            <div className="px-1">
+          <div className="w-full mt-0">
+            <div className="px-1 mb-6">
               <Link
                 to="/registro"
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-widest text-[#03110d] shadow-[0_12px_30px_rgba(16,185,129,0.25)] active:scale-[0.98] transition-all hover:bg-white"
@@ -177,15 +178,11 @@ export function Home() {
           </div>
 
           {/* MENÚ INFERIOR TÁCTIL ACTUALIZADO */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 mb-4 mx-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
-            <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" />
-            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" active />
-            <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-            <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" />
-          </div>
+          
 
 
         </section>
+        <NavNavigation />
       </main>
 
       {/* Animación inyectada nativamente */}
