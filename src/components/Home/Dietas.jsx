@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Camera, Utensils, LineChart, ShieldCheck, Clock, Flame, Apple, ArrowRight, CheckCircle2 } from "lucide-react";
+import {Zap, Camera, Utensils, LineChart, ShieldCheck, Clock, Flame, Apple, ArrowRight, CheckCircle2 } from "lucide-react";
+import { NavNavigation } from "./NavNavigation";
 
 export function Dietas() {
   return (
@@ -51,41 +52,71 @@ export function Dietas() {
           {/* CONTENIDO PRINCIPAL */}
           <div className="flex-1 flex flex-col mt-4">
             
-            {/* PANEL DE BALANCE NUTRICIONAL DIARIO PREMIUM CON TEXTO EXPLICATIVO */}
-            <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-transparent p-4 mb-4 backdrop-blur-md">
-              <div className="flex justify-between items-center mb-1.5">
+            {/* PANEL DE DIETA SEMANAL IA PREMIUM */}
+            <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-[#06110e] to-transparent p-4 mb-4 backdrop-blur-xl group">
+              
+              {/* Efecto de luz ambiental en la esquina */}
+              <div className="absolute -right-8 -top-8 h-24 w-24 bg-emerald-500/10 blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-all" />
+
+              <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col">
-                  <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Métricas de Energía diaria</h3>
-                  <span className="text-xs font-black text-emerald-300 mt-0.5">1,230 / 2,100 kcal</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-400 text-[#03110d]">
+                      <Zap size={12} className="fill-current" />
+                    </div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-400">Generador de Dietas IA</h3>
+                  </div>
+                  <span className="text-sm font-black text-white mt-1.5 uppercase italic">Plan Semanal Optimizado</span>
                 </div>
-                <span className="text-[9px] font-black text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 uppercase tracking-wider">Definición</span>
+                
+                <div className="flex flex-col items-end">
+                  <span className="text-[7px] font-black text-emerald-300/60 uppercase tracking-tighter">Status</span>
+                  <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-400 uppercase">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Actualizado
+                  </span>
+                </div>
               </div>
 
-              {/* Mensaje explicativo de Calorías */}
-              <p className="text-[10px] text-white/45 leading-normal mb-3">
-                Calculamos tu gasto metabólico basal y adaptamos dinámicamente el límite calórico para asegurar una pérdida grasa constante sin perder masa muscular.
-              </p>
-
-              {/* Barra de progreso de calorías */}
-              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-4">
-                <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full" style={{ width: '58.5%' }} />
+              {/* Texto explicativo con mayor impacto visual */}
+              <div className="relative rounded-xl border border-white/5 bg-white/[0.02] p-3 mb-4">
+                <p className="text-[10px] leading-relaxed text-white/70 italic">
+                  "Nuestra IA analiza tus métricas de la semana para generar un <span className="text-emerald-300 font-bold">menú personalizado de 7 días</span>, ajustando cada gramo para que alcances tu objetivo sin pasar hambre."
+                </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                <div className="bg-white/[0.01] border border-white/5 rounded-xl p-2">
-                  <p className="text-sm font-black italic text-white/40">2,100</p>
-                  <p className="text-[7px] font-black uppercase tracking-wider text-white/30 mt-0.5">Objetivo</p>
+            {/* Visualización de Macros del Plan */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-end px-0.5">
+                  <span className="text-[7px] font-black uppercase text-white/30">Energía</span>
+                  <span className="text-[9px] font-bold text-emerald-300">2.1k</span>
                 </div>
-                <div className="bg-emerald-500/[0.03] border border-emerald-500/10 rounded-xl p-2">
-                  <p className="text-sm font-black italic text-emerald-300">1,230</p>
-                  <p className="text-[7px] font-black uppercase tracking-wider text-emerald-400/50 mt-0.5">Consumidas</p>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: '100%' }} />
                 </div>
-                <div className="bg-white/[0.01] border border-white/5 rounded-xl p-2">
-                  <p className="text-sm font-black italic text-white/70">870</p>
-                  <p className="text-[7px] font-black uppercase tracking-wider text-white/40 mt-0.5">Restantes</p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-end px-0.5">
+                  <span className="text-[7px] font-black uppercase text-white/30">Proteína</span>
+                  <span className="text-[9px] font-bold text-cyan-300">160g</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-cyan-400 rounded-full" style={{ width: '85%' }} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-end px-0.5">
+                  <span className="text-[7px] font-black uppercase text-white/30">Variedad</span>
+                  <span className="text-[9px] font-bold text-amber-300">Alta</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full" style={{ width: '95%' }} />
                 </div>
               </div>
             </div>
+          </div>
+
 
             {/* CRONOGRAMA DE COMIDAS / TIMELINE CON DESCRIPCIÓN */}
             <div className="mb-2.5 px-1 flex flex-col">
@@ -105,13 +136,6 @@ export function Dietas() {
                 completed={true}
               />
               
-              <MealRow 
-                time="11:30 AM" 
-                type="Media Mañana" 
-                title="Batido aislado + Almendras" 
-                macros="210 kcal • 26g Pro"
-                completed={true}
-              />
               
               <MealRow 
                 time="02:30 PM" 
@@ -122,13 +146,6 @@ export function Dietas() {
                 current={true}
               />
               
-              <MealRow 
-                time="06:00 PM" 
-                type="Merienda" 
-                title="Yogur griego con berries" 
-                macros="190 kcal • 18g Pro"
-                completed={false}
-              />
               
               <MealRow 
                 time="09:35 PM" 
@@ -154,14 +171,10 @@ export function Dietas() {
           </div>
 
           {/* MENÚ INFERIOR TÁCTIL SINCRONIZADO CON HOME */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 mb-4 mx-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
-            <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" />
-            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" active />
-            <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-            <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" />
-          </div>
+          
 
         </section>
+        <NavNavigation />
       </main>
     </div>
   );

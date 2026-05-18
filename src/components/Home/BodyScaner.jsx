@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Camera, Utensils, LineChart, ShieldCheck, Sparkles, Zap, ArrowRight } from "lucide-react";
 import SmartImage from "../../components/ui/SmartImage";
+import { NavNavigation } from "./NavNavigation";
 
 export function BodyScaner() {
   return (
@@ -155,15 +156,11 @@ export function BodyScaner() {
           </div>
 
           {/* MENÚ INFERIOR TÁCTIL */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 mb-4 mx-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
-            <DashboardTab to="/" icon={<Camera size={16} />} title="Analizar" />
-            <DashboardTab to="/bodyscannerhome" icon={<ShieldCheck size={16} />} title="Check-in foto" active />
-            <DashboardTab to="/dietahome" icon={<Utensils size={16} />} title="Dietas" />
-            <DashboardTab to="/progresohome" icon={<LineChart size={16} />} title="Peso/medidas" />
-          </div>
+          
 
 
         </section>
+        <NavNavigation />
       </main>
     </div>
   );
