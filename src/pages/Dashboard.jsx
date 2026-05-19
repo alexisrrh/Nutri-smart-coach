@@ -11,6 +11,14 @@ import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import { getCachedDietPlans, listDietPlans } from "../services/dietService";
 import { getCachedMeals, listMeals } from "../services/mealService";
+import {
+  getCachedCheckins,
+  listCheckins,
+} from "../services/checkinService";
+import {
+  getCachedProgressLogs,
+  listProgressLogs,
+} from "../services/progressService";
 import { getCachedProfile, getProfile } from "../services/profileService";
 
 import {
@@ -22,34 +30,56 @@ import {
 export function Dashboard() {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(() => getCachedProfile());
-  const [meals, setMeals] = useState(() => getCachedMeals());
-  const [dietPlans, setDietPlans] = useState(() => getCachedDietPlans());
-  const [loadingData, setLoadingData] = useState(true);
+  const cachedProfile = getCachedProfile();
+  const cachedUserId = cachedProfile?.id || cachedProfile?.user_id || null;
+  const cachedMeals = getCachedMeals();
+  const cachedDietPlans = getCachedDietPlans();
+  const cachedCheckins = getCachedCheckins(cachedUserId);
+  const cachedProgressLogs = getCachedProgressLogs(cachedUserId);
+  const hasCachedSnapshot = Boolean(
+    cachedProfile ||
+      cachedMeals.length > 0 ||
+      cachedDietPlans.length > 0 ||
+      cachedCheckins.length > 0 ||
+      cachedProgressLogs.length > 0
+  );
+
+  const [profile, setProfile] = useState(() => cachedProfile);
+  const [meals, setMeals] = useState(() => cachedMeals);
+  const [dietPlans, setDietPlans] = useState(() => cachedDietPlans);
+  const [loadingData, setLoadingData] = useState(() => !hasCachedSnapshot);
+  const [syncing, setSyncing] = useState(() => hasCachedSnapshot);
   const [loadError, setLoadError] = useState("");
 
   const loadRemoteDashboardData = useCallback(async () => {
-    setLoadingData(true);
     setLoadError("");
+    setSyncing(true);
 
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const cachedProfile = getCachedProfile();
-      const userId = user?.id || cachedProfile?.id || cachedProfile?.user_id;
+      const currentCachedProfile = getCachedProfile();
+      const userId =
+        user?.id ||
+        currentCachedProfile?.id ||
+        currentCachedProfile?.user_id ||
+        null;
 
       if (!userId) {
         setLoadError("Sesión no válida. Vuelve a iniciar sesión.");
         return;
       }
 
-      const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
-        getProfile(userId, { fallbackToCache: false }),
-        listMeals(userId, { fallbackToCache: false }),
-        listDietPlans(userId, { fallbackToCache: false }),
-      ]);
+      const [profileRes, mealsRes, dietsRes, checkinsRes, progressRes] =
+        await Promise.allSettled([
+          getProfile(userId, { fallbackToCache: false }),
+          listMeals(userId, { fallbackToCache: false }),
+          listDietPlans(userId, { fallbackToCache: false }),
+          listCheckins(userId, { fallbackToCache: false }),
+          listProgressLogs(userId, { fallbackToCache: false }),
+        ]);
 
       const errors = [];
 
@@ -71,13 +101,24 @@ export function Dashboard() {
         errors.push(dietsRes.reason);
       }
 
+      if (checkinsRes.status === "rejected") {
+        errors.push(checkinsRes.reason);
+      }
+
+      if (progressRes.status === "rejected") {
+        errors.push(progressRes.reason);
+      }
+
       if (errors.length > 0) {
         setLoadError(formatDashboardError(errors[0], errors.length));
+      } else {
+        setLoadError("");
       }
     } catch (error) {
       setLoadError(formatDashboardError(error, 1));
     } finally {
       setLoadingData(false);
+      setSyncing(false);
     }
   }, []);
 
@@ -189,10 +230,14 @@ export function Dashboard() {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col gap-1.5">
+            {syncing ? (
+              <DashboardSyncBanner message="Sincronizando..." />
+            ) : null}
+
             {loadError ? (
               <DashboardSyncBanner
                 message={loadError}
-                onRetry={loadRemoteDashboardData}
+                onRetry={syncing ? null : loadRemoteDashboardData}
               />
             ) : null}
 
@@ -261,17 +306,19 @@ function DashboardSyncBanner({ message, onRetry }) {
           </p>
         </div>
 
-        <button
-          onClick={onRetry}
-          className="shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] transition hover:bg-[var(--app-primary-soft)]"
-          style={{
-            borderColor: "var(--app-border)",
-            backgroundColor: "var(--app-primary-soft)",
-            color: "var(--app-primary)",
-          }}
-        >
-          Reintentar
-        </button>
+        {onRetry ? (
+          <button
+            onClick={onRetry}
+            className="shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] transition hover:bg-[var(--app-primary-soft)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-primary-soft)",
+              color: "var(--app-primary)",
+            }}
+          >
+            Reintentar
+          </button>
+        ) : null}
       </div>
     </section>
   );
