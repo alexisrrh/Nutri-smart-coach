@@ -4,6 +4,16 @@ import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeMeal, normalizeMeals } from "./normalizers";
 
 const MEALS_KEY = STORAGE_KEYS.MEALS;
+const FOOD_ANALYSIS_PROCESS_KEY = STORAGE_KEYS.FOOD_ANALYSIS_PROCESS;
+
+const DEFAULT_FOOD_ANALYSIS_STATE = {
+  status: "idle",
+  startedAt: null,
+  updatedAt: null,
+  requestId: null,
+  result: null,
+  error: "",
+};
 
 export function getCachedMeals() {
   const meals = getCache(MEALS_KEY, []);
@@ -140,4 +150,45 @@ export function removeMealFromCache(mealToDelete) {
   cacheMeals(updatedMeals);
 
   return updatedMeals;
+}
+
+export function getFoodAnalysisProcessState() {
+  return normalizeFoodAnalysisProcessState(
+    getCache(FOOD_ANALYSIS_PROCESS_KEY, DEFAULT_FOOD_ANALYSIS_STATE)
+  );
+}
+
+export function setFoodAnalysisProcessState(nextState) {
+  const normalizedState = normalizeFoodAnalysisProcessState({
+    ...getFoodAnalysisProcessState(),
+    ...nextState,
+  });
+
+  setCache(FOOD_ANALYSIS_PROCESS_KEY, normalizedState);
+
+  return normalizedState;
+}
+
+export function clearFoodAnalysisProcessState() {
+  removeCache(FOOD_ANALYSIS_PROCESS_KEY);
+}
+
+function normalizeFoodAnalysisProcessState(state) {
+  if (!state || typeof state !== "object") {
+    return { ...DEFAULT_FOOD_ANALYSIS_STATE };
+  }
+
+  return {
+    status:
+      state.status === "loading" ||
+      state.status === "success" ||
+      state.status === "error"
+        ? state.status
+        : "idle",
+    startedAt: state.startedAt || null,
+    updatedAt: state.updatedAt || null,
+    requestId: state.requestId || null,
+    result: state.result || null,
+    error: state.error || "",
+  };
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
@@ -13,19 +13,118 @@ import { supabase } from "../lib/supabase";
 import {
   analyzeMeal,
   cacheMeal,
+  clearFoodAnalysisProcessState,
   deleteMeal,
   getCachedMeals,
+  getFoodAnalysisProcessState,
   removeMealFromCache,
+  setFoodAnalysisProcessState,
 } from "../services/mealService";
 
+function isRecentFoodAnalysisState(state, maxAgeMs = 3 * 60 * 1000) {
+  if (!state || state.status !== "loading" || !state.startedAt) {
+    return false;
+  }
+
+  const startedAtMs = Date.parse(state.startedAt);
+  if (Number.isNaN(startedAtMs)) return true;
+
+  return Date.now() - startedAtMs <= maxAgeMs;
+}
+
 export default function FoodPhoto() {
+  const isMountedRef = useRef(true);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
+  const [, setAnalysisState] = useState(() =>
+    getFoodAnalysisProcessState()
+  );
+  const [loading, setLoading] = useState(() =>
+    isRecentFoodAnalysisState(getFoodAnalysisProcessState())
+  );
+  const [result, setResult] = useState(() => {
+    const storedState = getFoodAnalysisProcessState();
+    return storedState.status === "success" ? storedState.result || null : null;
+  });
+  const [error, setError] = useState(() => {
+    const storedState = getFoodAnalysisProcessState();
+    return storedState.status === "error" ? storedState.error || "" : "";
+  });
   const [meals, setMeals] = useState(getCachedMeals);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+
+      const storedState = getFoodAnalysisProcessState();
+
+      if (storedState.status === "loading") {
+        if (isRecentFoodAnalysisState(storedState)) {
+          setLoading(true);
+          setError("");
+        } else {
+          const staleState = {
+            ...storedState,
+            status: "error",
+            updatedAt: new Date().toISOString(),
+            error:
+              "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
+          };
+          setFoodAnalysisProcessState(staleState);
+          setLoading(false);
+          setError(staleState.error);
+        }
+      }
+
+      if (storedState.status === "success" && storedState.result) {
+        setResult(storedState.result);
+        setMeals(getCachedMeals());
+        setLoading(false);
+        setError("");
+      }
+
+      if (storedState.status === "error" && storedState.error) {
+        setError(storedState.error);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const intervalId = setInterval(() => {
+      const storedState = getFoodAnalysisProcessState();
+      setAnalysisState(storedState);
+
+      if (storedState.status === "success" && storedState.result) {
+        setResult(storedState.result);
+        setMeals(getCachedMeals());
+        setError("");
+        setLoading(false);
+        clearInterval(intervalId);
+        return;
+      }
+
+      if (storedState.status === "error") {
+        setError(storedState.error || "No se pudo analizar la comida.");
+        setLoading(false);
+        clearInterval(intervalId);
+      }
+    }, 1200);
+
+    return () => clearInterval(intervalId);
+  }, [loading]);
 
   useEffect(() => {
     return () => {
@@ -52,6 +151,15 @@ export default function FoodPhoto() {
   function resetScanner() {
     if (preview) URL.revokeObjectURL(preview);
 
+    clearFoodAnalysisProcessState();
+    setAnalysisState({
+      status: "idle",
+      startedAt: null,
+      updatedAt: null,
+      requestId: null,
+      result: null,
+      error: "",
+    });
     setImage(null);
     setPreview("");
     setDescription("");
@@ -112,6 +220,19 @@ export default function FoodPhoto() {
     if (loading) return;
 
     try {
+      const requestId = createAnalysisRequestId();
+      const startedAt = new Date().toISOString();
+      const loadingState = {
+        status: "loading",
+        startedAt,
+        updatedAt: startedAt,
+        requestId,
+        result: null,
+        error: "",
+      };
+
+      setFoodAnalysisProcessState(loadingState);
+      setAnalysisState(loadingState);
       setLoading(true);
       setResult(null);
       setError("");
@@ -125,24 +246,62 @@ export default function FoodPhoto() {
         console.warn("No se pudo obtener usuario Supabase:", userError.message);
       }
 
-      const mealToSave = await analyzeMeal({
+      const mealToSave = await analyzeMealWithRetry({
         image,
         description: trimmedDescription,
         goal: "perder_grasa",
         userId: user?.id,
       });
 
-      setResult(mealToSave);
-      setMeals(cacheMeal(mealToSave, preview));
+      const latestState = getFoodAnalysisProcessState();
+
+      if (latestState.requestId && latestState.requestId !== requestId) {
+        return;
+      }
+
+      const nextMeals = cacheMeal(mealToSave, mealToSave.image_url || preview);
+      const successState = {
+        status: "success",
+        startedAt,
+        updatedAt: new Date().toISOString(),
+        requestId,
+        result: mealToSave,
+        error: "",
+      };
+
+      setFoodAnalysisProcessState(successState);
+      if (isMountedRef.current) {
+        setAnalysisState(successState);
+        setResult(mealToSave);
+        setMeals(nextMeals);
+      }
     } catch (error) {
       console.error("Error analizando comida:", error);
 
-      setError(
+      const errorMessage =
         error?.message ||
-          "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo."
-      );
+        "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo.";
+
+      const currentState = getFoodAnalysisProcessState();
+      const errorState = {
+        status: "error",
+        startedAt: currentState.startedAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        requestId: currentState.requestId || null,
+        result: null,
+        error: errorMessage,
+      };
+
+      setFoodAnalysisProcessState(errorState);
+
+      if (isMountedRef.current) {
+        setAnalysisState(errorState);
+        setError(errorMessage);
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -169,6 +328,7 @@ export default function FoodPhoto() {
       }
 
       setMeals(removeMealFromCache(result));
+      clearFoodAnalysisProcessState();
       resetScanner();
     } catch (error) {
       console.error("Error descartando análisis:", error);
@@ -178,8 +338,24 @@ export default function FoodPhoto() {
       );
     } finally {
       setLoading(false);
-    }
   }
+}
+
+function createAnalysisRequestId() {
+  return `food-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+async function analyzeMealWithRetry(args) {
+  try {
+    return await analyzeMeal(args);
+  } catch (error) {
+    if (error?.code !== "REQUEST_TIMEOUT") {
+      throw error;
+    }
+
+    return analyzeMeal(args);
+  }
+}
 
   return (
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
