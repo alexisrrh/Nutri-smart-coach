@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Download,
@@ -17,12 +17,15 @@ import { PrintablePlan } from "../components/mealplan/PrintablePlan";
 import {
   cacheDietProgress,
   clearDietPlanCache,
+  clearDietGenerationState,
   clearDietProgress,
   generateDietPlan,
   getCachedDietPlan,
+  getDietGenerationState,
   getDietPlanWeek,
   getDietProgress,
   listDietPlans,
+  setDietGenerationState,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
 import { AppShell, StatusBox, SurfaceCard } from "../components/ui";
@@ -66,9 +69,15 @@ const MEALS_PER_DAY = [
 
 export function MealPlan() {
   const navigate = useNavigate();
+  const isMountedRef = useRef(true);
+  const [generationState, setGenerationState] = useState(() =>
+    getDietGenerationState()
+  );
 
   const [formData, setFormData] = useState(createInitialFormData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() =>
+    isLoadingStateRecent(getDietGenerationState())
+  );
   const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
   const [activeDay, setActiveDay] = useState(0);
   const [progress, setProgress] = useState(getDietProgress);
@@ -118,6 +127,71 @@ export function MealPlan() {
   );
 
   useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+
+      if (isLoadingStateRecent(generationState)) {
+        setLoading(true);
+        setErrorMessage("");
+        setNotice("Tu dieta se está generando...");
+        return;
+      }
+
+      if (generationState.status === "loading") {
+        const staleState = {
+          ...generationState,
+          status: "error",
+          updatedAt: new Date().toISOString(),
+          error: "La generación tardó demasiado. Inténtalo de nuevo.",
+        };
+
+        persistGenerationState(staleState);
+        setGenerationState(staleState);
+        setLoading(false);
+        setNotice("");
+        setErrorMessage(staleState.error);
+        return;
+      }
+
+      if (generationState.status === "error" && generationState.error) {
+        setErrorMessage(generationState.error);
+        setLoading(false);
+        return;
+      }
+
+      if (
+        generationState.status === "success" &&
+        !hasPlan &&
+        Array.isArray(generationState.result?.week) &&
+        generationState.result.week.length > 0
+      ) {
+        setPlan(getDietPlanWeek(generationState.result));
+        setActiveDay(0);
+        setNotice(
+          generationState.result.usedFallback
+            ? "Se generó una dieta base porque la IA tardó demasiado."
+            : "Dieta generada correctamente."
+        );
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [generationState, hasPlan]);
+
+  useEffect(() => {
     const userId = profile?.id || profile?.user_id;
     if (!userId) return;
 
@@ -139,10 +213,19 @@ export function MealPlan() {
   async function handleSubmit(e) {
     e.preventDefault();
 
+    if (loading || generationState.status === "loading") {
+      return;
+    }
+
+    if (!isMountedRef.current) return;
+
     setLoading(true);
     setErrorMessage("");
     setNotice("");
     setShowShopping(false);
+
+    let requestId = null;
+    let startedAt = null;
 
     try {
       const savedProfile = getCachedProfile();
@@ -162,11 +245,32 @@ export function MealPlan() {
         exclusions: formData.exclusions || "",
       };
 
-      const data = await generateDietPlan({
+      requestId = createGenerationRequestId();
+      startedAt = new Date().toISOString();
+      const loadingState = {
+        status: "loading",
+        startedAt,
+        updatedAt: startedAt,
+        requestId,
+        result: null,
+        error: "",
+      };
+      persistGenerationState(loadingState);
+      if (isMountedRef.current) {
+        setGenerationState(loadingState);
+      }
+
+      const data = await generateDietPlanWithRetry({
         profile: savedProfile,
         preferences: payloadPreferences,
         userId: savedProfile?.id || savedProfile?.user_id || "",
       });
+
+      const latestGenerationState = getDietGenerationState();
+
+      if (latestGenerationState.requestId !== requestId) {
+        return;
+      }
 
       const cleanPlan = data.week || [];
 
@@ -179,6 +283,20 @@ export function MealPlan() {
       setActiveDay(0);
       cacheDietProgress({});
 
+      const successState = {
+        status: "success",
+        startedAt,
+        updatedAt: new Date().toISOString(),
+        requestId,
+        result: data,
+        error: "",
+      };
+
+      persistGenerationState(successState);
+      if (isMountedRef.current) {
+        setGenerationState(successState);
+      }
+
       setNotice(
         data.usedFallback
           ? "Se generó una dieta base porque la IA tardó demasiado."
@@ -186,9 +304,34 @@ export function MealPlan() {
       );
     } catch (err) {
       console.error(err);
-      setErrorMessage(err.message || "No se pudo generar la dieta.");
+      if (!requestId || !startedAt) {
+        setErrorMessage(
+          err.message || "La generación tardó demasiado. Inténtalo de nuevo."
+        );
+        return;
+      }
+
+      const errorState = {
+        status: "error",
+        startedAt,
+        updatedAt: new Date().toISOString(),
+        requestId,
+        result: null,
+        error:
+          err.message ||
+          "La generación tardó demasiado. Inténtalo de nuevo.",
+      };
+
+      persistGenerationState(errorState);
+      if (isMountedRef.current) {
+        setGenerationState(errorState);
+      }
+
+      setErrorMessage(errorState.error);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -201,6 +344,19 @@ export function MealPlan() {
     setErrorMessage("");
     clearDietPlanCache();
     clearDietProgress();
+    clearDietGenerationState();
+    const idleState = {
+      status: "idle",
+      startedAt: null,
+      updatedAt: null,
+      requestId: null,
+      result: null,
+      error: "",
+    };
+    persistGenerationState(idleState);
+    if (isMountedRef.current) {
+      setGenerationState(idleState);
+    }
   }
 
   function toggleMeal(mealId) {
@@ -740,6 +896,39 @@ function createInitialFormData() {
     homeFoods: "",
     exclusions: "",
   };
+}
+
+function createGenerationRequestId() {
+  return `diet-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function isLoadingStateRecent(state, maxAgeMs = 3 * 60 * 1000) {
+  if (!state || state.status !== "loading" || !state.startedAt) {
+    return false;
+  }
+
+  const startedAtMs = Date.parse(state.startedAt);
+  if (Number.isNaN(startedAtMs)) return true;
+
+  return Date.now() - startedAtMs <= maxAgeMs;
+}
+
+function persistGenerationState(state) {
+  setDietGenerationState(state);
+}
+
+async function generateDietPlanWithRetry(args) {
+  try {
+    return await generateDietPlan(args);
+  } catch (error) {
+    const isTimeout = error?.code === "REQUEST_TIMEOUT";
+
+    if (!isTimeout) {
+      throw error;
+    }
+
+    return generateDietPlan(args);
+  }
 }
 
 function buildShareText(plan) {
