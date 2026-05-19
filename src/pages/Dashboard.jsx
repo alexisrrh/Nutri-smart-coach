@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AlertCircle,
-  BarChart3,
-  Sparkles,
-  UserRound,
-  Utensils,
-} from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
 
@@ -17,10 +11,6 @@ import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import { getCachedDietPlans, listDietPlans } from "../services/dietService";
 import { getCachedMeals, listMeals } from "../services/mealService";
-import {
-  getCachedProgressLogs,
-  listProgressLogs,
-} from "../services/progressService";
 import { getCachedProfile, getProfile } from "../services/profileService";
 
 import {
@@ -35,9 +25,6 @@ export function Dashboard() {
   const [profile, setProfile] = useState(() => getCachedProfile());
   const [meals, setMeals] = useState(() => getCachedMeals());
   const [dietPlans, setDietPlans] = useState(() => getCachedDietPlans());
-  const [progressLogs, setProgressLogs] = useState(() =>
-    getCachedProgressLogs()
-  );
   const [loadingData, setLoadingData] = useState(true);
   const [loadError, setLoadError] = useState("");
 
@@ -58,13 +45,11 @@ export function Dashboard() {
         return;
       }
 
-      const [profileRes, mealsRes, dietsRes, progressRes] =
-        await Promise.allSettled([
-          getProfile(userId, { fallbackToCache: false }),
-          listMeals(userId, { fallbackToCache: false }),
-          listDietPlans(userId, { fallbackToCache: false }),
-          listProgressLogs(userId, { fallbackToCache: false }),
-        ]);
+      const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
+        getProfile(userId, { fallbackToCache: false }),
+        listMeals(userId, { fallbackToCache: false }),
+        listDietPlans(userId, { fallbackToCache: false }),
+      ]);
 
       const errors = [];
 
@@ -84,12 +69,6 @@ export function Dashboard() {
         setDietPlans(dietsRes.value || []);
       } else {
         errors.push(dietsRes.reason);
-      }
-
-      if (progressRes.status === "fulfilled") {
-        setProgressLogs(progressRes.value || []);
-      } else {
-        errors.push(progressRes.reason);
       }
 
       if (errors.length > 0) {
@@ -179,45 +158,6 @@ export function Dashboard() {
     ]
   );
 
-  const missingStates = useMemo(
-    () =>
-      [
-        !hasProfile(profile) && {
-          key: "profile",
-          icon: UserRound,
-          title: "Completa tu perfil",
-          description: "Añade tus datos para personalizar objetivos y cálculos.",
-          action: "Ir a perfil",
-          onClick: () => navigate("/perfil"),
-        },
-        !hasMeals(meals) && {
-          key: "meals",
-          icon: Sparkles,
-          title: "Registra tu primera comida",
-          description: "Escanea una comida para activar el historial diario.",
-          action: "Escanear comida",
-          onClick: () => navigate("/foto-comida"),
-        },
-        !hasActiveDiet(dietPlans) && {
-          key: "diet",
-          icon: Utensils,
-          title: "Genera tu dieta",
-          description: "Crea un plan para activar recomendaciones inteligentes.",
-          action: "Abrir plan",
-          onClick: () => navigate("/plan-comidas"),
-        },
-        !hasProgress(progressLogs) && {
-          key: "progress",
-          icon: BarChart3,
-          title: "Registra tu progreso",
-          description: "Añade tu peso actual para ver la evolución semanal.",
-          action: "Ir a progreso",
-          onClick: () => navigate("/progreso"),
-        },
-      ].filter(Boolean),
-    [dietPlans, meals, navigate, profile, progressLogs]
-  );
-
   if (loadingData) {
     return (
       <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
@@ -242,7 +182,7 @@ export function Dashboard() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {loadError ? (
               <DashboardSyncBanner
                 message={loadError}
@@ -262,16 +202,7 @@ export function Dashboard() {
               />
             </div>
 
-            {missingStates.length > 0 ? (
-              <div className="shrink-0 pt-0.5">
-                <DashboardEmptyStates
-                  items={missingStates}
-                  onRetry={loadRemoteDashboardData}
-                />
-              </div>
-            ) : null}
-
-            <div className="shrink-0 pt-1">
+            <div className="shrink-0 pt-0.5">
               <DashboardMotivationCard message={motivationMessage} />
             </div>
 
@@ -316,62 +247,6 @@ function DashboardSyncBanner({ message, onRetry }) {
   );
 }
 
-function DashboardEmptyStates({ items, onRetry }) {
-  return (
-    <section className="rounded-[1rem] border border-white/10 bg-[#07170f] p-2.5 shadow-[0_10px_28px_rgba(16,185,129,0.05)]">
-      <div className="flex items-center justify-between gap-2 px-0.5 pb-2">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
-            Pendiente
-          </p>
-          <h3 className="mt-0.5 text-[12px] font-black leading-none text-white">
-            Completa tu dashboard
-          </h3>
-        </div>
-
-        <button
-          onClick={onRetry}
-          className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/70 transition hover:border-emerald-400/30 hover:bg-emerald-400/10 hover:text-emerald-300"
-        >
-          Reintentar
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {items.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <button
-              key={item.key}
-              onClick={item.onClick}
-              className="flex items-start gap-3 rounded-[0.9rem] border border-white/8 bg-white/[0.03] p-2.5 text-left transition hover:border-emerald-400/25 hover:bg-emerald-400/8"
-            >
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-emerald-400/15 bg-emerald-400/10 text-emerald-300">
-                <Icon size={14} />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/85">
-                  {item.title}
-                </p>
-
-                <p className="mt-0.5 line-clamp-2 text-[11px] leading-[1.25] text-white/45">
-                  {item.description}
-                </p>
-
-                <span className="mt-1 inline-flex rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-emerald-300">
-                  {item.action}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function DashboardMotivationCard({ message }) {
   return (
     <section className="relative overflow-hidden rounded-[0.9rem] border border-emerald-300/10 bg-[#07170f]/90 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
@@ -394,22 +269,6 @@ function DashboardMotivationCard({ message }) {
       </div>
     </section>
   );
-}
-
-function hasProfile(profile) {
-  return Boolean(profile?.name || profile?.nombre);
-}
-
-function hasMeals(meals) {
-  return Array.isArray(meals) && meals.length > 0;
-}
-
-function hasActiveDiet(dietPlans) {
-  return Array.isArray(dietPlans) && dietPlans.length > 0;
-}
-
-function hasProgress(progressLogs) {
-  return Array.isArray(progressLogs) && progressLogs.length > 0;
 }
 
 function formatDashboardError(error, count) {
