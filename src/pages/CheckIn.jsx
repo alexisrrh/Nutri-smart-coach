@@ -197,7 +197,7 @@ export function CheckIn() {
   });
 
   return (
-    <AppShell contentClassName="px-2 pb-40 pt-2">
+    <AppShell contentClassName="px-2 pb-44 pt-2">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         <section className="relative shrink-0 overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,#10b9811f,transparent_42%)]" />
@@ -469,7 +469,7 @@ export function CheckIn() {
           />
         )}
 
-        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+88px)] z-[90] mx-auto w-full max-w-[430px] px-3">
+        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+96px)] z-[90] mx-auto w-full max-w-[430px] px-3">
           <style>{`
             @keyframes rotateGlow {
               from { transform: rotate(0deg); }
