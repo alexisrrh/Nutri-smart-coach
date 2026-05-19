@@ -12,17 +12,23 @@ export default function DailyGoalCard({ totals, goals }) {
   );
 
   return (
-    <section className="rounded-[22px] border border-white/10 bg-[#07170f] p-2.5">
+    <section
+      className="rounded-[22px] border p-2.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Sparkles size={13} className="text-[#10b981]" />
+          <Sparkles size={13} className="text-[var(--app-primary)]" />
 
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             Objetivo de hoy
           </p>
         </div>
 
-        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--app-muted)]">
           LIVE
         </span>
       </div>
@@ -47,7 +53,7 @@ export default function DailyGoalCard({ totals, goals }) {
         />
       </div>
 
-      <p className="mt-2 text-xs leading-4 text-white/50">
+      <p className="mt-2 text-xs leading-4 text-[var(--app-muted)]">
         Sigue registrando comidas para completar tus objetivos diarios.
       </p>
     </section>
@@ -63,33 +69,39 @@ function GoalItem({
   unit,
 }) {
   return (
-    <div className="rounded-[16px] border border-white/10 bg-black/20 p-2">
+    <div
+      className="rounded-[16px] border p-2"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-surface)",
+      }}
+    >
       <div className="mb-1 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[#10b981]">
+        <div className="flex items-center gap-1.5 text-[var(--app-primary)]">
           {icon}
 
-          <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
+          <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
             {label}
           </p>
         </div>
 
-        <p className="text-[10px] font-black text-[#10b981]">
+        <p className="text-[10px] font-black text-[var(--app-primary)]">
           {percent}%
         </p>
       </div>
 
-      <p className="text-lg font-black italic text-white">
+      <p className="text-lg font-black text-[var(--app-text)]">
         {Math.round(value)}
-        <span className="ml-1 text-[10px] text-white/35">
+        <span className="ml-1 text-[10px] text-[var(--app-muted)]">
           / {goal}
           {unit}
         </span>
       </p>
 
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div className="theme-icon-tile-muted mt-2 h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: "var(--app-surface)" }}>
         <div
-          className="h-full rounded-full bg-[#10b981]"
-          style={{ width: `${percent}%` }}
+          className="h-full rounded-full bg-[var(--app-primary)]"
+          style={{ width: `${percent}%`, backgroundColor: "var(--app-primary)" }}
         />
       </div>
     </div>

@@ -12,11 +12,11 @@ export default function DashboardInfoGrid({
   return (
     <section className="space-y-3">
       <div className="px-1">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300/60">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]/60">
           Resumen rápido
         </p>
 
-        <h3 className="mt-1 text-lg font-black italic text-white">
+        <h3 className="mt-1 text-lg font-black text-[var(--app-text)]">
           Tus últimos registros
         </h3>
       </div>
@@ -57,26 +57,28 @@ export default function DashboardInfoGrid({
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate("/comidas")}
-            className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-emerald-400/30 hover:bg-emerald-400/10"
-          >
-            <History size={18} className="text-emerald-300" />
-            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-white">
+          className="rounded-2xl border p-4 text-left transition hover:bg-[var(--app-primary-soft)]"
+          style={{ borderColor: "var(--app-border)", backgroundColor: "var(--app-surface)" }}
+        >
+            <History size={18} className="text-[var(--app-primary)]" />
+            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[var(--app-text)]">
               Historial
             </p>
-            <p className="mt-1 text-[11px] text-white/40">
+            <p className="mt-1 text-[11px] text-[var(--app-muted)]">
               Ver comidas
             </p>
           </button>
 
           <button
             onClick={() => navigate("/progreso")}
-            className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-emerald-400/30 hover:bg-emerald-400/10"
-          >
-            <CalendarCheck size={18} className="text-emerald-300" />
-            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-white">
+          className="rounded-2xl border p-4 text-left transition hover:bg-[var(--app-primary-soft)]"
+          style={{ borderColor: "var(--app-border)", backgroundColor: "var(--app-surface)" }}
+        >
+            <CalendarCheck size={18} className="text-[var(--app-primary)]" />
+            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[var(--app-text)]">
               Peso y medidas
             </p>
-            <p className="mt-1 text-[11px] text-white/40">
+            <p className="mt-1 text-[11px] text-[var(--app-muted)]">
               Ver evolución
             </p>
           </button>
@@ -90,16 +92,17 @@ function InfoRow({ icon, title, value, detail, badge, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-[1.7rem] border border-white/10 bg-[#07170f] p-4 text-left transition hover:border-emerald-400/30 hover:bg-[#0a1d16]"
+      className="group relative overflow-hidden rounded-[1.7rem] border p-4 text-left transition hover:bg-[var(--app-primary-soft)]"
+      style={{ borderColor: "var(--app-border)", backgroundColor: "var(--app-card)" }}
     >
-      <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full bg-emerald-400/10 blur-3xl" />
+      <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full blur-3xl" style={{ backgroundColor: "var(--app-primary-soft)" }} />
 
       <div className="relative z-10 flex items-start gap-4">
         <div
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
+          className={`theme-icon-tile grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
             active
-              ? "bg-emerald-400 text-[#06110e]"
-              : "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+              ? "bg-[var(--app-primary)] text-[var(--app-surface)]"
+              : "border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
           }`}
         >
           {icon}
@@ -107,14 +110,14 @@ function InfoRow({ icon, title, value, detail, badge, active, onClick }) {
 
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center justify-between gap-3">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/35">
+            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--app-muted)]">
               {title}
             </p>
 
             <span
               className={`shrink-0 rounded-full px-2 py-1 text-[7px] font-black uppercase tracking-widest ${
                 active
-                  ? "bg-emerald-400/10 text-emerald-300"
+                  ? "bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
                   : "bg-yellow-400/10 text-yellow-300"
               }`}
             >
@@ -122,11 +125,11 @@ function InfoRow({ icon, title, value, detail, badge, active, onClick }) {
             </span>
           </div>
 
-          <p className="truncate text-base font-black italic text-white">
+          <p className="truncate text-base font-black text-[var(--app-text)]">
             {value}
           </p>
 
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/45">
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--app-muted)]">
             {detail}
           </p>
         </div>

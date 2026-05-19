@@ -21,7 +21,7 @@ export default function PrimaryButton({
         {icon}
         {children}
       </span>
-      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition duration-700 group-hover:translate-x-full" />
+      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--app-primary-soft)] to-transparent transition duration-700 group-hover:translate-x-full" />
     </button>
   );
 }

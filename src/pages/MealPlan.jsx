@@ -277,17 +277,23 @@ export function MealPlan() {
               className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-1"
               radius="lg"
             >
-            <div className="shrink-0 border-b border-white/[0.08] bg-white/[0.025] p-2">
+            <div
+              className="shrink-0 border-b p-2"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-surface)",
+              }}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={13} className="text-[#10b981]" />
-                    <h2 className="text-[13px] font-black uppercase italic">
+                    <Sparkles size={13} className="text-[var(--app-primary)]" />
+                    <h2 className="text-[13px] font-black uppercase">
                       {showShopping ? "Lista de compra" : "Plan generado"}
                     </h2>
                   </div>
 
-                  <p className="mt-0.5 truncate text-[9px] normal-case text-slate-500">
+                  <p className="mt-0.5 truncate text-[9px] normal-case text-[var(--app-muted)]">
                     {hasPlan
                       ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
                       : loading
@@ -297,8 +303,11 @@ export function MealPlan() {
                 </div>
 
                 {hasPlan && (
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-center shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22),0_0_24px_rgba(16,185,129,0.08)]">
-                    <span className="text-[10px] font-black text-[#10b981]">
+                  <div
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl text-center shadow-[inset_0_0_0_1px_var(--app-border),0_0_24px_var(--app-glow)]"
+                    style={{ backgroundColor: "var(--app-primary-soft)" }}
+                  >
+                    <span className="text-[10px] font-black text-[var(--app-primary)]">
                       {completionPercent}%
                     </span>
                   </div>
@@ -307,10 +316,18 @@ export function MealPlan() {
 
               {hasPlan && (
                 <>
-                  <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                  <div
+                    className="mt-1.5 h-1 overflow-hidden rounded-full shadow-[inset_0_0_0_1px_var(--app-border)]"
+                    style={{ backgroundColor: "var(--app-surface)" }}
+                  >
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#22d3ee] shadow-[0_0_16px_rgba(16,185,129,0.55)] transition-all"
-                      style={{ width: `${completionPercent}%` }}
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${completionPercent}%`,
+                        background:
+                          "linear-gradient(to right, var(--app-primary), color-mix(in srgb, var(--app-primary) 70%, white))",
+                        boxShadow: "0 0 16px var(--app-glow)",
+                      }}
                     />
                   </div>
 
@@ -391,23 +408,26 @@ function DietHeroCard({
     <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             <Sparkles size={11} />
             Smart Diet IA
           </div>
 
-          <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
+          <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-[var(--app-text)]">
             Dieta personalizada
           </h1>
 
-          <p className="mt-0.5 text-[10px] leading-4 text-white/60">
+          <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
             {hasPlan
               ? `${completedMeals}/${totalMeals} comidas completadas · ${completionPercent}% semanal`
               : "Plan por objetivo, días, comidas y alimentos disponibles."}
           </p>
         </div>
 
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+        <div
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl"
+          style={{ backgroundColor: "var(--app-primary-soft)", color: "var(--app-primary)" }}
+        >
           <Sparkles size={16} />
         </div>
       </div>
@@ -423,13 +443,13 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
       disabled={disabled}
       aria-label={label}
       title={label}
-      className={`grid h-8 w-full place-items-center rounded-xl px-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] transition active:scale-[0.98] disabled:opacity-30 ${
+      className={`grid h-8 w-full place-items-center rounded-xl px-1 shadow-[inset_0_0_0_1px_var(--app-border)] transition active:scale-[0.98] disabled:opacity-30 ${
         active
-          ? "bg-[#10b981] text-[#06110c] shadow-[0_0_22px_rgba(16,185,129,0.18)]"
-          : "bg-white/[0.045] text-slate-300 hover:bg-[#10b981]/10 hover:text-white"
+          ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_22px_var(--app-glow)]"
+          : "bg-[var(--app-surface)] text-[var(--app-muted)] hover:bg-[var(--app-primary-soft)] hover:text-[var(--app-text)]"
       }`}
     >
-      <span className={active ? "text-[#06110c]" : "text-[#10b981]"}>
+      <span className={active ? "text-[var(--app-surface)]" : "text-[var(--app-primary)]"}>
         {icon}
       </span>
     </button>
@@ -445,16 +465,22 @@ function CompactDietSummary({ daysCount, totalMeals, totals }) {
     : 0;
 
   return (
-    <section className="rounded-[18px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <section
+      className="rounded-[18px] border px-2.5 py-1.5 shadow-[0_16px_45px_var(--app-glow)]"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
       <div className="flex min-w-0 items-center gap-2">
-        <Sparkles size={13} className="shrink-0 text-[#10b981]" />
+        <Sparkles size={13} className="shrink-0 text-[var(--app-primary)]" />
 
         <div className="min-w-0">
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Resumen semanal
           </p>
 
-          <p className="mt-0.5 truncate text-[10px] font-bold normal-case leading-[1.25] text-white/75">
+          <p className="mt-0.5 truncate text-[10px] font-bold normal-case leading-[1.25] text-[var(--app-muted)]">
             {daysCount} días • {totalMeals} comidas • {dailyCalories} kcal/día •{" "}
             {dailyProtein}g proteína
           </p>
@@ -466,20 +492,20 @@ function CompactDietSummary({ daysCount, totalMeals, totals }) {
 
 function DietMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b9811f,transparent_42%)]" />
+    <section className="relative overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_16px_45px_var(--app-glow)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,var(--app-primary)1f,transparent_42%)]" />
 
       <div className="relative z-10 flex items-start gap-2">
-        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
           <Sparkles size={13} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Coach IA
           </p>
 
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold normal-case leading-[1.25] text-white/75">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold normal-case leading-[1.25] text-[var(--app-muted)]">
             {message}
           </p>
         </div>
@@ -522,11 +548,11 @@ function GeneratingDietLoader({ formData }) {
   return (
     <section
       aria-label={`Creando dieta de ${formData?.planDays || "varios"} días`}
-      className="min-h-0 overflow-hidden rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]"
+      className="min-h-0 overflow-hidden rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_24px_70px_var(--app-glow)]"
     >
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Creando dieta
           </p>
 
@@ -535,30 +561,30 @@ function GeneratingDietLoader({ formData }) {
           </h3>
         </div>
 
-      <div className="grid h-10 w-10 place-items-center rounded-xl border border-[#10b981]/25 bg-[#10b981]/10">
-  <ScanLine size={21} className="animate-spin text-[#10b981]" />
+      <div className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)]">
+  <ScanLine size={21} className="animate-spin text-[var(--app-primary)]" />
 </div>
       </div>
 
-      <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-black/30">
-        <div className="absolute inset-0 bg-[#04110b]/55" />
-        <div className="absolute left-0 right-0 top-0 h-20 animate-[scanner_2.4s_linear_infinite] bg-gradient-to-b from-transparent via-[#10b981]/30 to-transparent" />
+        <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-[var(--app-surface)]">
+        <div className="absolute inset-0 bg-[var(--app-bg)]/55" />
+        <div className="absolute left-0 right-0 top-0 h-20 animate-[scanner_2.4s_linear_infinite] bg-gradient-to-b from-transparent via-[var(--app-primary)]/30 to-transparent" />
 
         <div className="relative z-10 grid h-full place-items-center text-center">
           <div>
-            <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-[20px] border border-[#10b981]/25 bg-black/50 text-[#10b981] backdrop-blur-xl">
+            <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] backdrop-blur-xl">
               <Loader2 size={28} className="animate-spin" />
             </div>
 
-            <p className="text-3xl font-black italic leading-none text-[#10b981]">
+            <p className="text-3xl font-black italic leading-none text-[var(--app-primary)]">
               {percent}%
             </p>
 
-            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
+            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
               Personalizando con IA
             </p>
 
-            <p className="mt-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold text-white/35">
+            <p className="mt-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold text-[var(--app-muted)]">
               <Timer size={11} />
               {seconds}s
             </p>
@@ -566,9 +592,9 @@ function GeneratingDietLoader({ formData }) {
         </div>
       </div>
 
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/5">
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
         <div
-          className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+          className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -583,27 +609,27 @@ function GeneratingDietLoader({ formData }) {
               key={step}
               className={`rounded-xl px-1 py-1.5 text-center ${
                 completed
-                  ? "bg-[#10b981]/10"
+                  ? "bg-[var(--app-primary-soft)]"
                   : active
-                  ? "bg-white/5"
-                  : "bg-black/20"
+                  ? "bg-[var(--app-surface)]"
+                  : "bg-[var(--app-surface)]"
               }`}
             >
               <div className="mb-0.5 flex justify-center">
                 {completed ? (
-                  <span className="text-[11px] font-black leading-none text-[#10b981]">
+                  <span className="text-[11px] font-black leading-none text-[var(--app-primary)]">
                     ✓
                   </span>
                 ) : active ? (
-                  <Sparkles size={11} className="text-[#10b981]" />
+                  <Sparkles size={11} className="text-[var(--app-primary)]" />
                 ) : (
-                  <Loader2 size={11} className="text-white/20" />
+                  <Loader2 size={11} className="text-[var(--app-muted)]" />
                 )}
               </div>
 
               <p
                 className={`truncate text-[10px] font-black uppercase leading-3 ${
-                  completed || active ? "text-white" : "text-slate-600"
+                  completed || active ? "text-[var(--app-text)]" : "text-slate-600"
                 }`}
               >
                 {step}

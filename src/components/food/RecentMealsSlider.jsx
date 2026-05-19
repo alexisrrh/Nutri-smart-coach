@@ -6,11 +6,11 @@ export default function RecentMealsSlider({ meals = [] }) {
   return (
     <section className="mt-2">
       <div className="mb-2 flex items-center justify-between px-1">
-        <p className="text-[7px] font-black uppercase tracking-[0.22em] text-[#10b981]">
+        <p className="text-[7px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
           Escaneos recientes
         </p>
 
-        <span className="text-[7px] font-black uppercase tracking-widest text-white/30">
+        <span className="text-[7px] font-black uppercase tracking-widest text-[var(--app-muted)]">
           History
         </span>
       </div>
@@ -28,7 +28,7 @@ function MealCard({ meal }) {
   const image = meal.image || meal.image_url;
 
   return (
-    <div className="relative h-[135px] min-w-[125px] overflow-hidden rounded-[20px] border border-white/10 bg-[#07170f]">
+    <div className="relative h-[135px] min-w-[125px] overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-card)]">
       {image ? (
         <img
           src={image}
@@ -36,26 +36,26 @@ function MealCard({ meal }) {
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center bg-black/25 text-[9px] font-black uppercase tracking-widest text-white/25">
+        <div className="grid h-full w-full place-items-center bg-[var(--app-surface)] text-[9px] font-black uppercase tracking-widest text-[var(--app-muted)]">
           Sin foto
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-[#04110b] via-[#04110b]/35 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)] via-[var(--app-surface)]/35 to-transparent" />
 
-      <div className="absolute left-2 top-2 rounded-full border border-[#10b981]/25 bg-black/50 px-2 py-0.5 backdrop-blur-xl">
-        <p className="text-[6px] font-black uppercase tracking-widest text-[#10b981]">
+      <div className="absolute left-2 top-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 backdrop-blur-xl">
+        <p className="text-[6px] font-black uppercase tracking-widest text-[var(--app-primary)]">
           {meal.score || 0}/10
         </p>
       </div>
 
       <div className="absolute bottom-2 left-2 right-2">
-        <p className="line-clamp-2 text-[9px] font-black uppercase italic leading-3.5 text-white">
+        <p className="line-clamp-2 text-[9px] font-black uppercase italic leading-3.5 text-[var(--app-text)]">
           {meal.food || "Comida analizada"}
         </p>
 
         <div className="mt-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-1 text-[#10b981]">
+          <div className="flex items-center gap-1 text-[var(--app-primary)]">
             <Flame size={10} />
 
             <span className="text-[7px] font-black">
@@ -63,7 +63,7 @@ function MealCard({ meal }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-white/40">
+          <div className="flex items-center gap-1 text-[var(--app-muted)]">
             <Clock3 size={9} />
 
             <span className="text-[6px] font-black uppercase">

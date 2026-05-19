@@ -14,8 +14,8 @@ export default function MealItem({
   return (
     <div
       className={`overflow-hidden rounded-3xl border ${
-        done ? "border-emerald-400/40" : "border-white/10"
-      } bg-white/5 transition`}
+        done ? "border-[var(--app-border)]" : "border-[var(--app-border)]"
+      } bg-[var(--app-surface)] transition`}
     >
       <div className="relative">
         <img
@@ -26,11 +26,11 @@ export default function MealItem({
           }`}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06130d]/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/90 to-transparent" />
 
         <div className="absolute bottom-4 left-4 right-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-sm font-black text-emerald-300">
+            <span className="flex items-center gap-2 text-sm font-black text-[var(--app-primary)]">
               <Clock size={14} />
               {meal.time} · {meal.name}
             </span>
@@ -39,8 +39,8 @@ export default function MealItem({
               onClick={() => toggleMeal(day, index)}
               className={`rounded-xl px-3 py-1 text-xs font-black transition ${
                 done
-                  ? "bg-emerald-500 text-white"
-                  : "bg-white/20 text-white hover:bg-white/30"
+                  ? "bg-[var(--app-primary)] text-[var(--app-surface)]"
+                  : "bg-[var(--app-primary-soft)] text-[var(--app-text)] hover:bg-[var(--app-primary-soft)]"
               }`}
             >
               {done ? "✔ Hecho" : "Marcar"}
@@ -49,7 +49,7 @@ export default function MealItem({
 
           <h4
             className={`text-2xl font-black ${
-              done ? "line-through text-white/50" : "text-white"
+              done ? "line-through text-[var(--app-muted)]" : "text-[var(--app-text)]"
             }`}
           >
             {meal.food}
@@ -69,10 +69,10 @@ export default function MealItem({
 
 function MiniMacro({ icon, title, value }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-3">
-      <div className="mb-1 text-emerald-300">{icon}</div>
-      <p className="text-xs font-bold uppercase text-white/40">{title}</p>
-      <p className="font-black">{value}</p>
+    <div className="rounded-2xl bg-[var(--app-surface)] p-3">
+      <div className="mb-1 text-[var(--app-primary)]">{icon}</div>
+      <p className="text-xs font-bold uppercase text-[var(--app-muted)]">{title}</p>
+      <p className="font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }

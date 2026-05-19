@@ -199,29 +199,60 @@ export function CheckIn() {
   return (
     <AppShell contentClassName="px-2 pb-44 pt-2">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
-        <section className="relative shrink-0 overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,#10b9811f,transparent_42%)]" />
+        <section
+          className="relative shrink-0 overflow-hidden rounded-[20px] border p-2.5 shadow-[0_16px_45px_var(--app-glow)]"
+          style={{
+            borderColor: "var(--app-border)",
+            backgroundColor: "var(--app-card)",
+          }}
+        >
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 0%, var(--app-primary-soft), transparent 42%)",
+            }}
+          />
 
           <div className="relative z-10 flex items-center gap-2">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+            <div
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl"
+              style={{
+                backgroundColor: "var(--app-primary-soft)",
+                color: "var(--app-primary)",
+              }}
+            >
               <Activity size={16} />
             </div>
 
             <div className="min-w-0">
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <div
+                className="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em]"
+                style={{
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
+                }}
+              >
                 <Sparkles size={9} />
                 Body IA
               </div>
 
-              <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
+              <h1 className="text-[21px] font-black leading-[0.95] tracking-tight text-[var(--app-text)]">
                 Check-in corporal
               </h1>
 
-              <p className="mt-0.5 text-[10px] leading-4 text-white/60">
+              <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
                 Foto, peso y progreso visual con IA.
               </p>
 
-              <span className="mt-1 inline-flex rounded-full border border-[#10b981]/15 bg-black/20 px-2 py-0.5 text-[8px] font-bold text-emerald-100/70">
+              <span
+                className="mt-1 inline-flex rounded-full border px-2 py-0.5 text-[8px] font-bold"
+                style={{
+                  borderColor: "var(--app-border)",
+                  backgroundColor: "var(--app-surface)",
+                  color: "var(--app-muted)",
+                }}
+              >
                 {formatGoal(goal)}
               </span>
             </div>
@@ -233,22 +264,41 @@ export function CheckIn() {
 
         <main className="min-h-0 flex-1 overflow-y-auto pb-32 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full flex-col gap-2.5">
-            <section className="relative shrink-0 overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 p-2 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_0%,#10b98118,transparent_40%)]" />
+            <section
+              className="relative shrink-0 overflow-hidden rounded-[20px] border p-2 shadow-[0_16px_45px_var(--app-glow)]"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-card)",
+              }}
+            >
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 14% 0%, var(--app-primary-soft), transparent 40%)",
+                }}
+              />
               <div className="relative z-10">
               <CheckInFlowSteps hasPhoto={Boolean(preview)} hasWeight={Boolean(form.weight)} />
 
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                     Check-in físico
                   </p>
-                  <h2 className="text-[15px] font-black uppercase italic leading-none text-white">
+                  <h2 className="text-[15px] font-black leading-none text-[var(--app-text)]">
                     {preview ? "Foto actual" : "Sube tu foto corporal"}
                   </h2>
                 </div>
 
-                <span className="rounded-full border border-[#10b981]/15 bg-[#10b981]/10 px-2 py-0.5 text-[8px] font-black uppercase text-[#10b981]">
+                <span
+                  className="rounded-full border px-2 py-0.5 text-[8px] font-black uppercase"
+                  style={{
+                    borderColor: "var(--app-border)",
+                    backgroundColor: "var(--app-primary-soft)",
+                    color: "var(--app-primary)",
+                  }}
+                >
                   Frontal / lateral
                 </span>
               </div>
@@ -257,7 +307,11 @@ export function CheckIn() {
                 <div className="min-w-0">
                   <label
                     htmlFor="checkin-photo"
-                    className="group relative block h-[112px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed border-emerald-300/20 bg-black/25 ring-1 ring-white/[0.03] transition hover:border-emerald-200/35"
+                    className="group relative block h-[112px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed ring-1 ring-[var(--app-border)] transition hover:border-[var(--app-border)]"
+                    style={{
+                      borderColor: "var(--app-border)",
+                      backgroundColor: "var(--app-surface)",
+                    }}
                   >
                     {preview ? (
                       <>
@@ -266,18 +320,28 @@ export function CheckIn() {
                           alt="Foto actual"
                           className="h-full w-full object-contain p-2"
                         />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/35 via-transparent to-transparent" />
                       </>
                     ) : (
-                      <div className="grid h-full place-items-center bg-white/[0.025] text-center">
+                      <div
+                        className="grid h-full place-items-center text-center"
+                        style={{ backgroundColor: "var(--app-surface)" }}
+                      >
                         <div className="px-2">
-                          <div className="mx-auto grid h-8 w-8 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+                          <div
+                            className="mx-auto grid h-8 w-8 place-items-center rounded-xl border"
+                            style={{
+                              borderColor: "var(--app-border)",
+                              backgroundColor: "var(--app-primary-soft)",
+                              color: "var(--app-primary)",
+                            }}
+                          >
                             <ImagePlus size={16} />
                           </div>
-                          <p className="mt-1.5 text-[9px] font-black uppercase tracking-wide text-white/75">
+                          <p className="mt-1.5 text-[9px] font-black uppercase tracking-wide text-[var(--app-text)]">
                             Foto corporal
                           </p>
-                          <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-100/45">
+                          <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
                             Toca para elegir
                           </p>
                         </div>
@@ -293,7 +357,13 @@ export function CheckIn() {
                     />
 
                     {preview && (
-                      <div className="absolute inset-x-1.5 bottom-1.5 rounded-full bg-[#10b981]/85 px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#06110e] backdrop-blur">
+                      <div
+                        className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide backdrop-blur"
+                        style={{
+                          backgroundColor: "var(--app-primary)",
+                          color: "var(--app-surface)",
+                        }}
+                      >
                         Foto lista
                       </div>
                     )}
@@ -302,7 +372,12 @@ export function CheckIn() {
                   <div className="mt-1.5">
                     <label
                       htmlFor="checkin-photo"
-                      className="block rounded-xl border border-[#10b981]/15 bg-[#10b981]/10 px-2 py-1 text-center text-[8px] font-black uppercase tracking-wide text-emerald-100 transition hover:bg-[#10b981]/15"
+                      className="block rounded-xl border px-2 py-1 text-center text-[8px] font-black uppercase tracking-wide transition hover:bg-[var(--app-primary-soft)]"
+                      style={{
+                        borderColor: "var(--app-border)",
+                        backgroundColor: "var(--app-primary-soft)",
+                        color: "var(--app-primary)",
+                      }}
                     >
                       {preview ? "Cambiar" : "Subir"}
                     </label>
@@ -322,12 +397,16 @@ export function CheckIn() {
                     <button
                       type="button"
                       onClick={() => setShowMeasures((prev) => !prev)}
-                      className="rounded-xl border border-[#10b981]/15 bg-black/20 px-2.5 py-1.5 text-left ring-1 ring-white/[0.03]"
+                      className="rounded-xl border px-2.5 py-1.5 text-left ring-1 ring-[var(--app-border)]"
+                      style={{
+                        borderColor: "var(--app-border)",
+                        backgroundColor: "var(--app-surface)",
+                      }}
                     >
-                      <p className="text-[9px] font-black uppercase tracking-wide text-[#10b981]">
+                      <p className="text-[9px] font-black uppercase tracking-wide text-[var(--app-primary)]">
                         Medidas
                       </p>
-                      <p className="mt-0.5 text-[13px] font-black uppercase text-white">
+                      <p className="mt-0.5 text-[13px] font-black uppercase text-[var(--app-text)]">
                         Opcional
                       </p>
                     </button>
@@ -359,10 +438,19 @@ export function CheckIn() {
                     </div>
                   )}
 
-                  <div className="mt-auto rounded-xl border border-[#10b981]/10 bg-[#10b981]/[0.06] px-2.5 py-2">
+                  <div
+                    className="mt-auto rounded-xl border px-2.5 py-2"
+                    style={{
+                      borderColor: "var(--app-border)",
+                      backgroundColor: "var(--app-primary-soft)",
+                    }}
+                  >
                     <div className="flex items-start gap-1.5">
-                      <Sparkles size={11} className="mt-0.5 shrink-0 text-[#10b981]" />
-                      <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-emerald-100/65">
+                      <Sparkles
+                        size={11}
+                        className="mt-0.5 shrink-0 text-[var(--app-primary)]"
+                      />
+                      <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
                         Sube una foto y tu peso para generar el análisis.
                       </p>
                     </div>
@@ -374,7 +462,13 @@ export function CheckIn() {
 
             <CheckInLoader loading={loading} />
 
-            <section className="shrink-0 rounded-[18px] border border-[#10b981]/15 bg-[#07170f]/95 p-1 shadow-[0_16px_45px_rgba(16,185,129,0.06)]">
+            <section
+              className="shrink-0 rounded-[18px] border p-1 shadow-[0_16px_45px_var(--app-glow)]"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-card)",
+              }}
+            >
               <div className="grid grid-cols-4 gap-1">
                 <MiniMetric
                   icon={<Scale size={11} />}
@@ -399,20 +493,38 @@ export function CheckIn() {
               </div>
             </section>
 
-            <section className="relative shrink-0 overflow-hidden rounded-[18px] border border-[#10b981]/10 bg-[#07170f]/92 p-1.5 shadow-[0_14px_34px_rgba(16,185,129,0.06)]">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b98114,transparent_36%)]" />
+            <section
+              className="relative shrink-0 overflow-hidden rounded-[18px] border p-1.5 shadow-[0_14px_34px_var(--app-glow)]"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-card)",
+              }}
+            >
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 12% 0%, var(--app-primary-soft), transparent 36%)",
+                }}
+              />
               <div className="relative z-10">
               <div className="mb-1.5 flex items-center justify-between">
                 <div>
-                  <p className="text-[8px] font-bold tracking-[0.14em] text-[#10b981]/85">
+                  <p className="text-[8px] font-bold tracking-[0.14em] text-[var(--app-primary)]">
                     Comparación semanal
                   </p>
-                  <h3 className="text-[12px] font-extrabold text-white">
+                  <h3 className="text-[12px] font-extrabold text-[var(--app-text)]">
                     Anterior vs actual
                   </h3>
                 </div>
 
-                <span className="rounded-full bg-[#10b981]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#10b981]/90">
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-[8px] font-bold"
+                  style={{
+                    backgroundColor: "var(--app-primary-soft)",
+                    color: "var(--app-primary)",
+                  }}
+                >
                   IA visual
                 </span>
               </div>
@@ -433,15 +545,27 @@ export function CheckIn() {
                   onClick={() => openCheckinSheet(lastCheckin)}
                 />
 
-                <div className="pointer-events-none absolute left-1/2 top-1/2 grid h-4 w-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-[6px] font-bold uppercase text-emerald-100/50 backdrop-blur-xl">
+                <div
+                  className="pointer-events-none absolute left-1/2 top-1/2 grid h-4 w-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[6px] font-bold uppercase backdrop-blur-xl"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, var(--app-surface) 60%, transparent)",
+                    color: "var(--app-muted)",
+                  }}
+                >
                   VS
                 </div>
               </div>
 
-              <div className="mt-1.5 rounded-xl bg-[#10b981]/[0.045] px-2 py-1.5">
+              <div
+                className="mt-1.5 rounded-xl px-2 py-1.5"
+                style={{ backgroundColor: "var(--app-primary-soft)" }}
+              >
                 <div className="flex items-start gap-1.5">
-                  <Sparkles size={10} className="mt-0.5 shrink-0 text-[#10b981]/90" />
-                  <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-emerald-100/75">
+                  <Sparkles
+                    size={10}
+                    className="mt-0.5 shrink-0 text-[var(--app-primary)]"
+                  />
+                  <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
                     {aiMotivation}
                   </p>
                 </div>
@@ -480,12 +604,20 @@ export function CheckIn() {
             type="button"
             onClick={saveCheckIn}
             disabled={loading}
-            className="group relative w-full overflow-hidden rounded-[1.15rem] border border-emerald-300/20 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] px-3 py-3 text-white shadow-[0_12px_28px_rgba(16,185,129,0.16)] transition duration-300 hover:border-emerald-200/35 hover:shadow-[0_14px_34px_rgba(16,185,129,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-          >
+                  className="group relative w-full overflow-hidden rounded-[1.15rem] border px-3 py-3 text-[var(--app-text)] shadow-[0_12px_28px_var(--app-glow)] transition duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{
+                    borderColor: "var(--app-border)",
+                    background:
+                      "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 40%, var(--app-surface)) 0%, var(--app-primary-soft) 50%, color-mix(in srgb, var(--app-primary) 48%, var(--app-card)) 100%)",
+                  }}
+                >
              <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-9">
-              <span className="relative grid h-18 w-20 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] bg-[#06110e]/35">
-                <span className="absolute -inset-4 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_60%,#6ee7b7_72%,transparent_90%,transparent_100%)] opacity-70 animate-[spin_2.5s_linear_infinite]" />
-                <span className="absolute inset-[2px] rounded-[0.9rem] bg-[#07583f]" />
+              <span
+                className="relative grid h-18 w-20 shrink-0 place-items-center overflow-hidden rounded-[0.95rem]"
+                style={{ backgroundColor: "var(--app-surface)" }}
+              >
+                <span className="absolute -inset-4 animate-[spin_2.5s_linear_infinite] rounded-full opacity-70" style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 60%, var(--app-primary) 72%, transparent 90%, transparent 100%)" }} />
+                <span className="absolute inset-[2px] rounded-[0.9rem]" style={{ backgroundColor: "var(--app-card)" }} />
                 <img
                   src="/icons/bodyscan-icon.png"
                   alt=""
@@ -497,7 +629,7 @@ export function CheckIn() {
                 <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
                   {loading ? "ANALIZANDO..." : "ANALIZAR CON IA"}
                 </span>
-                <span className="mt-0.5 text-[10px] font-bold leading-tight text-emerald-100/85">
+                <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
                   Foto corporal + progreso
                 </span>
               </span>
@@ -517,14 +649,14 @@ function CheckInFlowSteps({ hasPhoto, hasWeight }) {
   ];
 
   return (
-    <div className="mb-2 grid grid-cols-3 gap-1 rounded-full bg-black/25 p-0.5">
+    <div className="mb-2 grid grid-cols-3 gap-1 rounded-full bg-[var(--app-surface)] p-0.5">
       {steps.map((step) => (
         <div
           key={step.label}
           className={`rounded-full px-2 py-1 text-center text-[9px] font-medium transition ${
             step.active
-              ? "bg-[#10b981] text-[#06110c]"
-              : "bg-[#10b981]/5 text-emerald-100/45"
+              ? "bg-[var(--app-primary)] text-[var(--app-surface)]"
+              : "bg-[var(--app-primary-soft)] text-[var(--app-muted)]"
           }`}
         >
           {step.label}
@@ -536,8 +668,8 @@ function CheckInFlowSteps({ hasPhoto, hasWeight }) {
 
 function InputBox({ label, value, onChange, placeholder, suffix }) {
   return (
-    <label className="block rounded-xl border border-[#10b981]/15 bg-black/20 px-2 py-1.5 ring-1 ring-white/[0.03] focus-within:border-emerald-300/35">
-      <span className="text-[9px] font-black uppercase tracking-wide text-[#10b981]">
+    <label className="block rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 ring-1 ring-[var(--app-border)] focus-within:border-[var(--app-border)]">
+      <span className="text-[9px] font-black uppercase tracking-wide text-[var(--app-primary)]">
         {label}
       </span>
       <div className="mt-0.5 flex items-center gap-1">
@@ -546,10 +678,10 @@ function InputBox({ label, value, onChange, placeholder, suffix }) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[13px] font-black text-white outline-none placeholder:text-white/18"
+          className="min-w-0 flex-1 bg-transparent text-[13px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
         />
         {suffix && (
-          <span className="text-[9px] font-black uppercase text-emerald-100/50">
+          <span className="text-[9px] font-black uppercase text-[var(--app-text)]/50">
             {suffix}
           </span>
         )}
@@ -560,12 +692,12 @@ function InputBox({ label, value, onChange, placeholder, suffix }) {
 
 function MiniMetric({ icon, label, value }) {
   return (
-    <div className="rounded-xl border border-[#10b981]/10 bg-black/20 px-1.5 py-1">
-      <div className="mb-0.5 text-[#10b981]">{icon}</div>
-      <p className="truncate text-[8px] font-black uppercase tracking-wide text-emerald-100/40">
+    <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-1.5 py-1">
+      <div className="mb-0.5 text-[var(--app-primary)]">{icon}</div>
+      <p className="truncate text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="truncate text-[10px] font-black text-white">{value}</p>
+      <p className="truncate text-[10px] font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }
@@ -581,39 +713,39 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
       type="button"
       onClick={onClick}
       disabled={!checkin && !image}
-      className="group min-h-[94px] overflow-hidden rounded-xl bg-black/18 p-1.5 text-left ring-1 ring-[#10b981]/10 transition hover:bg-[#10b981]/[0.045] hover:ring-emerald-300/25 disabled:opacity-70"
+      className="group min-h-[94px] overflow-hidden rounded-xl bg-[var(--app-surface)] p-1.5 text-left ring-1 ring-[var(--app-primary)]/10 transition hover:bg-[var(--app-primary-soft)] hover:ring-[var(--app-border)] disabled:opacity-70"
     >
       <div className="flex h-full items-center gap-2">
         {image ? (
           <>
-            <div className="relative grid h-[84px] w-[56px] shrink-0 place-items-center overflow-hidden rounded-[14px] bg-black/32 ring-1 ring-white/[0.04]">
+            <div className="relative grid h-[84px] w-[56px] shrink-0 place-items-center overflow-hidden rounded-[14px] bg-[var(--app-surface)] ring-1 ring-[var(--app-border)]">
               <img
                 src={image}
                 alt={title}
                 className="h-full w-full object-contain p-0.5 transition duration-300 group-hover:scale-[1.025]"
               />
-              <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/45 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[var(--app-bg)]/45 to-transparent" />
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[8px] font-bold tracking-[0.12em] text-[#10b981]/80">
+              <p className="text-[8px] font-bold tracking-[0.12em] text-[var(--app-primary)]/80">
                 {title}
               </p>
-              <p className="mt-1 truncate text-[15px] font-extrabold leading-none text-white">
+              <p className="mt-1 truncate text-[15px] font-extrabold leading-none text-[var(--app-text)]">
                 {weight}
               </p>
-              <p className="mt-1 truncate text-[8px] font-medium text-emerald-100/48">
+              <p className="mt-1 truncate text-[8px] font-medium text-[var(--app-text)]/48">
                 {date}
               </p>
             </div>
           </>
         ) : (
-          <div className="grid h-[84px] w-full place-items-center rounded-[14px] bg-white/[0.025] text-center">
+          <div className="grid h-[84px] w-full place-items-center rounded-[14px] bg-[var(--app-surface)] text-center">
             <div>
-              <div className="mx-auto grid h-7 w-7 place-items-center rounded-xl border border-[#10b981]/15 bg-[#10b981]/10 text-[#10b981]">
+              <div className="mx-auto grid h-7 w-7 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
                 <Camera size={14} />
               </div>
-              <p className="mt-1 text-[8px] font-black uppercase text-white/55">
+              <p className="mt-1 text-[8px] font-black uppercase text-[var(--app-muted)]">
                 {emptyText}
               </p>
             </div>
@@ -647,11 +779,11 @@ function WeeklyCompareSummary({ previousCheckin, lastCheckin, weightDiff }) {
 
 function CompareChip({ label, value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-[#10b981]/10 bg-[#10b981]/[0.055] px-1.5 py-0.5">
-      <span className="text-[7px] font-black uppercase tracking-wide text-emerald-100/45">
+    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-1.5 py-0.5">
+      <span className="text-[7px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </span>
-      <span className="max-w-[104px] truncate text-[8px] font-black text-white">
+      <span className="max-w-[104px] truncate text-[8px] font-black text-[var(--app-text)]">
         {value}
       </span>
     </div>
@@ -694,7 +826,7 @@ function CheckInResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/50 px-2 pb-[calc(76px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(76px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
       onClick={onClose}
       role="presentation"
     >
@@ -702,20 +834,20 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[72vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[#10b981]/15 bg-[#07170f]/98 shadow-[0_-16px_48px_rgba(16,185,129,0.14)]"
+        className="flex max-h-[72vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="shrink-0 px-3 pb-1.5 pt-2">
           <div className="mb-1.5 flex items-center justify-center">
-            <div className="h-1 w-10 rounded-full bg-white/14" />
+            <div className="h-1 w-10 rounded-full bg-[var(--app-primary-soft)]" />
           </div>
 
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-1.5">
-              <p className="truncate text-[12px] font-semibold text-white">
+              <p className="truncate text-[12px] font-semibold text-[var(--app-text)]">
                 {date}
               </p>
-              <span className="rounded-full border border-[#10b981]/15 bg-[#10b981]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#10b981]">
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)]">
                 {hasAiResult ? "IA lista" : "IA base"}
               </span>
             </div>
@@ -724,7 +856,7 @@ function CheckInResultSheet({
               type="button"
               onClick={onClose}
               aria-label="Cerrar análisis"
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#10b981]/15 bg-[#10b981]/10 text-[#10b981] transition hover:bg-[#10b981]/15"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
             >
               <X size={13} />
             </button>
@@ -734,19 +866,19 @@ function CheckInResultSheet({
         <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="mb-2 flex gap-2">
             {image ? (
-              <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[#10b981]/15 bg-[#06110e]">
+              <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)]">
                 <img
                   src={image}
                   alt={mode === "analysis" ? "Resultado del análisis IA" : "Check-in corporal"}
                   className="h-full w-full object-contain p-2"
                 />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/38 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/38 via-transparent to-transparent" />
               </div>
             ) : (
-              <div className="grid h-[124px] w-[112px] shrink-0 place-items-center rounded-[18px] border border-[#10b981]/15 bg-[#10b981]/[0.055] text-center">
+              <div className="grid h-[124px] w-[112px] shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-center">
                 <div>
-                  <Camera className="mx-auto mb-1 text-[#10b981]" size={16} />
-                  <p className="text-[9px] font-black uppercase text-emerald-100/70">
+                  <Camera className="mx-auto mb-1 text-[var(--app-primary)]" size={16} />
+                  <p className="text-[9px] font-black uppercase text-[var(--app-muted)]">
                     Sin foto
                   </p>
                 </div>
@@ -765,30 +897,30 @@ function CheckInResultSheet({
           </div>
 
           <div className="space-y-1.5">
-            <div className="rounded-2xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2.5 py-2">
-              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Cambios detectados
               </p>
-              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-white/72">
+              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
                 {visualChanges}
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2.5 py-2">
-              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Recomendación
               </p>
-              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-white/72">
+              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
                 {recommendation}
               </p>
             </div>
 
             {checkin.notes ? (
-              <div className="rounded-2xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2.5 py-2">
-                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
+                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                   Nota
                 </p>
-                <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-white/68">
+                <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--app-muted)]">
                   {checkin.notes}
                 </p>
               </div>
@@ -802,11 +934,11 @@ function CheckInResultSheet({
 
 function SheetStatRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-[#10b981]/10 bg-black/18 px-2.5 py-1.5">
-      <span className="text-[8px] font-black uppercase tracking-[0.12em] text-emerald-100/40">
+    <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5">
+      <span className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
         {label}
       </span>
-      <span className="truncate text-[10px] font-black text-white">
+      <span className="truncate text-[10px] font-black text-[var(--app-text)]">
         {value}
       </span>
     </div>

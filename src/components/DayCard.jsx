@@ -17,20 +17,20 @@ export default function DayCard({ day, progress, toggleMeal }) {
   );
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 backdrop-blur shadow-2xl">
+    <div className="overflow-hidden rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-card)] backdrop-blur shadow-2xl">
       {/* HEADER */}
-      <div className="border-b border-white/10 p-6 bg-white/5">
-        <h3 className="text-3xl font-black">{day.day}</h3>
+      <div className="border-b border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+        <h3 className="text-3xl font-black text-[var(--app-text)]">{day.day}</h3>
 
         {/* PROGRESO */}
         <div className="mt-4">
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-[var(--app-muted)]">
             Progreso: {completed} / {total} comidas ({percent}%)
           </p>
 
-          <div className="mt-2 h-2 w-full rounded-full bg-white/10">
+          <div className="mt-2 h-2 w-full rounded-full bg-[var(--app-primary-soft)]">
             <div
-              className="h-2 rounded-full bg-emerald-500 transition-all"
+              className="h-2 rounded-full bg-[var(--app-primary)] transition-all"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -64,7 +64,7 @@ export default function DayCard({ day, progress, toggleMeal }) {
 
 function Badge({ children }) {
   return (
-    <span className="rounded-xl bg-emerald-400/10 px-3 py-2 text-emerald-300">
+    <span className="rounded-xl bg-[var(--app-primary-soft)] px-3 py-2 text-[var(--app-primary)]">
       {children}
     </span>
   );

@@ -9,16 +9,16 @@ export function CheckInStatus({ lastCheckin, weightDiff }) {
     weightDiff === null ? "-" : `${weightDiff > 0 ? "+" : ""}${weightDiff} kg`;
 
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-[#10b981]/15 bg-[#0a1711]/92 px-3 py-3 shadow-[0_18px_60px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[#10b981]/10 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-3 shadow-[0_18px_60px_var(--app-glow)]">
+      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
       <div className="relative z-10 mb-2 flex items-center justify-between gap-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-[#10b981]">
+        <div className="theme-icon-tile-muted inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
           <Sparkles size={11} />
           Resultado actual
         </div>
 
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
           IA corporal
         </span>
       </div>
@@ -35,12 +35,12 @@ export function CheckInStatus({ lastCheckin, weightDiff }) {
 
 function Chip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+    <div className="theme-icon-tile-muted rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-muted)]">
         {label}
       </p>
 
-      <p className="mt-1 text-[11px] font-black text-white">
+      <p className="mt-1 text-[11px] font-black text-[var(--app-text)]">
         {value}
       </p>
     </div>

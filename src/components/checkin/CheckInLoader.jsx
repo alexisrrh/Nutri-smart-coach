@@ -36,10 +36,10 @@ export function CheckInLoader({ loading }) {
   );
 
   return (
-    <section className="min-h-0 overflow-hidden rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-[0_24px_70px_rgba(16,185,129,0.12)]">
+    <section className="min-h-0 overflow-hidden rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_24px_70px_var(--app-glow)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Analizando físico
           </p>
 
@@ -48,35 +48,35 @@ export function CheckInLoader({ loading }) {
           </h3>
         </div>
 
-        <div className="grid h-10 w-10 place-items-center rounded-xl border border-[#10b981]/25 bg-[#10b981]/10">
-          <ScanLine size={21} className="animate-spin text-[#10b981]" />
+        <div className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)]">
+          <ScanLine size={21} className="animate-spin text-[var(--app-primary)]" />
         </div>
       </div>
 
-      <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-black/30">
-        <div className="absolute inset-0 bg-[#04110b]/55" />
-        <div className="absolute left-0 right-0 top-0 h-20 animate-[scanner_2.4s_linear_infinite] bg-gradient-to-b from-transparent via-[#10b981]/30 to-transparent" />
+      <div className="relative h-[150px] overflow-hidden rounded-[18px] bg-[var(--app-surface)]">
+        <div className="absolute inset-0 bg-[var(--app-bg)]/55" />
+        <div className="absolute left-0 right-0 top-0 h-20 animate-[scanner_2.4s_linear_infinite] bg-gradient-to-b from-transparent via-[var(--app-primary)]/30 to-transparent" />
 
         <div className="relative z-10 grid h-full place-items-center text-center">
           <div>
-            <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-[20px] border border-[#10b981]/25 bg-black/50 text-[#10b981] backdrop-blur-xl">
+            <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] backdrop-blur-xl">
               <Loader2 size={28} className="animate-spin" />
             </div>
 
-            <p className="text-3xl font-black italic leading-none text-[#10b981]">
+            <p className="text-3xl font-black italic leading-none text-[var(--app-primary)]">
               {percent}%
             </p>
 
-            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
+            <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
               Procesando con IA
             </p>
           </div>
         </div>
       </div>
 
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/5">
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
         <div
-          className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+          className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -91,25 +91,25 @@ export function CheckInLoader({ loading }) {
               key={step}
               className={`rounded-xl px-1 py-1.5 text-center ${
                 completed
-                  ? "bg-[#10b981]/10"
+                  ? "bg-[var(--app-primary-soft)]"
                   : active
-                    ? "bg-white/5"
-                    : "bg-black/20"
+                    ? "bg-[var(--app-surface)]"
+                    : "bg-[var(--app-surface)]"
               }`}
             >
               <div className="mb-0.5 flex justify-center">
                 {completed ? (
-                  <CheckCircle2 size={11} className="text-[#10b981]" />
+                  <CheckCircle2 size={11} className="text-[var(--app-primary)]" />
                 ) : active ? (
-                  <Sparkles size={11} className="text-[#10b981]" />
+                  <Sparkles size={11} className="text-[var(--app-primary)]" />
                 ) : (
-                  <ScanLine size={11} className="text-white/20" />
+                  <ScanLine size={11} className="text-[var(--app-muted)]" />
                 )}
               </div>
 
               <p
                 className={`text-[10px] font-black uppercase leading-3 ${
-                  completed || active ? "text-white" : "text-slate-600"
+                  completed || active ? "text-[var(--app-text)]" : "text-slate-600"
                 }`}
               >
                 {step}

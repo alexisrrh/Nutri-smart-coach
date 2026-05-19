@@ -7,17 +7,17 @@ export default function MealHistorySlider({ meals = [] }) {
     <section className="space-y-2">
       <div className="flex items-center justify-between px-1">
         <div>
-          <p className="text-[7px] font-black uppercase tracking-[0.22em] text-[#10b981]">
+          <p className="text-[7px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
             Historial IA
           </p>
 
-          <h2 className="mt-0.5 text-base font-black uppercase italic">
+          <h2 className="mt-0.5 text-base font-black uppercase italic text-[var(--app-text)]">
             Últimos escaneos
           </h2>
         </div>
 
-        <div className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1">
-          <span className="text-[7px] font-black uppercase tracking-widest text-[#10b981]">
+        <div className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1">
+          <span className="text-[7px] font-black uppercase tracking-widest text-[var(--app-primary)]">
             {meals.length} comidas
           </span>
         </div>
@@ -37,7 +37,7 @@ function MealCard({ meal }) {
   const image = meal.image || meal.image_url;
 
   return (
-    <div className="w-[170px] shrink-0 overflow-hidden rounded-[20px] border border-white/10 bg-[#07170f]">
+    <div className="w-[170px] shrink-0 overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)]">
       <div className="relative h-[105px] overflow-hidden">
         {image ? (
           <img
@@ -46,48 +46,48 @@ function MealCard({ meal }) {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="grid h-full place-items-center bg-black/20">
-            <Sparkles size={22} className="text-[#10b981]" />
+          <div className="grid h-full place-items-center bg-[var(--app-surface)]">
+            <Sparkles size={22} className="text-[var(--app-primary)]" />
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06110c] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)] via-transparent to-transparent" />
 
-        <div className="absolute right-2 top-2 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-0.5 backdrop-blur-xl">
-          <span className="text-[8px] font-black text-[#10b981]">
+        <div className="absolute right-2 top-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 backdrop-blur-xl">
+          <span className="text-[8px] font-black text-[var(--app-primary)]">
             {score}/10
           </span>
         </div>
       </div>
 
       <div className="p-2.5">
-        <p className="truncate text-xs font-black uppercase italic text-white">
+        <p className="truncate text-xs font-black uppercase italic text-[var(--app-text)]">
           {meal.food || "Comida"}
         </p>
 
         <div className="mt-2 flex items-center justify-between">
           <div>
-            <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+            <p className="text-[7px] font-black uppercase tracking-widest text-[var(--app-muted)]">
               kcal
             </p>
 
-            <p className="text-base font-black text-[#10b981]">
+            <p className="text-base font-black text-[var(--app-primary)]">
               {Math.round(meal.calories || 0)}
             </p>
           </div>
 
           <div className="text-right">
-            <p className="text-[7px] font-black uppercase tracking-widest text-white/35">
+            <p className="text-[7px] font-black uppercase tracking-widest text-[var(--app-muted)]">
               prot
             </p>
 
-            <p className="text-base font-black text-white">
+            <p className="text-base font-black text-[var(--app-text)]">
               {Math.round(meal.protein || 0)}g
             </p>
           </div>
         </div>
 
-        <div className="mt-2 flex items-center gap-1.5 text-[8px] text-slate-500">
+        <div className="mt-2 flex items-center gap-1.5 text-[8px] text-[var(--app-muted)]">
           <Clock3 size={10} />
 
           <span>{formatMealDate(meal)}</span>

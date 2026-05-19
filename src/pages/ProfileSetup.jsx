@@ -490,7 +490,7 @@ function ThemeSelector() {
 
   const themes = [
     { id: "emerald", label: "Emerald", color: "#10b981" },
-    { id: "dark", label: "Dark", color: "#ffffff" },
+    { id: "dark", label: "Dark", color: "#050505" },
     { id: "white", label: "White", color: "#d1d5db" },
     { id: "rose", label: "Rose", color: "#fb6fbd" },
     { id: "blue", label: "Blue", color: "#38bdf8" },

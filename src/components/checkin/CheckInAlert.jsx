@@ -10,7 +10,7 @@ export function CheckInAlert({ type = "success", text = "" }) {
       className={`rounded-[26px] border px-3 py-2 text-[10px] font-bold ${
         isError
           ? "border-red-400/20 bg-red-500/10 text-red-300"
-          : "border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]"
+          : "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
       }`}
     >
       <div className="flex items-center gap-2">

@@ -115,9 +115,9 @@ export function Daily() {
 function Card({ title, target, current, remaining, unit, Icon, accent }) {
   const progress = target > 0 ? Math.min((current / target) * 100, 100) : 0;
   const isCyan = accent === "cyan";
-  const accentText = isCyan ? "text-cyan-200" : "text-[#86efac]";
-  const accentBg = isCyan ? "bg-cyan-300" : "bg-[#10b981]";
-  const iconBg = isCyan ? "bg-cyan-300/10 text-cyan-200" : "bg-[#10b981]/10 text-[#86efac]";
+  const accentText = isCyan ? "text-cyan-200" : "text-[var(--app-primary)]";
+  const accentBg = isCyan ? "bg-cyan-300" : "bg-[var(--app-primary)]";
+  const iconBg = isCyan ? "bg-cyan-300/10 text-cyan-200" : "bg-[var(--app-primary-soft)] text-[var(--app-primary)]";
 
   return (
     <SurfaceCard className="p-4">
@@ -135,7 +135,7 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
       <div className="mt-5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-white/52">Consumido</p>
+            <p className="text-sm font-semibold text-[var(--app-muted)]">Consumido</p>
             <p className="mt-1 text-4xl font-black leading-none tracking-tight">
               {current}
               <span className={`ml-1 text-base font-black ${accentText}`}>{unit}</span>
@@ -143,14 +143,14 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
           </div>
 
           <div className="text-right">
-            <p className="text-sm font-semibold text-white/52">Objetivo</p>
-            <p className="mt-1 text-lg font-black text-white">{target || 0} {unit}</p>
+            <p className="text-sm font-semibold text-[var(--app-muted)]">Objetivo</p>
+            <p className="mt-1 text-lg font-black text-[var(--app-text)]">{target || 0} {unit}</p>
           </div>
         </div>
 
-        <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/8">
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-[var(--app-surface)]">
           <div
-            className={`h-full rounded-full ${accentBg} shadow-[0_0_18px_rgba(16,185,129,0.35)]`}
+            className={`h-full rounded-full ${accentBg} shadow-[0_0_18px_var(--app-glow)]`}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -172,10 +172,10 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
 function Row({ label, value, unit, highlight }) {
   return (
     <SurfaceCard variant="soft" radius="sm" className="p-3">
-      <span className="text-xs font-bold text-white/48">{label}</span>
+      <span className="text-xs font-bold text-[var(--app-muted)]">{label}</span>
       <span
         className={`mt-1 block text-lg font-black ${
-          highlight ? "text-[#86efac]" : "text-white"
+          highlight ? "text-[var(--app-primary)]" : "text-[var(--app-text)]"
         }`}
       >
         {value} {unit}

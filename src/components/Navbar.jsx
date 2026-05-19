@@ -21,25 +21,25 @@ export function Navbar() {
   }
 
   const linkClass =
-    "flex items-center gap-2 text-sm font-bold text-white/55 transition hover:text-emerald-300";
+    "flex items-center gap-2 text-sm font-bold text-[var(--app-muted)] transition hover:text-[var(--app-primary)]";
 
-  const activeClass = "text-emerald-300";
+  const activeClass = "text-[var(--app-primary)]";
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full border-b border-emerald-400/10 bg-[#06110e]/85 backdrop-blur-2xl">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 text-white">
+    <header className="fixed left-0 top-0 z-50 w-full border-b border-[var(--app-border)] bg-[var(--app-surface)]/85 backdrop-blur-2xl">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 text-[var(--app-text)]">
         <Link to="/" className="flex items-center gap-3">
           <img
             src="/favicon.png"
             alt="NutriSmart Coach"
-            className="h-11 w-11 rounded-2xl object-cover shadow-[0_0_25px_rgba(16,185,129,0.35)]"
+            className="h-11 w-11 rounded-2xl object-cover shadow-[0_0_25px_var(--app-glow)]"
           />
 
           <div className="leading-none">
             <p className="text-lg font-black italic tracking-tight">
-              Nutri<span className="text-emerald-300">Smart</span>
+              Nutri<span className="text-[var(--app-primary)]">Smart</span>
             </p>
-            <p className="mt-1 text-[8px] font-black uppercase tracking-[0.28em] text-emerald-300/60">
+            <p className="mt-1 text-[8px] font-black uppercase tracking-[0.28em] text-[var(--app-muted)]">
               AI Active
             </p>
           </div>
@@ -58,7 +58,7 @@ export function Navbar() {
 
         <button
           onClick={handleLogout}
-          className="hidden items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-black uppercase tracking-widest text-white/55 transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-300 md:flex"
+          className="hidden items-center gap-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--app-muted)] transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-300 md:flex"
         >
           <LogOut size={15} />
           Salir

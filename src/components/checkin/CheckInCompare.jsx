@@ -6,22 +6,22 @@ export function CheckInCompare({ history = [], onSelect }) {
   const latest = Array.isArray(history) && history.length > 0 ? history[0] : null;
 
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-[#10b981]/18 bg-[#091710] px-3 py-3 shadow-[0_20px_70px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[#10b981]/12 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[#091710] px-3 py-3 shadow-[0_20px_70px_var(--app-glow)]">
+      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#10b981]">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
             <GitCompare size={13} />
             Comparación semanal
           </div>
 
-          <h3 className="mt-1 text-sm font-black uppercase italic leading-none text-white">
+          <h3 className="mt-1 text-sm font-black uppercase italic leading-none text-[var(--app-text)]">
             Semana anterior / Semana actual
           </h3>
         </div>
 
-        <div className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+        <div className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
           IA visual
         </div>
       </div>
@@ -44,9 +44,9 @@ export function CheckInCompare({ history = [], onSelect }) {
           />
         </div>
       ) : (
-        <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.03] px-3 py-4 text-center">
-          <Camera className="mx-auto mb-2 text-[#10b981]" size={22} />
-          <p className="text-[10px] font-black uppercase text-white">
+        <div className="rounded-[24px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-4 text-center">
+          <Camera className="mx-auto mb-2 text-[var(--app-primary)]" size={22} />
+          <p className="text-[10px] font-black uppercase text-[var(--app-text)]">
             Comparación pendiente
           </p>
           <p className="mt-1 text-[10px] leading-5 text-slate-400">
@@ -63,13 +63,13 @@ function CompareFrame({ title, date, image, active = false, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`overflow-hidden rounded-[24px] border text-left transition ${active ? "border-[#10b981]/25" : "border-white/10"} bg-black/25`}
+      className={`overflow-hidden rounded-[24px] border text-left transition ${active ? "border-[var(--app-border)]" : "border-[var(--app-border)]"} bg-[var(--app-surface)]`}
     >
       <div className="px-3 pt-3">
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
           {title}
         </p>
-        <p className="mt-1 text-[10px] font-black text-[#10b981]">{date}</p>
+        <p className="mt-1 text-[10px] font-black text-[var(--app-primary)]">{date}</p>
       </div>
 
       <div className="p-3">
@@ -80,10 +80,10 @@ function CompareFrame({ title, date, image, active = false, onClick }) {
             className="h-full w-full object-cover"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/75 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/75 via-transparent to-transparent" />
 
           {active && (
-            <div className="absolute bottom-2 left-2 rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#10b981]">
+            <div className="absolute bottom-2 left-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--app-primary)]">
               Actual
             </div>
           )}

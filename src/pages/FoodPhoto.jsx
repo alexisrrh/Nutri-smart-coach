@@ -205,7 +205,12 @@ export default function FoodPhoto() {
                   <button
                     type="button"
                     onClick={resetScanner}
-                    className="rounded-[18px] border border-[#10b981]/25 bg-[#10b981] px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-[#04110b] shadow-[0_14px_40px_rgba(16,185,129,0.20)] transition active:scale-[0.98] hover:bg-emerald-300"
+                    className="rounded-[18px] border px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] shadow-[0_14px_40px_var(--app-glow)] transition active:scale-[0.98]"
+                    style={{
+                      borderColor: "var(--app-border)",
+                      backgroundColor: "var(--app-primary)",
+                      color: "var(--app-surface)",
+                    }}
                   >
                     Analizar otra comida
                   </button>
@@ -213,7 +218,12 @@ export default function FoodPhoto() {
                   <button
                     type="button"
                     onClick={discardAnalysis}
-                    className="rounded-[18px] border border-red-400/20 bg-red-400/10 px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+                    className="rounded-[18px] border px-3 py-3 text-[10px] font-black uppercase leading-3 tracking-[0.1em] transition active:scale-[0.98]"
+                    style={{
+                      borderColor: "var(--app-border)",
+                      backgroundColor: "var(--app-surface)",
+                      color: "var(--app-muted)",
+                    }}
                   >
                     Descartar análisis
                   </button>

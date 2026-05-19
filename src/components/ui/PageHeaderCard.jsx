@@ -16,18 +16,18 @@ export default function PageHeaderCard({
         {badge && <MetaBadge icon={badgeIcon}>{badge}</MetaBadge>}
 
         {icon && (
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#10b981]/10 text-[#10b981]">
+        <div className="theme-icon-tile grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
             {icon}
-          </div>
+        </div>
         )}
       </div>
 
-      <h1 className="text-4xl font-black leading-tight tracking-tight text-white">
+      <h1 className="text-4xl font-black leading-tight tracking-tight text-[var(--app-text)]">
         {title}
       </h1>
 
       {description && (
-        <p className="mt-3 max-w-[19rem] text-sm leading-6 text-white/64">
+        <p className="mt-3 max-w-[19rem] text-sm leading-6 text-[var(--app-muted)]">
           {description}
         </p>
       )}

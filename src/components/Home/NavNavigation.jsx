@@ -8,7 +8,7 @@ const DashboardTab = ({ to, icon, title, active }) => {
       to={to}
       className={`flex flex-col items-center justify-center py-3 transition-all duration-300 ${
         active 
-          ? "text-emerald-400 bg-white/[0.08]" 
+          ? "text-[var(--app-primary)] bg-white/[0.08]" 
           : "text-zinc-500 hover:text-white"
       }`}
     >
@@ -21,7 +21,7 @@ const DashboardTab = ({ to, icon, title, active }) => {
       
       {/* Rayita verde inferior opcional para el estilo activo */}
       {active && (
-        <div className="absolute bottom-0 h-0.5 w-8 bg-emerald-400 rounded-full shadow-[0_0_8px_#10b981]" />
+        <div className="absolute bottom-0 h-0.5 w-8 bg-[var(--app-primary)] rounded-full shadow-[0_0_8px_var(--app-glow)]" />
       )}
     </Link>
   );

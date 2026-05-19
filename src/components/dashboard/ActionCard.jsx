@@ -15,24 +15,22 @@ return (
   <button
     onClick={onClick}
     className={`group relative flex h-full min-h-0 flex-col items-center justify-center overflow-visible px-2 py-1 text-center transition-all duration-300 active:scale-[0.98] ${
-      featured
-        ? "text-[#06110e]"
-        : ""
+      featured ? "text-[var(--app-surface)]" : ""
     }`}
   >
     <div className="relative z-10 flex h-full flex-col items-center justify-center gap-1">
       <div
-        className={`relative grid h-[68px] w-[68px] place-items-center overflow-hidden rounded-[1rem] ${
+        className={`theme-icon-tile relative grid h-[68px] w-[68px] place-items-center overflow-hidden rounded-[1rem] ${
           featured
-            ? "bg-[#06110e]/10 shadow-[0_0_30px_rgba(255,255,255,0.07)]"
-            : "bg-emerald-500/12 shadow-[0_0_28px_rgba(16,185,129,0.18)]"
+            ? "bg-[var(--app-primary-soft)] shadow-[0_0_30px_var(--app-glow)]"
+            : "bg-[var(--app-primary-soft)] shadow-[0_0_28px_var(--app-glow)]"
         }`}
       >
-        <span className="pointer-events-none absolute -inset-5 z-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)] animate-[spin_2.8s_linear_infinite]" />
+        <span className="pointer-events-none absolute -inset-5 z-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,var(--app-primary)_70%,transparent_85%,transparent_100%)] animate-[spin_2.8s_linear_infinite]" />
 
-        <span className="pointer-events-none absolute inset-[2px] z-[1] rounded-[0.95rem] bg-[#07170f]" />
+        <span className="pointer-events-none absolute inset-[2px] z-[1] rounded-[0.95rem] bg-[var(--app-surface)]" />
 
-        <span className="pointer-events-none absolute inset-[2px] z-[2] rounded-[0.95rem] border border-emerald-500/25" />
+        <span className="pointer-events-none absolute inset-[2px] z-[2] rounded-[0.95rem] border border-[var(--app-border)]" />
 
         {icon && !imageError ? (
           <img
@@ -51,7 +49,7 @@ return (
         ) : (
           <span
             className={`relative z-20 ${
-              featured ? "text-[#06110e]" : "text-emerald-300"
+              featured ? "text-[var(--app-surface)]" : "text-[var(--app-primary)]"
             }`}
           >
             <FallbackIcon size={28} strokeWidth={2.4} />
@@ -62,7 +60,7 @@ return (
         <div className="-mt-0.25 text-center">
           <h3
             className={`text-[11px] font-black uppercase tracking-[0.12em] ${
-              featured ? "text-[#06110e]" : "text-white"
+              featured ? "text-[var(--app-surface)]" : "text-[var(--app-text)]"
             }`}
           >
             {label}
@@ -70,7 +68,7 @@ return (
 
           <p
             className={`mt-0.25 text-[14px] leading-tight ${
-              featured ? "text-[#06110e]/58" : "text-white/38"
+              featured ? "text-[var(--app-surface)]/58" : "text-[var(--app-muted)]"
             }`}
           >
             {description}

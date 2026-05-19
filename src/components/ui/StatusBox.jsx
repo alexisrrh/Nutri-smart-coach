@@ -7,7 +7,8 @@ const variants = {
   },
   success: {
     icon: CheckCircle2,
-    className: "border-[#10b981]/20 bg-[#10b981]/10 text-[#86efac]",
+    className:
+      "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-text)]",
   },
   info: {
     icon: Info,
@@ -38,7 +39,7 @@ export default function StatusBox({
           <button
             type="button"
             onClick={action}
-            className="mt-3 text-xs font-black uppercase tracking-[0.14em] text-white transition hover:text-[#86efac]"
+            className="mt-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--app-text)] transition hover:text-[var(--app-primary)]"
           >
             {actionLabel}
           </button>

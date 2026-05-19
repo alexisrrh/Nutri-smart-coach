@@ -14,7 +14,7 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] left-1/2 z-50 w-[90%] max-w-[430px] -translate-x-1/2 rounded-[1.4rem] border p-1.5 shadow-[0_14px_45px_var(--app-glow)] backdrop-blur-2xl"
       style={{
-        backgroundColor: "color-mix(in srgb, var(--app-surface) 82%, transparent)",
+        backgroundColor: "var(--app-surface)",
         borderColor: "var(--app-border)",
       }}
     >
@@ -35,9 +35,9 @@ export default function BottomNav() {
             {({ isActive }) => (
               <>
                 <div
-                  className={`grid h-6 w-6 place-items-center rounded-lg transition ${
+                  className={`theme-icon-tile-muted grid h-6 w-6 place-items-center rounded-lg transition ${
                     isActive
-                      ? "bg-black/10"
+                      ? "bg-[var(--app-primary-soft)]"
                       : "bg-[var(--app-primary-soft)] text-[var(--app-muted)] group-hover:bg-[var(--app-primary-soft)] group-hover:text-[var(--app-text)]"
                   }`}
                 >
