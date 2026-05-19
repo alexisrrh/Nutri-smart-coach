@@ -9,14 +9,14 @@ import { NavNavigation } from "../components/Home/NavNavigation";
 
 export function Home() {
   return (
-    <div className="min-h-screen w-full bg-[#030a08] flex items-center justify-center p-0 md:p-6 font-sans">
+    <div className="min-h-screen w-full bg-[var(--app-bg)] flex items-center justify-center p-0 md:p-6 font-sans">
       
       {/* Contenedor móvil con dimensiones de smartphone y LUZ EXTERNA */}
       <main className="scrollbar-hidden relative w-full max-w-[430px] h-screen md:h-[880px] overflow-y-auto overflow-x-hidden bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] md:border-8 md:border-[#1f2937] flex flex-col">
         
         {/* Capas decorativas de fondo (Glow ambiental) */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%),radial-gradient(circle_at_15%_80%,#38bdf815,transparent_45%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%),radial-gradient(circle_at_15%_80%,var(--app-primary)12,transparent_45%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-30" />
 
         <section className="relative z-10 px-5 py-5 flex flex-col flex-1">
           
@@ -42,7 +42,7 @@ export function Home() {
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition hover:text-[var(--app-text)]">
                 Iniciar Sesion
               </Link>
-              <Link to="/registro" className="rounded-full bg-[var(--app-card)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition hover:bg-[var(--app-primary)]">
+              <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition hover:bg-[var(--app-primary)]">
                 Empezar
               </Link>
             </div>
@@ -55,7 +55,7 @@ export function Home() {
               Fitness + nutrición con IA
             </div>
             <h1 className="text-[1.95rem] font-black italic uppercase leading-none tracking-tight">
-              Domina <span className="bg-gradient-to-r from-[var(--app-primary)] via-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">tu cuerpo</span>
+              Domina <span className="bg-gradient-to-r from-[var(--app-primary)] via-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">tu cuerpo</span>
             </h1>
           </div>
 
@@ -77,7 +77,7 @@ export function Home() {
                       Análisis en vivo
                     </h2>
                   </div>
-                  <Link 
+                    <Link 
                     to="/registro" 
                     className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] active:scale-95 transition-transform cursor-pointer hover:bg-[var(--app-surface)]"
                   >
@@ -104,9 +104,9 @@ export function Home() {
                 {/* CUADRÍCULA DE MACRONUTRIENTES */}
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <DashboardMacro title="Calorías" value="1230" unit="kcal" color="bg-[var(--app-primary)]" pct="60%" />
-                  <DashboardMacro title="Proteína" value="100" unit="g" color="bg-cyan-300" pct="85%" />
-                  <DashboardMacro title="Carbs" value="145" unit="g" color="bg-amber-300" pct="45%" />
-                  <DashboardMacro title="Grasas" value="42" unit="g" color="bg-rose-400" pct="30%" />
+                    <DashboardMacro title="Proteína" value="100" unit="g" color="bg-[var(--app-primary)]" pct="85%" />
+                  <DashboardMacro title="Carbs" value="145" unit="g" color="bg-[var(--app-primary)]/70" pct="45%" />
+                  <DashboardMacro title="Grasas" value="42" unit="g" color="bg-[var(--app-primary)]/45" pct="30%" />
                 </div>
               </div>
             </div>

@@ -499,20 +499,20 @@ function ThemeSelector() {
 
   return (
     <div
-      className="rounded-3xl p-3 shadow-[inset_0_0_0_1px_var(--app-border)]"
+      className="rounded-3xl p-2.5 shadow-[inset_0_0_0_1px_var(--app-border)]"
       style={{ backgroundColor: "var(--app-card)" }}
     >
-      <div className="mb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+      <div className="mb-2">
+        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
           Personalización
         </p>
 
-        <h3 className="mt-1 text-sm font-black text-[var(--app-text)]">
+        <h3 className="mt-0.5 text-[13px] font-black text-[var(--app-text)]">
           Color de la app
         </h3>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {themes.map((item) => {
           const active = theme === item.id;
 
@@ -521,33 +521,41 @@ function ThemeSelector() {
               key={item.id}
               type="button"
               onClick={() => setTheme(item.id)}
-              className={`rounded-2xl p-2 transition ${
+              className={`flex min-h-9 min-w-[calc(50%-0.375rem)] flex-1 items-center gap-2 rounded-2xl border px-2.5 py-2 text-left transition sm:min-w-[calc(33.333%-0.5rem)] ${
                 active
-                  ? "shadow-[inset_0_0_0_1px_var(--app-border)]"
-                  : "hover:shadow-[inset_0_0_0_1px_var(--app-border)]"
+                  ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[inset_0_0_0_1px_var(--app-primary)]"
+                  : "border-[var(--app-border)] bg-[var(--app-surface)] hover:bg-[var(--app-primary-soft)]/50"
               }`}
               style={{
-                backgroundColor: active
-                  ? "var(--app-primary-soft)"
-                  : "var(--app-surface)",
+                boxShadow: active
+                  ? "inset 0 0 0 1px var(--app-primary), 0 10px 24px var(--app-glow)"
+                  : "inset 0 0 0 1px var(--app-border)",
               }}
             >
               <div
-                className="mx-auto h-9 w-9 rounded-full"
+                className={`relative h-[20px] w-[20px] shrink-0 rounded-full ring-1 ${
+                  active ? "ring-[var(--app-primary)]/35" : "ring-[var(--app-border)]/70"
+                }`}
                 style={{
                   background: item.color,
                   boxShadow: `0 0 18px ${item.color}55`,
                 }}
-              />
-
-              <p
-                className={`mt-2 text-[10px] font-bold ${
-                  theme === "white" ? "text-[var(--app-text)]" : "text-[var(--app-muted)]"
-                }`}
-                style={active ? { color: "var(--app-text)" } : undefined}
               >
-                {item.label}
-              </p>
+                {active && (
+                  <span className="absolute inset-[4px] rounded-full bg-[var(--app-surface)]/90 shadow-[0_0_0_1px_var(--app-surface)]" />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p
+                  className="truncate text-[10px] font-black leading-none"
+                  style={{
+                    color: active ? "var(--app-text)" : "var(--app-muted)",
+                  }}
+                >
+                  {item.label}
+                </p>
+              </div>
             </button>
           );
         })}
