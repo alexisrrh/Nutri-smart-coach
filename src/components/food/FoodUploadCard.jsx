@@ -2,10 +2,14 @@ import { ImagePlus } from "lucide-react";
 
 export default function FoodUploadCard({
   preview,
+  description,
+  onDescriptionChange,
   handleImage,
   analyzeFood,
   loading,
 }) {
+  const canAnalyze = Boolean(preview || description?.trim());
+
   return (
     <section className="min-h-0">
       <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 transition active:scale-[0.99]">
@@ -61,10 +65,29 @@ export default function FoodUploadCard({
         </div>
       </label>
 
+      <div className="mt-2 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-3">
+        <div className="mb-1.5">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+            Descripción opcional
+          </p>
+          <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
+            Añade detalles para mejorar la precisión
+          </p>
+        </div>
+
+        <textarea
+          value={description}
+          onChange={(event) => onDescriptionChange?.(event.target.value)}
+          placeholder="Ej: 2 arepas pequeñas con queso, pollo a la plancha, salsa y ensalada"
+          rows={3}
+          className="min-h-[84px] w-full resize-none rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 text-[12px] leading-5 text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]"
+        />
+      </div>
+
       <button
         type="button"
         onClick={analyzeFood}
-        disabled={!preview || loading}
+        disabled={!canAnalyze || loading}
         className="group relative mt-2 w-full overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-gradient-to-br from-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-surface))] via-[color-mix(in_srgb,var(--app-primary)_40%,var(--app-surface))] to-[color-mix(in_srgb,var(--app-primary)_18%,var(--app-card))] px-3 py-3 text-[var(--app-text)] shadow-[0_16px_36px_var(--app-glow)] transition duration-300 hover:border-[var(--app-border)] hover:shadow-[0_18px_42px_var(--app-glow)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
       >
        <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-9">
