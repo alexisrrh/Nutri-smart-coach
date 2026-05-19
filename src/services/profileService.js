@@ -1,6 +1,6 @@
 import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
-import { request } from "./apiClient";
+import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeProfile } from "./normalizers";
 
@@ -39,8 +39,10 @@ export async function getProfile(userId, { fallbackToCache = true } = {}) {
 
     return fallbackToCache ? cachedProfile : null;
   } catch (error) {
-    if (fallbackToCache) return cachedProfile;
-    throw error;
+    if (fallbackToCache && cachedProfile) return cachedProfile;
+    throw new Error(getFriendlyErrorMessage(error, "cargar el perfil"), {
+      cause: error,
+    });
   }
 }
 
@@ -62,22 +64,32 @@ export async function saveProfile(profile, { fallbackToCache = true } = {}) {
       cacheProfile(normalizedProfile);
     }
 
-    throw error;
+    throw new Error(getFriendlyErrorMessage(error, "guardar el perfil"), {
+      cause: error,
+    });
   }
 }
 
 async function getProfileFromApi(userId) {
-  const data = await request(`/profiles/${userId}`);
+  const data = await request(`/profiles/${userId}`, {}, {
+    operation: "cargar el perfil",
+  });
 
   return data?.profile || data;
 }
 
 async function saveProfileToApi(profile) {
-  const data = await request(`/profiles/${profile.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(toProfileRow(profile)),
-  });
+  const data = await request(
+    `/profiles/${profile.id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(toProfileRow(profile)),
+    },
+    {
+      operation: "guardar el perfil",
+    }
+  );
 
   return data?.profile || data;
 }
@@ -89,7 +101,11 @@ async function getProfileFromSupabase(userId) {
     .eq("id", userId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(getFriendlyErrorMessage(error, "cargar el perfil"), {
+      cause: error,
+    });
+  }
 
   return data;
 }
@@ -101,7 +117,11 @@ async function saveProfileToSupabase(profile) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(getFriendlyErrorMessage(error, "guardar el perfil"), {
+      cause: error,
+    });
+  }
 
   return data;
 }

@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from "../config/storageKeys";
-import { request } from "./apiClient";
+import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeMeal, normalizeMeals } from "./normalizers";
 
@@ -40,7 +40,9 @@ export async function listMeals(userId, { fallbackToCache = true } = {}) {
   if (!userId) return cachedMeals;
 
   try {
-    const data = await request(`/meal-analyses/${userId}`);
+    const data = await request(`/meal-analyses/${userId}`, {}, {
+      operation: "cargar el historial de comidas",
+    });
     const remoteMeals = normalizeMeals(data?.meal_analyses);
 
     if (remoteMeals.length > 0 || cachedMeals.length === 0) {
@@ -50,8 +52,11 @@ export async function listMeals(userId, { fallbackToCache = true } = {}) {
 
     return cachedMeals;
   } catch (error) {
-    if (fallbackToCache) return cachedMeals;
-    throw error;
+    if (fallbackToCache && cachedMeals.length > 0) return cachedMeals;
+    throw new Error(
+      getFriendlyErrorMessage(error, "cargar el historial de comidas"),
+      { cause: error }
+    );
   }
 }
 
@@ -67,6 +72,8 @@ export async function analyzeMeal({ image, goal = "perder_grasa", userId }) {
   const data = await request("/analyze-food", {
     method: "POST",
     body: formData,
+  }, {
+    operation: "analizar comida con IA",
   });
 
   return normalizeMeal({
@@ -82,14 +89,23 @@ export async function deleteMeal(mealId, userId) {
     `/meal-analyses/${mealId}?user_id=${encodeURIComponent(userId)}`,
     {
       method: "DELETE",
+    },
+    {
+      operation: "borrar una comida",
     }
   );
 }
 
 export async function clearMeals(userId) {
-  const response = await request(`/meal-analyses/user/${userId}`, {
-    method: "DELETE",
-  });
+  const response = await request(
+    `/meal-analyses/user/${userId}`,
+    {
+      method: "DELETE",
+    },
+    {
+      operation: "limpiar el historial de comidas",
+    }
+  );
 
   removeCache(MEALS_KEY);
 
