@@ -25,9 +25,7 @@ import {
   AppShell,
   FormField,
   MetaBadge,
-  PageHeaderCard,
   PrimaryButton,
-  StatCard,
   StatusBox,
   SurfaceCard,
 } from "../components/ui";
@@ -229,40 +227,53 @@ export function Progress() {
   const loadingHistory = loadingLogs || loadingCheckins;
 
   return (
-    <AppShell contentClassName="px-2 pt-2">
-      <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+    <AppShell contentClassName="px-2 pt-1.5">
+      <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden">
         <div className="shrink-0">
         <button
           onClick={() => navigate("/dashboard")}
-          className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/60 transition hover:border-emerald-400/40 hover:text-emerald-300"
+          className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/60 transition hover:border-emerald-400/40 hover:text-emerald-300"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={12} />
           Dashboard
         </button>
 
-        <PageHeaderCard
-          badge="Evolución corporal"
-          badgeIcon={<Sparkles size={14} />}
-          icon={<Scale size={18} />}
-          title="Progreso"
-          description="Registra peso y medidas para ver tu evolución corporal."
-        >
-          <SurfaceCard variant="accent" radius="md" className="mt-4 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-white/45">
+        <SurfaceCard className="p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-emerald-200">
+                <Sparkles size={10} />
+                Evolución
+              </div>
+
+              <h1 className="text-2xl font-black uppercase italic leading-none tracking-tight text-white">
+                Progreso
+              </h1>
+              <p className="mt-1 truncate text-[11px] font-semibold text-white/45">
+                Peso, fotos y evolución
+              </p>
+            </div>
+
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+              <Scale size={16} />
+            </div>
+          </div>
+
+          <div className="mt-2 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.08] px-3 py-2">
+            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/45">
               Peso actual
             </p>
-
-            <p className="mt-1 text-4xl font-black tracking-tight text-[#86efac]">
+            <p className="mt-0.5 text-3xl font-black leading-none tracking-tight text-[#86efac]">
               {stats.currentWeight || "--"}
-              <span className="ml-1 text-sm font-bold text-white/45">kg</span>
+              <span className="ml-1 text-xs font-bold text-white/45">kg</span>
             </p>
-          </SurfaceCard>
-        </PageHeaderCard>
+          </div>
+        </SurfaceCard>
         <ProgressViewTabs activeView={activeView} setActiveView={setActiveView} />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="space-y-4">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="space-y-2.5">
             {saved && (
               <StatusBox type="success">
                 Progreso guardado correctamente.
@@ -350,28 +361,30 @@ export function Progress() {
 
 function ProgressViewTabs({ activeView, setActiveView }) {
   const views = [
-    { id: "resumen", label: "Resumen" },
-    { id: "fotos", label: "Fotos" },
-    { id: "grafica", label: "Gráfica" },
-    { id: "historial", label: "Historial" },
+    { id: "resumen", label: "Resumen", icon: Sparkles },
+    { id: "fotos", label: "Fotos", icon: Scale },
+    { id: "grafica", label: "Gráfica", icon: ChartNoAxesColumnIncreasing },
+    { id: "historial", label: "Hist.", icon: CalendarDays },
   ];
 
   return (
-    <div className="mt-2 grid grid-cols-4 gap-1 rounded-[20px] border border-white/10 bg-black/20 p-1">
+    <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-2xl border border-white/10 bg-black/25 p-1">
       {views.map((view) => {
         const active = activeView === view.id;
+        const Icon = view.icon;
 
         return (
           <button
             key={view.id}
             type="button"
             onClick={() => setActiveView(view.id)}
-            className={`rounded-2xl px-1.5 py-2 text-[9px] font-black uppercase tracking-wide transition ${
+            className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[8px] font-black uppercase tracking-wide transition ${
               active
                 ? "bg-[#10b981] text-[#06110c]"
                 : "text-white/45 hover:bg-white/[0.05] hover:text-white/75"
             }`}
           >
+            <Icon size={11} />
             {view.label}
           </button>
         );
@@ -381,44 +394,62 @@ function ProgressViewTabs({ activeView, setActiveView }) {
 }
 
 function ProgressStatsGrid({ stats }) {
+  const compactStats = [
+    {
+      icon: Scale,
+      label: "Actual",
+      value: stats.currentWeight || "--",
+      unit: "kg",
+      tone: "text-emerald-300",
+    },
+    {
+      icon: Target,
+      label: "Inicio",
+      value: stats.firstWeight || "--",
+      unit: "kg",
+      tone: "text-cyan-200",
+    },
+    {
+      icon: stats.direction === "down" ? TrendingDown : TrendingUp,
+      label: "Cambio",
+      value: stats.change > 0 ? `+${stats.change}` : stats.change || "--",
+      unit: "kg",
+      tone: stats.direction === "down" ? "text-emerald-300" : "text-amber-200",
+    },
+    {
+      icon: ChartNoAxesColumnIncreasing,
+      label: "Registros",
+      value: stats.totalLogs,
+      unit: "",
+      tone: "text-white/75",
+    },
+  ];
+
   return (
-    <section className="grid grid-cols-2 gap-3">
-      <StatCard
-        icon={<Scale size={18} />}
-        label="Actual"
-        value={stats.currentWeight || "--"}
-        unit="kg"
-      />
+    <section className="grid grid-cols-2 gap-2">
+      {compactStats.map((item) => {
+        const Icon = item.icon;
 
-      <StatCard
-        icon={<Target size={18} />}
-        label="Inicio"
-        value={stats.firstWeight || "--"}
-        unit="kg"
-        tone="cyan"
-      />
+        return (
+          <SurfaceCard key={item.label} radius="md" className="p-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">
+                {item.label}
+              </p>
+              <Icon size={13} className={item.tone} />
+            </div>
 
-      <StatCard
-        icon={
-          stats.direction === "down" ? (
-            <TrendingDown size={18} />
-          ) : (
-            <TrendingUp size={18} />
-          )
-        }
-        label="Cambio"
-        value={stats.change > 0 ? `+${stats.change}` : stats.change || "--"}
-        unit="kg"
-        tone={stats.direction === "down" ? "emerald" : "amber"}
-      />
-
-      <StatCard
-        icon={<ChartNoAxesColumnIncreasing size={18} />}
-        label="Registros"
-        value={stats.totalLogs}
-        unit=""
-        tone="neutral"
-      />
+            <p className={`mt-1 text-xl font-black leading-none ${item.tone}`}>
+              {item.value}
+              {item.unit && (
+                <span className="ml-1 text-[10px] font-bold text-white/35">
+                  {item.unit}
+                </span>
+              )}
+            </p>
+          </SurfaceCard>
+        );
+      })}
     </section>
   );
 }
@@ -784,39 +815,39 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
   );
 
   return (
-    <SurfaceCard className="p-4">
-      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+    <SurfaceCard className="p-3">
+      <div className="mb-3 flex items-center justify-between border-b border-white/5 pb-2.5">
         <div>
-          <MetaBadge variant="neutral">
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/40">
             {previousCheckin ? "Comparación IA" : "Análisis IA"}
-          </MetaBadge>
-          <h2 className="mt-2 text-2xl font-black tracking-tight">
+          </p>
+          <h2 className="mt-1 text-base font-black tracking-tight text-white">
             Mejoras detectadas
           </h2>
         </div>
 
-        <Sparkles size={22} className="text-emerald-300" />
+        <Sparkles size={16} className="text-emerald-300" />
       </div>
 
       {hasAnalysis ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {visualChanges && (
-            <SurfaceCard variant="soft" radius="md" className="p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-300">
+            <SurfaceCard variant="soft" radius="md" className="p-2.5">
+              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-300">
                 Cambios visuales
               </p>
-              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+              <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-white/70">
                 {visualChanges}
               </p>
             </SurfaceCard>
           )}
 
           {recommendation && (
-            <SurfaceCard variant="soft" radius="md" className="p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+            <SurfaceCard variant="soft" radius="md" className="p-2.5">
+              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-cyan-200">
                 Recomendación
               </p>
-              <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+              <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-white/70">
                 {recommendation}
               </p>
             </SurfaceCard>
@@ -834,14 +865,16 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
           )}
         </div>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-            <Sparkles size={25} />
-          </div>
+        <SurfaceCard variant="soft" radius="md" className="px-3 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+              <Sparkles size={16} />
+            </div>
 
-          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
-            Haz un check-in con foto para ver mejoras detectadas.
-          </p>
+            <p className="text-xs font-bold leading-5 text-white/55">
+              Haz un check-in con foto para ver mejoras detectadas.
+            </p>
+          </div>
         </SurfaceCard>
       )}
     </SurfaceCard>
@@ -850,12 +883,12 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
 
 function AIInsightChip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+    <div className="rounded-xl border border-white/10 bg-black/20 px-2.5 py-2">
+      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">
         {label}
       </p>
 
-      <p className="mt-1 truncate text-sm font-black text-emerald-300">
+      <p className="mt-0.5 truncate text-xs font-black text-emerald-300">
         {value}
       </p>
     </div>
