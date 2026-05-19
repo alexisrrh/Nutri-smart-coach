@@ -1,11 +1,8 @@
 import { Link } from "react-router-dom";
 import {
   Camera,
-  Utensils,
-  LineChart,
   ArrowRight,
   Zap,
-  ShieldCheck,
 } from "lucide-react";
 import SmartImage from "../components/ui/SmartImage";
 import { NavNavigation } from "../components/Home/NavNavigation";
@@ -185,25 +182,5 @@ function DashboardMacro({ title, value, unit, color, pct }) {
         <div className={`h-full ${color}`} style={{ width: pct }} />
       </div>
     </div>
-  );
-}
-
-function DashboardTab({ icon, title, to = "#", active = false }) {
-  return (
-    <Link
-      to={to}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 p-2.5 transition-all text-center border-r border-white/5 last:border-none active:scale-95 duration-100 ${
-        active
-          ? "bg-emerald-400 text-[#03110d]"
-          : "text-white/45 hover:bg-white/5 hover:text-white"
-      }`}
-    >
-      <span className={active ? "text-[#03110d]" : "text-emerald-300"}>
-        {icon}
-      </span>
-      <span className="text-[8px] font-black uppercase tracking-[0.12em]">
-        {title}
-      </span>
-    </Link>
   );
 }

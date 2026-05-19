@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Zap, Clock, Flame, ArrowRight, CheckCircle2, Camera } from "lucide-react";
+import { CheckCircle2, Camera, Flame } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 import dietashome from "../../../public/dietashome.jpeg";
 
@@ -159,68 +159,3 @@ export function Dietas() {
   );
 }
 
-
-
-
-
-
-// Subcomponente MealRow mejorado con Imagen
-function MealRow({ time, type, title, macros, completed, current, image }) {
-  return (
-    <div className={`group relative flex gap-4 p-3 rounded-2xl border transition-all duration-300 ${
-      current 
-        ? "border-emerald-500/40 bg-emerald-500/[0.05] ring-1 ring-emerald-500/20" 
-        : "border-white/5 bg-white/[0.02] hover:bg-white/[0.05]"
-    }`}>
-      {/* Imagen miniatura de la comida */}
-      <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-white/10">
-        <img src={image} alt={title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
-      </div>
-
-      <div className="flex-1 flex flex-col justify-center">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase">
-            <Clock size={10} />
-            {time}
-          </div>
-          {completed && (
-            <CheckCircle2 size={12} className="text-emerald-400" />
-          )}
-        </div>
-        <h4 className={`text-[13px] font-bold leading-tight ${current ? 'text-emerald-300' : 'text-white/90'}`}>
-          {title}
-        </h4>
-        <div className="flex items-center gap-3 mt-1.5">
-          <span className="flex items-center gap-1 text-[10px] text-white/40">
-            <Flame size={10} className="text-orange-400" />
-            {macros}
-          </span>
-          <span className="text-[8px] font-black bg-white/5 px-2 py-0.5 rounded text-white/30 uppercase tracking-tighter">
-            {type}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-function DashboardTab({ icon, title, to = "#", active = false }) {
-  return (
-    <Link
-      to={to}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 p-2.5 transition-all text-center border-r border-white/5 last:border-none active:scale-95 duration-100 ${
-        active
-          ? "bg-emerald-400 text-[#03110d]"
-          : "text-white/45 hover:bg-white/5 hover:text-white"
-      }`}
-    >
-      <span className={active ? "text-[#03110d]" : "text-emerald-300"}>
-        {icon}
-      </span>
-      <span className="text-[8px] font-black uppercase tracking-[0.12em]">
-        {title}
-      </span>
-    </Link>
-  );
-}

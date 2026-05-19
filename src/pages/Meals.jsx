@@ -615,51 +615,51 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
         role="dialog"
         aria-modal="true"
         aria-label="Detalle de comida"
-        className="flex max-h-[86dvh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[#10b981]/15 bg-[#07170f]/96 shadow-[0_-18px_60px_rgba(0,0,0,0.45)]"
+        className="flex max-h-[75vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[#10b981]/15 bg-[#07170f]/96 shadow-[0_-18px_60px_rgba(0,0,0,0.45)]"
         style={{ animation: "mealSheetIn 220ms ease-out" }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-center py-2">
+        <div className="flex items-center justify-center py-1.5">
           <div className="h-1.5 w-12 rounded-full bg-white/15" />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-[92px] pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4 pt-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {image && (
-            <div className="relative mb-3 h-40 overflow-hidden rounded-[24px] bg-black/25">
+            <div className="relative mb-2.5 h-[150px] overflow-hidden rounded-[22px] bg-black/25">
               <img src={image} alt={meal.food || "Comida analizada"} className="h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#07170f] via-[#07170f]/20 to-transparent" />
-              <div className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#10b981] backdrop-blur-xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#07170f]/85 via-[#07170f]/14 to-transparent" />
+              <div className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[#10b981] backdrop-blur-xl">
                 Análisis IA
               </div>
             </div>
           )}
 
-          <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="mb-2.5 flex items-start justify-between gap-2.5">
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#10b981]">
                 {meal.mealType || "Comida"}
               </p>
 
-              <h3 className="mt-1 text-2xl font-black uppercase italic leading-[0.95] text-white">
+              <h3 className="mt-1 line-clamp-2 text-[18px] font-extrabold leading-[1.02] text-white">
                 {meal.food || "Comida analizada"}
               </h3>
 
-              <p className="mt-1 text-xs leading-4 text-white/55">
+              <p className="mt-1 text-[11px] leading-4 text-white/55">
                 {date} · {time}
               </p>
             </div>
 
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[20px] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.12)]">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_18px_rgba(16,185,129,0.1)]">
               <div className="text-center">
-                <p className="text-[24px] font-black italic leading-none">{score ?? "—"}</p>
-                <p className="text-[10px] font-black uppercase tracking-wide text-white/40">
+                <p className="text-[20px] font-black leading-none">{score ?? "—"}</p>
+                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-white/40">
                   score
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5">
             <MetricBox label="Kcal" value={meal.calories} unit="kcal" />
             <MetricBox label="Proteína" value={meal.protein} unit="g" accent />
             <MetricBox label="Carbs" value={meal.carbs} unit="g" />
@@ -667,23 +667,23 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
           </div>
 
           {meal.recommendation && (
-            <div className="mt-3 rounded-[22px] bg-white/[0.045] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-              <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+            <div className="mt-2.5 rounded-[20px] bg-white/[0.045] px-2.5 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
+              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#10b981]">
                 Recomendación IA
               </p>
-              <p className="text-xs leading-5 text-white/72">
+              <p className="line-clamp-3 text-[11px] leading-4 text-white/72">
                 {meal.recommendation}
               </p>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 border-t border-white/[0.06] bg-[#06110e]/95 px-3 py-3">
+        <div className="shrink-0 border-t border-white/[0.06] bg-[#06110e]/95 px-2.5 py-2.5">
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={onDelete}
-              className="rounded-2xl bg-red-400/10 px-3 py-2.5 text-[10px] font-black uppercase tracking-wide text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
+              className="rounded-2xl bg-red-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
             >
               Borrar análisis
             </button>
@@ -691,7 +691,7 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl bg-white/[0.05] px-3 py-2.5 text-[10px] font-black uppercase tracking-wide text-white/80 transition active:scale-[0.98] hover:bg-white/[0.08]"
+              className="rounded-2xl bg-white/[0.05] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-white/80 transition active:scale-[0.98] hover:bg-white/[0.08]"
             >
               Cerrar
             </button>
@@ -704,15 +704,15 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
 
 function MetricBox({ label, value, unit, accent = false }) {
   return (
-    <div className={`rounded-2xl p-2.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
+    <div className={`rounded-2xl px-2 py-1.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
       accent ? "bg-[#10b981]/10" : "bg-white/[0.045]"
     }`}>
-      <p className="text-[10px] font-black uppercase tracking-wide text-white/40">
+      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/40">
         {label}
       </p>
-      <p className={`mt-1 text-sm font-black ${accent ? "text-emerald-100" : "text-white"}`}>
+      <p className={`mt-0.5 text-[13px] font-black leading-none ${accent ? "text-emerald-100" : "text-white"}`}>
         {Math.round(Number(value) || 0)}
-        <span className="ml-1 text-[10px] text-[#10b981]/60">{unit}</span>
+        <span className="ml-1 text-[9px] text-[#10b981]/60">{unit}</span>
       </p>
     </div>
   );
