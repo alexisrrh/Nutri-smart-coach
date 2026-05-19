@@ -4,6 +4,16 @@ import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeCheckin } from "./normalizers";
 
 const CHECKINS_KEY = STORAGE_KEYS.CHECKINS;
+const CHECKIN_PROCESS_KEY = STORAGE_KEYS.CHECKIN_PROCESS;
+
+const DEFAULT_CHECKIN_PROCESS_STATE = {
+  status: "idle",
+  startedAt: null,
+  updatedAt: null,
+  requestId: null,
+  result: null,
+  error: "",
+};
 
 function getCheckinsKey(userId) {
   return userId ? `${CHECKINS_KEY}:${userId}` : CHECKINS_KEY;
@@ -39,6 +49,27 @@ export function cacheCheckin(userId, checkin) {
 
 export function clearCheckinsCache(userId) {
   removeCache(getCheckinsKey(userId));
+}
+
+export function getCheckinProcessState() {
+  return normalizeCheckinProcessState(
+    getCache(CHECKIN_PROCESS_KEY, DEFAULT_CHECKIN_PROCESS_STATE)
+  );
+}
+
+export function setCheckinProcessState(nextState) {
+  const normalizedState = normalizeCheckinProcessState({
+    ...getCheckinProcessState(),
+    ...nextState,
+  });
+
+  setCache(CHECKIN_PROCESS_KEY, normalizedState);
+
+  return normalizedState;
+}
+
+export function clearCheckinProcessState() {
+  removeCache(CHECKIN_PROCESS_KEY);
 }
 
 export async function listCheckins(userId, { fallbackToCache = true } = {}) {
@@ -93,6 +124,7 @@ export async function createCheckin({
       body: formData,
     },
     {
+      timeoutMs: 120000,
       operation: "guardar un check-in",
     }
   );
@@ -139,4 +171,24 @@ function normalizeCheckins(checkins) {
   if (!Array.isArray(checkins)) return [];
 
   return checkins.map(normalizeCheckin).filter(Boolean);
+}
+
+function normalizeCheckinProcessState(state) {
+  if (!state || typeof state !== "object") {
+    return { ...DEFAULT_CHECKIN_PROCESS_STATE };
+  }
+
+  return {
+    status:
+      state.status === "loading" ||
+      state.status === "success" ||
+      state.status === "error"
+        ? state.status
+        : "idle",
+    startedAt: state.startedAt || null,
+    updatedAt: state.updatedAt || null,
+    requestId: state.requestId || null,
+    result: state.result || null,
+    error: state.error || "",
+  };
 }

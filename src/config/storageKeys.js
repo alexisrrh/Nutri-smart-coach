@@ -5,4 +5,7 @@ export const STORAGE_KEYS = {
   PROGRESS_LOGS: "nutricoach_progress_logs",
   DIET_PLAN: "smart_diet_plan",
   DIET_PROGRESS: "smart_diet_progress",
+  DIET_GENERATION: "smart_diet_generation",
+  FOOD_ANALYSIS_PROCESS: "food_analysis_process",
+  CHECKIN_PROCESS: "checkin_process",
 };
