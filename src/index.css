@@ -3,6 +3,76 @@
 :root {
   color-scheme: dark;
   --bottom-nav-space: calc(104px + env(safe-area-inset-bottom));
+
+  --app-bg: #06110e;
+  --app-surface: #07170f;
+  --app-card: #0b2117;
+  --app-primary: #10b981;
+  --app-primary-soft: rgba(16, 185, 129, 0.14);
+  --app-border: rgba(16, 185, 129, 0.18);
+  --app-text: #ffffff;
+  --app-muted: rgba(255, 255, 255, 0.62);
+  --app-glow: rgba(16, 185, 129, 0.22);
+}
+[data-theme="rose"] {
+  --app-bg: #120611;
+  --app-surface: #1d0b1b;
+  --app-card: #2a1028;
+  --app-primary: #fb6fbd;
+  --app-primary-soft: rgba(251, 111, 189, 0.16);
+  --app-border: rgba(251, 111, 189, 0.22);
+  --app-glow: rgba(251, 111, 189, 0.25);
+}
+
+[data-theme="blue"] {
+  --app-bg: #04111c;
+  --app-surface: #0a1b2c;
+  --app-card: #10253a;
+  --app-primary: #38bdf8;
+  --app-primary-soft: rgba(56, 189, 248, 0.16);
+  --app-border: rgba(56, 189, 248, 0.22);
+  --app-glow: rgba(56, 189, 248, 0.25);
+}
+
+[data-theme="purple"] {
+  --app-bg: #0d0818;
+  --app-surface: #171028;
+  --app-card: #21163a;
+  --app-primary: #a855f7;
+  --app-primary-soft: rgba(168, 85, 247, 0.16);
+  --app-border: rgba(168, 85, 247, 0.22);
+  --app-glow: rgba(168, 85, 247, 0.25);
+}
+
+[data-theme="white"] {
+  color-scheme: light;
+  --app-bg: #f4f6f8;
+  --app-surface: #ffffff;
+  --app-card: #f0f3f5;
+  --app-primary: #10b981;
+  --app-primary-soft: rgba(16, 185, 129, 0.1);
+  --app-border: rgba(16, 185, 129, 0.16);
+  --app-text: #111827;
+  --app-muted: rgba(17, 24, 39, 0.62);
+  --app-glow: rgba(16, 185, 129, 0.18);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --app-bg: #050505;
+  --app-surface: #0d0d0d;
+  --app-card: #151515;
+
+  --app-primary: #ffffff;
+  --app-primary-soft: rgba(255, 255, 255, 0.08);
+
+  --app-border: rgba(255, 255, 255, 0.08);
+
+  --app-text: #ffffff;
+  --app-muted: rgba(255, 255, 255, 0.58);
+
+  --app-glow: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -17,8 +87,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #060b13;
-  color: white;
+  background: var(--app-bg);
+  color: var(--app-text);
   font-family: Inter, sans-serif;
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
@@ -38,8 +108,8 @@ select {
 }
 
 ::selection {
-  background: rgba(16, 185, 129, 0.3);
-  color: white;
+  background: var(--app-primary-soft);
+  color: var(--app-text);
 }
 
 /* SCROLLBAR */
@@ -49,16 +119,16 @@ select {
 }
 
 ::-webkit-scrollbar-track {
-  background: #07130d;
+  background: var(--app-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.4);
+  background: var(--app-primary-soft);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.7);
+  background: var(--app-primary);
 }
 
 /* ANIMACIONES */
@@ -80,11 +150,23 @@ select {
 .animate-float {
   animation: floatSlow 6s ease-in-out infinite;
 }
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 html,
 body,
 #root {
   min-height: 100%;
-  background: #06110e;
+  background: var(--app-bg);
 }
 
 body {
