@@ -69,8 +69,25 @@ export function BodyScaner() {
             </div>
           </nav>
 
+          
+
           {/* CONTENIDO PRINCIPAL DE LA HERRAMIENTA */}
           <div className="flex-1 flex flex-col items-center justify-center text-center my-6 px-1">
+
+            {/* Títulos Principales sin recortes */}
+            <h1 className="text-[2rem] font-black italic uppercase tracking-tight overflow-visible leading-none block">
+              Body
+              <span className="inline-block bg-gradient-to-r from-emerald-300 via-emerald-400 to-cyan-300 bg-clip-text text-transparent pr-[0.15em] -mr-[0.15em]">
+                Scaner
+              </span>
+            </h1>
+            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-emerald-300/60">
+              Check-in físico con foto
+            </p>
+
+            
+
+            <br></br>
             
            {/* Contenedor del escáner con super-neón esmeralda de alta intensidad (Siempre activo al máximo) */}
             <Link 
@@ -104,24 +121,13 @@ export function BodyScaner() {
             </div>
             </Link>
 
-
-
-
-
-            {/* Títulos Principales sin recortes */}
-            <h1 className="text-[2rem] font-black italic uppercase tracking-tight overflow-visible leading-none block">
-              Body
-              <span className="inline-block bg-gradient-to-r from-emerald-300 via-emerald-400 to-cyan-300 bg-clip-text text-transparent pr-[0.15em] -mr-[0.15em]">
-                Scaner
-              </span>
-            </h1>
-            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-emerald-300/60">
-              Check-in físico con foto
-            </p>
-
             <p className="mt-4 text-xs leading-relaxed text-white/60 px-3">
               Sube fotos comparables para revisar cambios físicos visibles y medidas clave.
             </p>
+
+
+
+
 
             {/* LISTA DE CARACTERÍSTICAS */}
             <div className="mt-6 w-full space-y-2.5 text-left">
@@ -150,7 +156,7 @@ export function BodyScaner() {
               className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 py-4 text-xs font-black uppercase tracking-widest text-[#03110d] shadow-[0_12px_30px_rgba(16,185,129,0.25)] active:scale-[0.98] transition-all hover:bg-white"
             >
               Iniciar escaneo
-              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              <Camera size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="h-20"></div> 
           </div>
