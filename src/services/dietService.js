@@ -5,6 +5,16 @@ import { normalizeDietPlan } from "./normalizers";
 
 const DIET_PLAN_KEY = STORAGE_KEYS.DIET_PLAN;
 const DIET_PROGRESS_KEY = STORAGE_KEYS.DIET_PROGRESS;
+const DIET_GENERATION_KEY = STORAGE_KEYS.DIET_GENERATION;
+
+const DEFAULT_GENERATION_STATE = {
+  status: "idle",
+  startedAt: null,
+  updatedAt: null,
+  requestId: null,
+  result: null,
+  error: "",
+};
 
 export function getCachedDietPlans() {
   const cachedValue = getCache(DIET_PLAN_KEY, []);
@@ -47,6 +57,27 @@ export function cacheDietProgress(progress) {
 
 export function clearDietProgress() {
   removeCache(DIET_PROGRESS_KEY);
+}
+
+export function getDietGenerationState() {
+  const state = getCache(DIET_GENERATION_KEY, DEFAULT_GENERATION_STATE);
+
+  return normalizeDietGenerationState(state);
+}
+
+export function setDietGenerationState(nextState) {
+  const normalizedState = normalizeDietGenerationState({
+    ...getDietGenerationState(),
+    ...nextState,
+  });
+
+  setCache(DIET_GENERATION_KEY, normalizedState);
+
+  return normalizedState;
+}
+
+export function clearDietGenerationState() {
+  removeCache(DIET_GENERATION_KEY);
 }
 
 export async function listDietPlans(userId, { fallbackToCache = true } = {}) {
@@ -97,6 +128,26 @@ export async function generateDietPlan({ profile, preferences, userId }) {
     ...data,
     dietPlan: generatedPlan,
     week: generatedPlan?.week || [],
+  };
+}
+
+function normalizeDietGenerationState(state) {
+  if (!state || typeof state !== "object") {
+    return { ...DEFAULT_GENERATION_STATE };
+  }
+
+  return {
+    status:
+      state.status === "loading" ||
+      state.status === "success" ||
+      state.status === "error"
+        ? state.status
+        : "idle",
+    startedAt: state.startedAt || null,
+    updatedAt: state.updatedAt || null,
+    requestId: state.requestId || null,
+    result: state.result || null,
+    error: state.error || "",
   };
 }
 
