@@ -17,18 +17,18 @@ export function CheckInForm({
   const hasPreview = Boolean(preview);
 
   return (
-    <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#091710] shadow-2xl shadow-black/20">
-      <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#10b981]/12 blur-3xl" />
+    <div className="relative overflow-hidden rounded-[32px] border border-[var(--app-border)] bg-[#091710] shadow-2xl shadow-black/20">
+      <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
       <div className="relative z-10 p-3.5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
               <Camera size={20} />
             </div>
 
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.26em] text-[#10b981]">
+              <p className="text-[10px] font-black uppercase tracking-[0.26em] text-[var(--app-primary)]">
                 Check-in físico
               </p>
 
@@ -38,7 +38,7 @@ export function CheckInForm({
             </div>
           </div>
 
-          <span className="rounded-full border border-white/10 bg-[#0d2218] px-3 py-1 text-[10px] font-black text-slate-400">
+          <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1 text-[10px] font-black text-slate-400">
             Frontal / lateral
           </span>
         </div>
@@ -46,7 +46,7 @@ export function CheckInForm({
         <div className="space-y-3">
           <label
             htmlFor="checkin-photo"
-            className="group relative grid min-h-[210px] cursor-pointer place-items-center overflow-hidden rounded-[28px] border border-dashed border-[#10b981]/35 bg-white/[0.035] text-center transition hover:border-[#10b981]/70 hover:bg-[#10b981]/5"
+            className="group relative grid min-h-[210px] cursor-pointer place-items-center overflow-hidden rounded-[28px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] text-center transition hover:border-[var(--app-primary)]/70 hover:bg-[var(--app-primary)]/5"
           >
             {hasPreview ? (
               <>
@@ -56,21 +56,21 @@ export function CheckInForm({
                   className="absolute inset-0 h-full w-full object-cover"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/92 via-[#06110c]/25 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/92 via-[var(--app-surface)]/25 to-transparent" />
 
                 <div className="relative z-10 self-end p-4">
                   <p className="text-base font-black uppercase italic">
                     Foto actual
                   </p>
 
-                  <p className="mt-1 text-[10px] text-white/60">
+                  <p className="mt-1 text-[10px] text-[var(--app-muted)]">
                     Toca para cambiarla.
                   </p>
                 </div>
               </>
             ) : (
               <div className="p-4">
-                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
                   <ImagePlus size={30} />
                 </div>
 
@@ -96,7 +96,7 @@ export function CheckInForm({
           {!hasPreview ? (
             <label
               htmlFor="checkin-photo"
-              className="block rounded-2xl bg-[#10b981] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[#06110c] shadow-[0_20px_60px_#22c55e22] transition hover:bg-white"
+              className="block rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_20px_60px_var(--app-glow)] transition hover:bg-[var(--app-primary-soft)]"
             >
               Subir foto
             </label>
@@ -104,7 +104,7 @@ export function CheckInForm({
             <div className="grid gap-2 sm:grid-cols-2">
               <label
                 htmlFor="checkin-photo"
-                className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-slate-200 transition hover:border-[#10b981]/35 hover:text-white"
+                className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-slate-200 transition hover:border-[var(--app-border)] hover:text-[var(--app-text)]"
               >
                 Cambiar foto
               </label>
@@ -113,7 +113,7 @@ export function CheckInForm({
                 type="button"
                 onClick={saveCheckIn}
                 disabled={loading}
-                className="group relative overflow-hidden rounded-2xl bg-[#10b981] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#06110c] shadow-[0_20px_60px_#22c55e22] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="group relative overflow-hidden rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_20px_60px_var(--app-glow)] transition hover:bg-[var(--app-primary-soft)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <ScanFace size={16} />
@@ -138,7 +138,7 @@ export function CheckInForm({
             <div className="hidden sm:block" />
           </div>
 
-          <details className="group rounded-[28px] border border-white/10 bg-black/20 p-3">
+          <details className="group rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-3">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
               Medidas opcionales
               <ChevronDown size={14} className="transition group-open:rotate-180" />
@@ -173,14 +173,14 @@ export function CheckInForm({
               />
 
               <label className="sm:col-span-2">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+                <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
                   Nota
                 </p>
 
                 <textarea
                   value={form.notes}
                   onChange={(e) => handleChange("notes", e.target.value)}
-                  className="h-[68px] w-full resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[11px] font-semibold text-white outline-none placeholder:text-white/20 focus:border-[#10b981]/50"
+                  className="h-[68px] w-full resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]/50"
                   placeholder="Ej: entrené 4 días, mejor energía..."
                 />
               </label>
@@ -195,13 +195,13 @@ export function CheckInForm({
 function Field({ label, ...props }) {
   return (
     <label>
-      <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+      <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
         {label}
       </p>
 
       <input
         {...props}
-        className="h-10 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 text-[11px] font-bold text-white outline-none placeholder:text-white/20 focus:border-[#10b981]/50"
+        className="h-10 w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 text-[11px] font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]/50"
       />
     </label>
   );

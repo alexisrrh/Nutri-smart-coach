@@ -220,8 +220,16 @@ export function Meals() {
             </StatusBox>
           )}
 
-          <SurfaceCard className="p-2" radius="md" variant="soft">
-            <div className="grid grid-cols-3 gap-1 rounded-2xl bg-black/25 p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+          <SurfaceCard
+            className="p-2"
+            radius="md"
+            variant="soft"
+            style={{ backgroundColor: "var(--app-surface)" }}
+          >
+            <div
+              className="grid grid-cols-3 gap-1 rounded-2xl p-1 shadow-[inset_0_0_0_1px_var(--app-border)]"
+              style={{ backgroundColor: "var(--app-card)" }}
+            >
               <FilterButton active={filter === "today"} onClick={() => setFilter("today")}>
                 Hoy
               </FilterButton>
@@ -236,25 +244,29 @@ export function Meals() {
             <div className="relative mt-1.5">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#10b981]/70"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--app-primary)]"
               />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar comida..."
-                className="h-9 w-full rounded-2xl bg-[#081713]/90 pl-9 pr-3 text-[11px] font-bold text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] outline-none transition placeholder:text-white/28 focus:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]"
+                className="h-9 w-full rounded-2xl pl-9 pr-3 text-[11px] font-bold text-[var(--app-text)] shadow-[inset_0_0_0_1px_var(--app-border)] outline-none transition placeholder:text-[var(--app-muted)]"
+                style={{ backgroundColor: "var(--app-surface)" }}
               />
             </div>
           </SurfaceCard>
         </div>
 
         <SurfaceCard className="flex min-h-0 flex-1 flex-col p-2" radius="lg">
-          <div className="mb-1.5 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.06] pb-1.5">
+          <div
+            className="mb-1.5 flex shrink-0 items-center justify-between gap-3 border-b pb-1.5"
+            style={{ borderColor: "var(--app-border)" }}
+          >
             <div>
-              <h2 className="text-[13px] font-black uppercase italic tracking-tight">
+              <h2 className="text-[13px] font-black tracking-tight text-[var(--app-text)]">
                 Timeline IA
               </h2>
-              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/45">
+              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
                 {filteredMeals.length} comida{filteredMeals.length !== 1 ? "s" : ""} mostrada
                 {filteredMeals.length !== 1 ? "s" : ""}
               </p>
@@ -310,16 +322,16 @@ function HistoryHeader({ onBack, onScan }) {
     <SurfaceCard as="header" className="overflow-hidden p-2" radius="lg">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             <Sparkles size={11} />
             Historial IA
           </div>
 
-          <h1 className="text-[22px] font-black uppercase italic leading-none text-white">
+          <h1 className="text-[22px] font-black uppercase italic leading-none text-[var(--app-text)]">
             Historial
           </h1>
 
-          <p className="mt-0.5 text-[11px] leading-4 text-white/60">
+          <p className="mt-0.5 text-[11px] leading-4 text-[var(--app-muted)]">
             Tus comidas analizadas.
           </p>
         </div>
@@ -346,8 +358,8 @@ function IconAction({ children, onClick, label, active = false }) {
       onClick={onClick}
       className={`grid h-10 w-10 place-items-center rounded-2xl transition active:scale-[0.96] ${
         active
-          ? "bg-[#10b981] text-[#06110c] shadow-[0_0_24px_rgba(16,185,129,0.18)]"
-          : "bg-white/[0.055] text-slate-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:text-white"
+          ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_24px_var(--app-glow)]"
+          : "bg-[var(--app-surface)] text-slate-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:text-[var(--app-text)]"
       }`}
     >
       {children}
@@ -360,16 +372,16 @@ function MacroSummary({ totals, mealsCount }) {
     <SurfaceCard className="p-2" radius="lg">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
             Resumen
           </p>
 
-          <p className="mt-0.5 text-[11px] text-white/55">
+          <p className="mt-0.5 text-[11px] text-[var(--app-muted)]">
             {mealsCount} análisis filtrado{mealsCount !== 1 ? "s" : ""}
           </p>
         </div>
 
-        <div className="grid h-8 w-8 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+        <div className="grid h-8 w-8 place-items-center rounded-2xl bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
           <Flame size={15} />
         </div>
       </div>
@@ -386,19 +398,19 @@ function MacroSummary({ totals, mealsCount }) {
 
 function MealsMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 px-2.5 py-1.5 shadow-[0_14px_42px_rgba(16,185,129,0.08)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
+    <section className="relative overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 shadow-[0_14px_42px_var(--app-glow)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,color-mix(in_srgb,var(--app-primary)_10%,transparent),transparent_40%),radial-gradient(circle_at_100%_50%,color-mix(in_srgb,var(--app-primary)_14%,transparent),transparent_34%)]" />
 
       <div className="relative z-10 flex items-start gap-2">
-        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
           <Sparkles size={13} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Coach IA
           </p>
-          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-muted)]">
             {message}
           </p>
         </div>
@@ -409,15 +421,15 @@ function MealsMotivationCard({ message }) {
 
 function SummaryChip({ icon, title, value, unit = "" }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-white/[0.04] p-1.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-      <div className="mb-0.5 text-[#10b981]">{icon}</div>
-      <p className="text-[9px] font-black uppercase tracking-tight text-white/42">
-        {title}
-      </p>
-      <p className="mt-0.5 truncate text-[13px] font-black text-white">
-        {Math.round(Number(value) || 0)}
-        <span className="ml-0.5 text-[9px] text-[#10b981]/65">{unit}</span>
-      </p>
+    <div className="min-w-0 rounded-2xl bg-[var(--app-surface)] p-1.5 shadow-[inset_0_0_0_1px_var(--app-border)]">
+      <div className="mb-0.5 text-[var(--app-primary)]">{icon}</div>
+            <p className="text-[9px] font-black uppercase tracking-tight text-[var(--app-muted)]">
+              {title}
+            </p>
+            <p className="mt-0.5 truncate text-[13px] font-black text-[var(--app-text)]">
+              {Math.round(Number(value) || 0)}
+        <span className="ml-0.5 text-[9px] text-[var(--app-muted)]">{unit}</span>
+            </p>
     </div>
   );
 }
@@ -472,8 +484,8 @@ function FilterButton({ active, onClick, children }) {
       onClick={onClick}
       className={`rounded-xl px-3 py-1.5 text-[9px] font-black uppercase tracking-wide transition ${
         active
-          ? "bg-[#10b981] text-[#06110e] shadow-[0_0_18px_rgba(16,185,129,0.16)]"
-          : "text-white/55 hover:bg-white/[0.06] hover:text-white"
+          ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_18px_var(--app-glow)]"
+          : "text-[var(--app-muted)] hover:bg-[var(--app-surface)] hover:text-[var(--app-text)]"
       }`}
     >
       {children}
@@ -507,9 +519,9 @@ function MealCard({ meal, onDelete, deleting, onSelect }) {
           onSelect?.();
         }
       }}
-      className="group relative cursor-pointer overflow-hidden rounded-[22px] bg-[#081713] p-2.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] transition hover:bg-[#0b1d18] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.18)]"
+      className="group relative cursor-pointer overflow-hidden rounded-[22px] bg-[var(--app-surface)] p-2.5 shadow-[inset_0_0_0_1px_var(--app-border)] transition hover:bg-[var(--app-primary-soft)] hover:shadow-[inset_0_0_0_1px_var(--app-glow)]"
     >
-      <div className="absolute right-0 top-0 h-16 w-16 bg-emerald-400/10 blur-2xl transition group-hover:bg-emerald-400/20" />
+      <div className="absolute right-0 top-0 h-16 w-16 bg-[var(--app-primary-soft)] blur-2xl transition group-hover:bg-[var(--app-primary-soft)]" />
 
       <div className="relative">
         <div className="mb-2 flex items-start justify-between gap-2.5">
@@ -519,19 +531,19 @@ function MealCard({ meal, onDelete, deleting, onSelect }) {
                 {meal.mealType || "Comida"}
               </MetaBadge>
 
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.05] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/45">
-                <Clock size={11} />
-                {date} · {time}
-              </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--app-surface)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
+              <Clock size={11} />
+              {date} · {time}
+            </span>
 
               {score && (
-                <span className="rounded-full bg-cyan-300/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-cyan-200">
+                <span className="rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--app-primary)]">
                   Score {score}
                 </span>
               )}
             </div>
 
-            <h3 className="line-clamp-1 text-[15px] font-black uppercase italic leading-tight tracking-tight text-white">
+            <h3 className="line-clamp-1 text-[15px] font-black uppercase italic leading-tight tracking-tight text-[var(--app-text)]">
               {meal.food || "Comida analizada"}
             </h3>
           </div>
@@ -543,7 +555,7 @@ function MealCard({ meal, onDelete, deleting, onSelect }) {
             onClickCapture={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
             onMouseDown={(event) => event.stopPropagation()}
-            className="shrink-0 rounded-2xl bg-white/[0.045] p-2 text-white/42 transition hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-45"
+            className="shrink-0 rounded-2xl bg-[var(--app-surface)] p-2 text-[var(--app-muted)] transition hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-45"
             aria-label="Borrar comida"
           >
             <Trash2 size={14} />
@@ -558,11 +570,11 @@ function MealCard({ meal, onDelete, deleting, onSelect }) {
         </div>
 
         {meal.recommendation && (
-          <div className="mt-2 rounded-2xl bg-emerald-400/[0.045] p-2.5 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.08)]">
-            <p className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-emerald-300">
+          <div className="mt-2 rounded-2xl bg-[var(--app-primary-soft)] p-2.5 shadow-[inset_0_0_0_1px_var(--app-border)]">
+            <p className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-[var(--app-primary)]">
               Análisis IA <ChevronRight size={11} />
             </p>
-            <p className="line-clamp-2 text-xs leading-4 text-white/62">
+            <p className="line-clamp-2 text-xs leading-4 text-[var(--app-muted)]">
               {meal.recommendation}
             </p>
           </div>
@@ -600,7 +612,7 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-2 pb-2 pt-10 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/60 px-2 pb-2 pt-10 backdrop-blur-sm"
       onClick={onClose}
       role="presentation"
     >
@@ -615,20 +627,20 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
         role="dialog"
         aria-modal="true"
         aria-label="Detalle de comida"
-        className="flex max-h-[75vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[#10b981]/15 bg-[#07170f]/96 shadow-[0_-18px_60px_rgba(0,0,0,0.45)]"
+        className="flex max-h-[75vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_-18px_60px_rgba(0,0,0,0.45)]"
         style={{ animation: "mealSheetIn 220ms ease-out" }}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-center py-1.5">
-          <div className="h-1.5 w-12 rounded-full bg-white/15" />
+          <div className="h-1.5 w-12 rounded-full bg-[var(--app-primary-soft)]" />
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4 pt-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {image && (
-            <div className="relative mb-2.5 h-[150px] overflow-hidden rounded-[22px] bg-black/25">
-              <img src={image} alt={meal.food || "Comida analizada"} className="h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#07170f]/85 via-[#07170f]/14 to-transparent" />
-              <div className="absolute left-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[#10b981] backdrop-blur-xl">
+            <div className="relative mb-2.5 h-[150px] overflow-hidden rounded-[22px] bg-[var(--app-surface)]">
+              <img src={image} alt={meal.food || "Comida analizada"} className="h-full w-full object-contain" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/85 via-[var(--app-surface)]/14 to-transparent" />
+              <div className="absolute left-2 top-2 rounded-full bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] backdrop-blur-xl">
                 Análisis IA
               </div>
             </div>
@@ -636,23 +648,23 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
 
           <div className="mb-2.5 flex items-start justify-between gap-2.5">
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#10b981]">
+              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                 {meal.mealType || "Comida"}
               </p>
 
-              <h3 className="mt-1 line-clamp-2 text-[18px] font-extrabold leading-[1.02] text-white">
+              <h3 className="mt-1 line-clamp-2 text-[18px] font-extrabold leading-[1.02] text-[var(--app-text)]">
                 {meal.food || "Comida analizada"}
               </h3>
 
-              <p className="mt-1 text-[11px] leading-4 text-white/55">
+              <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {date} · {time}
               </p>
             </div>
 
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_18px_rgba(16,185,129,0.1)]">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
               <div className="text-center">
                 <p className="text-[20px] font-black leading-none">{score ?? "—"}</p>
-                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-white/40">
+                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
                   score
                 </p>
               </div>
@@ -667,18 +679,18 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
           </div>
 
           {meal.recommendation && (
-            <div className="mt-2.5 rounded-[20px] bg-white/[0.045] px-2.5 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#10b981]">
+            <div className="mt-2.5 rounded-[20px] bg-[var(--app-primary-soft)] px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]">
+              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                 Recomendación IA
               </p>
-              <p className="line-clamp-3 text-[11px] leading-4 text-white/72">
+              <p className="line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
                 {meal.recommendation}
               </p>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 border-t border-white/[0.06] bg-[#06110e]/95 px-2.5 py-2.5">
+        <div className="shrink-0 border-t border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2.5">
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -691,7 +703,7 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl bg-white/[0.05] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-white/80 transition active:scale-[0.98] hover:bg-white/[0.08]"
+              className="rounded-2xl bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] transition active:scale-[0.98] hover:bg-[var(--app-primary-soft)]"
             >
               Cerrar
             </button>
@@ -705,14 +717,14 @@ function MealDetailSheet({ meal, onClose, onDelete }) {
 function MetricBox({ label, value, unit, accent = false }) {
   return (
     <div className={`rounded-2xl px-2 py-1.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
-      accent ? "bg-[#10b981]/10" : "bg-white/[0.045]"
+      accent ? "bg-[var(--app-primary-soft)]" : "bg-[var(--app-surface)]"
     }`}>
-      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/40">
+      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
         {label}
       </p>
-      <p className={`mt-0.5 text-[13px] font-black leading-none ${accent ? "text-emerald-100" : "text-white"}`}>
+      <p className={`mt-0.5 text-[13px] font-black leading-none text-[var(--app-text)]`}>
         {Math.round(Number(value) || 0)}
-        <span className="ml-1 text-[9px] text-[#10b981]/60">{unit}</span>
+        <span className="ml-1 text-[9px] text-[var(--app-muted)]">{unit}</span>
       </p>
     </div>
   );
@@ -721,14 +733,14 @@ function MetricBox({ label, value, unit, accent = false }) {
 function Mini({ title, value, unit = "", strong = false }) {
   return (
     <div className={`rounded-2xl p-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
-      strong ? "bg-[#10b981]/10" : "bg-white/[0.045]"
+      strong ? "bg-[var(--app-primary-soft)]" : "bg-[var(--app-surface)]"
     }`}>
-      <p className="text-[10px] font-black uppercase tracking-wide text-white/40">
+      <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {title}
       </p>
-      <p className={`mt-0.5 text-sm font-black ${strong ? "text-emerald-100" : "text-white"}`}>
+      <p className="mt-0.5 text-sm font-black text-[var(--app-text)]">
         {Math.round(Number(value) || 0)}
-        <span className="ml-1 text-[10px] text-emerald-300/60">{unit}</span>
+        <span className="ml-1 text-[10px] text-[var(--app-muted)]">{unit}</span>
       </p>
     </div>
   );
@@ -736,22 +748,22 @@ function Mini({ title, value, unit = "", strong = false }) {
 
 function Empty({ onClick }) {
   return (
-    <div className="rounded-[24px] bg-white/[0.035] px-4 py-6 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)]">
-      <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-emerald-400/10 text-emerald-300 shadow-[0_0_24px_rgba(16,185,129,0.10)]">
+    <div className="rounded-[24px] bg-[var(--app-surface)] px-4 py-6 text-center shadow-[inset_0_0_0_1px_var(--app-border)]">
+      <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow)]">
         <CalendarDays size={22} />
       </div>
 
-      <h3 className="text-base font-black uppercase tracking-tight text-white">
+      <h3 className="text-base font-black uppercase tracking-tight text-[var(--app-text)]">
         Sin comidas registradas
       </h3>
 
-      <p className="mx-auto mt-1.5 max-w-xs text-xs leading-4 text-white/50">
+      <p className="mx-auto mt-1.5 max-w-xs text-xs leading-4 text-[var(--app-muted)]">
         Analiza una comida para empezar tu timeline nutricional.
       </p>
 
       <button
         onClick={onClick}
-        className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wide text-[#06110e] transition active:scale-[0.98] hover:bg-white"
+        className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-[var(--app-primary)] px-4 py-2.5 text-xs font-black uppercase tracking-wide text-[var(--app-surface)] transition active:scale-[0.98] hover:bg-[var(--app-primary)]"
       >
         <Camera size={16} />
         Escanear comida

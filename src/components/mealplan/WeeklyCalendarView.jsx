@@ -27,8 +27,8 @@ export function WeeklyCalendarView({ plan, activeDay, setActiveDay }) {
               onClick={() => setActiveDay(index)}
               className={`shrink-0  border px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all ${
                 activeDay === index
-                  ? "border-[#10b981] bg-[#10b981] text-slate-950"
-                  : "border-white/5 bg-[#0d2218] text-slate-400"
+                  ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-slate-950"
+                  : "border-[var(--app-border)] bg-[var(--app-surface)] text-slate-400"
               }`}
             >
               {shortDay(dayData.day)}
@@ -51,16 +51,16 @@ export function WeeklyCalendarView({ plan, activeDay, setActiveDay }) {
               key={`${dayData.day}-${dayIdx}`}
               className={` border p-3 transition-all ${
                 activeDay === dayIdx
-                  ? "border-[#10b981]/40 bg-[#0d2218]/80"
-                  : "border-white/5 bg-[#07120d]"
+                  ? "border-[var(--app-border)] bg-[var(--app-surface)]/80"
+                  : "border-[var(--app-border)] bg-[#07120d]"
               }`}
             >
               <button
                 type="button"
                 onClick={() => setActiveDay(dayIdx)}
-                className="mb-3 w-full  bg-[#0d2218] px-2 py-2 text-center transition hover:bg-[#123022]"
+                className="mb-3 w-full  bg-[var(--app-surface)] px-2 py-2 text-center transition hover:bg-[#123022]"
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
                   {shortDay(dayData.day)}
                 </p>
 
@@ -101,20 +101,20 @@ function MobileDayCard({ day, onSelectMeal }) {
   const totals = getDayTotals(day.meals);
 
   return (
-    <div className="mt-4 border border-white/5 bg-[#07120d] p-4">
+    <div className="mt-4 border border-[var(--app-border)] bg-[#07120d] p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
             Vista semanal
           </p>
 
-          <h3 className="mt-1 text-2xl font-black uppercase italic text-white">
+          <h3 className="mt-1 text-2xl font-black uppercase italic text-[var(--app-text)]">
             {day.day}
           </h3>
         </div>
 
-        <div className=" border border-white/5 bg-[#0d2218] px-3 py-2 text-right">
-          <p className="text-sm font-black text-white">
+        <div className=" border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-right">
+          <p className="text-sm font-black text-[var(--app-text)]">
             {Math.round(totals.calories)}
           </p>
           <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
@@ -141,13 +141,13 @@ function MealMiniCard({ meal, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group w-full border border-white/5 bg-[#0d2218]/40 p-2.5 text-left transition hover:border-[#10b981]/30 hover:bg-[#0d2218]"
+      className="group w-full border border-[var(--app-border)] bg-[var(--app-surface)]/40 p-2.5 text-left transition hover:border-[var(--app-border)] hover:bg-[var(--app-surface)]"
     >
       <span className="block text-[10px] font-black uppercase tracking-wide text-slate-500">
         {meal.time} · {meal.name}
       </span>
 
-      <h4 className="mt-1 line-clamp-2 text-[11px] font-black uppercase leading-tight tracking-wide text-white group-hover:text-[#10b981]">
+      <h4 className="mt-1 line-clamp-2 text-[11px] font-black uppercase leading-tight tracking-wide text-[var(--app-text)] group-hover:text-[var(--app-primary)]">
         {meal.food}
       </h4>
 
@@ -163,10 +163,10 @@ function MealWideButton({ meal, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className=" border border-white/5 bg-[#0d2218]/50 p-3 text-left transition hover:border-[#10b981]/30"
+      className=" border border-[var(--app-border)] bg-[var(--app-surface)]/50 p-3 text-left transition hover:border-[var(--app-border)]"
     >
       <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+        <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
           <Utensils size={12} />
           {meal.name}
         </p>
@@ -177,7 +177,7 @@ function MealWideButton({ meal, onClick }) {
         </span>
       </div>
 
-      <h4 className="text-sm font-black uppercase italic leading-tight text-white">
+      <h4 className="text-sm font-black uppercase italic leading-tight text-[var(--app-text)]">
         {meal.food}
       </h4>
 
@@ -196,14 +196,14 @@ function MealModal({ meal, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 p-3 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="max-h-[86vh] w-full max-w-lg overflow-y-auto border border-white/5 bg-[#06110c] shadow-2xl">
-        <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-white/5 bg-[#06110c]/95 p-5 backdrop-blur">
+      <div className="max-h-[86vh] w-full max-w-lg overflow-y-auto border border-[var(--app-border)] bg-[var(--app-surface)] shadow-2xl">
+        <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-[var(--app-border)] bg-[var(--app-surface)]/95 p-5 backdrop-blur">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
               {meal.day} · {meal.time} · {meal.name}
             </span>
 
-            <h3 className="mt-1 text-xl font-black uppercase italic leading-tight text-white">
+            <h3 className="mt-1 text-xl font-black uppercase italic leading-tight text-[var(--app-text)]">
               {meal.food}
             </h3>
           </div>
@@ -211,7 +211,7 @@ function MealModal({ meal, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className=" bg-white/5 p-2 text-slate-400 transition hover:text-white"
+            className=" bg-[var(--app-surface)] p-2 text-slate-400 transition hover:text-[var(--app-text)]"
           >
             <X size={17} />
           </button>
@@ -226,7 +226,7 @@ function MealModal({ meal, onClose }) {
           </div>
 
           <div>
-            <h4 className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+            <h4 className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
               Porciones e ingredientes
             </h4>
 
@@ -235,14 +235,14 @@ function MealModal({ meal, onClose }) {
                 {ingredients.map((ingredient, index) => (
                   <div
                     key={`${ingredient}-${index}`}
-                    className=" border border-white/5 bg-[#0d2218]/60 p-3 text-xs font-bold normal-case text-slate-300"
+                    className=" border border-[var(--app-border)] bg-[var(--app-surface)]/60 p-3 text-xs font-bold normal-case text-slate-300"
                   >
                     {ingredient}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className=" border border-white/5 bg-[#0d2218]/60 p-3 text-xs normal-case text-slate-400">
+              <p className=" border border-[var(--app-border)] bg-[var(--app-surface)]/60 p-3 text-xs normal-case text-slate-400">
                 Sin ingredientes detallados.
               </p>
             )}
@@ -255,12 +255,12 @@ function MealModal({ meal, onClose }) {
 
 function MacroBox({ icon, label, value }) {
   return (
-    <div className=" border border-white/5 bg-[#0d2218]/60 p-2 text-center">
-      <div className="mx-auto mb-1 flex justify-center text-[#10b981]">
+    <div className=" border border-[var(--app-border)] bg-[var(--app-surface)]/60 p-2 text-center">
+      <div className="mx-auto mb-1 flex justify-center text-[var(--app-primary)]">
         {icon}
       </div>
 
-      <p className="text-sm font-black text-white">{Math.round(Number(value)) || value}</p>
+      <p className="text-sm font-black text-[var(--app-text)]">{Math.round(Number(value)) || value}</p>
       <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </p>

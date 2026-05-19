@@ -120,11 +120,11 @@ export function Login() {
         </div>
 
         <SurfaceCard className="relative overflow-hidden p-2.5">
-          <div className="absolute -right-14 -top-16 h-40 w-36 rounded-full bg-[#10b981]/20 blur-3xl " />
+          <div className="absolute -right-14 -top-16 h-40 w-36 rounded-full bg-[var(--app-primary)]/20 blur-3xl " />
 
           <div className="relative z-10 pt-2">
             <div className="mb-3 flex items-center gap-5 justify-center">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[#10b981]/35 bg-[#06110c] p-1.5 shadow-[0_0_30px_rgba(16,185,129,0.34)]">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-primary)]/35 bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
                 <img
                   src="/favicon.png"
                   alt="NutriSmart Coach"
@@ -133,17 +133,17 @@ export function Login() {
               </div>
 
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#86efac]">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                   Nutri Smart Coach
                 </p>
-                <h1 className="mt-1 flex items-center gap-2 text-[30px] font-black uppercase italic leading-none tracking-tight text-white">
+                <h1 className="mt-1 flex items-center gap-2 text-[30px] font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
                   Entra
-                  <LogIn size={21} className="text-[#86efac]" />
+                  <LogIn size={21} className="text-[var(--app-primary)]" />
                 </h1>
               </div>
             </div >
 <div className="justify-center text-center">
-            <p className="ml-10 mb-3 max-w-[18rem] text-sm leading-5 text-white/60 text-center flex justify-center">
+            <p className="ml-10 mb-3 max-w-[18rem] text-sm leading-5 text-[var(--app-muted)] text-center flex justify-center">
               Continúa con tus calorías, dietas y progreso en un solo panel.
             </p></div>
 
@@ -184,12 +184,12 @@ export function Login() {
               </PrimaryButton>
             </form>
 
-            <div className="mt-3 rounded-[22px] border border-white/10 bg-black/20 p-2.5 text-center">
-              <p className="text-sm text-white/52">
+            <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5 text-center">
+              <p className="text-sm text-[var(--app-muted)]">
                 ¿Nuevo aquí?{" "}
                 <Link
                   to="/registro"
-                  className="font-black text-[#86efac] transition hover:text-white"
+                  className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
                   Crear cuenta
                 </Link>
@@ -206,7 +206,7 @@ export function Login() {
           <ProductPreview />
         </div>
 
-        <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-white/45">
+        <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
           Privacidad segura · Datos protegidos · IA nutricional
         </p>
       </div>
@@ -219,7 +219,7 @@ function Input({ label, icon, ...props }) {
     <FormField label={label} icon={icon}>
       <input
         {...props}
-        className="h-11 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/24 focus:border-[#10b981]/55"
+        className="h-11 w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 text-sm font-bold text-[var(--app-text)] outline-none transition placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]/55"
       />
     </FormField>
   );
@@ -228,29 +228,29 @@ function Input({ label, icon, ...props }) {
 function ActiveCore() {
   return (
     <SurfaceCard className="relative overflow-hidden p-2.5">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,#22d3ee22,transparent_32%),radial-gradient(circle_at_90%_20%,#10b98124,transparent_36%)]" />
-      <div className="absolute left-0 top-1/2 h-px w-full bg-gradient-to-r from-transparent via-[#10b981]/25 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,#22d3ee22,transparent_32%),radial-gradient(circle_at_90%_20%,var(--app-primary)24,transparent_36%)]" />
+      <div className="absolute left-0 top-1/2 h-px w-full bg-gradient-to-r from-transparent via-[var(--app-primary)]/25 to-transparent" />
 
       <div className="relative z-10 flex items-center gap-3">
         <div className="relative grid h-16 w-16 shrink-0 place-items-center">
-          <div className="absolute inset-0 rounded-full bg-[#10b981]/15 blur-xl" />
-          <div className="absolute inset-0 animate-[spin_3.6s_linear_infinite] rounded-full border border-[#10b981]/20 border-t-[#10b981]" />
+          <div className="absolute inset-0 rounded-full bg-[var(--app-primary)]/15 blur-xl" />
+          <div className="absolute inset-0 animate-[spin_3.6s_linear_infinite] rounded-full border border-[var(--app-primary)]/20 border-t-[var(--app-primary)]" />
           <div className="absolute inset-[8px] animate-[spin_5s_linear_infinite_reverse] rounded-full border border-cyan-300/10 border-b-cyan-300/45" />
-          <div className="absolute inset-[18px] rounded-full border border-white/10 bg-black/35 backdrop-blur-xl" />
-          <div className="relative h-5 w-5 rounded-full bg-[#10b981] shadow-[0_0_24px_rgba(16,185,129,0.8)]" />
+          <div className="absolute inset-[18px] rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur-xl" />
+          <div className="relative h-5 w-5 rounded-full bg-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow)]" />
           <span className="absolute left-3 top-4 h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_12px_#67e8f9]" />
-          <span className="absolute bottom-4 right-3 h-1.5 w-1.5 animate-pulse rounded-full bg-[#86efac] shadow-[0_0_12px_#86efac]" />
+          <span className="absolute bottom-4 right-3 h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-primary)]" />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981] shadow-[0_0_12px_#10b981]" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#86efac]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
               AI ACTIVE
             </p>
           </div>
 
-          <p className="text-sm font-black uppercase italic leading-5 text-white">
+          <p className="text-sm font-black uppercase italic leading-5 text-[var(--app-text)]">
             Nutrición inteligente en tiempo real
           </p>
 
@@ -286,19 +286,19 @@ function ProductPreview() {
       <div className="relative z-10">
         <div className="mb-1.5 flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#86efac]">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               Tu próximo análisis
             </p>
-            <p className="mt-0.5 text-sm font-bold text-white/58">
+            <p className="mt-0.5 text-sm font-bold text-[var(--app-muted)]">
               Plan ajustado por IA
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1.5 text-right">
-            <p className="text-xl font-black italic leading-none text-white">
+          <div className="rounded-2xl border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 px-3 py-1.5 text-right">
+            <p className="text-xl font-black italic leading-none text-[var(--app-text)]">
               850
             </p>
-            <p className="text-[10px] font-black uppercase tracking-wide text-[#86efac]">
+            <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-primary)]">
               kcal
             </p>
           </div>
@@ -325,20 +325,20 @@ function ProductPreview() {
 
 function PreviewMetric({ icon, label, percent, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-2">
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[#86efac]">
+        <span className="flex items-center gap-1.5 text-[var(--app-primary)]">
           {icon}
-          <span className="text-[10px] font-black uppercase tracking-wide text-white/45">
+          <span className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
             {label}
           </span>
         </span>
-        <span className="text-xs font-black text-white">{value}</span>
+        <span className="text-xs font-black text-[var(--app-text)]">{value}</span>
       </div>
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-cyan-300"
+          className="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-cyan-300"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -348,11 +348,11 @@ function PreviewMetric({ icon, label, percent, value }) {
 
 function CoreHighlight({ icon, label }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-1.5 text-center">
-      <div className="mx-auto mb-1 flex justify-center text-[#86efac]">
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-center">
+      <div className="mx-auto mb-1 flex justify-center text-[var(--app-primary)]">
         {icon}
       </div>
-      <p className="text-[10px] font-black uppercase leading-3 text-white/55">
+      <p className="text-[10px] font-black uppercase leading-3 text-[var(--app-muted)]">
         {label}
       </p>
     </div>

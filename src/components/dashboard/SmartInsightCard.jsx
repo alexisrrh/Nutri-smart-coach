@@ -14,22 +14,22 @@ export default function SmartInsightCard({
   });
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-emerald-400/15 bg-[#07170f] p-5 shadow-[0_20px_70px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-emerald-400/20 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[0_20px_70px_var(--app-glow)]">
+      <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
       <div className="relative z-10">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
               <Lightbulb size={19} />
             </div>
 
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300/60">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-muted)]">
                 Consejo IA
               </p>
 
-              <h3 className="mt-1 text-lg font-black italic leading-tight text-white">
+                <h3 className="mt-1 text-lg font-black italic leading-tight text-[var(--app-text)]">
                 {insight.title}
               </h3>
             </div>
@@ -42,20 +42,20 @@ export default function SmartInsightCard({
           </div>
         </div>
 
-        <p className="text-sm leading-relaxed text-white/60">
+        <p className="text-sm leading-relaxed text-[var(--app-muted)]">
           {insight.text}
         </p>
 
-        <div className="mt-4 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+        <div className="mt-4 rounded-[1.4rem] border border-[var(--app-border)] bg-[var(--app-card)] p-4">
           <div className="mb-2 flex items-center gap-2">
-            <Target size={15} className="text-emerald-300" />
+            <Target size={15} className="text-[var(--app-primary)]" />
 
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/35">
+            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--app-muted)]">
               Próximo paso recomendado
             </p>
           </div>
 
-          <p className="text-sm font-bold leading-relaxed text-white">
+          <p className="text-sm font-bold leading-relaxed text-[var(--app-text)]">
             {insight.action}
           </p>
         </div>
@@ -92,7 +92,7 @@ function getInsight({ smartTip, nutritionScore, mealCount, hasDiet }) {
   if (nutritionScore >= 8) {
     return {
       status: "Excelente",
-      badgeClass: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
+      badgeClass: "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
       title: "Vas muy bien hoy",
       text:
         "Tus comidas van alineadas con tu objetivo. Mantener este ritmo hará que tu progreso semanal sea más fácil de sostener.",

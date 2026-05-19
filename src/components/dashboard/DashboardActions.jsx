@@ -8,19 +8,29 @@ import {
 
 export default function DashboardActions({ navigate }) {
   return (
-    <section className="flex h-full min-h-0 flex-col ">
+    <section className="flex h-full min-h-0 flex-col">
       <div className="flex items-end justify-between px-1 pb-1">
         <div>
-          <p className=" ml-28 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300/55 text-center pb-1">
+          <p
+            className="ml-28 pb-1 text-center text-[11px] font-black uppercase tracking-[0.2em]"
+            style={{ color: "var(--app-primary)", opacity: 0.55 }}
+          >
             Más herramientas
           </p>
 
-          <h2 className=" ml-30 mt-0.5 text-[14px] font-black italic leading-none text-white  pb-1">
+          <h2 className="ml-30 mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)]">
             Continúa tu plan
           </h2>
         </div>
 
-        <div className="rounded-full border border-emerald-800/15 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-emerald-300">
+        <div
+          className="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em]"
+          style={{
+            borderColor: "var(--app-border)",
+            backgroundColor: "var(--app-primary-soft)",
+            color: "var(--app-primary)",
+          }}
+        >
           IA
         </div>
       </div>

@@ -79,6 +79,9 @@ export async function generateDietPlan({ profile, preferences, userId }) {
       preferences,
       user_id: userId || profile?.id || profile?.user_id || "",
     }),
+  }, {
+    timeoutMs: 120000,
+    operation: "generar dieta",
   });
 
   const generatedPlan = cacheDietPlan({

@@ -6,20 +6,36 @@ export default function NutritionInsights({ result }) {
   const insights = buildInsights(result);
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#07170f] p-2.5">
-      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#10b981]/12 blur-3xl" />
+    <section
+      className="relative overflow-hidden rounded-[22px] border p-2.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
+      <div
+        className="absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl"
+        style={{ backgroundColor: "var(--app-primary-soft)" }}
+      />
 
       <div className="relative z-10">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Sparkles size={13} className="text-[#10b981]" />
+            <Sparkles size={13} className="text-[var(--app-primary)]" />
 
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
               Insights IA
             </p>
           </div>
 
-          <span className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[#10b981]">
+          <span
+            className="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-widest"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-primary-soft)",
+              color: "var(--app-primary)",
+            }}
+          >
             Smart
           </span>
         </div>
@@ -46,10 +62,16 @@ function InsightRow({ icon, title, text, type }) {
       ? "border-yellow-400/20 bg-yellow-400/10 text-yellow-300"
       : type === "danger"
       ? "border-red-400/20 bg-red-400/10 text-red-300"
-      : "border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]";
+      : "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]";
 
   return (
-    <div className="rounded-[16px] border border-white/10 bg-black/20 p-2.5">
+    <div
+      className="rounded-[16px] border p-2.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-surface)",
+      }}
+    >
       <div className="flex items-start gap-2.5">
         <div
           className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border ${styles}`}
@@ -58,11 +80,11 @@ function InsightRow({ icon, title, text, type }) {
         </div>
 
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wide text-white">
+          <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-text)]">
             {title}
           </p>
 
-          <p className="mt-0.5 text-xs leading-4 text-slate-400">
+          <p className="mt-0.5 text-xs leading-4 text-[var(--app-muted)]">
             {text}
           </p>
         </div>

@@ -46,7 +46,7 @@ const PrintablePlan = forwardRef(({ plan }, ref) => {
           }
 
           .pdf-header {
-            border-bottom: 2px solid #10b981;
+            border-bottom: 2px solid var(--app-primary);
             padding-bottom: 10px;
             margin-bottom: 12px;
           }

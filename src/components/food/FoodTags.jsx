@@ -49,7 +49,7 @@ function buildTags(result) {
       label: "Alta proteína",
       icon: <Beef size={10} />,
       color:
-        "border-[#10b981]/15 bg-[#10b981]/10 text-[#10b981]",
+        "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
     });
   }
 

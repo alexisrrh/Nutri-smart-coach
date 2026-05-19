@@ -13,25 +13,40 @@ export default function AIHeroCard({
   todayMeals,
 }) {
   return (
-    <section className="relative overflow-hidden rounded-[1.1rem] border border-emerald-400/15 bg-[#07170f] p-[0.7rem] shadow-[0_18px_60px_rgba(16,185,129,0.1)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#10b98122,transparent_38%)]" />
-      <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-emerald-400/18 blur-3xl" />
+    <section
+      className="relative overflow-hidden rounded-[1.1rem] border p-[0.7rem] shadow-[0_18px_60px_var(--app-glow)]"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle_at_top_right, var(--app-primary-soft), transparent 38%)",
+        }}
+      />
+      <div
+        className="absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl"
+        style={{ backgroundColor: "var(--app-primary-soft)" }}
+      />
 
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-1">
           <div>
-            <p className="text-[10px] pt-2 font-black uppercase tracking-[0.16em] text-emerald-300/70">
+            <p className="pt-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               Tu coach de hoy
             </p>
 
-            <h1 className="mt-0.5 text-[26px] font-black italic leading-none tracking-tight">
+            <h1 className="mt-0.5 text-[26px] font-black leading-none tracking-tight text-[var(--app-text)]">
               Hola,{" "}
-              <span className="text-emerald-300">
+              <span className="text-[var(--app-primary)]">
                 {firstName || "crack"}
               </span>
             </h1>
 
-            <p className="mt-1 max-w-[220px] text-[12px] leading-[1.28] text-white/60 py-2">
+            <p className="mt-1 max-w-[220px] py-2 text-[12px] leading-[1.28] text-[var(--app-muted)]">
               {smartTip}
             </p>
           </div>
@@ -41,15 +56,21 @@ export default function AIHeroCard({
           </div>
         </div>
 
-        <div className="-mt-5 mb-3 rounded-[0.9rem] border border-white/10 bg-black/20 px-3 py-0">
+        <div
+          className="-mt-5 mb-3 rounded-[0.9rem] border px-3 py-0"
+          style={{
+            borderColor: "var(--app-border)",
+            backgroundColor: "var(--app-surface)",
+          }}
+        >
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="mb-0.5 flex items-center gap-2 text-[12px] font-black uppercase tracking-widest text-white/40">
-                <Sparkles size={9} className="text-emerald-300 " />
+              <p className="mb-0.5 flex items-center gap-2 text-[12px] font-black uppercase tracking-widest text-[var(--app-muted)]">
+                <Sparkles size={9} className="text-[var(--app-primary)]" />
                 AI Score
               </p>
 
-              <p className="max-w-[170px] text-[12px] leading-[1.25] text-white/66">
+              <p className="max-w-[170px] text-[12px] leading-[1.25] text-[var(--app-muted)]">
                 Según tus comidas y actividad diaria.
               </p>
             </div>
@@ -67,7 +88,7 @@ export default function AIHeroCard({
             current={totals.calories}
             goal={goals.calories}
             unit=""
-            accent="text-emerald-300"
+            accent="text-[var(--app-primary)]"
           />
 
           <QuickInlineStat
@@ -85,7 +106,7 @@ export default function AIHeroCard({
             current={todayMeals.length}
             goal={6}
             unit=""
-            accent="text-white"
+            accent="text-[var(--app-text)]"
           />
         </div>
         <div className="flex justify-center ">
@@ -107,7 +128,7 @@ function QuickInlineStat({
   current,
   goal,
   unit = "",
-  accent = "text-white",
+  accent = "text-[var(--app-text)]",
 }) {
   const safeGoal = Number(goal || 0);
   const safeCurrent = Number(current || 0);
@@ -120,19 +141,25 @@ function QuickInlineStat({
   const left = Math.max(0, safeGoal - safeCurrent);
 
   return (
-    <div className="rounded-[0.9rem] border border-white/10 bg-white/[0.03] px-2 py-1.5">
+    <div
+      className="rounded-[0.9rem] border px-2 py-1.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-surface)",
+      }}
+    >
       <div className="mb-1 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1">
-          <div className="shrink-0 text-emerald-300">
+          <div className="shrink-0 text-[var(--app-primary)]">
             {icon}
           </div>
 
-          <p className="truncate text-[8px] font-black uppercase tracking-[0.08em] text-white/45">
+          <p className="truncate text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
             {label}
           </p>
         </div>
 
-        <p className="shrink-0 text-[8px] font-bold text-white/35">
+        <p className="shrink-0 text-[8px] font-bold text-[var(--app-muted)]">
           {left > 0
             ? `Faltan ${Math.round(left)}${unit}`
             : "Completado"}
@@ -140,23 +167,25 @@ function QuickInlineStat({
       </div>
 
       <div className="mb-1">
-        <p
-          className={`text-[13px] font-black italic leading-none ${accent}`}
-        >
+        <p className={`text-[13px] font-black leading-none ${accent}`}>
           {Math.round(safeCurrent)}
           {unit}
 
-          <span className="ml-1 text-[11px] text-white/35">
+          <span className="ml-1 text-[11px] text-[var(--app-muted)]">
             / {safeGoal}
             {unit}
           </span>
         </p>
       </div>
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+      <div className="h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: "var(--app-surface)" }}>
         <div
-          className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300 transition-all duration-700"
-          style={{ width: `${progress}%` }}
+          className="h-full rounded-full transition-all duration-700"
+          style={{
+            width: `${progress}%`,
+            background:
+              "linear-gradient(to right, var(--app-primary), color-mix(in srgb, var(--app-primary) 72%, white))",
+          }}
         />
       </div>
     </div>
@@ -169,45 +198,57 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
       onClick={onClick}
       className={`group relative mx-auto min-h-[50px] w-full max-w-[330px] overflow-hidden rounded-[1.15rem] border px-2.5 py-3.5 transition duration-300 active:scale-[0.98] ${
         primary
-          ? "border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] text-white shadow-[0_16px_36px_rgba(16,185,129,0.22)] hover:border-emerald-200/40 hover:shadow-[0_18px_42px_rgba(16,185,129,0.3)]"
-          : "border-white/10 bg-white/[0.055] text-white hover:border-emerald-600/30 hover:bg-emerald-500/10"
+          ? "border-[var(--app-border)] text-[var(--app-text)] shadow-[0_16px_36px_var(--app-glow)] hover:border-[var(--app-border)] hover:shadow-[0_18px_42px_var(--app-glow)]"
+          : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)] hover:bg-[var(--app-primary-soft)]"
       }`}
+      style={
+        primary
+          ? {
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 35%, var(--app-surface)) 0%, var(--app-primary-soft) 55%, color-mix(in srgb, var(--app-primary) 48%, var(--app-card)) 100%)",
+            }
+          : undefined
+      }
     >
       <div
-        className={`absolute -right-8 -top-8 h-20 w-20 rounded-full blur-2xl ${
-          primary ? "bg-white/20" : "bg-emerald-600/10"
-        }`}
+        className="absolute -right-8 -top-8 h-20 w-20 rounded-full blur-2xl"
+        style={{ backgroundColor: "var(--app-primary-soft)" }}
       />
 
       <div className="relative z-10 flex h-full items-center justify-center gap-6">
         <div
-          className={`relative grid h-15 w-15 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] ${
-            primary ? "bg-[#06110e]/35" : "bg-emerald-500/10"
-          }`}
+          className="relative grid h-15 w-18 shrink-0 place-items-center overflow-hidden rounded-[0.95rem]"
+          style={{ backgroundColor: primary ? "var(--app-surface)" : "var(--app-primary-soft)" }}
         >
           <span
-            className={`absolute -inset-4 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_60%,#6ee7b7_72%,transparent_90%,transparent_100%)] animate-[spin_2.5s_linear_infinite] ${
-              primary ? "opacity-60" : "opacity-100"
-            }`}
+            className="absolute -inset-4 animate-[spin_2.5s_linear_infinite] rounded-full"
+            style={{
+              opacity: primary ? 0.6 : 1,
+              background:
+                "conic-gradient(from 0deg, transparent 0deg, transparent 60%, var(--app-primary) 72%, transparent 90%, transparent 100%)",
+            }}
           />
 
-          <span
-            className={`absolute inset-[2px] rounded-[0.9rem] ${
-              primary ? "bg-[#07583f]" : "bg-[#101915]"
-            }`}
-          />
+         <span
+  className="absolute inset-[2px] rounded-[0.9rem] dashboard-hero-icon"
+  style={{
+    backgroundColor: primary
+      ? "var(--app-card)"
+      : "var(--app-surface)",
+  }}
+/>
 
           <img
             src={icon}
             alt={title}
-            className="relative z-14 h-14 w-14 object-cover"
+            className="relative z-14 h-15 w-20 object-cover"
           />
         </div>
 
         <div className="flex min-w-0 flex-col items-center justify-center text-center">
           <p
             className={`text-[12px] font-black uppercase leading-tight tracking-[0.12em] ${
-              primary ? "text-white" : "text-white"
+              "text-[var(--app-text)]"
             }`}
           >
             {title}
@@ -215,7 +256,7 @@ function HeroActionButton({ title, subtitle, icon, onClick, primary = false }) {
 
           <p
             className={`mt-0.5 text-[10px] font-bold leading-tight ${
-              primary ? "text-emerald-100/85" : "text-white/70"
+              "text-[var(--app-muted)]"
             }`}
           >
             {subtitle}

@@ -68,13 +68,13 @@ export function ShoppingListView({ plan }) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-[20px] border border-dashed border-white/10 bg-black/20 p-3 text-center">
+      <div className="rounded-[20px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] p-3 text-center">
         <ShoppingBag
-          className="mx-auto mb-2 text-[#10b981]"
+          className="mx-auto mb-2 text-[var(--app-primary)]"
           size={24}
         />
 
-        <p className="text-xs font-black uppercase text-white">
+        <p className="text-xs font-black uppercase text-[var(--app-text)]">
           Lista vacía
         </p>
 
@@ -93,18 +93,18 @@ export function ShoppingListView({ plan }) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] border border-[#10b981]/15 bg-[#07170f] px-2.5 py-2 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[#10b981]/15 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[22px] border border-[var(--app-primary)]/15 bg-[var(--app-card)] px-2.5 py-2 shadow-[0_24px_80px_var(--app-glow)]">
+      <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[var(--app-primary)]/15 blur-3xl" />
 
       <div className="relative z-10">
         <header className="mb-1.5 flex items-start justify-between gap-2.5">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
               <ShoppingBag size={12} />
               Compra semanal
             </div>
 
-            <h3 className="mt-0.5 text-[15px] font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-[15px] font-black uppercase italic leading-none text-[var(--app-text)]">
               Lista inteligente
             </h3>
 
@@ -113,22 +113,22 @@ export function ShoppingListView({ plan }) {
             </p>
           </div>
 
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] border border-[#10b981]/20 bg-[#10b981]/10">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10">
             <div className="text-center">
-              <p className="text-sm font-black text-[#10b981]">
+              <p className="text-sm font-black text-[var(--app-primary)]">
                 {progress}%
               </p>
 
-              <p className="text-[8px] font-black uppercase tracking-wide text-white/45">
+              <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
                 listo
               </p>
             </div>
           </div>
         </header>
 
-        <div className="mb-1.5 h-1 overflow-hidden rounded-full bg-white/5">
+        <div className="mb-1.5 h-1 overflow-hidden rounded-full bg-[var(--app-surface)]">
           <div
-            className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+            className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -143,8 +143,8 @@ export function ShoppingListView({ plan }) {
               onClick={() => setActiveCategory(category.key)}
              className={`flex h-7 min-w-12 shrink-0 items-center justify-center gap-1 rounded-xl border px-1.5 ml-3.5 leading-none text-[8px] font-black uppercase tracking-wide transition-all ${
                 activeCategory === category.key
-                  ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-                  : "border-white/10 bg-black/20 text-slate-400 hover:bg-white/[0.03]"
+                  ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)]"
+                  : "border-[var(--app-border)] bg-[var(--app-surface)] text-slate-400 hover:bg-[var(--app-surface)]"
               }`}
             >
               <span className="grid h-3.5 w-3.5 shrink-0 place-items-center ">
@@ -169,16 +169,16 @@ export function ShoppingListView({ plan }) {
                 onClick={() => toggleItem(item.id)}
                 className={`group relative overflow-hidden rounded-2xl border px-2 py-1.5 text-left transition-all ${
                   isChecked
-                    ? "border-[#10b981]/25 bg-[#10b981]/5 opacity-70"
-                    : "border-white/10 bg-black/20 hover:border-[#10b981]/20 hover:bg-black/30"
+                    ? "border-[var(--app-primary)]/25 bg-[var(--app-primary)]/5 opacity-70"
+                    : "border-[var(--app-border)] bg-[var(--app-surface)] hover:border-[var(--app-primary)]/20 hover:bg-[var(--app-surface)]"
                 }`}
               >
                 <div className="flex items-center gap-1.5">
                   <div
                     className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg border transition-all ${
                       isChecked
-                        ? "border-[#10b981] bg-[#10b981] text-[#06110c]"
-                        : "border-white/15 bg-[#0d2218]"
+                        ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)]"
+                        : "border-[var(--app-border)] bg-[var(--app-surface)]"
                     }`}
                   >
                     <Check size={11} strokeWidth={3} />
@@ -189,13 +189,13 @@ export function ShoppingListView({ plan }) {
                       className={`truncate text-[9px] font-bold normal-case tracking-normal ${
                         isChecked
                           ? "text-slate-500 line-through"
-                          : "text-white"
+                          : "text-[var(--app-text)]"
                       }`}
                     >
                       {item.name}
                     </p>
 
-                    <p className="truncate text-[9px] font-bold normal-case text-[#10b981]">
+                    <p className="truncate text-[9px] font-bold normal-case text-[var(--app-primary)]">
                       {item.amount}
                     </p>
                   </div>
@@ -203,7 +203,7 @@ export function ShoppingListView({ plan }) {
 
                 {!isChecked && (
                   <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="absolute inset-y-0 -left-24 w-24 rotate-12 bg-gradient-to-r from-transparent via-white/5 to-transparent blur-xl" />
+                    <div className="absolute inset-y-0 -left-24 w-24 rotate-12 bg-gradient-to-r from-transparent via-[var(--app-primary-soft)] to-transparent blur-xl" />
                   </div>
                 )}
               </button>

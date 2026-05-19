@@ -6,7 +6,7 @@ export default function QuickStatsRow({ totals, todayMeals }) {
       <AIStat
         title="Proteína"
         value={`${Math.round(totals.protein)}g`}
-        color="text-[#10b981]"
+        color="text-[var(--app-primary)]"
       />
 
       <AIStat

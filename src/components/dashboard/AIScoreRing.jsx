@@ -9,7 +9,7 @@ export default function AIScoreRing({ score = 0 }) {
 
   const color =
     normalized >= 8
-      ? "#10b981"
+      ? "var(--app-primary)"
       : normalized >= 5
       ? "#facc15"
       : "#f87171";
@@ -79,7 +79,7 @@ export default function AIScoreRing({ score = 0 }) {
           {normalized}
         </span>
 
-        <span className="mt-1 text-[8px] font-black uppercase tracking-[0.25em] text-white/35">
+        <span className="mt-1 text-[8px] font-black uppercase tracking-[0.25em] text-[var(--app-muted)]">
           SCORE
         </span>
       </div>

@@ -54,10 +54,10 @@ export function DietSummary({ plan = [], getWeekTotals }) {
 
   if (!Array.isArray(plan) || plan.length === 0) {
     return (
-      <div className="rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 text-center">
-        <Target className="mx-auto mb-2 text-[#10b981]" size={26} />
+      <div className="rounded-[24px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] p-4 text-center">
+        <Target className="mx-auto mb-2 text-[var(--app-primary)]" size={26} />
 
-        <p className="text-xs font-black uppercase tracking-wide text-white">
+        <p className="text-xs font-black uppercase tracking-wide text-[var(--app-text)]">
           Sin resumen nutricional
         </p>
 
@@ -69,17 +69,17 @@ export function DietSummary({ plan = [], getWeekTotals }) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[24px] border border-[#10b981]/15 bg-[#07170f] p-2.5 shadow-[0_24px_80px_rgba(16,185,129,0.08)]">
-      <div className="absolute -right-14 -top-14 h-28 w-28 rounded-full bg-[#10b981]/15 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[24px] border border-[var(--app-primary)]/15 bg-[var(--app-card)] p-2.5 shadow-[0_24px_80px_var(--app-glow)]">
+      <div className="absolute -right-14 -top-14 h-28 w-28 rounded-full bg-[var(--app-primary)]/15 blur-3xl" />
 
       <div className="relative z-10">
         <div className="mb-2 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
               Resumen nutricional
             </p>
 
-            <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-white">
+            <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-[var(--app-text)]">
               Semana completa
             </h3>
 
@@ -88,10 +88,10 @@ export function DietSummary({ plan = [], getWeekTotals }) {
             </p>
           </div>
 
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[#10b981]/20 bg-[#10b981]/10 text-center">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 text-center">
             <div>
-              <p className="text-base font-black text-[#10b981]">{mealsCount}</p>
-              <p className="text-[10px] font-black uppercase tracking-tight text-white/45">
+              <p className="text-base font-black text-[var(--app-primary)]">{mealsCount}</p>
+              <p className="text-[10px] font-black uppercase tracking-tight text-[var(--app-muted)]">
                 comidas
               </p>
             </div>
@@ -132,10 +132,10 @@ export function DietSummary({ plan = [], getWeekTotals }) {
           />
         </div>
 
-        <div className="mt-2 rounded-[18px] border border-white/10 bg-black/20 p-2">
+        <div className="mt-2 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
-              <Activity size={12} className="text-[#10b981]" />
+              <Activity size={12} className="text-[var(--app-primary)]" />
               Distribución macros
             </div>
 
@@ -146,17 +146,17 @@ export function DietSummary({ plan = [], getWeekTotals }) {
             </div>
           </div>
 
-          <div className="flex h-2 overflow-hidden rounded-full bg-white/5">
+          <div className="flex h-2 overflow-hidden rounded-full bg-[var(--app-surface)]">
             <div
-              className="bg-[#10b981]"
+              className="bg-[var(--app-primary)]"
               style={{ width: `${percentages.protein}%` }}
             />
             <div
-              className="bg-white/45"
+              className="bg-[var(--app-primary)]"
               style={{ width: `${percentages.carbs}%` }}
             />
             <div
-              className="bg-white/20"
+              className="bg-[var(--app-surface)]"
               style={{ width: `${percentages.fat}%` }}
             />
           </div>
@@ -168,9 +168,9 @@ export function DietSummary({ plan = [], getWeekTotals }) {
 
 function SummaryCard({ icon, title, value, unit, detail }) {
   return (
-    <div className="min-w-0 rounded-[16px] border border-white/10 bg-black/20 p-2">
+    <div className="min-w-0 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
       <div className="mb-1 flex items-center justify-between gap-1">
-        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[#10b981]/10 text-[#10b981]">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[var(--app-primary)]/10 text-[var(--app-primary)]">
           {icon}
         </div>
 
@@ -183,7 +183,7 @@ function SummaryCard({ icon, title, value, unit, detail }) {
         {title}
       </p>
 
-      <p className="mt-1 truncate text-sm font-black leading-none text-white">
+      <p className="mt-1 truncate text-sm font-black leading-none text-[var(--app-text)]">
         {value}
       </p>
 

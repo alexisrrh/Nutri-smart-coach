@@ -15,17 +15,23 @@ export default function SmartSwapCard({ result }) {
   const text = cleanText(improvements[0]);
 
   return (
-    <section className="rounded-[20px] border border-white/10 bg-black/20 p-2.5">
+    <section
+      className="rounded-[20px] border p-2.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
       <div className="mb-1.5 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Sparkles size={12} className="text-[#10b981]" />
+          <Sparkles size={12} className="text-[var(--app-primary)]" />
 
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             Ajuste IA
           </p>
         </div>
 
-        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--app-muted)]">
           Smart
         </span>
       </div>
@@ -33,10 +39,11 @@ export default function SmartSwapCard({ result }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-2 rounded-[16px] bg-[#10b981]/10 px-2.5 py-2 text-left"
+        className="flex w-full items-center justify-between gap-2 rounded-[16px] px-2.5 py-2 text-left"
+        style={{ backgroundColor: "var(--app-primary-soft)" }}
       >
         <p
-          className={`text-xs leading-4 text-emerald-100/85 ${
+          className={`text-xs leading-4 text-[var(--app-muted)] ${
             open ? "" : "line-clamp-2"
           }`}
         >
@@ -45,7 +52,7 @@ export default function SmartSwapCard({ result }) {
 
         <ArrowRight
           size={12}
-          className={`shrink-0 text-[#10b981] transition ${
+          className={`shrink-0 text-[var(--app-primary)] transition ${
             open ? "rotate-90" : ""
           }`}
         />

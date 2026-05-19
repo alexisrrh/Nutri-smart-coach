@@ -230,44 +230,79 @@ export function Progress() {
     <AppShell contentClassName="px-2 pb-2 pt-1.5">
       <div className="flex h-full min-h-0 flex-col gap-2.5 overflow-hidden">
         <div className="shrink-0">
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-white/[0.035] px-2.5 py-1 text-[9px] font-semibold text-white/48 transition hover:text-white/80"
-        >
-          <ArrowLeft size={11} />
-          Dashboard
-        </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="mb-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-semibold transition hover:text-[var(--app-text)]"
+            style={{
+              backgroundColor: "var(--app-primary-soft)",
+              color: "var(--app-muted)",
+            }}
+          >
+            <ArrowLeft size={11} />
+            Dashboard
+          </button>
 
-        <SurfaceCard className="relative overflow-hidden border border-[#10b981]/15 bg-[#07170f]/95 p-3 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b9811f,transparent_42%)]" />
+          <SurfaceCard
+            className="relative overflow-hidden border p-3 shadow-[0_16px_45px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 12% 0%, var(--app-primary-soft), transparent 42%)",
+              }}
+            />
           <div className="relative z-10">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <div
+                className="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em]"
+                style={{
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
+                }}
+              >
                 <Sparkles size={10} />
                 Evolución IA
               </div>
-              <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-white">
+              <h1 className="text-[21px] font-black leading-[0.95] tracking-tight text-[var(--app-text)]">
                 Progreso
               </h1>
-              <p className="mt-0.5 text-[10px] leading-4 text-white/60">
+              <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
                 Peso, fotos y tendencia corporal.
               </p>
             </div>
 
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
+            <div
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl"
+              style={{
+                backgroundColor: "var(--app-primary-soft)",
+                color: "var(--app-primary)",
+              }}
+            >
               <Scale size={16} />
             </div>
           </div>
 
-          <div className="grid grid-cols-[104px_1fr] items-end gap-3 rounded-[18px] border border-[#10b981]/15 bg-gradient-to-br from-[#063d2d]/60 via-[#07523b]/45 to-[#07170f] px-2.5 py-2">
+          <div
+            className="grid grid-cols-[104px_1fr] items-end gap-3 rounded-[18px] border px-2.5 py-2"
+            style={{
+              borderColor: "var(--app-border)",
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 22%, var(--app-surface)) 0%, color-mix(in srgb, var(--app-primary) 16%, var(--app-card)) 45%, var(--app-surface) 100%)",
+            }}
+          >
             <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                 Peso actual
               </p>
-              <p className="mt-1 text-[36px] font-black leading-none tracking-tight text-white">
+              <p className="mt-1 text-[36px] font-black leading-none tracking-tight text-[var(--app-text)]">
                 {stats.currentWeight || "--"}
-                <span className="ml-1 text-xs font-bold text-emerald-100/55">kg</span>
+                <span className="ml-1 text-xs font-bold text-[var(--app-muted)]">kg</span>
               </p>
             </div>
 
@@ -330,9 +365,9 @@ export function Progress() {
                 <button
                   type="button"
                   onClick={() => setShowManualForm((prev) => !prev)}
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.15rem] border border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_38px_rgba(16,185,129,0.20)] transition active:scale-[0.98]"
+                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-gradient-to-br from-[var(--app-primary-soft)] via-[var(--app-primary-soft)] to-[var(--app-primary-soft)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-text)] shadow-[0_16px_38px_var(--app-glow)] transition active:scale-[0.98]"
                 >
-                  <span className="absolute -right-8 -top-8 h-16 w-16 rounded-full bg-white/15 blur-2xl" />
+                  <span className="absolute -right-8 -top-8 h-16 w-16 rounded-full bg-[var(--app-surface)] blur-2xl" />
                   <Plus size={13} />
                   Registro manual
                 </button>
@@ -381,7 +416,13 @@ function ProgressViewTabs({ activeView, setActiveView }) {
   ];
 
   return (
-    <div className="mt-1.5 grid grid-cols-4 gap-0.5 rounded-full border border-[#10b981]/15 bg-[#07170f]/95 p-0.5 shadow-[0_12px_34px_rgba(16,185,129,0.06)]">
+    <div
+      className="mt-1.5 grid grid-cols-4 gap-0.5 rounded-full border p-0.5 shadow-[0_12px_34px_var(--app-glow)]"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-card)",
+      }}
+    >
       {views.map((view) => {
         const active = activeView === view.id;
         const Icon = view.icon;
@@ -391,10 +432,10 @@ function ProgressViewTabs({ activeView, setActiveView }) {
             key={view.id}
             type="button"
             onClick={() => setActiveView(view.id)}
-            className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-full px-1 py-1.5 text-[9px] font-medium transition ${
+              className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-full px-1 py-1.5 text-[9px] font-medium transition ${
               active
-                ? "bg-[#10b981] text-[#06110c] shadow-[0_0_18px_rgba(16,185,129,0.18)]"
-                : "text-emerald-100/50 hover:bg-[#10b981]/10 hover:text-emerald-100"
+                ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_18px_var(--app-glow)]"
+                : "text-[var(--app-muted)] hover:bg-[var(--app-primary-soft)] hover:text-[var(--app-text)]"
             }`}
           >
             <Icon size={10} />
@@ -408,13 +449,19 @@ function ProgressViewTabs({ activeView, setActiveView }) {
 
 function SnapshotChip({ label, value, unit = "" }) {
   return (
-    <div className="rounded-xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2 py-1.5">
-      <p className="truncate text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
+    <div
+      className="rounded-xl border px-2 py-1.5"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-primary-soft)",
+      }}
+    >
+      <p className="truncate text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="mt-0.5 truncate text-[12px] font-black text-white">
+      <p className="mt-0.5 truncate text-[12px] font-black text-[var(--app-text)]">
         {value}
-        {unit && <span className="ml-0.5 text-[9px] text-white/35">{unit}</span>}
+        {unit && <span className="ml-0.5 text-[9px] text-[var(--app-muted)]">{unit}</span>}
       </p>
     </div>
   );
@@ -427,28 +474,28 @@ function ProgressStatsGrid({ stats }) {
       label: "Actual",
       value: stats.currentWeight || "--",
       unit: "kg",
-      tone: "text-[#10b981]",
+      tone: "text-[var(--app-primary)]",
     },
     {
       icon: Target,
       label: "Inicio",
       value: stats.firstWeight || "--",
       unit: "kg",
-      tone: "text-white/72",
+      tone: "text-[var(--app-muted)]",
     },
     {
       icon: stats.direction === "down" ? TrendingDown : TrendingUp,
       label: "Cambio",
       value: stats.change > 0 ? `+${stats.change}` : stats.change || "--",
       unit: "kg",
-      tone: stats.direction === "down" ? "text-[#10b981]" : "text-[#d9c7a4]",
+      tone: stats.direction === "down" ? "text-[var(--app-primary)]" : "text-[#d9c7a4]",
     },
     {
       icon: ChartNoAxesColumnIncreasing,
       label: "Registros",
       value: stats.totalLogs,
       unit: "",
-      tone: "text-white/75",
+      tone: "text-[var(--app-muted)]",
     },
   ];
 
@@ -458,9 +505,17 @@ function ProgressStatsGrid({ stats }) {
         const Icon = item.icon;
 
         return (
-          <SurfaceCard key={item.label} radius="md" className="border border-[#10b981]/10 bg-[#07170f]/95 p-1.5 shadow-[0_12px_34px_rgba(16,185,129,0.05)]">
+          <SurfaceCard
+            key={item.label}
+            radius="md"
+            className="border p-1.5 shadow-[0_12px_34px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
             <div className="flex items-center justify-between gap-1">
-              <p className="text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
+              <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
                 {item.label}
               </p>
               <Icon size={10} className={item.tone} />
@@ -469,7 +524,7 @@ function ProgressStatsGrid({ stats }) {
             <p className={`mt-1 truncate text-[13px] font-black leading-none ${item.tone}`}>
               {item.value}
               {item.unit && (
-                <span className="ml-0.5 text-[8px] font-medium text-white/35">
+                <span className="ml-0.5 text-[8px] font-medium text-[var(--app-muted)]">
                   {item.unit}
                 </span>
               )}
@@ -490,7 +545,13 @@ function MiniWeightSparkline({ checkins }) {
   const points = canChart ? buildMiniWeightChartPoints(weightLogs) : "";
 
   return (
-    <div className="h-10 min-w-0 overflow-hidden rounded-lg bg-black/20 px-1.5 py-1 ring-1 ring-[#10b981]/10">
+    <div
+      className="h-10 min-w-0 overflow-hidden rounded-lg border px-1.5 py-1"
+      style={{
+        backgroundColor: "var(--app-surface)",
+        borderColor: "var(--app-border)",
+      }}
+    >
       {canChart ? (
         <svg
           viewBox="0 0 150 40"
@@ -507,14 +568,14 @@ function MiniWeightSparkline({ checkins }) {
           <polyline
             points={points}
             fill="none"
-            stroke="#10b981"
+            stroke="var(--app-primary)"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2.2"
           />
         </svg>
       ) : (
-        <div className="grid h-full place-items-center text-[9px] font-medium text-white/28">
+        <div className="grid h-full place-items-center text-[9px] font-medium text-[var(--app-muted)]">
           Sin tendencia
         </div>
       )}
@@ -533,7 +594,7 @@ function ManualProgressForm({
   return (
     <SurfaceCard as="form" onSubmit={handleSubmit} className="p-4">
       <div className="mb-5 flex items-center gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#10b981] text-[#06110e]">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--app-primary)] text-[var(--app-surface)]">
           <Plus size={22} />
         </div>
 
@@ -542,7 +603,7 @@ function ManualProgressForm({
           <h2 className="mt-2 text-2xl font-black tracking-tight">
             Nuevo registro
           </h2>
-          <p className="mt-1 text-sm leading-5 text-white/55">
+          <p className="mt-1 text-sm leading-5 text-[var(--app-muted)]">
             Añade tu peso y una nota de medidas.
           </p>
         </div>
@@ -550,28 +611,28 @@ function ManualProgressForm({
 
       <div className="space-y-4">
         <FormField label="Peso actual" icon={<Scale size={15} />}>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
-            <Scale size={17} className="text-emerald-300" />
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4 focus-within:border-[var(--app-border)]">
+            <Scale size={17} className="text-[var(--app-primary)]" />
             <input
               value={peso}
               onChange={(e) => setPeso(e.target.value)}
-              className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/20"
+              className="w-full bg-transparent text-sm font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
               placeholder="Ej. 72.5"
               type="number"
               step="0.1"
               required
             />
-            <span className="text-xs font-black uppercase tracking-widest text-white/45">
+            <span className="text-xs font-black uppercase tracking-widest text-[var(--app-muted)]">
               kg
             </span>
           </div>
         </FormField>
 
         <FormField label="Nota opcional" icon={<NotebookPen size={15} />}>
-          <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 focus-within:border-emerald-400/50">
-            <div className="mb-2 flex items-center gap-2 text-emerald-300">
+          <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4 focus-within:border-[var(--app-border)]">
+            <div className="mb-2 flex items-center gap-2 text-[var(--app-primary)]">
               <NotebookPen size={16} />
-              <span className="text-xs font-black uppercase tracking-[0.14em] text-white/45">
+              <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
                 Cómo te sentiste
               </span>
             </div>
@@ -579,7 +640,7 @@ function ManualProgressForm({
             <textarea
               value={nota}
               onChange={(e) => setNota(e.target.value)}
-              className="min-h-28 w-full resize-none bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/20"
+              className="min-h-28 w-full resize-none bg-transparent text-sm font-medium text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
               placeholder="Ej. Me sentí con más energía, bajé abdomen, entrené piernas..."
             />
           </div>
@@ -606,19 +667,19 @@ function ProgressHistorySection({
   onSelect,
 }) {
   return (
-    <SurfaceCard className="border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             {sortedCheckinsDesc.length || logs.length} registro
             {(sortedCheckinsDesc.length || logs.length) !== 1 ? "s" : ""}
           </p>
-          <h2 className="mt-0.5 text-[15px] font-black uppercase italic tracking-tight text-white">
+          <h2 className="mt-0.5 text-[15px] font-black uppercase italic tracking-tight text-[var(--app-text)]">
             Historial
           </h2>
         </div>
 
-        <CalendarDays size={14} className="text-white/45" />
+        <CalendarDays size={14} className="text-[var(--app-muted)]" />
       </div>
 
       {loadingHistory ? (
@@ -685,10 +746,10 @@ function CheckinHistoryCard({
       tabIndex={0}
       onClick={() => onSelect?.(checkin)}
       onKeyDown={handleKeyDown}
-      className="cursor-pointer overflow-hidden border border-[#10b981]/10 bg-[#07170f]/95 p-0 shadow-[0_10px_28px_rgba(16,185,129,0.05)] transition hover:border-emerald-300/25 hover:bg-[#0a1d15]"
+      className="cursor-pointer overflow-hidden border border-[var(--app-border)] bg-[#07170f]/95 p-0 shadow-[0_10px_28px_var(--app-glow)] transition hover:border-[var(--app-border)] hover:bg-[#0a1d15]"
     >
       <div className="grid grid-cols-[52px_1fr] gap-2 rounded-2xl px-1 py-1.5">
-        <div className="relative h-[58px] overflow-hidden rounded-xl border border-[#10b981]/10 bg-black/25">
+        <div className="relative h-[58px] overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)]">
           {image ? (
             <img
               src={image}
@@ -696,7 +757,7 @@ function CheckinHistoryCard({
               className="h-full w-full object-contain p-1.5"
             />
           ) : (
-            <div className="grid h-full place-items-center text-emerald-100/70">
+            <div className="grid h-full place-items-center text-[var(--app-muted)]">
               <Scale size={18} />
             </div>
           )}
@@ -711,7 +772,7 @@ function CheckinHistoryCard({
             }}
             disabled={deleting}
             aria-label="Eliminar check-in"
-            className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/40 text-white/38 backdrop-blur transition hover:text-red-100 disabled:opacity-50"
+            className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-[var(--app-surface)] text-[var(--app-muted)] backdrop-blur transition hover:text-red-100 disabled:opacity-50"
           >
             <Trash2 size={10} />
           </button>
@@ -720,10 +781,10 @@ function CheckinHistoryCard({
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[8px] font-black uppercase tracking-wide text-[#10b981]">
+              <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)]">
                 {formatCheckinDate(checkin.created_at || checkin.createdAt)}
               </p>
-              <h3 className="mt-0.5 truncate text-[18px] font-black text-white">
+              <h3 className="mt-0.5 truncate text-[18px] font-black text-[var(--app-text)]">
                 {weight ? `${weight} kg` : "Peso pendiente"}
               </h3>
             </div>
@@ -732,10 +793,10 @@ function CheckinHistoryCard({
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                   weightDiff < 0
-                    ? "bg-[#10b981] text-[#06110c]"
+                    ? "bg-[var(--app-primary)] text-[var(--app-surface)]"
                     : weightDiff > 0
                     ? "bg-[#d9c7a4] text-[#171105]"
-                    : "bg-white/5 text-white/45"
+                    : "bg-[var(--app-surface)] text-[var(--app-muted)]"
                 }`}
               >
                 {formatSignedKg(weightDiff)}
@@ -753,7 +814,7 @@ function CheckinHistoryCard({
           </div>
 
           {visualChanges && (
-            <p className="mt-1 line-clamp-1 text-[10px] font-normal leading-4 text-white/42">
+            <p className="mt-1 line-clamp-1 text-[10px] font-normal leading-4 text-[var(--app-muted)]">
               {visualChanges}
             </p>
           )}
@@ -765,9 +826,9 @@ function CheckinHistoryCard({
 
 function CheckinMetricPill({ label, value }) {
   return (
-    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[#10b981]/10 bg-[#10b981]/[0.055] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide">
-      <span className="text-emerald-100/45">{label}</span>
-      <span className="truncate text-white/78">{value}</span>
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide">
+      <span className="text-[var(--app-muted)]">{label}</span>
+      <span className="truncate text-[var(--app-muted)]">{value}</span>
     </span>
   );
 }
@@ -778,7 +839,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
   return (
     <>
       <div
-        className="fixed inset-0 z-[9998] bg-black/52 backdrop-blur-[6px]"
+        className="fixed inset-0 z-[9998] bg-[var(--app-surface)]2 backdrop-blur-[6px]"
         role="presentation"
         onClick={onClose}
       />
@@ -790,13 +851,13 @@ function CheckinDetailSheet({ checkin, onClose }) {
         className="fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] z-[9999] mx-auto w-full max-w-[430px] px-2"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="max-h-[70vh] overflow-y-auto rounded-t-[28px] border border-[#10b981]/15 bg-[#07170f]/98 p-2.5 pb-3 shadow-[0_-16px_48px_rgba(16,185,129,0.14)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="max-h-[70vh] overflow-y-auto rounded-t-[28px] border border-[var(--app-border)] bg-[#07170f]/98 p-2.5 pb-3 shadow-[0_-16px_48px_var(--app-glow)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <p className="inline-flex rounded-full bg-[#10b981]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <p className="inline-flex rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 {formatCheckinDate(checkin.created_at || checkin.createdAt)}
               </p>
-              <h3 className="mt-1 text-base font-black uppercase italic leading-none text-white">
+              <h3 className="mt-1 text-base font-black uppercase italic leading-none text-[var(--app-text)]">
                 Detalle corporal
               </h3>
             </div>
@@ -805,7 +866,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
               type="button"
               onClick={onClose}
               aria-label="Cerrar análisis"
-              className="grid h-7 w-7 place-items-center rounded-full border border-[#10b981]/15 bg-[#10b981]/10 text-[#10b981] transition hover:bg-[#10b981]/15"
+              className="grid h-7 w-7 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
             >
               <X size={13} />
             </button>
@@ -813,7 +874,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
 
           <div className="mb-2 flex gap-2">
             {image ? (
-              <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[#10b981]/15 bg-[#06110e]">
+              <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)]">
                 <img
                   src={image}
                   alt="Check-in seleccionado"
@@ -822,10 +883,10 @@ function CheckinDetailSheet({ checkin, onClose }) {
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
             ) : (
-              <div className="grid h-[124px] w-[112px] shrink-0 place-items-center rounded-[18px] border border-[#10b981]/15 bg-[#10b981]/[0.055] text-center">
+              <div className="grid h-[124px] w-[112px] shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-center">
                 <div className="grid place-items-center">
-                  <Scale size={16} className="text-[#10b981]" />
-                  <p className="mt-1 text-[8px] font-black uppercase text-emerald-100/70">
+                  <Scale size={16} className="text-[var(--app-primary)]" />
+                  <p className="mt-1 text-[8px] font-black uppercase text-[var(--app-muted)]">
                     Sin foto
                   </p>
                 </div>
@@ -845,22 +906,22 @@ function CheckinDetailSheet({ checkin, onClose }) {
 
           <div className="space-y-1.5">
             {checkin.visual_changes && (
-              <div className="rounded-2xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2.5 py-2">
-                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
+                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                   Cambios visuales
                 </p>
-                <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-white/68">
+                <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
                   {checkin.visual_changes}
                 </p>
               </div>
             )}
 
             {checkin.recommendation && (
-              <div className="rounded-2xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2.5 py-2">
-                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[#10b981]">
+              <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
+                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                   Recomendación
                 </p>
-                <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-white/68">
+                <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
                   {checkin.recommendation}
                 </p>
               </div>
@@ -882,25 +943,25 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
   );
 
   return (
-    <SurfaceCard className="border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="flex items-start gap-2">
-        <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]">
+        <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
           <Sparkles size={13} />
         </div>
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             {previousCheckin ? "Comparación IA" : "Análisis IA"}
           </p>
-          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-white">
+          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
             Insight de progreso
           </h2>
 
           {hasAnalysis ? (
-            <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-white/65">
+            <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
               {visualChanges || recommendation || "Análisis disponible para tu último check-in."}
             </p>
           ) : (
-            <p className="mt-1 text-[11px] font-medium leading-4 text-white/55">
+            <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
               Haz un check-in con foto para ver un resumen IA de tu evolución.
             </p>
           )}
@@ -923,12 +984,12 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
 
 function SheetStatRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-[#10b981]/10 bg-black/18 px-2.5 py-1.5">
-      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-emerald-100/40">
+    <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5">
+      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
         {label}
       </p>
 
-      <p className="truncate text-[10px] font-black text-white">
+      <p className="truncate text-[10px] font-black text-[var(--app-text)]">
         {value}
       </p>
     </div>
@@ -937,12 +998,12 @@ function SheetStatRow({ label, value }) {
 
 function AIInsightChip({ label, value }) {
   return (
-    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2 py-1">
-      <p className="text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
+    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1">
+      <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
 
-      <p className="truncate text-[9px] font-black text-white">{value}</p>
+      <p className="truncate text-[9px] font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }
@@ -962,18 +1023,18 @@ function ProgressWeightChart({ checkins }) {
   const canChart = weightLogs.length >= 2;
 
   return (
-    <SurfaceCard className="border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Check-ins
           </p>
-          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-white">
+          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
             Evolución de peso
           </h2>
         </div>
 
-        <ChartNoAxesColumnIncreasing size={14} className="text-[#10b981]" />
+        <ChartNoAxesColumnIncreasing size={14} className="text-[var(--app-primary)]" />
       </div>
 
       {canChart ? (
@@ -984,7 +1045,7 @@ function ProgressWeightChart({ checkins }) {
             <WeightSummaryChip label="Cambio" value={formatSignedKg(totalChange)} />
           </div>
 
-          <div className="mt-2 overflow-hidden rounded-xl border border-[#10b981]/15 bg-black/20 p-2">
+          <div className="mt-2 overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
             <svg
               viewBox="0 0 320 150"
               className="h-[112px] w-full"
@@ -1001,7 +1062,7 @@ function ProgressWeightChart({ checkins }) {
               <polyline
                 points={chartPoints}
                 fill="none"
-                stroke="#10b981"
+                stroke="var(--app-primary)"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="3"
@@ -1026,12 +1087,12 @@ function ProgressWeightChart({ checkins }) {
           </div>
         </>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] px-3 py-3">
+        <SurfaceCard variant="soft" radius="md" className="border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3">
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-emerald-100/80">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]">
               <ChartNoAxesColumnIncreasing size={14} />
             </div>
-            <p className="text-[11px] font-bold leading-4 text-white/55">
+            <p className="text-[11px] font-bold leading-4 text-[var(--app-muted)]">
               Necesitas al menos 2 check-ins con peso para ver la tendencia.
             </p>
           </div>
@@ -1043,12 +1104,12 @@ function ProgressWeightChart({ checkins }) {
 
 function WeightSummaryChip({ label, value }) {
   return (
-    <div className="rounded-xl border border-[#10b981]/10 bg-[#10b981]/[0.055] px-2 py-1.5">
-      <p className="text-[8px] font-black uppercase tracking-wide text-emerald-100/45">
+    <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1.5">
+      <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
 
-      <p className="mt-0.5 truncate text-[11px] font-black text-white">
+      <p className="mt-0.5 truncate text-[11px] font-black text-[var(--app-text)]">
         {value}
       </p>
     </div>
@@ -1066,18 +1127,18 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
     latestImage;
 
   return (
-    <SurfaceCard className="border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
+    <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Check-ins
           </p>
-          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-white">
+          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
             Tu evolución
           </h2>
         </div>
 
-        <Sparkles size={14} className="text-[#10b981]" />
+        <Sparkles size={14} className="text-[var(--app-primary)]" />
       </div>
 
       {canCompare ? (
@@ -1096,12 +1157,12 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
           />
         </div>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] px-3 py-3">
+        <SurfaceCard variant="soft" radius="md" className="border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3">
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-emerald-100/80">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]">
               <Sparkles size={14} />
             </div>
-            <p className="text-[11px] font-bold leading-4 text-white/55">
+            <p className="text-[11px] font-bold leading-4 text-[var(--app-muted)]">
               Necesitas más check-ins para comparar evolución.
             </p>
           </div>
@@ -1114,25 +1175,25 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
 function ProgressPhotoTile({ label, image, date, active = false }) {
   return (
     <div
-      className={`overflow-hidden rounded-xl border bg-black/20 ${
-        active ? "border-[#10b981]/35" : "border-[#10b981]/15"
+      className={`overflow-hidden rounded-xl border bg-[var(--app-surface)] ${
+        active ? "border-[var(--app-border)]" : "border-[var(--app-border)]"
       }`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-black/30">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[var(--app-surface)]">
         <img
           src={image}
           alt={`Foto ${label.toLowerCase()} de progreso`}
           className="h-full w-full object-contain p-2"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/80 via-transparent to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/80 via-transparent to-black/10" />
 
-        <div className="absolute left-1.5 top-1.5 rounded-full border border-[#10b981]/20 bg-black/55 px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-emerald-100 backdrop-blur">
+        <div className="absolute left-1.5 top-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] backdrop-blur">
           {label}
         </div>
 
-        <div className="absolute bottom-1.5 left-1.5 right-1.5 rounded-lg border border-[#10b981]/15 bg-black/55 px-2 py-1 backdrop-blur">
-          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[#10b981]">
+        <div className="absolute bottom-1.5 left-1.5 right-1.5 rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 backdrop-blur">
+          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
             {formatCheckinDate(date)}
           </p>
         </div>
@@ -1147,15 +1208,15 @@ function ProgressCard({ log, previous }) {
   const diff = prev ? Number((current - prev).toFixed(1)) : null;
 
   return (
-    <SurfaceCard radius="md" className="p-4 transition hover:border-emerald-400/25 hover:bg-[#0b1d18]">
+    <SurfaceCard radius="md" className="p-4 transition hover:border-[var(--app-border)] hover:bg-[#0b1d18]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-3xl font-black italic text-emerald-300">
+          <h3 className="text-3xl font-black italic text-[var(--app-primary)]">
             {current}
-            <span className="ml-1 text-sm text-white/35">kg</span>
+            <span className="ml-1 text-sm text-[var(--app-muted)]">kg</span>
           </h3>
 
-          <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-white/45">
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[var(--app-muted)]">
             {new Date(log.created_at).toLocaleDateString("es-ES", {
               day: "2-digit",
               month: "short",
@@ -1168,10 +1229,10 @@ function ProgressCard({ log, previous }) {
           <div
             className={`rounded-full px-3 py-2 text-xs font-black uppercase tracking-[0.12em] ${
               diff < 0
-                ? "bg-emerald-400/10 text-emerald-300"
+                ? "bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
                 : diff > 0
                 ? "bg-amber-400/10 text-amber-200"
-                : "bg-white/5 text-white/40"
+                : "bg-[var(--app-surface)] text-[var(--app-muted)]"
             }`}
           >
             {diff > 0 ? `+${diff}` : diff} kg
@@ -1181,7 +1242,7 @@ function ProgressCard({ log, previous }) {
 
       {log.nota && (
         <SurfaceCard variant="soft" radius="sm" className="mt-4 p-3">
-          <p className="text-sm leading-relaxed text-white/60">
+          <p className="text-sm leading-relaxed text-[var(--app-muted)]">
             {log.nota}
           </p>
         </SurfaceCard>
@@ -1193,15 +1254,15 @@ function ProgressCard({ log, previous }) {
 function EmptyState() {
   return (
     <SurfaceCard variant="soft" radius="md" className="py-14 text-center">
-      <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+      <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
         <Scale size={30} />
       </div>
 
-      <h3 className="text-xl font-black uppercase tracking-tight text-white">
+      <h3 className="text-xl font-black uppercase tracking-tight text-[var(--app-text)]">
         Sin registros todavía
       </h3>
 
-      <p className="mx-auto mt-2 max-w-sm text-sm text-white/45">
+      <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--app-muted)]">
         Añade tu primer peso para empezar a medir tu evolución de peso y medidas.
       </p>
     </SurfaceCard>

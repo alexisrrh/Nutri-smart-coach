@@ -134,6 +134,10 @@ function getFriendlyOfflineMessage(operation) {
 }
 
 function getFriendlyTimeoutMessage(operation) {
+  if (isDietOperation(operation)) {
+    return "La IA está preparando tu dieta. Puede tardar un poco más. Inténtalo de nuevo.";
+  }
+
   if (isAiOperation(operation)) {
     return "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
   }
@@ -213,4 +217,10 @@ function isAiOperation(operation) {
     normalized.includes("analisis") ||
     normalized.includes("analizar")
   );
+}
+
+function isDietOperation(operation) {
+  const normalized = String(operation || "").toLowerCase();
+
+  return normalized.includes("dieta");
 }

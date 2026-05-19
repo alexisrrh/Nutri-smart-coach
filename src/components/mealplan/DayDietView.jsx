@@ -55,14 +55,14 @@ export function DayDietView({
               onClick={() => setActiveDay(index)}
               className={`group relative grid h-10 min-w-0 place-items-center overflow-hidden rounded-[1rem] border text-[12px] font-black uppercase leading-none transition active:scale-95 ${
                 active
-                  ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_18px_rgba(16,185,129,0.34)]"
-                  : "border-white/10 bg-black/25 text-emerald-200/55 hover:border-[#10b981]/30 hover:text-emerald-100"
+                  ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_18px_var(--app-glow)]"
+                  : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]/55 hover:border-[var(--app-primary)]/30 hover:text-[var(--app-text)]"
               }`}
             >
               {active && (
                 <>
-                  <span className="absolute -inset-2 z-0 animate-[spin_2.6s_linear_infinite] rounded-[1rem] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,#6ee7b7_70%,transparent_85%,transparent_100%)]" />
-                  <span className="absolute inset-[2px] z-[1] rounded-[0.9rem] bg-[#10b981]" />
+                  <span className="absolute -inset-2 z-0 animate-[spin_2.6s_linear_infinite] rounded-[1rem] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_55%,var(--app-primary)_70%,transparent_85%,transparent_100%)]" />
+                  <span className="absolute inset-[2px] z-[1] rounded-[0.9rem] bg-[var(--app-primary)]" />
                 </>
               )}
               <span className="relative z-10">
@@ -73,17 +73,17 @@ export function DayDietView({
         })}
       </div>
 
-      <div className="relative overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f] px-2.5 py-1.5">
-        <div className="absolute -right-14 -top-14 h-28 w-28 rounded-full bg-[#10b981]/15 blur-3xl" />
+      <div className="relative overflow-hidden rounded-[20px] border border-[var(--app-primary)]/15 bg-[var(--app-card)] px-2.5 py-1.5">
+        <div className="absolute -right-14 -top-14 h-28 w-28 rounded-full bg-[var(--app-primary)]/15 blur-3xl" />
 
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-2.5">
             <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#10b981]">
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                 Plan diario
               </span>
 
-              <h3 className="mt-0.5 truncate text-[17px] font-black uppercase italic leading-none text-white">
+              <h3 className="mt-0.5 truncate text-[17px] font-black uppercase italic leading-none text-[var(--app-text)]">
                 {activeDayData?.day || "Día"}
               </h3>
 
@@ -92,16 +92,16 @@ export function DayDietView({
               </p>
             </div>
 
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] border border-[#10b981]/20 bg-[#10b981]/10">
-              <span className="text-sm font-black text-[#10b981]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[15px] border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10">
+              <span className="text-sm font-black text-[var(--app-primary)]">
                 {percentage}%
               </span>
             </div>
           </div>
 
-          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5">
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-[var(--app-surface)]">
             <div
-              className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+              className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>
@@ -134,14 +134,14 @@ export function DayDietView({
               }}
               className={`cursor-pointer overflow-hidden rounded-2xl border px-2.5 py-1.5 transition active:scale-[0.99] ${
                 isCompleted
-                  ? "border-[#10b981]/30 bg-[#10b981]/5 opacity-80"
-                  : "border-white/10 bg-black/20 hover:border-[#10b981]/25 hover:bg-[#0d2218]/60"
+                  ? "border-[var(--app-primary)]/30 bg-[var(--app-primary)]/5 opacity-80"
+                  : "border-[var(--app-border)] bg-[var(--app-surface)] hover:border-[var(--app-primary)]/25 hover:bg-[var(--app-surface)]/60"
               }`}
             >
               <div className="flex items-center justify-between gap-2.5">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500">
-                    <span className="inline-flex items-center gap-1 text-[#10b981]">
+                    <span className="inline-flex items-center gap-1 text-[var(--app-primary)]">
                       <Utensils size={11} />
                       {mealName}
                     </span>
@@ -159,7 +159,7 @@ export function DayDietView({
 
                   <h4
                     className={`mt-0.5 line-clamp-2 text-[13px] font-bold normal-case leading-snug tracking-normal ${
-                      isCompleted ? "text-white/45 line-through" : "text-white"
+                      isCompleted ? "text-[var(--app-muted)] line-through" : "text-[var(--app-text)]"
                     }`}
                   >
                     {foodName}
@@ -171,7 +171,7 @@ export function DayDietView({
                   <ChevronRight
                     size={14}
                     strokeWidth={2.2}
-                    className="text-white/25"
+                    className="text-[var(--app-muted)]"
                     aria-hidden="true"
                   />
 
@@ -185,8 +185,8 @@ export function DayDietView({
                     }}
                     className={`grid min-h-9 min-w-9 shrink-0 place-items-center rounded-xl border transition active:scale-95 ${
                       isCompleted
-                        ? "border-[#10b981] bg-[#10b981] text-[#06110c] shadow-[0_0_14px_rgba(16,185,129,0.22)]"
-                        : "border-white/12 bg-white/[0.03] text-slate-500 hover:border-[#10b981]/30 hover:text-[#10b981]"
+                        ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_14px_var(--app-glow)]"
+                        : "border-[var(--app-border)] bg-[var(--app-surface)] text-slate-500 hover:border-[var(--app-primary)]/30 hover:text-[var(--app-primary)]"
                     }`}
                   >
                     <CheckCircle2 size={15} strokeWidth={2.4} />
@@ -219,21 +219,21 @@ function MealDetailSheet({ detail, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/70 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <section
         role="dialog"
         aria-modal="true"
-        className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[#10b981]/20 bg-[#07170f] p-2.5 shadow-2xl shadow-black/50"
+        className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[var(--app-primary)]/20 bg-[var(--app-card)] p-2.5 shadow-[0_24px_80px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-2 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               {mealName}
             </p>
-            <h3 className="mt-0.5 line-clamp-2 text-[15px] font-bold normal-case leading-snug text-white">
+            <h3 className="mt-0.5 line-clamp-2 text-[15px] font-bold normal-case leading-snug text-[var(--app-text)]">
               {foodName}
             </h3>
             {mealTime && (
@@ -248,7 +248,7 @@ function MealDetailSheet({ detail, onClose }) {
             type="button"
             aria-label="Cerrar detalle"
             onClick={onClose}
-            className="grid min-h-7 min-w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/20 text-slate-400 transition hover:border-[#10b981]/30 hover:text-white"
+            className="grid min-h-7 min-w-7 shrink-0 place-items-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] text-slate-400 transition hover:border-[var(--app-primary)]/30 hover:text-[var(--app-text)]"
           >
             <X size={13} strokeWidth={2.5} />
           </button>
@@ -262,11 +262,11 @@ function MealDetailSheet({ detail, onClose }) {
         </div>
 
         {foodDetail && (
-          <div className="mt-2 rounded-2xl border border-white/10 bg-black/20 p-2">
+          <div className="mt-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
             <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
               Comida completa
             </p>
-            <p className="mt-0.5 text-[11px] font-semibold normal-case leading-snug text-white/90">
+            <p className="mt-0.5 text-[11px] font-semibold normal-case leading-snug text-[var(--app-text)]">
               {foodDetail}
             </p>
           </div>
@@ -291,11 +291,11 @@ function MealDetailSheet({ detail, onClose }) {
 
 function DetailMetric({ label, value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-0.5">
+    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]/70 px-1.5 py-0.5">
       <span className="text-[8px] font-black uppercase tracking-wide text-slate-500">
         {label}
       </span>
-      <span className="text-[9px] font-black text-white">{value}</span>
+      <span className="text-[9px] font-black text-[var(--app-text)]">{value}</span>
     </div>
   );
 }
@@ -304,12 +304,12 @@ function IngredientPill({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-[#0d2218]/70 px-1.5 py-px">
+    <div className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]/70 px-1.5 py-px">
       <span className="max-w-[96px] truncate text-[8px] font-semibold normal-case text-slate-300">
         {name}
       </span>
 
-      <span className="shrink-0 text-[8px] font-black normal-case text-[#10b981]">
+      <span className="shrink-0 text-[8px] font-black normal-case text-[var(--app-primary)]">
         {amount}
       </span>
     </div>

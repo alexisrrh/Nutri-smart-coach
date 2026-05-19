@@ -161,7 +161,10 @@ export function Dashboard() {
   if (loadingData) {
     return (
       <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-        <div className="flex h-full min-h-0 flex-col gap-1 bg-[#06110e]">
+        <div
+          className="flex h-full min-h-0 flex-col gap-1"
+          style={{ backgroundColor: "var(--app-surface)" }}
+        >
           <div className="shrink-0">
             <DashboardHeader loadingData={loadingData} navigate={navigate} />
           </div>
@@ -176,7 +179,10 @@ export function Dashboard() {
 
   return (
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-      <div className="flex h-full min-h-0 flex-col gap-1 bg-[#06110e]">
+      <div
+        className="flex h-full min-h-0 flex-col gap-1"
+        style={{ backgroundColor: "var(--app-surface)" }}
+      >
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
@@ -218,27 +224,51 @@ export function Dashboard() {
 
 function DashboardSyncBanner({ message, onRetry }) {
   return (
-    <section className="relative overflow-hidden rounded-[0.9rem] border border-amber-400/12 bg-[#07170f]/92 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#f59e0b16,transparent_36%),radial-gradient(circle_at_100%_50%,#10b98112,transparent_34%)]" />
+    <section
+      className="relative overflow-hidden rounded-[0.9rem] border px-2 py-1.5 shadow-[0_10px_28px_var(--app-glow)]"
+      style={{
+        backgroundColor: "var(--app-card)",
+        borderColor: "var(--app-border)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--app-primary) 18%, transparent), transparent 36%), radial-gradient(circle at 100% 50%, var(--app-primary-soft), transparent 34%)",
+        }}
+      />
 
       <div className="relative z-10 flex items-start gap-2">
-        <div className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/10 text-amber-300">
+        <div
+          className="grid h-6 w-6 shrink-0 place-items-center rounded-lg"
+          style={{
+            border: "1px solid var(--app-border)",
+            backgroundColor: "var(--app-primary-soft)",
+            color: "var(--app-primary)",
+          }}
+        >
           <AlertCircle size={12} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300/70">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Sincronización
           </p>
 
-          <p className="mt-0.5 text-[11px] font-bold leading-[1.2] text-white/72">
+          <p className="mt-0.5 text-[11px] font-bold leading-[1.2] text-[var(--app-muted)]">
             {message}
           </p>
         </div>
 
         <button
           onClick={onRetry}
-          className="shrink-0 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:bg-emerald-400/15"
+          className="shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] transition hover:bg-[var(--app-primary-soft)]"
+          style={{
+            borderColor: "var(--app-border)",
+            backgroundColor: "var(--app-primary-soft)",
+            color: "var(--app-primary)",
+          }}
         >
           Reintentar
         </button>
@@ -249,20 +279,39 @@ function DashboardSyncBanner({ message, onRetry }) {
 
 function DashboardMotivationCard({ message }) {
   return (
-    <section className="relative overflow-hidden rounded-[0.9rem] border border-emerald-300/10 bg-[#07170f]/90 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#22d3ee17,transparent_40%),radial-gradient(circle_at_100%_50%,#10b98114,transparent_34%)]" />
+    <section
+      className="relative overflow-hidden rounded-[0.9rem] border px-2 py-1.5 shadow-[0_10px_28px_var(--app-glow)]"
+      style={{
+        backgroundColor: "var(--app-card)",
+        borderColor: "var(--app-border)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 40%), radial-gradient(circle at 100% 50%, var(--app-primary-soft), transparent 34%)",
+        }}
+      />
 
       <div className="relative z-10 flex items-center gap-2">
-        <div className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+        <div
+          className="grid h-6 w-6 shrink-0 place-items-center rounded-lg"
+          style={{
+            border: "1px solid var(--app-border)",
+            backgroundColor: "var(--app-primary-soft)",
+            color: "var(--app-primary)",
+          }}
+        >
           <Sparkles size={12} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Impulso IA
           </p>
 
-          <p className="mt-0.5 line-clamp-1 text-[11px] font-bold leading-[1.2] text-white/72">
+          <p className="mt-0.5 line-clamp-1 text-[11px] font-bold leading-[1.2] text-[var(--app-muted)]">
             {message}
           </p>
         </div>
