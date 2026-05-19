@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Activity,
   Camera,
@@ -20,8 +19,6 @@ import { getCachedProfile } from "../services/profileService";
 import { AppShell } from "../components/ui";
 
 export function CheckIn() {
-  const navigate = useNavigate();
-
   const [profile, setProfile] = useState(null);
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
@@ -95,12 +92,6 @@ export function CheckIn() {
 
     return selectedIndex >= 0 ? history[selectedIndex + 1] || null : null;
   }, [history, selectedCheckin]);
-
-  function openAnalysisSheet() {
-    if (!lastCheckin) return;
-    setSheetMode("analysis");
-    setSelectedCheckin(lastCheckin);
-  }
 
   function openCheckinSheet(checkin) {
     if (!checkin) return;
@@ -209,7 +200,7 @@ export function CheckIn() {
     <AppShell contentClassName="px-2 pb-40 pt-2">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         <section className="relative shrink-0 overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,#10b9811f,transparent_42%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,#10b9811f,transparent_42%)]" />
 
           <div className="relative z-10 flex items-center gap-2">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#10b981]/10 text-[#10b981]">
@@ -240,7 +231,7 @@ export function CheckIn() {
         <CheckInAlert type="error" text={error} />
         <CheckInAlert type="success" text={message} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className="min-h-0 flex-1 overflow-y-auto pb-32 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full flex-col gap-2.5">
             <section className="relative shrink-0 overflow-hidden rounded-[20px] border border-[#10b981]/15 bg-[#07170f]/95 p-2 shadow-[0_16px_45px_rgba(16,185,129,0.08)]">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_0%,#10b98118,transparent_40%)]" />
@@ -466,35 +457,6 @@ export function CheckIn() {
               </div>
             </section>
 
-            <section className="shrink-0 overflow-hidden rounded-[18px] border border-[#10b981]/15 bg-[#07170f]/95 p-1.5 shadow-[0_16px_45px_rgba(16,185,129,0.06)]">
-              <div className="mb-1 flex items-center justify-between">
-                <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[#10b981]">
-                    Evolución completa
-                  </p>
-                  <h3 className="text-[12px] font-black uppercase italic text-white">
-                    Progreso corporal
-                  </h3>
-                </div>
-
-                {lastCheckin && (
-                  <button
-                    onClick={openAnalysisSheet}
-                    className="rounded-full border border-[#10b981]/15 bg-[#10b981]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#10b981] transition hover:bg-[#10b981]/15"
-                  >
-                    Ver análisis
-                  </button>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => navigate("/progreso")}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#10b981]/15 bg-[#10b981]/10 px-3 py-2.5 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-100 transition hover:bg-[#10b981]/15 active:scale-[0.98]"
-              >
-                Ver progreso completo
-              </button>
-            </section>
           </div>
         </main>
 
@@ -508,17 +470,28 @@ export function CheckIn() {
         )}
 
         <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+88px)] z-[90] mx-auto w-full max-w-[430px] px-3">
+          <style>{`
+            @keyframes rotateGlow {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
           <button
             type="button"
             onClick={saveCheckIn}
             disabled={loading}
-            className="group relative w-full overflow-hidden rounded-[1.15rem] border border-emerald-300/25 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] px-3 py-3 text-white shadow-[0_16px_38px_rgba(16,185,129,0.24)] transition duration-300 hover:border-emerald-200/40 hover:shadow-[0_18px_44px_rgba(16,185,129,0.32)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative w-full overflow-hidden rounded-[1.15rem] border border-emerald-300/20 bg-gradient-to-br from-[#063d2d] via-[#07523b] to-[#0a6b4c] px-3 py-3 text-white shadow-[0_12px_28px_rgba(16,185,129,0.16)] transition duration-300 hover:border-emerald-200/35 hover:shadow-[0_14px_34px_rgba(16,185,129,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-white/20 blur-2xl" />
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/18 to-transparent transition duration-700 group-hover:translate-x-full" />
-            <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[0.95rem] border border-white/10 bg-[#06110e]/35 text-emerald-100">
-                <Sparkles size={18} />
+             <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-9">
+              <span className="relative grid h-18 w-20 shrink-0 place-items-center overflow-hidden rounded-[0.95rem] bg-[#06110e]/35">
+                <span className="absolute -inset-4 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_60%,#6ee7b7_72%,transparent_90%,transparent_100%)] opacity-70 animate-[spin_2.5s_linear_infinite]" />
+                <span className="absolute inset-[2px] rounded-[0.9rem] bg-[#07583f]" />
+                <img
+                  src="/icons/bodyscan-icon.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="relative z-10 h-19 w-25 object-contain"
+                />
               </span>
               <span className="flex min-w-0 flex-col items-start justify-center text-left">
                 <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
