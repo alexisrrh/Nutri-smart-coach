@@ -227,53 +227,57 @@ export function Progress() {
   const loadingHistory = loadingLogs || loadingCheckins;
 
   return (
-    <AppShell contentClassName="px-2 pt-1.5">
+    <AppShell contentClassName="px-2 pb-2 pt-1.5">
       <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden">
         <div className="shrink-0">
         <button
           onClick={() => navigate("/dashboard")}
-          className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/60 transition hover:border-emerald-400/40 hover:text-emerald-300"
+          className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-white/55 transition hover:border-white/20 hover:text-white/80"
         >
-          <ArrowLeft size={12} />
+          <ArrowLeft size={11} />
           Dashboard
         </button>
 
-        <SurfaceCard className="p-3">
+        <SurfaceCard className="border-white/10 bg-[#080f0d]/95 p-2.5 shadow-none">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-emerald-200">
-                <Sparkles size={10} />
+              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-white/50">
+                <Sparkles size={9} />
                 Evolución
               </div>
 
-              <h1 className="text-2xl font-black uppercase italic leading-none tracking-tight text-white">
+              <h1 className="text-xl font-black uppercase italic leading-none tracking-tight text-white">
                 Progreso
               </h1>
-              <p className="mt-1 truncate text-[11px] font-semibold text-white/45">
+              <p className="mt-0.5 truncate text-[10px] font-semibold text-white/42">
                 Peso, fotos y evolución
               </p>
             </div>
 
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-              <Scale size={16} />
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.045] text-emerald-200/80">
+              <Scale size={14} />
             </div>
           </div>
 
-          <div className="mt-2 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.08] px-3 py-2">
-            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/45">
-              Peso actual
-            </p>
-            <p className="mt-0.5 text-3xl font-black leading-none tracking-tight text-[#86efac]">
-              {stats.currentWeight || "--"}
-              <span className="ml-1 text-xs font-bold text-white/45">kg</span>
-            </p>
+          <div className="mt-2 grid grid-cols-[88px_1fr] items-end gap-2 rounded-xl border border-white/10 bg-black/20 px-2.5 py-2">
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/38">
+                Peso actual
+              </p>
+              <p className="mt-0.5 text-2xl font-black leading-none tracking-tight text-emerald-100">
+                {stats.currentWeight || "--"}
+                <span className="ml-1 text-[10px] font-bold text-white/38">kg</span>
+              </p>
+            </div>
+
+            <MiniWeightSparkline checkins={sortedCheckinsDesc} />
           </div>
         </SurfaceCard>
         <ProgressViewTabs activeView={activeView} setActiveView={setActiveView} />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="space-y-2.5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="space-y-2">
             {saved && (
               <StatusBox type="success">
                 Progreso guardado correctamente.
@@ -368,7 +372,7 @@ function ProgressViewTabs({ activeView, setActiveView }) {
   ];
 
   return (
-    <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-2xl border border-white/10 bg-black/25 p-1">
+    <div className="mt-1.5 grid grid-cols-4 gap-0.5 rounded-[14px] border border-white/10 bg-black/35 p-0.5 shadow-inner shadow-black/20">
       {views.map((view) => {
         const active = activeView === view.id;
         const Icon = view.icon;
@@ -378,13 +382,13 @@ function ProgressViewTabs({ activeView, setActiveView }) {
             key={view.id}
             type="button"
             onClick={() => setActiveView(view.id)}
-            className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[8px] font-black uppercase tracking-wide transition ${
+            className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-[11px] px-1 py-1.5 text-[8px] font-black uppercase tracking-wide transition ${
               active
-                ? "bg-[#10b981] text-[#06110c]"
+                ? "bg-white/[0.92] text-[#07110d] shadow-sm"
                 : "text-white/45 hover:bg-white/[0.05] hover:text-white/75"
             }`}
           >
-            <Icon size={11} />
+            <Icon size={10} />
             {view.label}
           </button>
         );
@@ -431,15 +435,15 @@ function ProgressStatsGrid({ stats }) {
         const Icon = item.icon;
 
         return (
-          <SurfaceCard key={item.label} radius="md" className="p-2.5">
+          <SurfaceCard key={item.label} radius="md" className="border-white/10 bg-[#080f0d]/90 p-2 shadow-none">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">
+              <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/38">
                 {item.label}
               </p>
-              <Icon size={13} className={item.tone} />
+              <Icon size={12} className={item.tone} />
             </div>
 
-            <p className={`mt-1 text-xl font-black leading-none ${item.tone}`}>
+            <p className={`mt-1 text-lg font-black leading-none ${item.tone}`}>
               {item.value}
               {item.unit && (
                 <span className="ml-1 text-[10px] font-bold text-white/35">
@@ -451,6 +455,47 @@ function ProgressStatsGrid({ stats }) {
         );
       })}
     </section>
+  );
+}
+
+function MiniWeightSparkline({ checkins }) {
+  const weightLogs = checkins
+    .filter((checkin) => Number(checkin.weight) > 0)
+    .slice(0, 8)
+    .reverse();
+  const canChart = weightLogs.length >= 2;
+  const points = canChart ? buildMiniWeightChartPoints(weightLogs) : "";
+
+  return (
+    <div className="h-10 min-w-0 overflow-hidden rounded-lg bg-white/[0.025] px-1.5 py-1">
+      {canChart ? (
+        <svg
+          viewBox="0 0 150 40"
+          className="h-full w-full"
+          role="img"
+          aria-label="Mini gráfica de peso"
+        >
+          <path
+            d="M 4 10 H 146 M 4 28 H 146"
+            fill="none"
+            stroke="rgba(255,255,255,0.06)"
+            strokeWidth="1"
+          />
+          <polyline
+            points={points}
+            fill="none"
+            stroke="#a7f3d0"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2.5"
+          />
+        </svg>
+      ) : (
+        <div className="grid h-full place-items-center text-[8px] font-black uppercase tracking-wide text-white/30">
+          Sin tendencia
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -815,46 +860,46 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
   );
 
   return (
-    <SurfaceCard className="p-3">
-      <div className="mb-3 flex items-center justify-between border-b border-white/5 pb-2.5">
+    <SurfaceCard className="border-white/10 bg-[#080f0d]/95 p-2.5 shadow-none">
+      <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/40">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/38">
             {previousCheckin ? "Comparación IA" : "Análisis IA"}
           </p>
-          <h2 className="mt-1 text-base font-black tracking-tight text-white">
+          <h2 className="mt-0.5 text-sm font-black tracking-tight text-white">
             Mejoras detectadas
           </h2>
         </div>
 
-        <Sparkles size={16} className="text-emerald-300" />
+        <Sparkles size={13} className="text-emerald-100/80" />
       </div>
 
       {hasAnalysis ? (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {visualChanges && (
-            <SurfaceCard variant="soft" radius="md" className="p-2.5">
-              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-300">
+            <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] p-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.12em] text-emerald-100/75">
                 Cambios visuales
               </p>
-              <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-white/70">
+              <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-white/68">
                 {visualChanges}
               </p>
             </SurfaceCard>
           )}
 
           {recommendation && (
-            <SurfaceCard variant="soft" radius="md" className="p-2.5">
-              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-cyan-200">
+            <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] p-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.12em] text-cyan-100/75">
                 Recomendación
               </p>
-              <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-white/70">
+              <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-4 text-white/68">
                 {recommendation}
               </p>
             </SurfaceCard>
           )}
 
           {(bodyFatRange || confidence) && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {bodyFatRange && (
                 <AIInsightChip label="Grasa estimada" value={bodyFatRange} />
               )}
@@ -865,13 +910,13 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
           )}
         </div>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="px-3 py-3">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-              <Sparkles size={16} />
+        <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] px-2.5 py-2.5">
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-emerald-100/80">
+              <Sparkles size={14} />
             </div>
 
-            <p className="text-xs font-bold leading-5 text-white/55">
+            <p className="text-[11px] font-bold leading-4 text-white/55">
               Haz un check-in con foto para ver mejoras detectadas.
             </p>
           </div>
@@ -883,12 +928,12 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
 
 function AIInsightChip({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 px-2.5 py-2">
-      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">
+    <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-1.5">
+      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/38">
         {label}
       </p>
 
-      <p className="mt-0.5 truncate text-xs font-black text-emerald-300">
+      <p className="mt-0.5 truncate text-[11px] font-black text-emerald-100/85">
         {value}
       </p>
     </div>
@@ -910,30 +955,32 @@ function ProgressWeightChart({ checkins }) {
   const canChart = weightLogs.length >= 2;
 
   return (
-    <SurfaceCard className="p-4">
-      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+    <SurfaceCard className="border-white/10 bg-[#080f0d]/95 p-2.5 shadow-none">
+      <div className="mb-2 flex items-center justify-between">
         <div>
-          <MetaBadge variant="neutral">Check-ins</MetaBadge>
-          <h2 className="mt-2 text-2xl font-black tracking-tight">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/38">
+            Check-ins
+          </p>
+          <h2 className="mt-0.5 text-sm font-black tracking-tight text-white">
             Evolución de peso
           </h2>
         </div>
 
-        <ChartNoAxesColumnIncreasing size={22} className="text-emerald-300" />
+        <ChartNoAxesColumnIncreasing size={14} className="text-emerald-100/80" />
       </div>
 
       {canChart ? (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             <WeightSummaryChip label="Inicial" value={`${firstWeight} kg`} />
             <WeightSummaryChip label="Actual" value={`${latestWeight} kg`} />
             <WeightSummaryChip label="Cambio" value={formatSignedKg(totalChange)} />
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 p-3">
+          <div className="mt-2 overflow-hidden rounded-xl border border-white/10 bg-black/20 p-2">
             <svg
               viewBox="0 0 320 150"
-              className="h-[150px] w-full"
+              className="h-[112px] w-full"
               role="img"
               aria-label="Gráfico de evolución de peso"
             >
@@ -947,10 +994,10 @@ function ProgressWeightChart({ checkins }) {
               <polyline
                 points={chartPoints}
                 fill="none"
-                stroke="#10b981"
+                stroke="#a7f3d0"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="4"
+                strokeWidth="3"
               />
 
               {chartPoints.split(" ").map((point) => {
@@ -961,10 +1008,10 @@ function ProgressWeightChart({ checkins }) {
                     key={point}
                     cx={x}
                     cy={y}
-                    r="4.5"
+                    r="3.8"
                     fill="#07170f"
-                    stroke="#86efac"
-                    strokeWidth="2.5"
+                    stroke="#d1fae5"
+                    strokeWidth="2"
                   />
                 );
               })}
@@ -972,14 +1019,15 @@ function ProgressWeightChart({ checkins }) {
           </div>
         </>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-            <ChartNoAxesColumnIncreasing size={25} />
+        <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] px-3 py-3">
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-emerald-100/80">
+              <ChartNoAxesColumnIncreasing size={14} />
+            </div>
+            <p className="text-[11px] font-bold leading-4 text-white/55">
+              Necesitas al menos 2 check-ins con peso para ver la tendencia.
+            </p>
           </div>
-
-          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
-            Necesitas al menos 2 check-ins con peso para ver la tendencia.
-          </p>
         </SurfaceCard>
       )}
     </SurfaceCard>
@@ -988,12 +1036,12 @@ function ProgressWeightChart({ checkins }) {
 
 function WeightSummaryChip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+    <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-1.5">
+      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/38">
         {label}
       </p>
 
-      <p className="mt-1 truncate text-sm font-black text-emerald-300">
+      <p className="mt-0.5 truncate text-[11px] font-black text-emerald-100/85">
         {value}
       </p>
     </div>
@@ -1011,20 +1059,22 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
     latestImage;
 
   return (
-    <SurfaceCard className="p-4">
-      <div className="mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+    <SurfaceCard className="border-white/10 bg-[#080f0d]/95 p-2.5 shadow-none">
+      <div className="mb-2 flex items-center justify-between">
         <div>
-          <MetaBadge variant="neutral">Check-ins</MetaBadge>
-          <h2 className="mt-2 text-2xl font-black tracking-tight">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/38">
+            Check-ins
+          </p>
+          <h2 className="mt-0.5 text-sm font-black tracking-tight text-white">
             Tu evolución
           </h2>
         </div>
 
-        <Sparkles size={22} className="text-emerald-300" />
+        <Sparkles size={14} className="text-emerald-100/80" />
       </div>
 
       {canCompare ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-1.5">
           <ProgressPhotoTile
             label="Inicial"
             image={firstImage}
@@ -1039,14 +1089,15 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
           />
         </div>
       ) : (
-        <SurfaceCard variant="soft" radius="md" className="py-10 text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-3xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-            <Sparkles size={25} />
+        <SurfaceCard variant="soft" radius="md" className="border-white/10 bg-white/[0.035] px-3 py-3">
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-emerald-100/80">
+              <Sparkles size={14} />
+            </div>
+            <p className="text-[11px] font-bold leading-4 text-white/55">
+              Necesitas más check-ins para comparar evolución.
+            </p>
           </div>
-
-          <p className="mx-auto max-w-sm text-sm font-bold leading-6 text-white/55">
-            Necesitas más check-ins para comparar evolución.
-          </p>
         </SurfaceCard>
       )}
     </SurfaceCard>
@@ -1056,11 +1107,11 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
 function ProgressPhotoTile({ label, image, date, active = false }) {
   return (
     <div
-      className={`overflow-hidden rounded-[22px] border bg-black/20 ${
-        active ? "border-emerald-400/25" : "border-white/10"
+      className={`overflow-hidden rounded-xl border bg-black/20 ${
+        active ? "border-emerald-100/25" : "border-white/10"
       }`}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-black/30">
+      <div className="relative aspect-[4/5] overflow-hidden bg-black/30">
         <img
           src={image}
           alt={`Foto ${label.toLowerCase()} de progreso`}
@@ -1069,12 +1120,12 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#06110c]/80 via-transparent to-black/10" />
 
-        <div className="absolute left-2 top-2 rounded-full border border-white/15 bg-black/55 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white/80 backdrop-blur">
+        <div className="absolute left-1.5 top-1.5 rounded-full border border-white/15 bg-black/55 px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-white/80 backdrop-blur">
           {label}
         </div>
 
-        <div className="absolute bottom-2 left-2 right-2 rounded-2xl border border-white/10 bg-black/55 px-2 py-1.5 backdrop-blur">
-          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-300">
+        <div className="absolute bottom-1.5 left-1.5 right-1.5 rounded-lg border border-white/10 bg-black/55 px-2 py-1 backdrop-blur">
+          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-emerald-100/85">
             {formatCheckinDate(date)}
           </p>
         </div>
@@ -1186,6 +1237,27 @@ function buildWeightChartPoints(weightLogs) {
   const height = 102;
   const xOffset = 16;
   const yOffset = 24;
+  const xStep = weightLogs.length > 1 ? width / (weightLogs.length - 1) : 0;
+
+  return weights
+    .map((weight, index) => {
+      const x = xOffset + index * xStep;
+      const y = yOffset + height - ((weight - minWeight) / range) * height;
+
+      return `${Number(x.toFixed(1))},${Number(y.toFixed(1))}`;
+    })
+    .join(" ");
+}
+
+function buildMiniWeightChartPoints(weightLogs) {
+  const weights = weightLogs.map((checkin) => Number(checkin.weight));
+  const minWeight = Math.min(...weights);
+  const maxWeight = Math.max(...weights);
+  const range = maxWeight - minWeight || 1;
+  const width = 138;
+  const height = 24;
+  const xOffset = 6;
+  const yOffset = 8;
   const xStep = weightLogs.length > 1 ? width / (weightLogs.length - 1) : 0;
 
   return weights
