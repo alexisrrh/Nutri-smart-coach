@@ -98,13 +98,16 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
       });
     }
 
-    if (!req.file) {
+    const description = String(req.body.description || "").trim();
+    const hasImage = Boolean(req.file);
+
+    if (!hasImage && !description) {
       return res.status(400).json({
-        error: "No se recibió ninguna imagen",
+        error: "Sube una foto o describe tu comida.",
       });
     }
 
-    if (!req.file.mimetype.startsWith("image/")) {
+    if (hasImage && !req.file.mimetype.startsWith("image/")) {
       return res.status(400).json({
         error: "El archivo debe ser una imagen",
       });
@@ -112,10 +115,10 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
 
     const goal = req.body.goal || "perder_grasa";
     const userId = req.body.user_id || null;
-    const imageHash = createImageHash(req.file.buffer);
+    const imageHash = hasImage ? createImageHash(req.file.buffer) : null;
     timing.mark("hash");
 
-    if (userId) {
+    if (userId && imageHash) {
       const existingAnalysis = await findMealAnalysisByImageHash({
         userId,
         imageHash,
@@ -137,7 +140,33 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
       timing.mark("lookup");
     }
 
-    const base64Image = req.file.buffer.toString("base64");
+    const prompt = buildFoodAnalysisPrompt({
+      goal,
+      description,
+      hasImage,
+    });
+
+    const contents = [
+      {
+        role: "user",
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ];
+
+    if (hasImage) {
+      const base64Image = req.file.buffer.toString("base64");
+
+      contents[0].parts.push({
+        inlineData: {
+          mimeType: req.file.mimetype,
+          data: base64Image,
+        },
+      });
+    }
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -145,47 +174,7 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
         temperature: 0.1,
         topP: 0.3,
       },
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: `
-Analiza SOLO la comida visible para NutriSmart Coach. Objetivo: ${goal}.
-Devuelve SOLO JSON válido, sin markdown ni texto extra.
-No inventes ingredientes no visibles. Estima porciones visibles de forma conservadora. Si hay duda, baja confidence y explícalo en warning o recommendation. Evita valores extremos salvo evidencia clara.
-JSON exacto:
-{
-  "food": "nombre claro de la comida",
-  "description": "breve descripción visible",
-  "portion_estimate": "porción visible estimada",
-  "ingredients_detected": ["ingrediente 1", "ingrediente 2"],
-  "calories": 0,
-  "protein": 0,
-  "carbs": 0,
-  "fat": 0,
-  "fiber": 0,
-  "sugar": 0,
-  "sodium": 0,
-  "confidence": 0,
-  "score": 0,
-  "goal_fit": "explica si esta comida encaja o no con el objetivo del usuario",
-  "recommendation": "recomendación clara y accionable",
-  "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
-  "warning": "advertencia breve si aplica; si no aplica, usa string vacío"
-}
-Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence 70-90; si incierta 40-65. Mantén criterios estables.
-`,
-            },
-            {
-              inlineData: {
-                mimeType: req.file.mimetype,
-                data: base64Image,
-              },
-            },
-          ],
-        },
-      ],
+      contents,
     });
     timing.mark("Gemini");
 
@@ -206,16 +195,22 @@ Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence
     }
 
     const analysis = normalizeFoodAnalysis(data);
+    if (description) {
+      analysis.description = analysis.description || description;
+    }
 
     let imageUrl = null;
     let savedRecord = null;
 
     if (userId) {
-      imageUrl = await uploadImageToSupabase({
-        bucket: "food-photos",
-        userId,
-        file: req.file,
-      });
+      if (hasImage) {
+        imageUrl = await uploadImageToSupabase({
+          bucket: "food-photos",
+          userId,
+          file: req.file,
+        });
+      }
+
       timing.mark("upload");
 
       savedRecord = await saveMealAnalysis({
@@ -237,6 +232,7 @@ Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence
       ...(savedRecord || analysis),
       image_hash: imageHash,
       image_url: imageUrl,
+      description: description || (savedRecord || analysis)?.description || "",
       saved: Boolean(savedRecord),
     });
   } catch (error) {
@@ -249,6 +245,40 @@ Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence
     });
   }
 });
+
+function buildFoodAnalysisPrompt({ goal, description, hasImage }) {
+  const mode = hasImage
+    ? "Analiza la comida visible de la foto"
+    : "Analiza la comida descrita por el usuario";
+
+  return `
+${mode} para NutriSmart Coach. Objetivo: ${goal}.
+${description ? `Descripción del usuario: ${description}` : ""}
+Devuelve SOLO JSON válido, sin markdown ni texto extra.
+No inventes ingredientes no visibles. Si hay imagen, estima porciones visibles de forma conservadora. Si solo hay descripción, estima calorías y macros con base en el texto y sé conservador. Si hay duda, baja confidence y explícalo en warning o recommendation. Evita valores extremos salvo evidencia clara.
+JSON exacto:
+{
+  "food": "nombre claro de la comida",
+  "description": "breve descripción clara de la comida o resumen de la descripción",
+  "portion_estimate": "porción visible o estimada",
+  "ingredients_detected": ["ingrediente 1", "ingrediente 2"],
+  "calories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0,
+  "fiber": 0,
+  "sugar": 0,
+  "sodium": 0,
+  "confidence": 0,
+  "score": 0,
+  "goal_fit": "explica si esta comida encaja o no con el objetivo del usuario",
+  "recommendation": "recomendación clara y accionable",
+  "improvements": ["mejora concreta 1", "mejora concreta 2", "mejora concreta 3"],
+  "warning": "advertencia breve si aplica; si no aplica, usa string vacío"
+}
+Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence 70-90; si incierta 40-65. Mantén criterios estables.
+`.trim();
+}
 
 app.post("/generate-diet", async (req, res) => {
   const timing = createTimingLogger("generate-diet");

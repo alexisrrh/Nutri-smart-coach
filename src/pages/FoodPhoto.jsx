@@ -21,6 +21,7 @@ import {
 export default function FoodPhoto() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -53,6 +54,7 @@ export default function FoodPhoto() {
 
     setImage(null);
     setPreview("");
+    setDescription("");
     setResult(null);
     setError("");
     setLoading(false);
@@ -99,7 +101,15 @@ export default function FoodPhoto() {
   }
 
   async function analyzeFood() {
-    if (!image || loading) return;
+    const trimmedDescription = description.trim();
+
+    if (!image && !trimmedDescription) {
+      setError("Sube una foto o describe tu comida.");
+
+      return;
+    }
+
+    if (loading) return;
 
     try {
       setLoading(true);
@@ -117,6 +127,7 @@ export default function FoodPhoto() {
 
       const mealToSave = await analyzeMeal({
         image,
+        description: trimmedDescription,
         goal: "perder_grasa",
         userId: user?.id,
       });
@@ -178,6 +189,8 @@ export default function FoodPhoto() {
         {!result && !loading && (
           <FoodUploadCard
             preview={preview}
+            description={description}
+            onDescriptionChange={setDescription}
             handleImage={handleImage}
             analyzeFood={analyzeFood}
             loading={loading}

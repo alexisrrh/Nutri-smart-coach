@@ -60,10 +60,22 @@ export async function listMeals(userId, { fallbackToCache = true } = {}) {
   }
 }
 
-export async function analyzeMeal({ image, goal = "perder_grasa", userId }) {
+export async function analyzeMeal({
+  image,
+  description = "",
+  goal = "perder_grasa",
+  userId,
+}) {
   const formData = new FormData();
-  formData.append("image", image);
   formData.append("goal", goal);
+
+  if (image) {
+    formData.append("image", image);
+  }
+
+  if (description) {
+    formData.append("description", description);
+  }
 
   if (userId) {
     formData.append("user_id", userId);
@@ -73,6 +85,7 @@ export async function analyzeMeal({ image, goal = "perder_grasa", userId }) {
     method: "POST",
     body: formData,
   }, {
+    timeoutMs: 120000,
     operation: "analizar comida con IA",
   });
 
