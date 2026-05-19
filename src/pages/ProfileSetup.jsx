@@ -28,7 +28,7 @@ import {
   StatusBox,
   SurfaceCard,
 } from "../components/ui";
-
+import { useTheme } from "../context/themeContext";
 export function ProfileSetup() {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
@@ -158,8 +158,11 @@ export function ProfileSetup() {
     return (
       <AppShell withBottomNav={false} contentClassName="px-2 pt-2">
         <SurfaceCard className="mt-28 p-5 text-center">
-          <div className="mx-auto mb-3 h-12 w-12 animate-pulse rounded-3xl bg-emerald-400/10 shadow-[0_0_24px_rgba(16,185,129,0.16)]" />
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+          <div
+            className="mx-auto mb-3 h-12 w-12 animate-pulse rounded-3xl shadow-[0_0_24px_var(--app-glow)]"
+            style={{ backgroundColor: "var(--app-primary-soft)" }}
+          />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Cargando perfil...
           </p>
         </SurfaceCard>
@@ -180,10 +183,10 @@ export function ProfileSetup() {
             <SurfaceCard className="p-2.5" radius="lg" variant="soft">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
                     Información básica
                   </p>
-                  <p className="mt-0.5 text-xs text-white/55">
+                  <p className="mt-0.5 text-xs text-[var(--app-muted)]">
                     Base para tus metas y macros.
                   </p>
                 </div>
@@ -203,10 +206,10 @@ export function ProfileSetup() {
             <SurfaceCard as="form" onSubmit={handleSubmit} className="p-2.5" radius="lg">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
                     Objetivo fitness
                   </p>
-                  <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight">
+                  <h2 className="mt-0.5 text-sm font-black tracking-tight text-[var(--app-text)]">
                     Edita tus metas
                   </h2>
                 </div>
@@ -288,7 +291,9 @@ export function ProfileSetup() {
                   onChange={(val) => handleChange("goal", val)}
                 />
               </div>
-
+              <div className="mt-2">
+                <ThemeSelector />
+              </div>
               <PrimaryButton
                 type="submit"
                 disabled={loading}
@@ -317,7 +322,13 @@ export function ProfileSetup() {
 function ProfileHero({ user, goal }) {
   return (
     <SurfaceCard className="relative overflow-hidden p-3" radius="lg">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#10b9811f,transparent_42%),radial-gradient(circle_at_75%_15%,#22d3ee14,transparent_30%)]" />
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at top, var(--app-primary-soft), transparent 42%), radial-gradient(circle at 75% 15%, color-mix(in srgb, var(--app-primary) 12%, transparent), transparent 30%)",
+        }}
+      />
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -326,20 +337,26 @@ function ProfileHero({ user, goal }) {
           </MetaBadge>
 
           <div className="mt-3 flex items-center gap-3">
-            <div className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[28px] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_28px_rgba(16,185,129,0.16)]">
+            <div
+              className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[28px] shadow-[0_0_28px_var(--app-glow)]"
+              style={{
+                backgroundColor: "var(--app-primary-soft)",
+                color: "var(--app-primary)",
+              }}
+            >
               <UserRound size={30} />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#10b981]">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
                 Perfil personal
               </p>
-              <h1 className="truncate text-[24px] font-black uppercase italic leading-none text-white">
+              <h1 className="truncate text-[24px] font-black leading-none text-[var(--app-text)]">
                 {user?.email?.split("@")[0] || "Tu perfil"}
               </h1>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 <MetaBadge variant="neutral">{goalLabel(goal)}</MetaBadge>
-                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--app-muted)]">
                   Objetivo actual
                 </span>
               </div>
@@ -374,25 +391,34 @@ function SettingSelect({ icon, label, value, options, onChange }) {
           onClick={() => setIsOpen(!isOpen)}
           className={`flex h-11 w-full items-center justify-between rounded-2xl px-3 text-left transition shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] ${
             isOpen
-              ? "bg-[#10b981]/10 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]"
-              : "bg-[#0b1d15]/90 hover:bg-[#0f241b]"
+              ? "shadow-[inset_0_0_0_1px_var(--app-border)]"
+              : ""
           }`}
+          style={{
+            backgroundColor: isOpen ? "var(--app-primary-soft)" : "var(--app-surface)",
+            boxShadow: isOpen
+              ? "inset 0 0 0 1px var(--app-border)"
+              : "inset 0 0 0 1px var(--app-border)",
+          }}
         >
-          <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
-            <span className="text-[#10b981]">{icon}</span>
+          <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-[var(--app-text)]">
+            <span className="text-[var(--app-primary)]">{icon}</span>
             <span className="truncate">{selectedOption?.label}</span>
           </span>
 
           <ChevronDown
             size={16}
-            className={`text-[#10b981] transition-transform duration-300 ${
+            className={`text-[var(--app-primary)] transition-transform duration-300 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl bg-[#07170f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl">
+          <div
+            className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl shadow-[inset_0_0_0_1px_var(--app-border),0_20px_50px_var(--app-glow)] backdrop-blur-3xl"
+            style={{ backgroundColor: "var(--app-card)" }}
+          >
             {options.map((opt) => (
               <button
                 type="button"
@@ -401,10 +427,10 @@ function SettingSelect({ icon, label, value, options, onChange }) {
                   onChange(opt.id);
                   setIsOpen(false);
                 }}
-                className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-emerald-400 hover:text-[#06110e] ${
+                className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-[var(--app-primary)] hover:text-[var(--app-surface)] ${
                   value === opt.id
-                    ? "bg-emerald-400/10 text-emerald-300"
-                    : "text-white/55"
+                    ? "bg-[var(--app-primary-soft)] text-[var(--app-text)]"
+                    : "text-[var(--app-muted)]"
                 }`}
               >
                 {opt.label}
@@ -420,16 +446,19 @@ function SettingSelect({ icon, label, value, options, onChange }) {
 function SettingRow({ label, icon, suffix, ...props }) {
   return (
     <FormField label={label} icon={icon}>
-      <div className="flex items-center gap-3 rounded-2xl bg-[#0b1d15]/90 px-3 py-3 transition shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] focus-within:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.45)]">
-        <span className="text-[#10b981]">{icon}</span>
+      <div
+        className="flex items-center gap-3 rounded-2xl px-3 py-3 transition shadow-[inset_0_0_0_1px_var(--app-border)] focus-within:shadow-[inset_0_0_0_1px_var(--app-border)]"
+        style={{ backgroundColor: "var(--app-surface)" }}
+      >
+        <span className="text-[var(--app-primary)]">{icon}</span>
 
         <input
           {...props}
-          className="w-full bg-transparent text-xs font-bold text-white outline-none placeholder:text-white/20"
+          className="w-full bg-transparent text-xs font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
         />
 
         {suffix && (
-          <span className="text-xs font-black uppercase tracking-widest text-white/45">
+          <span className="text-xs font-black uppercase tracking-widest text-[var(--app-muted)]">
             {suffix}
           </span>
         )}
@@ -441,21 +470,91 @@ function SettingRow({ label, icon, suffix, ...props }) {
 function StatPill({ label, value, unit = "", accent = false }) {
   return (
     <div
-      className={`rounded-2xl px-2.5 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045)] ${
-        accent ? "bg-[#10b981]/10" : "bg-white/[0.04]"
-      }`}
+      className="rounded-2xl px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]"
+      style={{
+        backgroundColor: accent ? "var(--app-primary-soft)" : "var(--app-surface)",
+      }}
     >
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/42">
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
         {label}
       </p>
-      <p className={`mt-0.5 text-sm font-black ${accent ? "text-emerald-100" : "text-white"}`}>
+      <p className="mt-0.5 text-sm font-black text-[var(--app-text)]">
         {value || "—"}
-        {unit && <span className="ml-1 text-[10px] text-[#10b981]/60">{unit}</span>}
+        {unit && <span className="ml-1 text-[10px] text-[var(--app-primary)]/60">{unit}</span>}
       </p>
     </div>
   );
 }
+function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
 
+  const themes = [
+    { id: "emerald", label: "Emerald", color: "#10b981" },
+    { id: "dark", label: "Dark", color: "#ffffff" },
+    { id: "white", label: "White", color: "#d1d5db" },
+    { id: "rose", label: "Rose", color: "#fb6fbd" },
+    { id: "blue", label: "Blue", color: "#38bdf8" },
+    { id: "purple", label: "Purple", color: "#a855f7" },
+  ];
+
+  return (
+    <div
+      className="rounded-3xl p-3 shadow-[inset_0_0_0_1px_var(--app-border)]"
+      style={{ backgroundColor: "var(--app-card)" }}
+    >
+      <div className="mb-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+          Personalización
+        </p>
+
+        <h3 className="mt-1 text-sm font-black text-[var(--app-text)]">
+          Color de la app
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        {themes.map((item) => {
+          const active = theme === item.id;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTheme(item.id)}
+              className={`rounded-2xl p-2 transition ${
+                active
+                  ? "shadow-[inset_0_0_0_1px_var(--app-border)]"
+                  : "hover:shadow-[inset_0_0_0_1px_var(--app-border)]"
+              }`}
+              style={{
+                backgroundColor: active
+                  ? "var(--app-primary-soft)"
+                  : "var(--app-surface)",
+              }}
+            >
+              <div
+                className="mx-auto h-9 w-9 rounded-full"
+                style={{
+                  background: item.color,
+                  boxShadow: `0 0 18px ${item.color}55`,
+                }}
+              />
+
+              <p
+                className={`mt-2 text-[10px] font-bold ${
+                  theme === "white" ? "text-[var(--app-text)]" : "text-[var(--app-muted)]"
+                }`}
+                style={active ? { color: "var(--app-text)" } : undefined}
+              >
+                {item.label}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 function goalLabel(goal) {
   if (goal === "ganar_musculo") return "Ganar músculo";
   if (goal === "mantener_peso") return "Mantener peso";
