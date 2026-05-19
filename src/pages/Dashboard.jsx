@@ -1,6 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  BarChart3,
+  Sparkles,
+  UserRound,
+  Utensils,
+} from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
 
@@ -11,6 +17,10 @@ import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import { getCachedDietPlans, listDietPlans } from "../services/dietService";
 import { getCachedMeals, listMeals } from "../services/mealService";
+import {
+  getCachedProgressLogs,
+  listProgressLogs,
+} from "../services/progressService";
 import { getCachedProfile, getProfile } from "../services/profileService";
 
 import {
@@ -22,50 +32,83 @@ import {
 export function Dashboard() {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(getCachedProfile);
-  const [meals, setMeals] = useState(getCachedMeals);
-  const [dietPlans, setDietPlans] = useState(getCachedDietPlans);
-  const [loadingData] = useState(false);
+  const [profile, setProfile] = useState(() => getCachedProfile());
+  const [meals, setMeals] = useState(() => getCachedMeals());
+  const [dietPlans, setDietPlans] = useState(() => getCachedDietPlans());
+  const [progressLogs, setProgressLogs] = useState(() =>
+    getCachedProgressLogs()
+  );
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  async function loadRemoteDashboardData(savedProfile) {
+  const loadRemoteDashboardData = useCallback(async () => {
+    setLoadingData(true);
+    setLoadError("");
+
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const userId = user?.id || savedProfile?.id || savedProfile?.user_id;
+      const cachedProfile = getCachedProfile();
+      const userId = user?.id || cachedProfile?.id || cachedProfile?.user_id;
 
-      if (!userId) return;
+      if (!userId) {
+        setLoadError("Sesión no válida. Vuelve a iniciar sesión.");
+        return;
+      }
 
-      const [profileRes, mealsRes, dietsRes] = await Promise.allSettled([
-        getProfile(userId),
-        listMeals(userId),
-        listDietPlans(userId),
-      ]);
+      const [profileRes, mealsRes, dietsRes, progressRes] =
+        await Promise.allSettled([
+          getProfile(userId, { fallbackToCache: false }),
+          listMeals(userId, { fallbackToCache: false }),
+          listDietPlans(userId, { fallbackToCache: false }),
+          listProgressLogs(userId, { fallbackToCache: false }),
+        ]);
 
-      if (profileRes.status === "fulfilled" && profileRes.value) {
-        setProfile(profileRes.value);
+      const errors = [];
+
+      if (profileRes.status === "fulfilled") {
+        setProfile(profileRes.value || null);
+      } else {
+        errors.push(profileRes.reason);
       }
 
       if (mealsRes.status === "fulfilled") {
-        setMeals(mealsRes.value);
+        setMeals(mealsRes.value || []);
+      } else {
+        errors.push(mealsRes.reason);
       }
 
       if (dietsRes.status === "fulfilled") {
-        setDietPlans(dietsRes.value);
+        setDietPlans(dietsRes.value || []);
+      } else {
+        errors.push(dietsRes.reason);
+      }
+
+      if (progressRes.status === "fulfilled") {
+        setProgressLogs(progressRes.value || []);
+      } else {
+        errors.push(progressRes.reason);
+      }
+
+      if (errors.length > 0) {
+        setLoadError(formatDashboardError(errors[0], errors.length));
       }
     } catch (error) {
-      console.error("Error cargando dashboard remoto:", error);
+      setLoadError(formatDashboardError(error, 1));
+    } finally {
+      setLoadingData(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    const savedProfile = getCachedProfile();
+    const timeoutId = setTimeout(() => {
+      void loadRemoteDashboardData();
+    }, 0);
 
-    Promise.resolve().then(() => {
-      loadRemoteDashboardData(savedProfile);
-    });
-  }, []);
+    return () => clearTimeout(timeoutId);
+  }, [loadRemoteDashboardData]);
 
   const goals = useMemo(() => getGoals(profile), [profile]);
 
@@ -101,9 +144,8 @@ export function Dashboard() {
 
     return Math.min(
       10,
-      Math.round(
-        (proteinScore + caloriesScore + carbsScore + fatScore) * 10
-      ) / 10
+      Math.round((proteinScore + caloriesScore + carbsScore + fatScore) * 10) /
+        10
     );
   }, [totals, goals]);
 
@@ -137,6 +179,45 @@ export function Dashboard() {
     ]
   );
 
+  const missingStates = useMemo(
+    () =>
+      [
+        !hasProfile(profile) && {
+          key: "profile",
+          icon: UserRound,
+          title: "Completa tu perfil",
+          description: "Añade tus datos para personalizar objetivos y cálculos.",
+          action: "Ir a perfil",
+          onClick: () => navigate("/perfil"),
+        },
+        !hasMeals(meals) && {
+          key: "meals",
+          icon: Sparkles,
+          title: "Registra tu primera comida",
+          description: "Escanea una comida para activar el historial diario.",
+          action: "Escanear comida",
+          onClick: () => navigate("/foto-comida"),
+        },
+        !hasActiveDiet(dietPlans) && {
+          key: "diet",
+          icon: Utensils,
+          title: "Genera tu dieta",
+          description: "Crea un plan para activar recomendaciones inteligentes.",
+          action: "Abrir plan",
+          onClick: () => navigate("/plan-comidas"),
+        },
+        !hasProgress(progressLogs) && {
+          key: "progress",
+          icon: BarChart3,
+          title: "Registra tu progreso",
+          description: "Añade tu peso actual para ver la evolución semanal.",
+          action: "Ir a progreso",
+          onClick: () => navigate("/progreso"),
+        },
+      ].filter(Boolean),
+    [dietPlans, meals, navigate, profile, progressLogs]
+  );
+
   if (loadingData) {
     return (
       <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
@@ -161,21 +242,36 @@ export function Dashboard() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex flex-col gap-1">
-            <div className="shrink-0">
-            <AIHeroCard
-              firstName={firstName}
-              nutritionScore={nutritionScore}
-              totals={totals}
-              goals={goals}
-              navigate={navigate}
-              smartTip={smartTip}
-              todayMeals={todayMeals}
-            />
+          <div className="flex flex-col gap-2">
+            {loadError ? (
+              <DashboardSyncBanner
+                message={loadError}
+                onRetry={loadRemoteDashboardData}
+              />
+            ) : null}
 
+            <div className="shrink-0">
+              <AIHeroCard
+                firstName={firstName}
+                nutritionScore={nutritionScore}
+                totals={totals}
+                goals={goals}
+                navigate={navigate}
+                smartTip={smartTip}
+                todayMeals={todayMeals}
+              />
             </div>
 
-            <div className="shrink-0 pb-2 pt-2">
+            {missingStates.length > 0 ? (
+              <div className="shrink-0 pt-0.5">
+                <DashboardEmptyStates
+                  items={missingStates}
+                  onRetry={loadRemoteDashboardData}
+                />
+              </div>
+            ) : null}
+
+            <div className="shrink-0 pt-1">
               <DashboardMotivationCard message={motivationMessage} />
             </div>
 
@@ -186,6 +282,93 @@ export function Dashboard() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function DashboardSyncBanner({ message, onRetry }) {
+  return (
+    <section className="relative overflow-hidden rounded-[0.9rem] border border-amber-400/12 bg-[#07170f]/92 px-2 py-1.5 shadow-[0_10px_28px_rgba(16,185,129,0.06)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#f59e0b16,transparent_36%),radial-gradient(circle_at_100%_50%,#10b98112,transparent_34%)]" />
+
+      <div className="relative z-10 flex items-start gap-2">
+        <div className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/10 text-amber-300">
+          <AlertCircle size={12} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300/70">
+            Sincronización
+          </p>
+
+          <p className="mt-0.5 text-[11px] font-bold leading-[1.2] text-white/72">
+            {message}
+          </p>
+        </div>
+
+        <button
+          onClick={onRetry}
+          className="shrink-0 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:bg-emerald-400/15"
+        >
+          Reintentar
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function DashboardEmptyStates({ items, onRetry }) {
+  return (
+    <section className="rounded-[1rem] border border-white/10 bg-[#07170f] p-2.5 shadow-[0_10px_28px_rgba(16,185,129,0.05)]">
+      <div className="flex items-center justify-between gap-2 px-0.5 pb-2">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/60">
+            Pendiente
+          </p>
+          <h3 className="mt-0.5 text-[12px] font-black leading-none text-white">
+            Completa tu dashboard
+          </h3>
+        </div>
+
+        <button
+          onClick={onRetry}
+          className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/70 transition hover:border-emerald-400/30 hover:bg-emerald-400/10 hover:text-emerald-300"
+        >
+          Reintentar
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <button
+              key={item.key}
+              onClick={item.onClick}
+              className="flex items-start gap-3 rounded-[0.9rem] border border-white/8 bg-white/[0.03] p-2.5 text-left transition hover:border-emerald-400/25 hover:bg-emerald-400/8"
+            >
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-emerald-400/15 bg-emerald-400/10 text-emerald-300">
+                <Icon size={14} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/85">
+                  {item.title}
+                </p>
+
+                <p className="mt-0.5 line-clamp-2 text-[11px] leading-[1.25] text-white/45">
+                  {item.description}
+                </p>
+
+                <span className="mt-1 inline-flex rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-emerald-300">
+                  {item.action}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -211,6 +394,56 @@ function DashboardMotivationCard({ message }) {
       </div>
     </section>
   );
+}
+
+function hasProfile(profile) {
+  return Boolean(profile?.name || profile?.nombre);
+}
+
+function hasMeals(meals) {
+  return Array.isArray(meals) && meals.length > 0;
+}
+
+function hasActiveDiet(dietPlans) {
+  return Array.isArray(dietPlans) && dietPlans.length > 0;
+}
+
+function hasProgress(progressLogs) {
+  return Array.isArray(progressLogs) && progressLogs.length > 0;
+}
+
+function formatDashboardError(error, count) {
+  const message = String(error?.message || error || "").toLowerCase();
+  const online = typeof navigator === "undefined" ? true : navigator.onLine;
+
+  if (
+    message.includes("sesión no válida") ||
+    message.includes("session") ||
+    message.includes("token") ||
+    message.includes("auth")
+  ) {
+    return "Sesión no válida. Vuelve a iniciar sesión.";
+  }
+
+  if (
+    !online ||
+    message.includes("sin conexión") ||
+    message.includes("offline") ||
+    message.includes("fetch") ||
+    message.includes("network")
+  ) {
+    return "Sin conexión. Mostramos lo último guardado y puedes reintentar.";
+  }
+
+  if (message.includes("timeout") || message.includes("aborted")) {
+    return "La sincronización está tardando demasiado. Inténtalo otra vez.";
+  }
+
+  if (count > 1) {
+    return "No pudimos sincronizar algunos datos. Reintenta para actualizar el dashboard.";
+  }
+
+  return "No pudimos sincronizar el dashboard ahora mismo. Reintenta en unos segundos.";
 }
 
 function getDashboardMotivationMessage({

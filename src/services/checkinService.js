@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from "../config/storageKeys";
-import { request } from "./apiClient";
+import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeCheckin } from "./normalizers";
 
@@ -47,7 +47,9 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
   if (!userId) return cachedCheckins;
 
   try {
-    const data = await request(`/checkins/${userId}`);
+    const data = await request(`/checkins/${userId}`, {}, {
+      operation: "cargar el historial de check-ins",
+    });
     const remoteCheckins = normalizeCheckins(data?.checkins);
 
     if (remoteCheckins.length > 0 || cachedCheckins.length === 0) {
@@ -57,8 +59,11 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
 
     return cachedCheckins;
   } catch (error) {
-    if (fallbackToCache) return cachedCheckins;
-    throw error;
+    if (fallbackToCache && cachedCheckins.length > 0) return cachedCheckins;
+    throw new Error(
+      getFriendlyErrorMessage(error, "cargar el historial de check-ins"),
+      { cause: error }
+    );
   }
 }
 
@@ -81,10 +86,16 @@ export async function createCheckin({
   formData.append("hips", hips);
   formData.append("notes", notes);
 
-  const data = await request("/checkins", {
-    method: "POST",
-    body: formData,
-  });
+  const data = await request(
+    "/checkins",
+    {
+      method: "POST",
+      body: formData,
+    },
+    {
+      operation: "guardar un check-in",
+    }
+  );
   const checkin = normalizeCheckin(data?.checkin);
 
   if (!checkin) {
@@ -109,6 +120,9 @@ export async function deleteCheckin(checkinId, userId) {
     `/checkins/${checkinId}?user_id=${encodeURIComponent(userId)}`,
     {
       method: "DELETE",
+    },
+    {
+      operation: "borrar un check-in",
     }
   );
 
