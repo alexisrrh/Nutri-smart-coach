@@ -2,6 +2,7 @@ import ActionCard from "./ActionCard";
 import {
   ChartNoAxesColumnIncreasing,
   ClipboardList,
+  Dumbbell,
   ScanLine,
   UserRoundSearch,
 } from "lucide-react";
@@ -35,7 +36,7 @@ export default function DashboardActions({ navigate }) {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-1">
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
@@ -50,6 +51,13 @@ export default function DashboardActions({ navigate }) {
           label="Check-in foto"
           description="Físico con foto"
           onClick={() => navigate("/checkin")}
+        />
+
+        <ActionCard
+          fallbackIcon={Dumbbell}
+          label="RUTINAS"
+          description="Entrena por músculo"
+          onClick={() => navigate("/rutinas")}
         />
 
         <ActionCard
