@@ -890,7 +890,11 @@ function createInitialFormData() {
       savedProfile?.goal || savedProfile?.objetivo || "lose_fat"
     ),
     planDays: "7",
-    mealsPerDay: "4",
+    mealsPerDay: String(
+      savedProfile?.meals_per_day ||
+        savedProfile?.preferences?.meals_per_day ||
+        4
+    ),
     budget: "medium",
     cookingLevel: "easy",
     homeFoods: "",

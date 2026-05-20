@@ -10,6 +10,8 @@ import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
 import { AppShell } from "../components/ui";
 
 import { supabase } from "../lib/supabase";
+import { calculateNutritionGoals } from "../services/nutritionGoalsService";
+import { getCachedProfile, getProfile } from "../services/profileService";
 import {
   analyzeMeal,
   cacheMeal,
@@ -52,6 +54,7 @@ export default function FoodPhoto() {
     return storedState.status === "error" ? storedState.error || "" : "";
   });
   const [meals, setMeals] = useState(getCachedMeals);
+  const [profile, setProfile] = useState(getCachedProfile);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -101,6 +104,29 @@ export default function FoodPhoto() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    Promise.resolve().then(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user?.id || cancelled) return;
+
+      try {
+        const profileData = await getProfile(user.id);
+        if (!cancelled) setProfile(profileData);
+      } catch (profileError) {
+        console.warn("No se pudo cargar el perfil para metas:", profileError);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading) return;
 
     const intervalId = setInterval(() => {
@@ -133,7 +159,15 @@ export default function FoodPhoto() {
   }, [preview]);
 
   const totals = useMemo(() => {
-    return meals.reduce(
+    const today = new Date().toDateString();
+    const todayMeals = meals.filter((meal) => {
+      const date = meal.created_at || meal.createdAt;
+      if (!date) return false;
+
+      return new Date(date).toDateString() === today;
+    });
+
+    return todayMeals.reduce(
       (acc, meal) => {
         acc.calories += Number(meal.calories || 0);
         acc.protein += Number(meal.protein || 0);
@@ -143,10 +177,7 @@ export default function FoodPhoto() {
     );
   }, [meals]);
 
-  const goals = {
-    calories: 2600,
-    protein: 170,
-  };
+  const goals = useMemo(() => calculateNutritionGoals(profile), [profile]);
 
   function resetScanner() {
     if (preview) URL.revokeObjectURL(preview);

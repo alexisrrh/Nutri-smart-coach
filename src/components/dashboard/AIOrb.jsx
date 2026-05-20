@@ -10,12 +10,19 @@ export default function AIOrb() {
 
       <div
         className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-5 border-t-[var(--app-primary)]"
-        style={{ borderColor: "var(--app-border)" }}
+        style={{
+          borderColor: "var(--app-border)",
+          borderTopColor: "var(--app-primary)",
+          boxShadow: "0 0 32px var(--app-glow)",
+        }}
       />
 
       <div
-        className="absolute inset-[20px] animate-[spin_4s_linear_infinite_reverse] rounded-full border-15 border-b-cyan-500/40"
-        style={{ borderColor: "var(--app-border)" }}
+        className="absolute inset-[20px] animate-[spin_4s_linear_infinite_reverse] rounded-full border-15"
+        style={{
+          borderColor: "var(--app-border)",
+          borderBottomColor: "color-mix(in srgb, var(--app-primary) 58%, white)",
+        }}
       />
 
       <div

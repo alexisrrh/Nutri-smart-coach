@@ -11,6 +11,7 @@ export default function AIHeroCard({
   navigate,
   smartTip,
   todayMeals,
+  dailyMealGoal = 4,
 }) {
   return (
     <section
@@ -104,7 +105,7 @@ export default function AIHeroCard({
             icon={<TrendingUp size={12} />}
             label="Comidas"
             current={todayMeals.length}
-            goal={6}
+            goal={dailyMealGoal}
             unit=""
             accent="text-[var(--app-text)]"
           />

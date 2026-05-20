@@ -19,6 +19,7 @@ import {
   getProfile,
   saveProfile,
 } from "../services/profileService";
+import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import {
   AppShell,
   FormField,
@@ -45,6 +46,7 @@ export function ProfileSetup() {
     gender: "male",
     activity: "moderate",
     goal: "perder_grasa",
+    mealsPerDay: "4",
   });
 
   const loadProfile = useCallback(async () => {
@@ -75,6 +77,9 @@ export function ProfileSetup() {
         gender: profile?.gender || "male",
         activity: profile?.activity_level || "moderate",
         goal: profile?.goal || "perder_grasa",
+        mealsPerDay: String(
+          profile?.meals_per_day || profile?.preferences?.meals_per_day || 4
+        ),
       });
     } catch (profileError) {
       console.error("Error cargando perfil:", profileError);
@@ -136,10 +141,12 @@ export function ProfileSetup() {
         gender: form.gender,
         activity_level: form.activity,
         goal: form.goal,
+        meals_per_day: Number(form.mealsPerDay),
         preferences: {
           gender: form.gender,
           activity: form.activity,
           goal: form.goal,
+          meals_per_day: Number(form.mealsPerDay),
         },
         updated_at: new Date().toISOString(),
       });
@@ -198,8 +205,18 @@ export function ProfileSetup() {
                 <StatPill label="Altura" value={form.height} unit="cm" />
                 <StatPill label="Edad" value={form.age} unit="años" />
                 <StatPill label="Objetivo" value={goalLabel(form.goal)} />
-                <StatPill label="Kcal" value={goalKcal(form.goal, form.weight)} unit="obj" accent />
-                <StatPill label="Prot" value={goalProtein(form.weight)} unit="g" accent />
+                <StatPill
+                  label="Kcal"
+                  value={getPreviewGoals(form).calories}
+                  unit="obj"
+                  accent
+                />
+                <StatPill
+                  label="Prot"
+                  value={getPreviewGoals(form).protein}
+                  unit="g"
+                  accent
+                />
               </div>
             </SurfaceCard>
 
@@ -289,6 +306,19 @@ export function ProfileSetup() {
                     { id: "mantener_peso", label: "Mantener peso" },
                   ]}
                   onChange={(val) => handleChange("goal", val)}
+                />
+
+                <SettingSelect
+                  icon={<Activity size={15} />}
+                  label="Comidas al día"
+                  value={form.mealsPerDay}
+                  options={[
+                    { id: "3", label: "3 comidas" },
+                    { id: "4", label: "4 comidas" },
+                    { id: "5", label: "5 comidas" },
+                    { id: "6", label: "6 comidas" },
+                  ]}
+                  onChange={(val) => handleChange("mealsPerDay", val)}
                 />
               </div>
               <div className="mt-2">
@@ -569,16 +599,16 @@ function goalLabel(goal) {
   return "Perder grasa";
 }
 
-function goalKcal(goal, weight) {
-  const base = Number(weight) ? Math.round(Number(weight) * 28) : 0;
-
-  if (!base) return "—";
-  if (goal === "ganar_musculo") return `${base + 250}`;
-  if (goal === "mantener_peso") return `${base}`;
-  return `${base - 300}`;
-}
-
-function goalProtein(weight) {
-  const base = Number(weight) ? Math.round(Number(weight) * 2) : 0;
-  return base || "—";
+function getPreviewGoals(form) {
+  return calculateNutritionGoals({
+    weight: form.weight,
+    height: form.height,
+    age: form.age,
+    gender: form.gender,
+    activity_level: form.activity,
+    goal: form.goal,
+    preferences: {
+      meals_per_day: Number(form.mealsPerDay),
+    },
+  });
 }

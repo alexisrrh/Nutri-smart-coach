@@ -95,6 +95,7 @@ export function Register() {
             gender: "male",
             activity: "moderate",
             goal: "perder_grasa",
+            meals_per_day: 4,
           },
           updated_at: new Date().toISOString(),
         });
