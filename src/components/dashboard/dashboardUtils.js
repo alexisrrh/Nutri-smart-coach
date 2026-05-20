@@ -1,30 +1,7 @@
+import { calculateNutritionGoals } from "../../services/nutritionGoalsService";
+
 export function getGoals(profile) {
-  const goal = profile?.goal || profile?.objetivo;
-
-  if (goal === "ganar_musculo") {
-    return {
-      calories: 2600,
-      protein: 170,
-      carbs: 280,
-      fat: 80,
-    };
-  }
-
-  if (goal === "perder_grasa") {
-    return {
-      calories: 1900,
-      protein: 150,
-      carbs: 160,
-      fat: 60,
-    };
-  }
-
-  return {
-    calories: 2200,
-    protein: 150,
-    carbs: 220,
-    fat: 70,
-  };
+  return calculateNutritionGoals(profile);
 }
 
 export function getSmartTip(

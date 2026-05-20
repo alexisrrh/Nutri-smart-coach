@@ -9,6 +9,10 @@ export function normalizeProfile(data) {
   const activityLevel = normalizeActivityLevel(
     data.activity_level || data.activity || data.actividad
   );
+  const preferences = data.preferences || {};
+  const mealsPerDay = normalizeMealsPerDay(
+    data.meals_per_day ?? data.mealsPerDay ?? preferences.meals_per_day ?? preferences.mealsPerDay
+  );
 
   return {
     ...data,
@@ -29,7 +33,12 @@ export function normalizeProfile(data) {
     objetivo: goal,
     actividad: activityLevel,
     activity: activityLevel,
-    preferences: data.preferences || {},
+    meals_per_day: mealsPerDay,
+    mealsPerDay,
+    preferences: {
+      ...preferences,
+      meals_per_day: mealsPerDay,
+    },
     updated_at: data.updated_at || null,
   };
 }
@@ -162,6 +171,12 @@ function normalizeActivityLevel(activityLevel) {
   if (activityLevel === "alta") return "high";
 
   return activityLevel || "moderate";
+}
+
+function normalizeMealsPerDay(value) {
+  const mealsPerDay = Number(value);
+
+  return [3, 4, 5, 6].includes(mealsPerDay) ? mealsPerDay : 4;
 }
 
 function toNumber(value) {

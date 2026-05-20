@@ -127,6 +127,16 @@ async function saveProfileToSupabase(profile) {
 }
 
 function toProfileRow(profile) {
+  const preferences = {
+    ...(profile.preferences || {}),
+    gender: profile.gender,
+    activity: profile.activity_level,
+    goal: profile.goal,
+    meals_per_day: normalizeMealsPerDay(
+      profile.meals_per_day ?? profile.mealsPerDay ?? profile.preferences?.meals_per_day
+    ),
+  };
+
   return {
     id: profile.id,
     email: profile.email,
@@ -137,11 +147,13 @@ function toProfileRow(profile) {
     gender: profile.gender,
     activity_level: profile.activity_level,
     goal: profile.goal,
-    preferences: profile.preferences || {
-      gender: profile.gender,
-      activity: profile.activity_level,
-      goal: profile.goal,
-    },
+    preferences,
     updated_at: profile.updated_at || new Date().toISOString(),
   };
+}
+
+function normalizeMealsPerDay(value) {
+  const mealsPerDay = Number(value);
+
+  return [3, 4, 5, 6].includes(mealsPerDay) ? mealsPerDay : 4;
 }

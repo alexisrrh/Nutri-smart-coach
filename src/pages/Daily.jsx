@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Activity, Flame, Target, Utensils } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { listMeals } from "../services/mealService";
+import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import { getProfile } from "../services/profileService";
 import {
   AppShell,
@@ -39,35 +40,9 @@ export function Daily() {
     0
   );
 
-  function getTargetCalories() {
-    if (!profile) return 0;
-
-    const peso = Number(profile.peso);
-    const altura = Number(profile.altura);
-    const edad = Number(profile.edad);
-
-    let bmr =
-      profile.genero === "female" || profile.genero === "mujer"
-        ? 10 * peso + 6.25 * altura - 5 * edad - 161
-        : 10 * peso + 6.25 * altura - 5 * edad + 5;
-
-    let factor = 1.55;
-
-    if (profile.actividad === "low" || profile.actividad === "sedentaria") factor = 1.2;
-    if (profile.actividad === "ligera") factor = 1.375;
-    if (profile.actividad === "moderate" || profile.actividad === "moderada") factor = 1.55;
-    if (profile.actividad === "high" || profile.actividad === "alta") factor = 1.725;
-
-    let calorias = bmr * factor;
-
-    if (profile.objetivo === "bajar" || profile.objetivo === "perder_grasa") calorias -= 400;
-    if (profile.objetivo === "subir" || profile.objetivo === "ganar_musculo") calorias += 300;
-
-    return Math.round(calorias);
-  }
-
-  const targetCalories = getTargetCalories();
-  const targetProtein = profile ? Math.round(profile.peso * 2) : 0;
+  const goals = calculateNutritionGoals(profile);
+  const targetCalories = goals.calories;
+  const targetProtein = goals.protein;
 
   const remainingCalories = targetCalories - totalCalories;
   const remainingProtein = targetProtein - totalProtein;

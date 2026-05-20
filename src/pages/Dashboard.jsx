@@ -8,6 +8,7 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
 import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
+import DailyProgressCard from "../components/dashboard/DailyProgressCard";
 
 import { getCachedDietPlans, listDietPlans } from "../services/dietService";
 import { getCachedMeals, listMeals } from "../services/mealService";
@@ -26,6 +27,14 @@ import {
   getSmartTip,
   getFirstName,
 } from "../components/dashboard/dashboardUtils";
+import {
+  buildGamificationSnapshot,
+  getGamificationState,
+  getLocalDateKey,
+  getWorkoutCompletions,
+  isSameLocalDate,
+  syncGamificationState,
+} from "../services/gamificationService";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -47,6 +56,8 @@ export function Dashboard() {
   const [profile, setProfile] = useState(() => cachedProfile);
   const [meals, setMeals] = useState(() => cachedMeals);
   const [dietPlans, setDietPlans] = useState(() => cachedDietPlans);
+  const [checkins, setCheckins] = useState(() => cachedCheckins);
+  const [workoutCompletions] = useState(() => getWorkoutCompletions());
   const [loadingData, setLoadingData] = useState(() => !hasCachedSnapshot);
   const [syncing, setSyncing] = useState(() => hasCachedSnapshot);
   const [loadError, setLoadError] = useState("");
@@ -103,6 +114,8 @@ export function Dashboard() {
 
       if (checkinsRes.status === "rejected") {
         errors.push(checkinsRes.reason);
+      } else {
+        setCheckins(checkinsRes.value || []);
       }
 
       if (progressRes.status === "rejected") {
@@ -171,6 +184,75 @@ export function Dashboard() {
 
   const activeDiet = dietPlans[0];
   const firstName = getFirstName(profile?.name || profile?.nombre);
+  const dailyMealGoal = useMemo(
+    () => getDailyMealGoal({ dietPlan: activeDiet, profile }),
+    [activeDiet, profile]
+  );
+
+  const todayKey = getLocalDateKey();
+  const todayCheckins = useMemo(() => {
+    return checkins.filter((checkin) =>
+      isSameLocalDate(checkin.created_at || checkin.createdAt, todayKey)
+    );
+  }, [checkins, todayKey]);
+
+  const todayWorkouts = useMemo(() => {
+    return workoutCompletions.filter((completionDate) =>
+      isSameLocalDate(completionDate, todayKey)
+    );
+  }, [todayKey, workoutCompletions]);
+
+  const gamificationActivity = useMemo(
+    () => ({
+      hasActiveDiet: Boolean(activeDiet),
+      hasMealToday: todayMeals.length > 0,
+      hasWorkoutToday: todayWorkouts.length > 0,
+      hasCheckinToday: todayCheckins.length > 0,
+      proteinCompleted: goals.protein > 0 && totals.protein >= goals.protein,
+      protein: totals.protein,
+      proteinGoal: goals.protein,
+      dailyMealGoal,
+      totalMeals: meals.length,
+      totalCheckins: checkins.length,
+      totalWorkouts: workoutCompletions.length,
+    }),
+    [
+      activeDiet,
+      checkins.length,
+      dailyMealGoal,
+      goals.protein,
+      meals.length,
+      todayCheckins.length,
+      todayMeals.length,
+      todayWorkouts.length,
+      totals.protein,
+      workoutCompletions.length,
+    ]
+  );
+
+  const [gamification, setGamification] = useState(() =>
+    buildGamificationSnapshot(getGamificationState(), {
+      hasActiveDiet: Boolean(cachedDietPlans[0]),
+      hasMealToday: false,
+      hasWorkoutToday: false,
+      hasCheckinToday: false,
+      proteinCompleted: false,
+      protein: 0,
+      proteinGoal: 0,
+      dailyMealGoal,
+      totalMeals: cachedMeals.length,
+      totalCheckins: cachedCheckins.length,
+      totalWorkouts: workoutCompletions.length,
+    })
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setGamification(syncGamificationState(gamificationActivity));
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [gamificationActivity]);
 
   const smartTip = getSmartTip(
     totals,
@@ -250,11 +332,16 @@ export function Dashboard() {
                 navigate={navigate}
                 smartTip={smartTip}
                 todayMeals={todayMeals}
+                dailyMealGoal={dailyMealGoal}
               />
             </div>
 
             <div className="shrink-0 pt-0.5">
               <DashboardMotivationCard message={motivationMessage} />
+            </div>
+
+            <div className="shrink-0">
+              <DailyProgressCard gamification={gamification} />
             </div>
 
             <div className="shrink-0">
@@ -432,4 +519,60 @@ function getDashboardMotivationMessage({
   }
 
   return "Hoy es buen día para empezar con una acción pequeña.";
+}
+
+function getDailyMealGoal({ dietPlan, profile }) {
+  const dietMealGoal = getDietMealGoalForToday(dietPlan);
+  if (dietMealGoal) return dietMealGoal;
+
+  const profileMealGoal = Number(
+    profile?.meals_per_day ||
+      profile?.mealsPerDay ||
+      profile?.preferences?.meals_per_day ||
+      profile?.preferences?.mealsPerDay
+  );
+
+  return [3, 4, 5, 6].includes(profileMealGoal) ? profileMealGoal : 4;
+}
+
+function getDietMealGoalForToday(dietPlan) {
+  const week = Array.isArray(dietPlan?.week)
+    ? dietPlan.week
+    : Array.isArray(dietPlan?.plan)
+      ? dietPlan.plan
+      : [];
+
+  if (week.length === 0) return null;
+
+  const createdAtMs = Date.parse(dietPlan?.created_at || dietPlan?.createdAt || "");
+
+  if (!Number.isNaN(createdAtMs)) {
+    const elapsedDays = getLocalDayDiff(new Date(createdAtMs), new Date());
+    const currentPlanDay = week[elapsedDays];
+
+    return getMealCountFromDietDay(currentPlanDay);
+  }
+
+  const mondayFirstDayIndex = (new Date().getDay() + 6) % 7;
+
+  return getMealCountFromDietDay(week[mondayFirstDayIndex % week.length]);
+}
+
+function getMealCountFromDietDay(day) {
+  const meals = Array.isArray(day?.meals)
+    ? day.meals
+    : Object.values(day?.meals || {});
+
+  return meals.length > 0 ? meals.length : null;
+}
+
+function getLocalDayDiff(fromDate, toDate) {
+  const from = new Date(
+    fromDate.getFullYear(),
+    fromDate.getMonth(),
+    fromDate.getDate()
+  );
+  const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+
+  return Math.floor((to.getTime() - from.getTime()) / 86400000);
 }
