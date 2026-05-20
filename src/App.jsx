@@ -60,6 +60,12 @@ const CheckIn = lazy(() =>
 
 const FoodPhoto = lazy(() => import("./pages/FoodPhoto"));
 
+const WorkoutRoutines = lazy(() =>
+  import("./pages/WorkoutRoutines").then((module) => ({
+    default: module.WorkoutRoutines,
+  }))
+);
+
 const BodyScaner = lazy(() =>
   import("./components/Home/BodyScaner").then((module) => ({
     default: module.BodyScaner,
@@ -206,6 +212,15 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <Meals />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/rutinas"
+          element={
+            <ProtectedRoute>
+              <WorkoutRoutines />
             </ProtectedRoute>
           }
         />

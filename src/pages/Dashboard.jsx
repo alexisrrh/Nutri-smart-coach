@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
+import { exercises } from "../data/exercises";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
@@ -201,6 +202,14 @@ export function Dashboard() {
       isSameLocalDate(completionDate, todayKey)
     );
   }, [todayKey, workoutCompletions]);
+  const workoutRecommendation = useMemo(
+    () =>
+      getTodayWorkoutRecommendation({
+        profile,
+        completedToday: todayWorkouts.length > 0,
+      }),
+    [profile, todayWorkouts.length]
+  );
 
   const gamificationActivity = useMemo(
     () => ({
@@ -345,6 +354,13 @@ export function Dashboard() {
             </div>
 
             <div className="shrink-0">
+              <DashboardWorkoutRecommendationCard
+                recommendation={workoutRecommendation}
+                navigate={navigate}
+              />
+            </div>
+
+            <div className="shrink-0">
               <DashboardActions navigate={navigate} />
             </div>
           </div>
@@ -454,6 +470,58 @@ function DashboardMotivationCard({ message }) {
   );
 }
 
+function DashboardWorkoutRecommendationCard({ recommendation, navigate }) {
+  return (
+    <section
+      className="relative overflow-hidden rounded-[0.9rem] border px-2.5 py-2 shadow-[0_10px_28px_var(--app-glow)]"
+      style={{
+        backgroundColor: "var(--app-card)",
+        borderColor: "var(--app-border)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--app-primary) 18%, transparent), transparent 38%), radial-gradient(circle at 100% 50%, var(--app-primary-soft), transparent 32%)",
+        }}
+      />
+
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+            Entreno recomendado hoy
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <h2 className="text-[17px] font-black leading-none text-[var(--app-text)]">
+              {recommendation.muscle}
+            </h2>
+            <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+              {recommendation.level}
+            </span>
+          </div>
+
+          <p className="mt-1 line-clamp-1 text-[11px] font-bold text-[var(--app-muted)]">
+            {recommendation.completedToday
+              ? "Entreno completado hoy"
+              : recommendation.exerciseNames.join(" · ")}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate(`/rutinas?muscle=${encodeURIComponent(recommendation.queryMuscle)}`)
+          }
+          className="shrink-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)] transition active:scale-[0.98]"
+        >
+          Ver rutina
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function formatDashboardError(error, count) {
   const message = String(error?.message || error || "").toLowerCase();
   const online = typeof navigator === "undefined" ? true : navigator.onLine;
@@ -519,6 +587,52 @@ function getDashboardMotivationMessage({
   }
 
   return "Hoy es buen día para empezar con una acción pequeña.";
+}
+
+function getTodayWorkoutRecommendation({ profile, completedToday }) {
+  const weekday = new Date().getDay();
+  const schedule = {
+    0: { muscle: "Abdomen", label: "Abdomen / descanso activo" },
+    1: { muscle: "Pecho", label: "Pecho" },
+    2: { muscle: "Espalda", label: "Espalda" },
+    3: { muscle: "Piernas", label: "Piernas" },
+    4: { muscle: "Hombros", label: "Hombros" },
+    5: { muscle: "Glúteos", label: "Glúteos" },
+    6: { muscle: "Bíceps", label: "Brazos" },
+  };
+  const today = schedule[weekday] || schedule[1];
+  const level = getRecommendedWorkoutLevel(profile);
+  const muscleExercises = exercises.filter(
+    (exercise) =>
+      exercise.muscle === today.muscle ||
+      (today.label === "Brazos" &&
+        (exercise.muscle === "Bíceps" || exercise.muscle === "Tríceps"))
+  );
+  const exactLevelExercises = muscleExercises.filter(
+    (exercise) => exercise.level === level
+  );
+  const recommendedExercises =
+    exactLevelExercises.length >= 3 ? exactLevelExercises : muscleExercises;
+
+  return {
+    muscle: today.label,
+    queryMuscle: today.muscle.toLowerCase(),
+    level,
+    completedToday,
+    exerciseNames: recommendedExercises
+      .slice(0, 3)
+      .map((exercise) => exercise.name),
+  };
+}
+
+function getRecommendedWorkoutLevel(profile) {
+  const activity =
+    profile?.activity_level || profile?.activity || profile?.actividad || "";
+
+  if (activity === "high" || activity === "alta") return "Avanzado";
+  if (activity === "moderate" || activity === "moderada") return "Intermedio";
+
+  return "Principiante";
 }
 
 function getDailyMealGoal({ dietPlan, profile }) {

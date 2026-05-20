@@ -93,7 +93,128 @@ export function buildGamificationSnapshot(state, activity) {
 export function getWorkoutCompletions() {
   const completions = getCache(WORKOUT_COMPLETIONS_KEY, []);
 
-  return Array.isArray(completions) ? completions.filter(Boolean) : [];
+  return normalizeWorkoutCompletions(completions);
+}
+
+export function getTodayWorkoutCompletion() {
+  const todayKey = getLocalDateKey();
+
+  return getWorkoutCompletions().find(
+    (completion) => completion.date === todayKey
+  ) || null;
+}
+
+export function completeWorkoutForToday({ muscle, level, goal, dayId = "", dayName = "" }) {
+  const todayKey = getLocalDateKey();
+  const completions = getWorkoutCompletions();
+  const previousCompletion = completions.find(
+    (completion) => completion.date === todayKey
+  );
+  const xpBefore = getGamificationState().xp;
+
+  if (previousCompletion) {
+    const completion = {
+      ...previousCompletion,
+      dayId: dayId || previousCompletion.dayId,
+      dayName: dayName || previousCompletion.dayName,
+      muscle: muscle || previousCompletion.muscle,
+      level: level || previousCompletion.level,
+      goal: goal || previousCompletion.goal,
+    };
+    const nextCompletions = completions.map((item) =>
+      item.date === todayKey ? completion : item
+    );
+
+    setCache(WORKOUT_COMPLETIONS_KEY, toWorkoutCompletionsByDate(nextCompletions));
+
+    const snapshot = syncGamificationState({
+      hasWorkoutToday: true,
+      totalWorkouts: nextCompletions.length,
+    });
+
+    return {
+      completion,
+      alreadyCompleted: true,
+      xpAwarded: Math.max(0, snapshot.xp - xpBefore),
+      snapshot,
+    };
+  }
+
+  const completion = {
+    date: todayKey,
+    dayId,
+    dayName,
+    muscle,
+    level,
+    goal,
+    completedAt: new Date().toISOString(),
+  };
+  const nextCompletions = [...completions, completion];
+
+  setCache(WORKOUT_COMPLETIONS_KEY, toWorkoutCompletionsByDate(nextCompletions));
+
+  const snapshot = syncGamificationState({
+    hasWorkoutToday: true,
+    totalWorkouts: nextCompletions.length,
+  });
+
+  return {
+    completion,
+    alreadyCompleted: false,
+    xpAwarded: Math.max(0, snapshot.xp - xpBefore),
+    snapshot,
+  };
+}
+
+export function markWorkoutCompletion({ date, dayId = "", dayName = "", muscle, level, goal }) {
+  const dateKey = normalizeDateKey(date);
+
+  if (!dateKey) return null;
+
+  if (dateKey === getLocalDateKey()) {
+    return completeWorkoutForToday({ muscle, level, goal, dayId, dayName });
+  }
+
+  const completions = getWorkoutCompletions();
+  const completion = {
+    date: dateKey,
+    dayId,
+    dayName,
+    muscle,
+    level,
+    goal,
+    completedAt: new Date().toISOString(),
+  };
+  const nextCompletions = [
+    ...completions.filter((item) => item.date !== dateKey),
+    completion,
+  ];
+
+  setCache(WORKOUT_COMPLETIONS_KEY, toWorkoutCompletionsByDate(nextCompletions));
+
+  return {
+    completion,
+    alreadyCompleted: false,
+    xpAwarded: 0,
+    snapshot: buildGamificationSnapshot(getGamificationState(), {
+      hasWorkoutToday: Boolean(getTodayWorkoutCompletion()),
+      totalWorkouts: nextCompletions.length,
+    }),
+  };
+}
+
+export function unmarkWorkoutCompletion(date) {
+  const dateKey = normalizeDateKey(date);
+
+  if (!dateKey) return [];
+
+  const nextCompletions = getWorkoutCompletions().filter(
+    (completion) => completion.date !== dateKey
+  );
+
+  setCache(WORKOUT_COMPLETIONS_KEY, toWorkoutCompletionsByDate(nextCompletions));
+
+  return nextCompletions;
 }
 
 export function getLocalDateKey(date = new Date()) {
@@ -106,6 +227,10 @@ export function getLocalDateKey(date = new Date()) {
 
 export function isSameLocalDate(value, dateKey = getLocalDateKey()) {
   if (!value) return false;
+
+  if (typeof value === "object") {
+    return isSameLocalDate(value.date || value.completedAt, dateKey);
+  }
 
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return value === dateKey;
@@ -173,6 +298,14 @@ function getDailySummary(state, activity) {
     Math.round(Number(activity?.proteinGoal || 0) - Number(activity?.protein || 0))
   );
 
+  if (activity?.hasWorkoutToday && activity?.hasMealToday) {
+    return "Entreno completado y nutrición activa hoy.";
+  }
+
+  if (activity?.hasWorkoutToday) {
+    return "Entreno completado. Buen punto para sostener la racha.";
+  }
+
   if (activity?.proteinCompleted && activity?.hasMealToday) {
     return "Hoy vas muy bien. Mantén el ritmo.";
   }
@@ -219,4 +352,78 @@ function normalizeDailyMealGoal(value) {
   const mealGoal = Number(value);
 
   return [3, 4, 5, 6].includes(mealGoal) ? mealGoal : DEFAULT_DAILY_MEAL_GOAL;
+}
+
+function normalizeWorkoutCompletions(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (!item) return null;
+
+        if (typeof item === "string") {
+          return {
+            date: /^\d{4}-\d{2}-\d{2}$/.test(item)
+              ? item
+              : getLocalDateKey(new Date(item)),
+            muscle: "",
+            level: "",
+            goal: "",
+            completedAt: item,
+          };
+        }
+
+        return normalizeWorkoutCompletion(item);
+      })
+      .filter(Boolean);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([date, completion]) =>
+        normalizeWorkoutCompletion({ date, ...completion })
+      )
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeWorkoutCompletion(completion) {
+  const completedAt = completion?.completedAt || completion?.completed_at || null;
+  const date =
+    completion?.date ||
+    (completedAt ? getLocalDateKey(new Date(completedAt)) : null);
+
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+  return {
+    date,
+    dayId: completion?.dayId || completion?.day_id || "",
+    dayName: completion?.dayName || completion?.day_name || "",
+    muscle: completion?.muscle || "",
+    level: completion?.level || "",
+    goal: completion?.goal || "",
+    completedAt: completedAt || `${date}T00:00:00.000Z`,
+  };
+}
+
+function normalizeDateKey(value) {
+  if (!value) return "";
+
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return getLocalDateKey(date);
+}
+
+function toWorkoutCompletionsByDate(completions) {
+  return completions.reduce((acc, completion) => {
+    acc[completion.date] = completion;
+    return acc;
+  }, {});
 }

@@ -42,7 +42,7 @@ export const ACHIEVEMENTS = [
   },
   {
     id: "first_workout",
-    label: "Primera rutina completada",
+    label: "Primer entreno completado",
   },
 ];
 
