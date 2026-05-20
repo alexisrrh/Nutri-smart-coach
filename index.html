@@ -1,8 +1,22 @@
 <!doctype html>
 <html lang="es">
   <head>
-
     <meta charset="UTF-8" />
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5NEELFBVX0"></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+
+      gtag('js', new Date());
+
+      gtag('config', 'G-5NEELFBVX0');
+    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -24,56 +38,81 @@
 
     <meta name="robots" content="index, follow" />
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="NutriSmart Coach | Nutrición inteligente con IA" />
+
+    <meta
+      property="og:title"
+      content="NutriSmart Coach | Nutrición inteligente con IA"
+    />
+
     <meta
       property="og:description"
       content="Analiza comidas con IA, crea dietas personalizadas y controla tu progreso físico desde una sola app."
     />
-    <meta property="og:url" content="https://www.nutrismartcoach.com/" />
+
+    <meta
+      property="og:url"
+      content="https://www.nutrismartcoach.com/"
+    />
+
     <meta property="og:site_name" content="NutriSmart Coach" />
-    <meta property="og:image" content="https://www.nutrismartcoach.com/og-image.png" />
+
+    <meta
+      property="og:image"
+      content="https://www.nutrismartcoach.com/og-image.png"
+    />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="NutriSmart Coach | Nutrición inteligente con IA" />
+
+    <meta
+      name="twitter:title"
+      content="NutriSmart Coach | Nutrición inteligente con IA"
+    />
+
     <meta
       name="twitter:description"
       content="Analiza comidas con IA, controla macros y genera dietas personalizadas."
     />
-    <meta name="twitter:image" content="https://www.nutrismartcoach.com/og-image.png" />
 
-    <!-- PWA / iPhone -->
+    <meta
+      name="twitter:image"
+      content="https://www.nutrismartcoach.com/og-image.png"
+    />
+
+    <!-- PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="NutriSmart" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <!-- Favicon -->
+    <meta
+      name="apple-mobile-web-app-title"
+      content="NutriSmart"
+    />
+
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <!-- Icons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <link
+      rel="apple-touch-icon"
+      href="/apple-touch-icon.png"
+    />
 
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://www.nutrismartcoach.com/" />
-    <!-- AMP Analytics --><script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
-
+    <link
+      rel="canonical"
+      href="https://www.nutrismartcoach.com/"
+    />
   </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5NEELFBVX0"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-5NEELFBVX0');
-</script>
   <body>
-    <!-- Google Tag Manager -->
-<amp-analytics config="https://www.googletagmanager.com/amp.json?id=GTM-MFBP3W7V&gtm.url=SOURCE_URL" data-credentials="include"></amp-analytics>
-
     <div id="root"></div>
 
     <script type="module" src="/src/main.jsx"></script>
