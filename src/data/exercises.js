@@ -9,6 +9,166 @@ export const MUSCLE_GROUPS = [
   "Abdomen",
 ];
 
+function enrichExercises(list) {
+  return list.map((exercise, index) => {
+    const movementType = exercise.movementType || inferMovementType(exercise);
+    const difficultyScore = exercise.difficultyScore || inferDifficultyScore(exercise, movementType);
+    const priorityByFocus = exercise.priorityByFocus || buildPriorityByFocus(exercise, movementType, difficultyScore);
+
+    return {
+      ...exercise,
+      movementType,
+      difficultyScore,
+      priorityByFocus,
+      alternatives: exercise.alternatives || buildAlternatives(exercise, list, index),
+    };
+  });
+}
+
+function inferMovementType(exercise) {
+  const token = normalizeExerciseToken(`${exercise.id} ${exercise.name}`);
+
+  if (
+    token.includes("plancha") ||
+    token.includes("crunch") ||
+    token.includes("abdomen") ||
+    token.includes("elevacion-piernas") ||
+    token.includes("leg raise")
+  ) {
+    return "core";
+  }
+
+  if (
+    token.includes("caminata") ||
+    token.includes("bike") ||
+    token.includes("cardio") ||
+    token.includes("jump") ||
+    token.includes("burpee")
+  ) {
+    return "cardio";
+  }
+
+  if (
+    token.includes("movilidad") ||
+    token.includes("warmup") ||
+    token.includes("estir") ||
+    token.includes("stretch")
+  ) {
+    return "mobility";
+  }
+
+  if (
+    token.includes("curl") ||
+    token.includes("extension") ||
+    token.includes("elevaciones") ||
+    token.includes("face pull") ||
+    token.includes("aperturas") ||
+    token.includes("abduccion") ||
+    token.includes("patada") ||
+    token.includes("pull") ||
+    token.includes("fly")
+  ) {
+    return "isolation";
+  }
+
+  if (
+    token.includes("prensa") ||
+    token.includes("sentadilla") ||
+    token.includes("press") ||
+    token.includes("dominadas") ||
+    token.includes("remo") ||
+    token.includes("peso muerto") ||
+    token.includes("jalon") ||
+    token.includes("hip thrust") ||
+    token.includes("zancada")
+  ) {
+    return "compound";
+  }
+
+  if (["Glúteos", "Piernas"].includes(exercise.muscle)) {
+    return "accessory";
+  }
+
+  return "accessory";
+}
+
+function inferDifficultyScore(exercise, movementType) {
+  const levelScore = {
+    Principiante: 2,
+    Intermedio: 3,
+    Avanzado: 4,
+  }[exercise.level || "Principiante"] || 2;
+
+  const movementAdjust = {
+    compound: 1,
+    accessory: 0,
+    isolation: -1,
+    core: -1,
+    cardio: -1,
+    mobility: -2,
+  }[movementType] ?? 0;
+
+  return clampScore(levelScore + movementAdjust);
+}
+
+function buildPriorityByFocus(exercise, movementType, difficultyScore) {
+  const primary = normalizeExerciseToken(exercise.muscle);
+  const secondary = (exercise.secondaryMuscles || []).map(normalizeExerciseToken);
+  const hasGlute = primary.includes("glut") || secondary.some((item) => item.includes("glut"));
+  const hasUpper = ["pecho", "espalda", "hombro", "biceps", "triceps"].some((group) =>
+    primary.includes(group) || secondary.some((item) => item.includes(group))
+  );
+  const hasCore = primary.includes("abdomen") || secondary.some((item) => item.includes("abdomen"));
+  const strengthBias = movementType === "compound" ? 5 : movementType === "accessory" ? 3 : 2;
+
+  return {
+    General: clampScore(
+      movementType === "compound" ? 5 : movementType === "accessory" ? 4 : 3
+    ),
+    "Glúteos y piernas": clampScore(hasGlute ? 5 : primary.includes("piernas") ? 4 : 2),
+    "Torso y brazos": clampScore(hasUpper ? 5 : primary.includes("abdomen") ? 2 : 1),
+    "Core/abdomen": clampScore(hasCore ? 5 : movementType === "core" ? 5 : 1),
+    "Fuerza completa": clampScore(Math.max(strengthBias, difficultyScore + 1)),
+  };
+}
+
+function buildAlternatives(exercise, list, index) {
+  const sourceToken = normalizeExerciseToken(exercise.muscle);
+  const sameMuscle = list
+    .filter((item, itemIndex) => itemIndex !== index && item.muscle === exercise.muscle)
+    .sort((a, b) => {
+      const scoreA = scoreAlternative(a, sourceToken);
+      const scoreB = scoreAlternative(b, sourceToken);
+      return scoreB - scoreA;
+    })
+    .slice(0, 3);
+
+  return sameMuscle.map((item) => item.id);
+}
+
+function scoreAlternative(exercise, sourceToken) {
+  let score = 0;
+  const token = normalizeExerciseToken(`${exercise.id} ${exercise.name}`);
+
+  if (token !== sourceToken) score += 1;
+  if (exercise.movementType === "compound") score += 2;
+  if (exercise.movementType === "accessory") score += 1;
+  score += clampScore(exercise.difficultyScore || 2);
+
+  return score;
+}
+
+function clampScore(value) {
+  return Math.max(1, Math.min(5, value));
+}
+
+function normalizeExerciseToken(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 export const WORKOUT_LEVELS = ["Principiante", "Intermedio", "Avanzado"];
 
 export const WORKOUT_GOALS = ["Ganar músculo", "Definir", "Fuerza"];
@@ -78,7 +238,7 @@ function getEstimatedCalories(level) {
   return 55;
 }
 
-export const exercises = [
+const exerciseCatalog = [
   createExercise({
     id: "press-banca",
     muscle: "Pecho",
@@ -444,3 +604,5 @@ export const exercises = [
     mistakes: ["Impulsarte.", "Arquear lumbar.", "Recortar arriba."],
   }),
 ];
+
+export const exercises = enrichExercises(exerciseCatalog);
