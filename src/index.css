@@ -17,14 +17,20 @@
   .theme-icon-tile-inner {
   background: linear-gradient(145deg, #09110d, #3a4440) !important;
 }
+
+body.workout-session-active .bottom-nav,
+body.workout-session-active [data-bottom-nav="true"] {
+  display: none !important;
+}
+
 [data-theme="rose"] {
   --app-bg: #120611;
   --app-surface: #1d0b1b;
   --app-card: #2a1028;
   --app-primary: #fb6fbd;
-  --app-primary-soft: rgba(251, 111, 189, 0.16);
-  --app-border: rgba(251, 111, 189, 0.22);
-  --app-glow: rgba(251, 111, 189, 0.25);
+  --app-primary-soft: rgba(251, 111, 189, 0.12);
+  --app-border: rgba(251, 111, 189, 0.17);
+  --app-glow: rgba(251, 111, 189, 0.16);
 }
 [data-theme="rose"] .theme-icon-tile-inner {
   background: linear-gradient(145deg, #1d0b1b, #1d0b1b) !important;
