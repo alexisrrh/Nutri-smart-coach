@@ -749,5 +749,29 @@ function bumpIntensity(intensity, steps) {
 }
 
 function makeDay(day) {
-  return day;
+  return {
+    ...day,
+    role: inferDayRole(day.muscles, day.focus),
+    primaryMuscles: Array.isArray(day.muscles) ? day.muscles.slice(0, 2) : [],
+    mainMuscle: Array.isArray(day.muscles) ? day.muscles[0] || "" : "",
+  };
+}
+
+function inferDayRole(muscles = [], focus = "General") {
+  const token = muscles.map((muscle) => String(muscle || "").toLowerCase());
+
+  const hasPush = token.some((item) =>
+    ["pecho", "hombros", "tríceps", "triceps"].includes(item)
+  );
+  const hasPull = token.some((item) => ["espalda", "bíceps", "biceps"].includes(item));
+  const hasLower = token.some((item) => ["piernas", "glúteos", "gluteos"].includes(item));
+  const hasCore = token.some((item) => ["abdomen", "core"].includes(item));
+
+  if (focus === "Core/abdomen" || (hasCore && !hasPush && !hasPull && !hasLower)) return "core";
+  if (focus === "Glúteos y piernas" || hasLower) return "lower";
+  if (focus === "Torso y brazos" || (hasPush && hasPull)) return "mixed_upper";
+  if (hasPush) return "push";
+  if (hasPull) return "pull";
+
+  return "mixed";
 }

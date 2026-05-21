@@ -1,90 +1,106 @@
-import { Activity, ChevronRight, Dumbbell, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
+import { Check, TriangleAlert, X } from "lucide-react";
+import ExerciseMediaFrame from "./ExerciseMediaFrame";
+import { getExerciseMedia } from "../../services/exerciseMediaService";
 
 export default function ExerciseDetailSheet({ exercise, onClose }) {
-  const [failed, setFailed] = useState(false);
+  const media = getExerciseMedia(exercise);
+  const hasRealMedia = Boolean(media?.gif || media?.image);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+
+    document.body.classList.add("exercise-sheet-active");
+
+    return () => {
+      document.body.classList.remove("exercise-sheet-active");
+    };
+  }, []);
+
+  const tips = exercise?.tips || [];
+  const mistakes = exercise?.mistakes || [];
 
   if (!exercise) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/65 px-2 pb-[calc(env(safe-area-inset-bottom)+12px)] backdrop-blur-md">
-      <section className="max-h-[calc(100dvh-24px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_48px_rgba(0,0,0,0.42)]">
-        <div className="flex max-h-[calc(100dvh-24px)] flex-col">
-          <header className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--app-border)] px-3 py-2.5">
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/72 px-2 pb-[calc(var(--bottom-nav-space)+24px)] backdrop-blur-md">
+      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-24px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.15rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_48px_rgba(0,0,0,0.42)]">
+        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-24px)] flex-col">
+          <header className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--app-border)] px-3 py-[7px]">
             <div className="min-w-0">
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+              <p className="text-[7px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
                 Ficha del ejercicio
               </p>
-              <h2 className="mt-0.5 truncate text-[18px] font-black leading-none text-[var(--app-text)]">
+              <h2 className="mt-0.5 line-clamp-2 text-[16px] font-black leading-[1.05] text-[var(--app-text)]">
                 {exercise.name}
               </h2>
+              <p className="mt-1 line-clamp-1 text-[9px] font-semibold text-[var(--app-muted)]">
+                {exercise.muscle}
+              </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
               aria-label="Cerrar ficha"
             >
-              <X size={14} />
+              <X size={13} />
             </button>
           </header>
 
-          <div className="min-h-0 overflow-y-auto px-3 pb-3 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="relative grid h-[150px] place-items-center overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)]">
-              {!failed ? (
-                <img
-                  src={exercise.gif || exercise.image}
-                  alt={exercise.name}
-                  onError={() => setFailed(true)}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_54%),var(--app-surface)] text-[var(--app-primary)]">
-                  <Dumbbell size={32} />
-                </div>
-              )}
+          <div className="min-h-0 overflow-y-auto px-3 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <ExerciseMediaFrame
+              key={exercise?.mediaKey || exercise?.id || exercise?.name}
+              exercise={exercise}
+              className={
+                hasRealMedia
+                  ? "aspect-[16/9] w-full min-h-[220px] max-h-[260px]"
+                  : "aspect-[16/10] w-full min-h-[190px] max-h-[220px]"
+              }
+            />
+
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <TinyChip>{exercise.muscle}</TinyChip>
+              <TinyChip>{exercise.equipment}</TinyChip>
+              <TinyChip>{exercise.difficulty}</TinyChip>
             </div>
 
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <InfoPill>{exercise.muscle}</InfoPill>
-              <InfoPill>{exercise.secondaryMuscles.join(" · ") || "Sin secundarios"}</InfoPill>
-              <InfoPill>{exercise.equipment}</InfoPill>
-              <InfoPill>{exercise.difficulty}</InfoPill>
+            <div className="mt-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
+              <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                Prescripción
+              </p>
+              <p className="mt-[3px] text-[11px] font-semibold leading-4 text-[var(--app-text)]">
+                {exercise.sets} series • {exercise.reps} reps • {exercise.rest}
+              </p>
             </div>
 
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
-              <StatTile label="Series" value={exercise.sets} />
-              <StatTile label="Reps" value={exercise.reps} />
-              <StatTile label="Descanso" value={exercise.rest} />
-            </div>
-
-            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2">
-              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
+              <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Descripción
               </p>
-              <p className="mt-1 text-[12px] leading-5 text-[var(--app-text)]">
+              <p className="mt-[3px] line-clamp-2 text-[10.5px] leading-4 text-[var(--app-text)]">
                 {exercise.description}
               </p>
             </section>
 
-            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2">
-              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
+              <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Tips
               </p>
               <div className="mt-1 grid gap-1">
-                {exercise.tips?.map((tip) => (
-                  <MiniRow key={tip} icon={<Activity size={11} />} text={tip} />
+                {tips.map((tip) => (
+                  <MiniRow key={tip} icon={<Check size={10} />} text={tip} tone="tip" />
                 ))}
               </div>
             </section>
 
-            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2">
-              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+            <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
+              <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Errores comunes
               </p>
               <div className="mt-1 grid gap-1">
-                {exercise.mistakes?.map((mistake) => (
-                  <MiniRow key={mistake} icon={<ChevronRight size={11} />} text={mistake} />
+                {mistakes.map((mistake) => (
+                  <MiniRow key={mistake} icon={<TriangleAlert size={10} />} text={mistake} tone="error" />
                 ))}
               </div>
             </section>
@@ -95,31 +111,23 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
   );
 }
 
-function InfoPill({ children }) {
+function TinyChip({ children }) {
   return (
-    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
       {children}
     </span>
   );
 }
 
-function StatTile({ label, value }) {
+function MiniRow({ icon, text, tone = "tip" }) {
+  const toneClasses =
+    tone === "error"
+      ? "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)]"
+      : "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]";
   return (
-    <div className="rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2 text-center">
-      <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-        {label}
-      </p>
-      <p className="mt-0.5 text-[12px] font-black text-[var(--app-text)]">{value}</p>
+    <div className={`flex items-start gap-2 rounded-[0.8rem] border px-2 py-1 ${toneClasses}`}>
+      <span className="mt-0.5 shrink-0 text-[var(--app-primary)]">{icon}</span>
+      <p className="text-[10px] leading-4">{text}</p>
     </div>
   );
 }
-
-function MiniRow({ icon, text }) {
-  return (
-    <div className="flex items-start gap-2 rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
-      <span className="mt-0.5 text-[var(--app-primary)]">{icon}</span>
-      <p className="text-[11px] leading-4 text-[var(--app-muted)]">{text}</p>
-    </div>
-  );
-}
-

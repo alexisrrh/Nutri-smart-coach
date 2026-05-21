@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Dumbbell,
   Flame,
   Home,
   X,
@@ -13,6 +12,7 @@ import {
   getLastExercisePerformance,
   saveWorkoutSession,
 } from "../../services/workoutSessionService";
+import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
 
 export function WorkoutSession({
   session,
@@ -308,9 +308,16 @@ export function WorkoutSession({
             <ExerciseImage exercise={exercise} />
 
             <section className="space-y-0.5">
-              <p className="min-w-0 truncate text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                {exercise.muscle} · {exercise.difficulty || level}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="min-w-0 truncate text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                  {exercise.muscle} · {exercise.difficulty || level}
+                </p>
+                {exercise.mainLift ? (
+                  <span className="shrink-0 rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                    Principal
+                  </span>
+                ) : null}
+              </div>
               <h1 className="mt-0.5 line-clamp-2 text-[21px] font-black leading-[1.05] text-[var(--app-text)]">
                 {exercise.name}
               </h1>
@@ -365,23 +372,17 @@ export function WorkoutSession({
 }
 
 function ExerciseImage({ exercise }) {
-  const [failed, setFailed] = useState(false);
-
   return (
-    <div className="relative mt-1 grid h-[clamp(90px,12dvh,112px)] w-full place-items-center overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)]">
-      {!failed ? (
-        <img
-          src={exercise.gif || exercise.image}
-          alt={exercise.name}
-          onError={() => setFailed(true)}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="grid h-full w-full place-items-center bg-[var(--app-surface)] text-[var(--app-primary)]">
-          <Dumbbell size={30} />
-        </div>
-      )}
-    </div>
+    <ExerciseMediaFrame
+      key={exercise?.mediaKey || exercise?.id || exercise?.name}
+      exercise={exercise}
+      className={[
+        "mt-1 aspect-[16/9] w-full",
+        exercise.mainLift
+          ? "shadow-[0_0_18px_var(--app-glow)]"
+          : "",
+      ].join(" ")}
+    />
   );
 }
 

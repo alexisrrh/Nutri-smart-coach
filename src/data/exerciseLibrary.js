@@ -66,6 +66,14 @@ function createExercise({
   const resolvedRepsByGoal = repsByGoal || { ...GOAL_REPS };
   const resolvedRestByGoal = restByGoal || { ...GOAL_REST };
   const difficultyScore = inferDifficultyScore({ level: resolvedDifficulty }, resolvedMovementType);
+  const equipmentType = inferEquipmentType(equipment);
+  const patternGroup = inferPatternGroup({
+    slug,
+    name,
+    muscle,
+    secondaryMuscles,
+    movementType: resolvedMovementType,
+  });
   const priorityByFocus = buildPriorityByFocus(
     {
       muscle,
@@ -77,6 +85,7 @@ function createExercise({
 
   return {
     id: slug,
+    mediaKey: slug,
     name,
     muscle,
     secondaryMuscles,
@@ -85,6 +94,8 @@ function createExercise({
     goal: resolvedGoals[0],
     goals: resolvedGoals,
     movementType: resolvedMovementType,
+    equipmentType,
+    patternGroup,
     difficultyScore,
     priorityByFocus,
     equipment,
@@ -219,6 +230,50 @@ function buildPriorityByFocus(exercise, movementType, difficultyScore) {
   };
 }
 
+function inferEquipmentType(equipment) {
+  const token = normalizeExerciseToken(equipment);
+
+  if (token.includes("barra") || token.includes("barbell") || token.includes("z")) return "barbell";
+  if (token.includes("mancuerna") || token.includes("dumbbell")) return "dumbbell";
+  if (token.includes("polea") || token.includes("cable")) return "cable";
+  if (token.includes("máquina") || token.includes("maquina")) return "machine";
+  if (token.includes("banda")) return "band";
+  if (token.includes("peso corporal") || token.includes("corporal")) return "bodyweight";
+  if (token.includes("rueda")) return "bodyweight";
+
+  return "other";
+}
+
+function inferPatternGroup({ slug, name, muscle, secondaryMuscles = [], movementType }) {
+  const token = normalizeExerciseToken(`${slug} ${name}`);
+  const muscleToken = normalizeExerciseToken(muscle);
+  const secondaryToken = secondaryMuscles.map(normalizeExerciseToken).join(" ");
+  const fullToken = `${token} ${muscleToken} ${secondaryToken}`;
+
+  if (movementType === "core") return "core";
+  if (movementType === "cardio") return "cardio";
+  if (movementType === "mobility") return "mobility";
+  if (fullToken.includes("hip thrust") || fullToken.includes("abduccion") || muscleToken.includes("glut")) {
+    return "glute";
+  }
+  if (fullToken.includes("sentadilla") || fullToken.includes("prensa") || fullToken.includes("zancada")) {
+    return "squat";
+  }
+  if (fullToken.includes("peso muerto") || fullToken.includes("rumano") || fullToken.includes("pull-through")) {
+    return "hinge";
+  }
+  if (fullToken.includes("press") || fullToken.includes("flexiones") || fullToken.includes("fondos")) {
+    return "push";
+  }
+  if (fullToken.includes("remo") || fullToken.includes("dominadas") || fullToken.includes("jalon") || fullToken.includes("pull")) {
+    return "pull";
+  }
+  if (fullToken.includes("curl")) return "arms";
+  if (fullToken.includes("extension") || muscleToken.includes("triceps")) return "arms";
+
+  return movementType || "accessory";
+}
+
 function getEstimatedCalories(level, movementType) {
   const levelBase = {
     Principiante: 55,
@@ -243,6 +298,7 @@ function normalizeExerciseToken(value) {
 const chest = [
   createExercise({
     slug: "press-banca",
+    mediaKey: "press-banca",
     name: "Press banca",
     muscle: "Pecho",
     secondaryMuscles: ["Tríceps", "Hombros"],
@@ -255,6 +311,7 @@ const chest = [
   }),
   createExercise({
     slug: "press-inclinado-mancuernas",
+    mediaKey: "press-inclinado-mancuernas",
     name: "Press inclinado mancuerna",
     muscle: "Pecho",
     secondaryMuscles: ["Hombros", "Tríceps"],
@@ -329,6 +386,7 @@ const back = [
   }),
   createExercise({
     slug: "jalon-pecho",
+    mediaKey: "jalon-al-pecho",
     name: "Jalón al pecho",
     muscle: "Espalda",
     secondaryMuscles: ["Bíceps"],
@@ -353,6 +411,7 @@ const back = [
   }),
   createExercise({
     slug: "remo-sentado",
+    mediaKey: "remo-sentado",
     name: "Remo sentado",
     muscle: "Espalda",
     secondaryMuscles: ["Bíceps"],
@@ -392,6 +451,7 @@ const back = [
 const legs = [
   createExercise({
     slug: "sentadilla",
+    mediaKey: "sentadilla",
     name: "Sentadilla",
     muscle: "Piernas",
     secondaryMuscles: ["Glúteos", "Abdomen"],
@@ -416,6 +476,7 @@ const legs = [
   }),
   createExercise({
     slug: "peso-muerto-rumano",
+    mediaKey: "peso-muerto-rumano",
     name: "Peso muerto rumano",
     muscle: "Piernas",
     secondaryMuscles: ["Glúteos", "Espalda"],
@@ -428,6 +489,7 @@ const legs = [
   }),
   createExercise({
     slug: "zancadas",
+    mediaKey: "zancadas",
     name: "Zancadas",
     muscle: "Piernas",
     secondaryMuscles: ["Glúteos"],
@@ -467,6 +529,7 @@ const legs = [
 const glutes = [
   createExercise({
     slug: "hip-thrust",
+    mediaKey: "hip-thrust",
     name: "Hip thrust",
     muscle: "Glúteos",
     secondaryMuscles: ["Piernas"],
@@ -617,6 +680,7 @@ const shoulders = [
 const biceps = [
   createExercise({
     slug: "curl-mancuernas",
+    mediaKey: "curl-biceps",
     name: "Curl de bíceps",
     muscle: "Bíceps",
     secondaryMuscles: [],
@@ -704,6 +768,7 @@ const triceps = [
   }),
   createExercise({
     slug: "extension-polea",
+    mediaKey: "extension-triceps",
     name: "Extensión en polea",
     muscle: "Tríceps",
     secondaryMuscles: [],
