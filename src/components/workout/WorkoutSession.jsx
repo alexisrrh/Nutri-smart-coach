@@ -9,7 +9,10 @@ import {
   Home,
   X,
 } from "lucide-react";
-import { saveWorkoutSession } from "../../services/workoutSessionService";
+import {
+  getLastExercisePerformance,
+  saveWorkoutSession,
+} from "../../services/workoutSessionService";
 
 export function WorkoutSession({
   session,
@@ -21,6 +24,7 @@ export function WorkoutSession({
 }) {
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [completedSets, setCompletedSets] = useState({});
+  const [setTracking, setSetTracking] = useState({});
   const [restRemaining, setRestRemaining] = useState(0);
   const [restTotal, setRestTotal] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -37,6 +41,18 @@ export function WorkoutSession({
   const completedSetCount = Object.values(completedSets).reduce(
     (total, sets) => total + sets.filter(Boolean).length,
     0
+  );
+  const exerciseTracking = useMemo(
+    () => setTracking[exercise?.id] || [],
+    [exercise?.id, setTracking]
+  );
+  const lastPerformance = useMemo(
+    () => getLastExercisePerformance(exercise?.name),
+    [exercise?.name]
+  );
+  const recordFeedback = useMemo(
+    () => getRecordFeedback(exerciseTracking, lastPerformance),
+    [exerciseTracking, lastPerformance]
   );
   const hasProgress = completedSetCount > 0;
   const progress = totalSets ? Math.round((completedSetCount / totalSets) * 100) : 0;
@@ -75,6 +91,8 @@ export function WorkoutSession({
   if (!exercise) return null;
 
   function toggleSet(setIndex) {
+    const wasComplete = Boolean(completedForExercise[setIndex]);
+
     setCompletedSets((current) => {
       const nextSets = Array.from({ length: prescription.sets }, (_, index) =>
         Boolean(current[exercise.id]?.[index])
@@ -87,12 +105,53 @@ export function WorkoutSession({
       };
     });
 
-    if (!completedForExercise[setIndex]) {
+    setSetTracking((current) => {
+      const currentSets = current[exercise.id] || [];
+      const nextSets = Array.from({ length: prescription.sets }, (_, index) => ({
+        ...(currentSets[index] || {}),
+        setIndex: index,
+      }));
+
+      nextSets[setIndex] = {
+        ...nextSets[setIndex],
+        reps: nextSets[setIndex].reps || getDefaultReps(prescription.reps),
+        completedAt: wasComplete ? null : new Date().toISOString(),
+      };
+
+      return {
+        ...current,
+        [exercise.id]: nextSets,
+      };
+    });
+
+    if (!wasComplete) {
       const nextRest = getRestSeconds(prescription.rest);
       triggerHapticFeedback();
       setRestTotal(nextRest);
       setRestRemaining(nextRest);
     }
+  }
+
+  function updateSetTracking(setIndex, field, value) {
+    const normalizedValue = value.replace(",", ".").replace(/[^\d.]/g, "");
+
+    setSetTracking((current) => {
+      const currentSets = current[exercise.id] || [];
+      const nextSets = Array.from({ length: prescription.sets }, (_, index) => ({
+        ...(currentSets[index] || {}),
+        setIndex: index,
+      }));
+
+      nextSets[setIndex] = {
+        ...nextSets[setIndex],
+        [field]: normalizedValue,
+      };
+
+      return {
+        ...current,
+        [exercise.id]: nextSets,
+      };
+    });
   }
 
   function moveExercise(direction) {
@@ -106,20 +165,29 @@ export function WorkoutSession({
   function finishWorkout() {
     if (!hasProgress) return;
 
+    const completedAt = new Date().toISOString();
     const completedExercises = exercises.map((item) => ({
       id: item.id,
       name: item.name,
       muscle: item.muscle,
       completedSets: (completedSets[item.id] || []).filter(Boolean).length,
       targetSets: getPrescription(item, level, goal).sets,
+      sets: buildTrackedSets({
+        completed: completedSets[item.id] || [],
+        prescription: getPrescription(item, level, goal),
+        sets: setTracking[item.id] || [],
+        completedAt,
+      }),
     }));
+    const workoutStats = getWorkoutWeightStats(completedExercises);
     const savedSession = saveWorkoutSession({
       completedExercises,
       duration: elapsedSeconds / 60,
-      completedAt: new Date().toISOString(),
+      completedAt,
       caloriesEstimate: calories,
       dayName: session.day?.name,
       muscles: session.day?.muscles,
+      ...workoutStats,
     });
     const result = onFinish?.(savedSession);
 
@@ -129,6 +197,9 @@ export function WorkoutSession({
       ...savedSession,
       xpAwarded: result?.xpAwarded || 0,
       streak: result?.snapshot?.currentStreak || 0,
+      totalWeightMoved: workoutStats.totalWeightMoved,
+      bestExercise: workoutStats.bestExercise,
+      newRecords: workoutStats.newRecords,
     });
   }
 
@@ -167,7 +238,15 @@ export function WorkoutSession({
                   <SessionMetric label="Ejercicios" value={exercises.length} />
                   <SessionMetric label="Duración" value={formatDuration(summary.duration * 60)} />
                   <SessionMetric label="Kcal" value={summary.caloriesEstimate} />
+                  <SessionMetric label="Peso movido" value={`${summary.totalWeightMoved || 0} kg`} />
+                  <SessionMetric label="Récords" value={summary.newRecords?.length || 0} />
                 </div>
+
+                {summary.bestExercise ? (
+                  <p className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-black text-[var(--app-text)]">
+                    Mejor ejercicio · {summary.bestExercise.name} · {summary.bestExercise.volume} kg
+                  </p>
+                ) : null}
 
                 <p className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[12px] font-black text-[var(--app-primary)]">
                   {summary.streak > 0
@@ -216,9 +295,9 @@ export function WorkoutSession({
           </div>
         </header>
 
-        <main className="min-h-0 overflow-y-auto pb-1.5 pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="space-y-1.5">
-            <div className="flex h-8 items-center gap-1.5 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
+        <main className="min-h-0 overflow-y-auto pb-1 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="space-y-1">
+            <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label="Kcal" value={calories} />
               <MetricDivider />
               <MetricChip label="Tiempo" value={formatDuration(elapsedSeconds)} />
@@ -228,14 +307,18 @@ export function WorkoutSession({
 
             <ExerciseImage exercise={exercise} />
 
-            <section>
+            <section className="space-y-0.5">
               <p className="min-w-0 truncate text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 {exercise.muscle} · {exercise.difficulty || level}
               </p>
               <h1 className="mt-0.5 line-clamp-2 text-[21px] font-black leading-[1.05] text-[var(--app-text)]">
                 {exercise.name}
               </h1>
-              <div className="mt-1.5 flex gap-1">
+              <PerformanceHint
+                lastPerformance={lastPerformance}
+                recordFeedback={recordFeedback}
+              />
+              <div className="mt-1 flex gap-1">
                 <PrescriptionChip label="Series" value={prescription.sets} />
                 <PrescriptionChip label="Reps" value={prescription.reps} />
                 <PrescriptionChip label="Descanso" value={prescription.rest} />
@@ -248,20 +331,25 @@ export function WorkoutSession({
               completedSeriesCount={completedSeriesCount}
               onToggleSet={toggleSet}
               prescription={prescription}
+              recordFeedback={recordFeedback}
+              setTracking={exerciseTracking}
+              onTrackSet={updateSetTracking}
             />
+
+            <div className="mt-1">
+              <RestPanel
+                progress={restProgress}
+                remaining={restRemaining}
+                onSkip={() => {
+                  setRestRemaining(0);
+                  setRestTotal(0);
+                }}
+              />
+            </div>
           </div>
         </main>
 
-        <section className="mt-auto shrink-0 translate-y-[-18px] space-y-1.5 pb-[calc(env(safe-area-inset-bottom)+10px)]">
-          <RestPanel
-            progress={restProgress}
-            remaining={restRemaining}
-            onSkip={() => {
-              setRestRemaining(0);
-              setRestTotal(0);
-            }}
-          />
-
+        <section className="shrink-0 pt-1.5 pb-[calc(env(safe-area-inset-bottom)+6px)]">
           <FooterControls
             canFinish={hasProgress}
             canGoBack={exerciseIndex > 0}
@@ -280,7 +368,7 @@ function ExerciseImage({ exercise }) {
   const [failed, setFailed] = useState(false);
 
   return (
-    <div className="relative mt-1.5 grid h-[clamp(105px,16dvh,125px)] w-full place-items-center overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)]">
+    <div className="relative mt-1 grid h-[clamp(90px,12dvh,112px)] w-full place-items-center overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)]">
       {!failed ? (
         <img
           src={exercise.gif || exercise.image}
@@ -302,17 +390,15 @@ function QuickTechnique({ exercise }) {
   const mistake = exercise.mistakes?.[0] || "Evita compensar con impulso.";
 
   return (
-    <section className="mt-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-2">
+    <section className="mt-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1">
       <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
         Técnica rápida
       </p>
-      <p className="mt-1 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-text)]">
+      <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-text)]">
         {exercise.description}
       </p>
       <p className="line-clamp-1 text-[10px] leading-4 text-[var(--app-muted)]">
-        <span className="font-black text-[var(--app-text)]">Tip:</span> {tip}
-      </p>
-      <p className="line-clamp-1 text-[10px] leading-4 text-[var(--app-muted)]">
+        <span className="font-black text-[var(--app-text)]">Tip:</span> {tip} ·{" "}
         <span className="font-black text-[var(--app-text)]">Evita:</span> {mistake}
       </p>
     </section>
@@ -323,7 +409,10 @@ function SeriesRestCoach({
   completedForExercise,
   completedSeriesCount,
   onToggleSet,
+  onTrackSet,
   prescription,
+  recordFeedback,
+  setTracking,
 }) {
   const nextSetIndex = Array.from(
     { length: prescription.sets },
@@ -331,7 +420,7 @@ function SeriesRestCoach({
   ).findIndex((complete) => !complete);
 
   return (
-    <section className="overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-2 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+    <section className="overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-1 shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
       <div className="flex items-center justify-between gap-2 px-0.5">
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
@@ -346,53 +435,121 @@ function SeriesRestCoach({
         </span>
       </div>
 
-      <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(54px,1fr))] gap-1">
+      <div className="mt-1 grid gap-1">
         {Array.from({ length: prescription.sets }, (_, index) => {
           const complete = Boolean(completedForExercise[index]);
           const active = !complete && (nextSetIndex === index || nextSetIndex === -1);
+          const tracking = setTracking[index] || {};
+          const isRecord = recordFeedback?.recordSetIndex === index;
 
           return (
-            <button
-              type="button"
+            <div
               key={`set-${index + 1}`}
-              onClick={() => onToggleSet(index)}
               className={[
-                "relative grid h-[46px] grid-cols-[1fr_18px] items-center overflow-hidden rounded-[0.9rem] border px-2 text-left transition active:scale-[0.98]",
-                complete
-                  ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]"
-                  : active
-                    ? "border-[var(--app-primary)] bg-[color-mix(in_srgb,var(--app-primary)_9%,var(--app-surface))] text-[var(--app-text)]"
-                    : "border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-surface)_88%,transparent)] text-[var(--app-text)]",
+                "relative flex min-h-[46px] items-center gap-2 overflow-hidden rounded-[14px] border px-2 py-1 transition",
+                isRecord
+                  ? "border-[var(--app-primary)] bg-[color-mix(in_srgb,var(--app-primary)_14%,var(--app-card))] shadow-[0_0_14px_var(--app-glow)]"
+                  : complete
+                    ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]"
+                    : active
+                      ? "border-[var(--app-primary)] bg-[color-mix(in_srgb,var(--app-primary)_9%,var(--app-surface))] text-[var(--app-text)]"
+                      : "border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-surface)_88%,transparent)] text-[var(--app-text)]",
               ].join(" ")}
             >
-              {active ? (
+              {active || isRecord ? (
                 <span className="pointer-events-none absolute inset-x-2 top-0 h-px bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
               ) : null}
-              <span className="min-w-0">
-                <span className="block text-[17px] font-black leading-none">
-                  {index + 1}
-                </span>
-                <span className="mt-0.5 block truncate text-[8px] font-black leading-none text-[var(--app-muted)]">
-                  {prescription.reps}
-                </span>
-              </span>
-              <span
+              <div className="min-w-0 flex-1">
+                <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                  Serie {index + 1}
+                </p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <label className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 focus-within:border-[var(--app-primary)]">
+                    <input
+                      inputMode="numeric"
+                      value={tracking.reps || ""}
+                      onChange={(event) => onTrackSet(index, "reps", event.target.value)}
+                      placeholder="10"
+                      className="w-8 bg-transparent text-center text-[10px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
+                    />
+                    <span className="text-[7px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
+                      reps
+                    </span>
+                  </label>
+                  <label className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 focus-within:border-[var(--app-primary)]">
+                    <input
+                      inputMode="decimal"
+                      value={tracking.kg || ""}
+                      onChange={(event) => onTrackSet(index, "kg", event.target.value)}
+                      placeholder="15"
+                      className="w-8 bg-transparent text-center text-[10px] font-black text-[var(--app-primary)] outline-none placeholder:text-[var(--app-muted)]"
+                    />
+                    <span className="text-[7px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
+                      kg
+                    </span>
+                  </label>
+                  <span className="text-[8px] font-bold text-[var(--app-muted)]">
+                    {prescription.reps}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onToggleSet(index)}
                 className={[
-                  "grid h-[18px] w-[18px] place-items-center rounded-full border transition",
+                  "ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full border transition active:scale-90",
                   complete
                     ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)]"
                     : active
-                      ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)]"
-                      : "border-[var(--app-border)] bg-[var(--app-card)]",
+                      ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
+                      : "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]",
                 ].join(" ")}
+                aria-label={`Completar serie ${index + 1}`}
               >
                 {complete ? <Check size={11} /> : null}
-              </span>
-            </button>
+              </button>
+
+              {isRecord ? (
+                <span className="absolute bottom-0.5 right-9 text-[7px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
+                  Nuevo récord
+                </span>
+              ) : null}
+            </div>
           );
         })}
       </div>
+
+      {recordFeedback?.progressKg > 0 ? (
+        <p className="mt-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-center text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+          ↑ +{formatKgValue(recordFeedback.progressKg)}kg desde la última sesión
+        </p>
+      ) : null}
     </section>
+  );
+}
+
+function PerformanceHint({ lastPerformance, recordFeedback }) {
+  if (!lastPerformance?.maxKg) {
+    return (
+      <p className="mt-1 inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+        Nuevo ejercicio
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+      <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black text-[var(--app-muted)]">
+        Última sesión: {formatKgValue(lastPerformance.maxKg)}kg
+        {lastPerformance.reps ? ` x ${lastPerformance.reps}` : ""}
+      </span>
+      {recordFeedback?.progressKg > 0 ? (
+        <span className="rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-black text-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]">
+          Nuevo récord
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -404,25 +561,25 @@ function RestPanel({ progress, remaining, onSkip }) {
     <div
       className={[
         "relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_34%,var(--app-primary-soft),transparent_42%),radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--app-primary)_8%,transparent),transparent_28%),linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_6%,var(--app-card)),var(--app-surface)_58%,var(--app-card))] px-3 text-center shadow-[0_10px_28px_rgba(0,0,0,0.22)]",
-        active ? "py-3" : "py-2",
+        active ? "py-1.5" : "py-1",
       ].join(" ")}
     >
       <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--app-primary),transparent)] opacity-45" />
       <div
         className={[
           "relative z-10 mx-auto flex flex-col items-center justify-center",
-          active ? "min-h-[204px]" : "min-h-[108px]",
+          active ? "min-h-[160px]" : "min-h-[84px]",
         ].join(" ")}
       >
         <div
           className={[
             "relative grid shrink-0 place-items-center rounded-full",
             active
-              ? "h-[122px] w-[122px] shadow-[0_0_24px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
-              : "h-[58px] w-[58px] opacity-[0.82]",
+              ? "h-[100px] w-[100px] shadow-[0_0_20px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
+              : "h-[48px] w-[48px] opacity-[0.82]",
           ].join(" ")}
         >
-          <span className="absolute inset-[-16px] rounded-full bg-[radial-gradient(circle,var(--app-primary-soft),transparent_68%)] opacity-80" />
+          <span className="absolute inset-[-12px] rounded-full bg-[radial-gradient(circle,var(--app-primary-soft),transparent_68%)] opacity-80" />
           <span
             className="absolute inset-0 rounded-full"
             style={{
@@ -435,11 +592,11 @@ function RestPanel({ progress, remaining, onSkip }) {
           <span className="absolute inset-[9px] rounded-full border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_38%),var(--app-surface)]" />
           <div className="relative z-10 grid place-items-center">
             {active ? (
-              <span className="text-[42px] font-black leading-none text-[var(--app-primary)] tabular-nums">
+              <span className="text-[32px] font-black leading-none text-[var(--app-primary)] tabular-nums">
                 {remaining}s
               </span>
             ) : (
-              <Check size={22} className="text-[var(--app-primary)]" />
+              <Check size={18} className="text-[var(--app-primary)]" />
             )}
           </div>
           {active ? (
@@ -450,21 +607,21 @@ function RestPanel({ progress, remaining, onSkip }) {
           ) : null}
         </div>
 
-        <div className={active ? "mt-3" : "mt-2"}>
+        <div className={active ? "mt-1.5" : "mt-1"}>
           <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
             {active ? "Descanso activo" : "Listo para la siguiente serie"}
           </p>
-          <p className="mt-1 text-[14px] font-black leading-4 text-[var(--app-text)]">
+          <p className="mt-0.5 text-[10px] font-black leading-4 text-[var(--app-text)]">
             {active ? "Recuperación inteligente" : "Siguiente serie lista"}
           </p>
-          <p className="mt-1 line-clamp-1 text-[10px] font-bold text-[var(--app-muted)] opacity-75">
+          <p className="mt-0.5 line-clamp-1 text-[8px] font-bold text-[var(--app-muted)] opacity-75">
             {active
               ? "Respira y prepara la siguiente serie"
               : "Marca una serie para iniciar el coach"}
           </p>
         </div>
 
-        <div className="mt-3 w-full max-w-[240px]">
+        <div className="mt-1 w-full max-w-[210px]">
           <div className="relative h-[2px] overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-primary-soft))]">
             <div
               className={[
@@ -480,7 +637,7 @@ function RestPanel({ progress, remaining, onSkip }) {
           type="button"
           onClick={onSkip}
           disabled={!active}
-          className="mt-3 h-7 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
+          className="mt-1.5 h-7 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
         >
           Saltar
         </button>
@@ -498,13 +655,13 @@ function FooterControls({
   onNext,
 }) {
   return (
-    <footer className="border-t border-[var(--app-border)] bg-[var(--app-surface)] pt-2">
+    <footer className="border-t border-[var(--app-border)] bg-[var(--app-surface)] pt-1">
       <div className="grid grid-cols-2 gap-1.5">
         <button
           type="button"
           onClick={onBack}
           disabled={!canGoBack}
-          className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-45"
+          className="flex h-8 items-center justify-center gap-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-45"
         >
           <ChevronLeft size={14} />
           Anterior
@@ -513,7 +670,7 @@ function FooterControls({
           type="button"
           onClick={onNext}
           disabled={!canGoNext}
-          className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] disabled:opacity-45"
+          className="flex h-8 items-center justify-center gap-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] disabled:opacity-45"
         >
           Siguiente
           <ChevronRight size={14} />
@@ -524,7 +681,7 @@ function FooterControls({
         onClick={onFinish}
         disabled={!canFinish}
         className={[
-          "mt-1.5 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 text-[10px] font-black uppercase tracking-[0.14em] transition active:scale-[0.98]",
+          "mt-1 flex h-8 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 text-[9px] font-black uppercase tracking-[0.14em] transition active:scale-[0.98]",
           canFinish
             ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)]"
             : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
@@ -605,6 +762,105 @@ function formatDuration(seconds) {
   const remainingSeconds = String(safeSeconds % 60).padStart(2, "0");
 
   return `${minutes}:${remainingSeconds}`;
+}
+
+function buildTrackedSets({ completed, completedAt, prescription, sets }) {
+  return Array.from({ length: prescription.sets }, (_, index) => {
+    const tracking = sets[index] || {};
+    const complete = Boolean(completed[index]);
+
+    return {
+      setIndex: index,
+      kg: normalizeTrackingNumber(tracking.kg),
+      reps: normalizeTrackingNumber(tracking.reps) || (complete ? getDefaultReps(prescription.reps) : null),
+      completedAt: complete ? tracking.completedAt || completedAt : null,
+    };
+  });
+}
+
+function getWorkoutWeightStats(completedExercises) {
+  const exerciseStats = completedExercises.map((exercise) => {
+    const volume = exercise.sets.reduce((total, set) => {
+      if (!set.completedAt) return total;
+
+      return total + (Number(set.kg) || 0) * (Number(set.reps) || 0);
+    }, 0);
+    const bestSet = getBestTrackedSet(exercise.sets);
+    const previous = getLastExercisePerformance(exercise.name);
+    const isRecord = previous?.maxKg ? bestSet.kg > previous.maxKg : bestSet.kg > 0;
+
+    return {
+      id: exercise.id,
+      name: exercise.name,
+      bestKg: bestSet.kg,
+      bestReps: bestSet.reps,
+      isRecord,
+      previousKg: previous?.maxKg || 0,
+      volume: Math.round(volume),
+    };
+  });
+  const bestExercise = exerciseStats.reduce(
+    (best, item) => (item.volume > (best?.volume || 0) ? item : best),
+    null
+  );
+
+  return {
+    bestExercise: bestExercise?.volume ? bestExercise : null,
+    newRecords: exerciseStats.filter((item) => item.isRecord),
+    totalWeightMoved: exerciseStats.reduce((total, item) => total + item.volume, 0),
+  };
+}
+
+function getRecordFeedback(sets, lastPerformance) {
+  const previousKg = Number(lastPerformance?.maxKg) || 0;
+  const bestSet = getBestTrackedSet(sets);
+
+  if (!bestSet.kg || !previousKg || bestSet.kg <= previousKg) {
+    return null;
+  }
+
+  return {
+    progressKg: bestSet.kg - previousKg,
+    recordSetIndex: bestSet.setIndex,
+  };
+}
+
+function getBestTrackedSet(sets) {
+  return (sets || []).reduce(
+    (best, set, index) => {
+      const kg = normalizeTrackingNumber(set?.kg) || 0;
+      const reps = normalizeTrackingNumber(set?.reps) || 0;
+
+      if (kg > best.kg || (kg === best.kg && reps > best.reps)) {
+        return {
+          kg,
+          reps,
+          setIndex: Number(set?.setIndex ?? index),
+        };
+      }
+
+      return best;
+    },
+    { kg: 0, reps: 0, setIndex: -1 }
+  );
+}
+
+function getDefaultReps(reps) {
+  return String(reps).match(/\d+/)?.[0] || "";
+}
+
+function normalizeTrackingNumber(value) {
+  if (value === "" || value === null || value === undefined) return null;
+
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function formatKgValue(value) {
+  const number = Number(value) || 0;
+
+  return Number.isInteger(number) ? number : number.toFixed(1);
 }
 
 function triggerHapticFeedback() {
