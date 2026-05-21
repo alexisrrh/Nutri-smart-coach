@@ -55,16 +55,18 @@ export default function DashboardActions({ navigate }) {
         />
 
         <ActionCard
-          fallbackIcon={Dumbbell}
+           icon="/icons/rutinas.png"
+          fallbackIcon={UserRoundSearch}
           label="RUTINAS"
-          description="Entrena por músculo"
+          description="rutina semanal"
           onClick={() => navigate("/rutinas")}
         />
 
         <ActionCard
-          fallbackIcon={Activity}
+           icon="/icons/ejercicios.jpg"
+          fallbackIcon={UserRoundSearch}
           label="EJERCICIOS"
-          description="Biblioteca fitness"
+          description="ejercicios por musculo"
           onClick={() => navigate("/ejercicios")}
         />
 
