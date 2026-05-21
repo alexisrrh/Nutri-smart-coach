@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Camera, ShieldCheck, Sparkles, Zap, ArrowRight } from "lucide-react";
+import { ShieldCheck, Sparkles, Zap, ArrowRight } from "lucide-react";
 import SmartImage from "../../components/ui/SmartImage";
 import { NavNavigation } from "./NavNavigation";
 

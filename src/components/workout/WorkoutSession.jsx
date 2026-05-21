@@ -38,6 +38,7 @@ export function WorkoutSession({
     (total, sets) => total + sets.filter(Boolean).length,
     0
   );
+  const hasProgress = completedSetCount > 0;
   const progress = totalSets ? Math.round((completedSetCount / totalSets) * 100) : 0;
   const calories = useMemo(
     () =>
@@ -97,6 +98,8 @@ export function WorkoutSession({
   }
 
   function finishWorkout() {
+    if (!hasProgress) return;
+
     const completedExercises = exercises.map((item) => ({
       id: item.id,
       name: item.name,
@@ -120,6 +123,18 @@ export function WorkoutSession({
       xpAwarded: result?.xpAwarded || 0,
       streak: result?.snapshot?.currentStreak || 0,
     });
+  }
+
+  function requestClose() {
+    if (
+      hasProgress &&
+      typeof window !== "undefined" &&
+      !window.confirm("¿Salir del entrenamiento? Se perderá el progreso no guardado.")
+    ) {
+      return;
+    }
+
+    onClose?.();
   }
 
   if (summary) {
@@ -176,7 +191,7 @@ export function WorkoutSession({
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]"
               aria-label="Salir"
             >
@@ -315,7 +330,13 @@ export function WorkoutSession({
           <button
             type="button"
             onClick={finishWorkout}
-            className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_18px_42px_var(--app-glow)]"
+            disabled={!hasProgress}
+            className={[
+              "col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] transition active:scale-[0.98]",
+              hasProgress
+                ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_18px_42px_var(--app-glow)]"
+                : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
+            ].join(" ")}
           >
             <Flame size={16} />
             Finalizar entreno
