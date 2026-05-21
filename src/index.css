@@ -19,7 +19,9 @@
 }
 
 body.workout-session-active .bottom-nav,
-body.workout-session-active [data-bottom-nav="true"] {
+body.workout-session-active [data-bottom-nav="true"],
+body.exercise-sheet-active .bottom-nav,
+body.exercise-sheet-active [data-bottom-nav="true"] {
   display: none !important;
 }
 
@@ -214,6 +216,41 @@ select {
 
   100% {
     transform: translateY(0px);
+  }
+}
+
+@keyframes restOrbPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 7px var(--app-glow));
+  }
+
+  50% {
+    transform: scale(1.018);
+    filter: drop-shadow(0 0 12px var(--app-glow));
+  }
+}
+
+@keyframes restBeam {
+  0% {
+    left: -40%;
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 0.85;
+  }
+
+  100% {
+    left: 110%;
+    opacity: 0;
+  }
+}
+
+@keyframes restRingSpin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
