@@ -147,6 +147,7 @@ export function ExercisesLibrary() {
 
       {selectedExercise ? (
         <ExerciseDetailSheet
+          key={selectedExercise.mediaKey || selectedExercise.id || selectedExercise.name}
           exercise={selectedExercise}
           onClose={() => setSelectedExercise(null)}
         />

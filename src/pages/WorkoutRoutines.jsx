@@ -15,7 +15,7 @@ import {
   MUSCLE_GROUPS,
   WORKOUT_GOALS,
   WORKOUT_LEVELS,
-} from "../data/exercises";
+} from "../data/exerciseLibrary";
 import {
   DAYS_PER_WEEK_OPTIONS,
 } from "../data/workoutSplits";
@@ -26,6 +26,7 @@ import {
   getRecommendedDaysForProfile,
   selectExercisesForDay,
 } from "../services/workoutPlannerService";
+import { getExerciseMedia } from "../services/exerciseMediaService";
 import {
   completeWorkoutForToday,
   getLocalDateKey,
@@ -404,6 +405,7 @@ export function WorkoutRoutines() {
 
       {selectedExercise ? (
         <ExerciseSheet
+          key={selectedExercise.mediaKey || selectedExercise.id || selectedExercise.name}
           exercise={selectedExercise}
           goal={selectedGoal}
           level={selectedLevel}
@@ -1010,14 +1012,16 @@ function SelectFilter({ label, value, options, onChange }) {
 
 function ExerciseImage({ exercise, className = "" }) {
   const [failed, setFailed] = useState(false);
+  const media = getExerciseMedia(exercise);
+  const src = media.gif || media.image;
 
   return (
     <div
       className={`relative grid shrink-0 place-items-center overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] ${className}`}
     >
-      {!failed ? (
+      {src && !failed ? (
         <img
-          src={exercise.gif || exercise.image}
+          src={src}
           alt={exercise.name}
           onError={() => setFailed(true)}
           className="h-full w-full object-cover"
