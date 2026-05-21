@@ -1,22 +1,29 @@
 import { Dumbbell } from "lucide-react";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { getExerciseMedia } from "../../services/exerciseMediaService";
 
-export default function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
-  const media = getExerciseMedia(exercise);
+function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
+  const media = useMemo(() => getExerciseMedia(exercise), [exercise]);
   const src = media.gif || media.image;
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(Boolean(src));
+  const [loadedSrc, setLoadedSrc] = useState("");
   const secondaryMuscles = Array.isArray(exercise?.secondaryMuscles)
     ? exercise.secondaryMuscles.slice(0, 3)
     : [];
 
+  const hasGif = Boolean(media.gif && !failed);
   const shouldShowImage = Boolean(src) && !failed;
+
+  const frameTone = hasGif
+    ? "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]"
+    : "shadow-[0_12px_28px_var(--app-glow)]";
 
   return (
     <figure
       className={[
-        "relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_12px_28px_var(--app-glow)]",
+        "relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)]",
+        frameTone,
         className,
       ].join(" ")}
     >
@@ -30,14 +37,18 @@ export default function ExerciseMediaFrame({ exercise, className = "", showLabel
               key={src}
               src={src}
               alt={exercise?.name || "Exercise media"}
+              loading="lazy"
+              decoding="async"
               onLoad={() => setLoading(false)}
               onError={() => {
                 setFailed(true);
                 setLoading(false);
               }}
+              onLoadCapture={() => setLoadedSrc(src)}
               className={[
                 "h-full w-full object-contain transition-[opacity,transform,filter] duration-500 ease-out",
                 loading ? "scale-[0.985] opacity-0 blur-[1px]" : "scale-100 opacity-100",
+                loadedSrc === src ? "will-change-transform" : "",
               ].join(" ")}
             />
             {loading ? <LoadingOverlay /> : null}
@@ -64,6 +75,14 @@ export default function ExerciseMediaFrame({ exercise, className = "", showLabel
             />
           </div>
         </figcaption>
+      ) : null}
+
+      {hasGif ? (
+        <div className="pointer-events-none absolute left-2 top-2">
+          <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_55%,white_5%)] bg-[color-mix(in_srgb,var(--app-card)_78%,transparent)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] backdrop-blur-md">
+            GIF REAL
+          </span>
+        </div>
       ) : null}
     </figure>
   );
@@ -113,3 +132,5 @@ function Badge({ label, value }) {
     </div>
   );
 }
+
+export default memo(ExerciseMediaFrame);
