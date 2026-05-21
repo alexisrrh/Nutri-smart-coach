@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Camera, Flame, ArrowRight } from "lucide-react";
+import { CheckCircle2, Flame, ArrowRight } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 import dietashome from "../../../public/dietashome.jpeg";
 

@@ -216,23 +216,23 @@ export function WorkoutRoutines() {
             Dashboard
           </button>
 
-          <section className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[var(--app-card)] p-3 shadow-[0_18px_54px_var(--app-glow)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_42%),radial-gradient(circle_at_100%_42%,color-mix(in_srgb,var(--app-primary)_16%,transparent),transparent_34%)]" />
+          <section className="relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_12px_32px_var(--app-glow)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_40%)]" />
             <div className="relative z-10 flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                   Entrenamientos
                 </p>
-                <h1 className="mt-1 text-[28px] font-black leading-none text-[var(--app-text)]">
-                  Plan semanal personalizado
+                <h1 className="mt-0.5 text-[22px] font-black leading-none text-[var(--app-text)]">
+                  Rutinas
                 </h1>
-                <p className="mt-1 max-w-[300px] text-xs leading-5 text-[var(--app-muted)]">
-                  Configura, abre tu día y sigue un entreno guiado.
+                <p className="mt-1 text-[11px] font-bold text-[var(--app-muted)]">
+                  Plan claro para entrenar en móvil.
                 </p>
               </div>
 
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[1.15rem] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
-                <Dumbbell size={25} />
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_20px_var(--app-glow)]">
+                <Dumbbell size={19} />
               </div>
             </div>
           </section>
@@ -240,8 +240,6 @@ export function WorkoutRoutines() {
 
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-2 pb-3">
-            {planConfirmed ? <PlanHeroCard stats={planStats} /> : null}
-
             {showConfig ? (
               <WorkoutConfigCard
                 daysPerWeek={daysPerWeek}
@@ -255,6 +253,7 @@ export function WorkoutRoutines() {
             ) : (
               <ActivePlanSummary
                 daysPerWeek={daysPerWeek}
+                planStats={planStats}
                 selectedFocus={selectedFocus}
                 selectedLevel={selectedLevel}
                 onAdjust={() => {
@@ -268,12 +267,6 @@ export function WorkoutRoutines() {
               <>
                 <TodayWorkoutCard
                   day={getTodayPlanDay({ weeklyPlan, planStats })}
-                  exercises={getExercisesForDay({
-                    day: getTodayPlanDay({ weeklyPlan, planStats }),
-                    level: selectedLevel,
-                    goal: selectedGoal,
-                    focus: selectedFocus,
-                  })}
                   onStart={() =>
                     handleStartDayWorkout(getTodayPlanDay({ weeklyPlan, planStats }))
                   }
@@ -281,48 +274,42 @@ export function WorkoutRoutines() {
                 />
 
                 <section>
-                <div className="mb-1.5 flex items-center justify-between px-1">
-                  <h2 className="text-[15px] font-black text-[var(--app-text)]">
-                    Toda tu semana
-                  </h2>
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                    {planStats.remaining} pendientes
-                  </span>
-                </div>
+                  <div className="mb-1.5 flex items-center justify-between px-1">
+                    <h2 className="text-[15px] font-black text-[var(--app-text)]">
+                      Toda tu semana
+                    </h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                      {planStats.remaining} pendientes
+                    </span>
+                  </div>
 
-                <div className="grid gap-1.5">
-                  {weeklyPlan.map((day, index) => {
-                    const dateKey = getPlanDayDateKey(index);
-                    const completion = getCompletionForPlanDay({
-                      completions: workoutCompletions,
-                      dateKey,
-                      dayId: day.id,
-                    });
-                    const locked = !completion && index > planStats.completedCount + 1;
+                  <div className="grid gap-1.5">
+                    {weeklyPlan.map((day, index) => {
+                      const dateKey = getPlanDayDateKey(index);
+                      const completion = getCompletionForPlanDay({
+                        completions: workoutCompletions,
+                        dateKey,
+                        dayId: day.id,
+                      });
+                      const locked = !completion && index > planStats.completedCount + 1;
 
-                    return (
-                      <DayCard
-                        day={day}
-                        exercises={getExercisesForDay({
-                          day,
-                          level: selectedLevel,
-                          goal: selectedGoal,
-                          focus: selectedFocus,
-                        })}
-                        key={day.id}
-                        locked={locked}
-                        onClick={() => handleOpenDay(day)}
-                        onToggle={() => handleToggleDayCompletion(day, index)}
-                        status={getDayStatus({
-                          completion,
-                          isToday: dateKey === getLocalDateKey(),
-                          locked,
-                        })}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
+                      return (
+                        <DayCard
+                          day={day}
+                          key={day.id}
+                          locked={locked}
+                          onClick={() => handleOpenDay(day)}
+                          onToggle={() => handleToggleDayCompletion(day, index)}
+                          status={getDayStatus({
+                            completion,
+                            isToday: dateKey === getLocalDateKey(),
+                            locked,
+                          })}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
               </>
             ) : null}
           </div>
@@ -374,57 +361,6 @@ export function WorkoutRoutines() {
       ) : null}
 
     </AppShell>
-  );
-}
-
-function PlanHeroCard({ stats }) {
-  return (
-    <section className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[var(--app-card)] p-3 shadow-[0_18px_54px_var(--app-glow)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,var(--app-primary-soft),transparent_42%)]" />
-      <div className="relative z-10">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-              {stats.planName}
-            </p>
-            <h2 className="mt-1 text-[21px] font-black leading-none text-[var(--app-text)]">
-              {stats.level} · {stats.daysPerWeek} días
-            </h2>
-            <p className="mt-1 text-[11px] font-bold text-[var(--app-muted)]">
-              {stats.goal} · {stats.averageDuration} promedio
-            </p>
-          </div>
-
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-center shadow-[0_0_24px_var(--app-glow)]">
-            <p className="text-[18px] font-black leading-none text-[var(--app-primary)]">
-              {stats.weeklyProgress}%
-            </p>
-            <p className="text-[8px] font-black uppercase text-[var(--app-muted)]">
-              semana
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--app-surface)]">
-          <div
-            className="h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] transition-all"
-            style={{ width: `${stats.weeklyProgress}%` }}
-          />
-        </div>
-
-        <div className="mt-3 grid grid-cols-3 gap-1.5">
-          <MiniStat label="Completados" value={`${stats.completedCount}/${stats.daysPerWeek}`} />
-          <MiniStat label="Duración" value={stats.averageDuration} />
-          <MiniStat label="XP" value="+15/día" />
-        </div>
-
-        <p className="mt-2 text-[11px] font-bold text-[var(--app-muted)]">
-          {stats.remaining > 0
-            ? `Te faltan ${stats.remaining} entrenos para completar tu semana`
-            : "Semana completada. Mantén el ritmo."}
-        </p>
-      </div>
-    </section>
   );
 }
 
@@ -507,32 +443,46 @@ function WorkoutConfigCard({
 
 function ActivePlanSummary({
   daysPerWeek,
+  planStats,
   selectedFocus,
   selectedLevel,
   onAdjust,
 }) {
   return (
-    <section className="flex items-center justify-between gap-3 rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_12px_32px_var(--app-glow)]">
-      <div className="min-w-0">
-        <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-          Plan activo
-        </p>
-        <p className="mt-1 truncate text-[13px] font-black text-[var(--app-text)]">
-          {selectedLevel} · {selectedFocus} · {daysPerWeek} días/semana
-        </p>
+    <section className="rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_12px_32px_var(--app-glow)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+            Plan semanal
+          </p>
+          <p className="mt-1 truncate text-[13px] font-black text-[var(--app-text)]">
+            {selectedLevel} · {selectedFocus} · {daysPerWeek} días
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[var(--app-surface)]">
+              <div
+                className="h-full rounded-full bg-[var(--app-primary)] transition-all"
+                style={{ width: `${planStats.weeklyProgress}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-black text-[var(--app-primary)]">
+              {planStats.weeklyProgress}%
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onAdjust}
+          className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] transition active:scale-[0.98]"
+        >
+          Ajustar plan
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={onAdjust}
-        className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] transition active:scale-[0.98]"
-      >
-        Ajustar plan
-      </button>
     </section>
   );
 }
 
-function TodayWorkoutCard({ day, exercises, onStart, todayCompletion }) {
+function TodayWorkoutCard({ day, onStart, todayCompletion }) {
   return (
     <section className="relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_12px_34px_var(--app-glow)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,var(--app-primary-soft),transparent_42%)]" />
@@ -548,9 +498,6 @@ function TodayWorkoutCard({ day, exercises, onStart, todayCompletion }) {
             </h2>
             <p className="mt-1 text-[11px] font-bold text-[var(--app-muted)]">
               {day.muscles.join(" + ")} · {day.duration}
-            </p>
-            <p className="mt-1 truncate text-[10px] text-[var(--app-muted)]">
-              {exercises.slice(0, 2).map((exercise) => exercise.name).join(" · ")}
             </p>
           </div>
           {todayCompletion ? (
@@ -581,37 +528,24 @@ function TodayWorkoutCard({ day, exercises, onStart, todayCompletion }) {
   );
 }
 
-function MiniStat({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2">
-      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-        {label}
-      </p>
-      <p className="mt-0.5 text-[12px] font-black text-[var(--app-text)]">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function DayCard({ day, exercises, status, locked, onClick, onToggle }) {
+function DayCard({ day, status, locked, onClick, onToggle }) {
   const complete = status === "completado";
   const progress = complete ? 100 : status === "iniciado" ? 35 : 0;
 
   return (
     <article
       className={[
-        "rounded-[1.1rem] border p-2 text-left shadow-[0_10px_28px_var(--app-glow)] transition active:scale-[0.99]",
+        "rounded-[1rem] border px-2.5 py-2 text-left shadow-[0_8px_22px_var(--app-glow)] transition active:scale-[0.99]",
         complete
           ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[0_0_22px_var(--app-glow)]"
           : "border-[var(--app-border)] bg-[var(--app-card)] hover:bg-[var(--app-primary-soft)]/40",
         locked ? "opacity-70" : "",
       ].join(" ")}
     >
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <div
           className={[
-            "grid h-10 w-10 shrink-0 place-items-center rounded-full border bg-[var(--app-surface)] text-[var(--app-primary)]",
+            "grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-[var(--app-surface)] text-[var(--app-primary)]",
             complete
               ? "border-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]"
               : "border-[var(--app-border)]",
@@ -626,58 +560,48 @@ function DayCard({ day, exercises, status, locked, onClick, onToggle }) {
             onClick={onClick}
             className="block w-full text-left"
           >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                Día {day.day} · {status}
-              </p>
-              <h3 className="mt-0.5 truncate text-[15px] font-black leading-none text-[var(--app-text)]">
-                {day.name}
-              </h3>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                  Día {day.day}
+                </p>
+                <h3 className="mt-0.5 truncate text-[14px] font-black leading-none text-[var(--app-text)]">
+                  {day.muscles.join(" + ")}
+                </h3>
+                <p className="mt-1 truncate text-[10px] font-bold text-[var(--app-muted)]">
+                  {day.duration}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+                  {status}
+                </span>
+                <ChevronRight size={15} className="text-[var(--app-primary)]" />
+              </div>
             </div>
-            {complete ? (
-              <span className="shrink-0 rounded-full border border-[var(--app-primary)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                Completado
-              </span>
-            ) : (
-              <ChevronRight size={15} className="shrink-0 text-[var(--app-primary)]" />
-            )}
-          </div>
 
-          <p className="mt-1 truncate text-[10px] font-bold text-[var(--app-muted)]">
-            {day.muscles.join(" + ")} · {day.duration}
-          </p>
-
-          <div className="mt-1.5 grid gap-0.5">
-            {exercises.slice(0, 2).map((exercise) => (
-              <p className="truncate text-[10px] text-[var(--app-muted)]" key={exercise.id}>
-                {exercise.name}
-              </p>
-            ))}
-          </div>
-
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
-            <div
-              className="h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)] transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={onToggle}
-            className={[
-              "mt-2 inline-flex h-7 items-center gap-1 rounded-full border px-2 text-[8px] font-black uppercase tracking-[0.12em] transition active:scale-[0.98]",
-              complete
-                ? "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]"
-                : "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
-            ].join(" ")}
-          >
-            <CheckCircle2 size={11} />
-            {complete ? "Desmarcar" : "Marcar"}
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-[var(--app-surface)]">
+              <div
+                className="h-full rounded-full bg-[var(--app-primary)] transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={complete ? "Desmarcar entrenamiento" : "Marcar entrenamiento"}
+          className={[
+            "grid h-9 w-9 shrink-0 place-items-center rounded-full border transition active:scale-[0.96]",
+            complete
+              ? "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-primary)]"
+              : "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
+          ].join(" ")}
+        >
+          <CheckCircle2 size={16} />
+        </button>
       </div>
     </article>
   );
@@ -693,11 +617,6 @@ function DayDetailSheet({
   onStart,
   onSkip,
 }) {
-  const calories = exercises.reduce(
-    (total, exercise) => total + Number(exercise.estimatedCalories || 0),
-    0
-  );
-
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/55 px-2 backdrop-blur-sm">
       <section className="max-h-[92dvh] w-full max-w-[430px] overflow-hidden rounded-t-[1.6rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-20px_70px_rgba(0,0,0,0.5)]">
@@ -726,29 +645,35 @@ function DayDetailSheet({
             <h2 className="mt-1 text-[25px] font-black leading-none text-[var(--app-text)]">
               {day.name}
             </h2>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--app-surface)]">
-              <div className="h-full w-[8%] rounded-full bg-[var(--app-primary)]" />
-            </div>
           </div>
 
           <div className="min-h-0 overflow-y-auto px-3 pb-24 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="grid grid-cols-3 gap-1.5">
-              <SheetMetric icon={<Target size={13} />} label="Músculos" value={day.muscles.length} />
-              <SheetMetric icon={<Flame size={13} />} label="Kcal" value={calories} />
-              <SheetMetric icon={<Timer size={13} />} label="Tiempo" value={day.duration} />
+            <RoutineBlock
+              title="Calentamiento"
+              items={getWarmupItems(day)}
+            />
+
+            <div className="mt-3">
+              <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                Ejercicios
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {exercises.map((exercise) => (
+                  <ExerciseListItem
+                    exercise={exercise}
+                    goal={goal}
+                    key={exercise.id}
+                    level={level}
+                    onClick={() => onExerciseClick(exercise)}
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className="mt-3 grid gap-2">
-              {exercises.map((exercise) => (
-                <ExerciseListItem
-                  exercise={exercise}
-                  goal={goal}
-                  key={exercise.id}
-                  level={level}
-                  onClick={() => onExerciseClick(exercise)}
-                />
-              ))}
-            </div>
+            <RoutineBlock
+              title="Final"
+              items={["Estiramiento breve", "Respiración y recuperación"]}
+            />
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 border-t border-[var(--app-border)] bg-[var(--app-card)] p-3">
@@ -774,19 +699,44 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2.5 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2 text-left"
+      className="flex items-center gap-2.5 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2 text-left"
     >
-      <ExerciseImage exercise={exercise} className="h-14 w-14" />
+      <ExerciseImage exercise={exercise} className="h-12 w-12" />
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-[14px] font-black text-[var(--app-text)]">
           {exercise.name}
         </h3>
         <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
-          {prescription.sets} x {prescription.reps} · {prescription.rest}
+          {prescription.sets} x {prescription.reps}
+        </p>
+        <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+          Descanso {prescription.rest}
         </p>
       </div>
       <ChevronRight size={15} className="text-[var(--app-primary)]" />
     </button>
+  );
+}
+
+function RoutineBlock({ title, items }) {
+  return (
+    <section className="mt-3 first:mt-0">
+      <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+        {title}
+      </p>
+      <div className="mt-2 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)]">
+        {items.map((item) => (
+          <div
+            className="flex min-h-10 items-center justify-between border-b border-[var(--app-border)] px-3 py-2 last:border-b-0"
+            key={item}
+          >
+            <span className="text-[12px] font-bold text-[var(--app-text)]">
+              {item}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -949,6 +899,16 @@ function getExercisesForDay({ day, level, goal, focus = "General" }) {
     0,
     getExerciseCount(level, focus)
   );
+}
+
+function getWarmupItems(day) {
+  const mainMuscle = day?.muscles?.[0] || "zona principal";
+
+  return [
+    "5 min cardio suave",
+    `Movilidad de ${mainMuscle.toLowerCase()}`,
+    "Activación ligera",
+  ];
 }
 
 function sortExercisesForGoal(list, goal, focus) {
