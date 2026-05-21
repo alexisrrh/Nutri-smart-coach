@@ -6,13 +6,10 @@ import {
   Dumbbell,
   Flame,
   Play,
-  Target,
-  Timer,
-  Trophy,
   X,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AppShell, MetaBadge } from "../components/ui";
+import { AppShell } from "../components/ui";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
 import {
   exercises,
@@ -115,6 +112,16 @@ export function WorkoutRoutines() {
       document.body.classList.remove("workout-session-active");
     };
   }, [workoutMode]);
+
+  useEffect(() => {
+    if (!selectedExercise || typeof document === "undefined") return undefined;
+
+    document.body.classList.add("exercise-sheet-active");
+
+    return () => {
+      document.body.classList.remove("exercise-sheet-active");
+    };
+  }, [selectedExercise]);
 
   function handleGenerateWorkout() {
     saveWorkoutConfig({
@@ -901,45 +908,58 @@ function RoutineBlock({ title, items }) {
 
 function ExerciseSheet({ exercise, goal, level, onClose }) {
   const prescription = getPrescription(exercise, level, goal);
+  const visibleTips = (exercise.tips || []).slice(0, 2);
+  const hiddenTipsCount = Math.max(0, (exercise.tips || []).length - visibleTips.length);
+  const visibleMistakes = (exercise.mistakes || []).slice(0, 2);
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/55 px-2 backdrop-blur-sm">
-      <section className="max-h-[88dvh] w-full max-w-[430px] overflow-hidden rounded-t-[1.6rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-20px_70px_rgba(0,0,0,0.5)]">
-        <div className="flex max-h-[88dvh] flex-col">
-          <div className="shrink-0 p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <MetaBadge icon={<Dumbbell size={11} />} variant="neutral">
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 px-2 pb-[calc(var(--bottom-nav-space)+24px)] backdrop-blur-md">
+      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
+        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] flex-col">
+          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                 {exercise.muscle}
-              </MetaBadge>
+              </span>
               <button
                 type="button"
                 onClick={onClose}
-                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)]"
+                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)]"
+                aria-label="Cerrar ejercicio"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
-            <ExerciseImage exercise={exercise} className="h-[190px] w-full" />
           </div>
 
-          <div className="min-h-0 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <h2 className="text-[25px] font-black leading-none text-[var(--app-text)]">
+          <div className="min-h-0 overflow-y-auto px-3 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <ExerciseImage exercise={exercise} className="h-[140px] w-full rounded-[0.95rem]" />
+
+            <h2 className="mt-2 line-clamp-2 text-[22px] font-black leading-[1.05] text-[var(--app-text)]">
               {exercise.name}
             </h2>
-            <p className="mt-2 text-sm leading-5 text-[var(--app-muted)]">
+            <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--app-muted)]">
               {exercise.description}
             </p>
 
-            <div className="mt-3 grid grid-cols-3 gap-1.5">
-              <SheetMetric icon={<Trophy size={13} />} label="Series" value={prescription.sets} />
-              <SheetMetric icon={<Target size={13} />} label="Reps" value={prescription.reps} />
-              <SheetMetric icon={<Timer size={13} />} label="Descanso" value={prescription.rest} />
+            <div className="mt-2 flex gap-1.5">
+              <SheetChip label="Series" value={prescription.sets} />
+              <SheetChip label="Reps" value={prescription.reps} />
+              <SheetChip label="Descanso" value={prescription.rest} />
             </div>
 
-            <DetailBlock title="Músculo principal" items={[exercise.muscle]} />
-            <DetailBlock title="Equipo" items={[exercise.equipment]} />
-            <DetailBlock title="Tips" items={exercise.tips} />
-            <DetailBlock title="Errores comunes" items={exercise.mistakes} />
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <InfoPill>{exercise.muscle}</InfoPill>
+              <InfoPill>{exercise.equipment}</InfoPill>
+            </div>
+
+            <CompactInfo title="Tips" items={visibleTips} />
+            {hiddenTipsCount > 0 ? (
+              <p className="mt-1 px-0.5 text-[10px] font-black text-[var(--app-primary)]">
+                Ver más ({hiddenTipsCount})
+              </p>
+            ) : null}
+            <CompactInfo title="Errores comunes" items={visibleMistakes} clamp />
           </div>
         </div>
       </section>
@@ -991,34 +1011,49 @@ function ExerciseImage({ exercise, className = "" }) {
   );
 }
 
-function SheetMetric({ icon, label, value }) {
+function SheetChip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
-      <div className="mb-1 text-[var(--app-primary)]">{icon}</div>
-      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+    <div className="min-w-0 flex-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-center">
+      <p className="text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="mt-0.5 text-[13px] font-black text-[var(--app-text)]">
+      <p className="truncate text-[10px] font-black text-[var(--app-text)]">
         {value}
       </p>
     </div>
   );
 }
 
-function DetailBlock({ title, items }) {
+function InfoPill({ children }) {
   return (
-    <div className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-3">
-      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+      {children}
+    </span>
+  );
+}
+
+function CompactInfo({ title, items, clamp = false }) {
+  if (!items?.length) return null;
+
+  return (
+    <section className="mt-2">
+      <p className="px-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
         {title}
       </p>
-      <div className="mt-2 space-y-1.5">
+      <div className="mt-1 rounded-[0.85rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2">
         {items.map((item) => (
-          <p key={item} className="text-xs leading-5 text-[var(--app-muted)]">
+          <p
+            key={item}
+            className={[
+              "text-[11px] leading-4 text-[var(--app-muted)]",
+              clamp ? "line-clamp-1" : "line-clamp-2",
+            ].join(" ")}
+          >
             {item}
           </p>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 

@@ -216,7 +216,7 @@ export function WorkoutSession({
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+94px)] pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className="min-h-0 overflow-y-auto pb-1.5 pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-1.5">
             <div className="flex h-8 items-center gap-1.5 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label="Kcal" value={calories} />
@@ -243,95 +243,34 @@ export function WorkoutSession({
             </section>
             <QuickTechnique exercise={exercise} />
 
-            <section>
-              <div className="flex items-center justify-between">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Series
-                </p>
-                <span className="text-[9px] font-black text-[var(--app-muted)]">
-                  {completedSeriesCount}/{prescription.sets}
-                </span>
-              </div>
-              <div className="mt-1 grid grid-cols-3 gap-1">
-                {Array.from({ length: prescription.sets }, (_, index) => {
-                  const complete = Boolean(completedForExercise[index]);
-
-                  return (
-                    <button
-                      type="button"
-                      key={`${exercise.id}-set-${index + 1}`}
-                      onClick={() => toggleSet(index)}
-                      className={[
-                        "grid h-9 grid-cols-[1fr_18px] items-center rounded-[0.85rem] border px-2 text-left transition active:scale-[0.98]",
-                        complete
-                          ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
-                          : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)]",
-                      ].join(" ")}
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-[11px] font-black leading-none">
-                          {index + 1}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[8px] font-bold leading-none text-[var(--app-muted)]">
-                          {prescription.reps}
-                        </span>
-                      </span>
-                      <span className="grid h-[18px] w-[18px] place-items-center rounded-full border border-[var(--app-border)]">
-                        {complete ? <Check size={11} /> : null}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <RestPanel
-              progress={restProgress}
-              remaining={restRemaining}
-              onSkip={() => {
-                setRestRemaining(0);
-                setRestTotal(0);
-              }}
+            <SeriesRestCoach
+              completedForExercise={completedForExercise}
+              completedSeriesCount={completedSeriesCount}
+              onToggleSet={toggleSet}
+              prescription={prescription}
             />
           </div>
         </main>
 
-        <footer className="fixed inset-x-0 bottom-0 z-[10000] mx-auto w-full max-w-[430px] border-t border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-2">
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
-              onClick={() => moveExercise(-1)}
-              disabled={exerciseIndex === 0}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-45"
-            >
-              <ChevronLeft size={14} />
-              Anterior
-            </button>
-            <button
-              type="button"
-              onClick={() => moveExercise(1)}
-              disabled={exerciseIndex === exercises.length - 1}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] disabled:opacity-45"
-            >
-              Siguiente
-              <ChevronRight size={14} />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={finishWorkout}
-            disabled={!hasProgress}
-            className={[
-              "mt-1.5 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 text-[10px] font-black uppercase tracking-[0.14em] transition active:scale-[0.98]",
-              hasProgress
-                ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)]"
-                : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
-            ].join(" ")}
-          >
-            <Flame size={16} />
-            Finalizar entreno
-          </button>
-        </footer>
+        <section className="mt-auto shrink-0 translate-y-[-18px] space-y-1.5 pb-[calc(env(safe-area-inset-bottom)+10px)]">
+          <RestPanel
+            progress={restProgress}
+            remaining={restRemaining}
+            onSkip={() => {
+              setRestRemaining(0);
+              setRestTotal(0);
+            }}
+          />
+
+          <FooterControls
+            canFinish={hasProgress}
+            canGoBack={exerciseIndex > 0}
+            canGoNext={exerciseIndex < exercises.length - 1}
+            onBack={() => moveExercise(-1)}
+            onFinish={finishWorkout}
+            onNext={() => moveExercise(1)}
+          />
+        </section>
       </div>
     </div>
   );
@@ -380,41 +319,159 @@ function QuickTechnique({ exercise }) {
   );
 }
 
-function RestPanel({ progress, remaining, onSkip }) {
-  const active = remaining > 0;
+function SeriesRestCoach({
+  completedForExercise,
+  completedSeriesCount,
+  onToggleSet,
+  prescription,
+}) {
+  const nextSetIndex = Array.from(
+    { length: prescription.sets },
+    (_, index) => Boolean(completedForExercise[index])
+  ).findIndex((complete) => !complete);
 
   return (
-    <section className="mb-2 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-2 shadow-[0_10px_30px_var(--app-glow)]">
-      <div className="flex h-[66px] items-center gap-3">
+    <section className="overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-2 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+      <div className="flex items-center justify-between gap-2 px-0.5">
+        <div>
+          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+            Series
+          </p>
+          <p className="text-[12px] font-black leading-none text-[var(--app-text)]">
+            {completedSeriesCount}/{prescription.sets}
+          </p>
+        </div>
+        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
+          {prescription.reps} reps
+        </span>
+      </div>
+
+      <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(54px,1fr))] gap-1">
+        {Array.from({ length: prescription.sets }, (_, index) => {
+          const complete = Boolean(completedForExercise[index]);
+          const active = !complete && (nextSetIndex === index || nextSetIndex === -1);
+
+          return (
+            <button
+              type="button"
+              key={`set-${index + 1}`}
+              onClick={() => onToggleSet(index)}
+              className={[
+                "relative grid h-[46px] grid-cols-[1fr_18px] items-center overflow-hidden rounded-[0.9rem] border px-2 text-left transition active:scale-[0.98]",
+                complete
+                  ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]"
+                  : active
+                    ? "border-[var(--app-primary)] bg-[color-mix(in_srgb,var(--app-primary)_9%,var(--app-surface))] text-[var(--app-text)]"
+                    : "border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-surface)_88%,transparent)] text-[var(--app-text)]",
+              ].join(" ")}
+            >
+              {active ? (
+                <span className="pointer-events-none absolute inset-x-2 top-0 h-px bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
+              ) : null}
+              <span className="min-w-0">
+                <span className="block text-[17px] font-black leading-none">
+                  {index + 1}
+                </span>
+                <span className="mt-0.5 block truncate text-[8px] font-black leading-none text-[var(--app-muted)]">
+                  {prescription.reps}
+                </span>
+              </span>
+              <span
+                className={[
+                  "grid h-[18px] w-[18px] place-items-center rounded-full border transition",
+                  complete
+                    ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)]"
+                    : active
+                      ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)]"
+                      : "border-[var(--app-border)] bg-[var(--app-card)]",
+                ].join(" ")}
+              >
+                {complete ? <Check size={11} /> : null}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function RestPanel({ progress, remaining, onSkip }) {
+  const active = remaining > 0;
+  const orbProgress = active ? progress : 0;
+
+  return (
+    <div
+      className={[
+        "relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_34%,var(--app-primary-soft),transparent_42%),radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--app-primary)_8%,transparent),transparent_28%),linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_6%,var(--app-card)),var(--app-surface)_58%,var(--app-card))] px-3 text-center shadow-[0_10px_28px_rgba(0,0,0,0.22)]",
+        active ? "py-3" : "py-2",
+      ].join(" ")}
+    >
+      <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--app-primary),transparent)] opacity-45" />
+      <div
+        className={[
+          "relative z-10 mx-auto flex flex-col items-center justify-center",
+          active ? "min-h-[204px]" : "min-h-[108px]",
+        ].join(" ")}
+      >
         <div
-          className="relative grid h-14 w-14 shrink-0 place-items-center rounded-full p-[2px] shadow-[0_0_24px_var(--app-glow)]"
-          style={{
-            background: active
-              ? `conic-gradient(var(--app-primary) ${progress}%, var(--app-primary-soft) ${progress}% 100%)`
-              : "linear-gradient(135deg, var(--app-primary-soft), transparent)",
-          }}
+          className={[
+            "relative grid shrink-0 place-items-center rounded-full",
+            active
+              ? "h-[122px] w-[122px] shadow-[0_0_24px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
+              : "h-[58px] w-[58px] opacity-[0.82]",
+          ].join(" ")}
         >
-          <div className="grid h-full w-full place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]">
-            <span className="text-[16px] font-black leading-none text-[var(--app-primary)]">
-              {active ? `${remaining}s` : "OK"}
-            </span>
+          <span className="absolute inset-[-16px] rounded-full bg-[radial-gradient(circle,var(--app-primary-soft),transparent_68%)] opacity-80" />
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: active
+                ? `conic-gradient(var(--app-primary) ${orbProgress}%, var(--app-primary-soft) ${orbProgress}% 100%)`
+                : "conic-gradient(var(--app-border) 0% 100%)",
+            }}
+          />
+          <span className="absolute inset-[4px] rounded-full bg-[var(--app-card)]" />
+          <span className="absolute inset-[9px] rounded-full border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_38%),var(--app-surface)]" />
+          <div className="relative z-10 grid place-items-center">
+            {active ? (
+              <span className="text-[42px] font-black leading-none text-[var(--app-primary)] tabular-nums">
+                {remaining}s
+              </span>
+            ) : (
+              <Check size={22} className="text-[var(--app-primary)]" />
+            )}
           </div>
           {active ? (
-            <span className="absolute inset-[-3px] rounded-full border border-[var(--app-primary)] opacity-25" />
+            <>
+              <span className="absolute inset-[-3px] rounded-full border border-[var(--app-primary)] opacity-10" />
+              <span className="absolute inset-[-8px] rounded-full border border-[var(--app-primary)] opacity-10 [animation:restRingSpin_9s_linear_infinite]" />
+            </>
           ) : null}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            {active ? "Descanso activo" : "Listo"}
+        <div className={active ? "mt-3" : "mt-2"}>
+          <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
+            {active ? "Descanso activo" : "Listo para la siguiente serie"}
           </p>
-          <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--app-muted)]">
-            {active ? "recuperación inteligente" : "preparado para la siguiente serie"}
+          <p className="mt-1 text-[14px] font-black leading-4 text-[var(--app-text)]">
+            {active ? "Recuperación inteligente" : "Siguiente serie lista"}
           </p>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
+          <p className="mt-1 line-clamp-1 text-[10px] font-bold text-[var(--app-muted)] opacity-75">
+            {active
+              ? "Respira y prepara la siguiente serie"
+              : "Marca una serie para iniciar el coach"}
+          </p>
+        </div>
+
+        <div className="mt-3 w-full max-w-[240px]">
+          <div className="relative h-[2px] overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-primary-soft))]">
             <div
-              className="h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)] transition-all"
-              style={{ width: `${active ? progress : 100}%` }}
+              className={[
+                "relative h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)] transition-all duration-500",
+                active ? "after:absolute after:inset-y-0 after:w-6 after:rounded-full after:bg-white/35 after:blur-[2px] after:[animation:restBeam_1.8s_ease-in-out_infinite]" : "",
+              ].join(" ")}
+              style={{ width: `${active ? progress : 18}%` }}
             />
           </div>
         </div>
@@ -423,12 +480,60 @@ function RestPanel({ progress, remaining, onSkip }) {
           type="button"
           onClick={onSkip}
           disabled={!active}
-          className="h-8 shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] disabled:text-[var(--app-muted)] disabled:opacity-55"
+          className="mt-3 h-7 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
         >
           Saltar
         </button>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function FooterControls({
+  canFinish,
+  canGoBack,
+  canGoNext,
+  onBack,
+  onFinish,
+  onNext,
+}) {
+  return (
+    <footer className="border-t border-[var(--app-border)] bg-[var(--app-surface)] pt-2">
+      <div className="grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={!canGoBack}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-45"
+        >
+          <ChevronLeft size={14} />
+          Anterior
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!canGoNext}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] disabled:opacity-45"
+        >
+          Siguiente
+          <ChevronRight size={14} />
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={onFinish}
+        disabled={!canFinish}
+        className={[
+          "mt-1.5 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 text-[10px] font-black uppercase tracking-[0.14em] transition active:scale-[0.98]",
+          canFinish
+            ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)]"
+            : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
+        ].join(" ")}
+      >
+        <Flame size={16} />
+        Finalizar entreno
+      </button>
+    </footer>
   );
 }
 
