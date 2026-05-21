@@ -1,5 +1,6 @@
 import ActionCard from "./ActionCard";
 import {
+  Activity,
   ChartNoAxesColumnIncreasing,
   ClipboardList,
   Dumbbell,
@@ -58,6 +59,13 @@ export default function DashboardActions({ navigate }) {
           label="RUTINAS"
           description="Entrena por músculo"
           onClick={() => navigate("/rutinas")}
+        />
+
+        <ActionCard
+          fallbackIcon={Activity}
+          label="EJERCICIOS"
+          description="Biblioteca fitness"
+          onClick={() => navigate("/ejercicios")}
         />
 
         <ActionCard

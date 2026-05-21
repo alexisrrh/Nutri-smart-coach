@@ -66,6 +66,12 @@ const WorkoutRoutines = lazy(() =>
   }))
 );
 
+const ExercisesLibrary = lazy(() =>
+  import("./pages/ExercisesLibrary").then((module) => ({
+    default: module.ExercisesLibrary,
+  }))
+);
+
 const BodyScaner = lazy(() =>
   import("./components/Home/BodyScaner").then((module) => ({
     default: module.BodyScaner,
@@ -221,6 +227,15 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <WorkoutRoutines />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ejercicios"
+          element={
+            <ProtectedRoute>
+              <ExercisesLibrary />
             </ProtectedRoute>
           }
         />
