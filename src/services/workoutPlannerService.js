@@ -1,4 +1,4 @@
-import { exercises as exerciseCatalog } from "../data/exercises";
+import { EXERCISE_LIBRARY as exerciseCatalog } from "../data/exerciseLibrary";
 import { DAYS_PER_WEEK_OPTIONS, getWorkoutSplit } from "../data/workoutSplits";
 
 const LEVEL_ORDER = {

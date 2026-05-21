@@ -15,7 +15,7 @@ import {
   MUSCLE_GROUPS,
   WORKOUT_GOALS,
   WORKOUT_LEVELS,
-} from "../data/exercises";
+} from "../data/exerciseLibrary";
 import {
   DAYS_PER_WEEK_OPTIONS,
 } from "../data/workoutSplits";

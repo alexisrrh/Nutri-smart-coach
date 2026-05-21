@@ -1,4 +1,4 @@
-import { WORKOUT_GOALS, WORKOUT_LEVELS } from "./exercises";
+import { WORKOUT_GOALS, WORKOUT_LEVELS } from "./exerciseLibrary";
 
 const BASE_SPLITS = {
   Principiante: {
