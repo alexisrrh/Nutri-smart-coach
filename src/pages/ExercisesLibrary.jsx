@@ -82,47 +82,59 @@ export function ExercisesLibrary() {
     <AppShell contentClassName="px-2 pt-2 pb-[calc(var(--bottom-nav-space)+120px)]">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(0,196,255,0.04),transparent_28%),radial-gradient(circle_at_20%_18%,rgba(60,255,182,0.03),transparent_22%)]">
         <header className="shrink-0">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
-          >
-            <ArrowLeft size={12} />
-            Dashboard
-          </button>
+          {!selectedMuscle ? (
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
+            >
+              <ArrowLeft size={12} />
+              Dashboard
+            </button>
+          ) : null}
 
-          <section className="relative overflow-hidden rounded-[1.5rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_86%,#08101a),var(--app-card))] px-3 py-4 shadow-[0_12px_30px_var(--app-glow)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(0,196,255,0.16),transparent_28%),radial-gradient(circle_at_84%_16%,rgba(60,255,182,0.14),transparent_28%),radial-gradient(circle_at_50%_-10%,rgba(0,196,255,0.08),transparent_58%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.03)_48%,transparent_100%)] opacity-35" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:38px_38px] opacity-12" />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <div className="min-w-0 flex-1 mb-12">
-                <span className="inline-flex pb-2 pt-2 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.65)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Biblioteca fitness
-                </span>
-                <h1 className="mt-1.5 max-w-[15rem]  text-[27px] font-black leading-[1] text-[var(--app-text)] pb-1 sm:text-[25px]">
-                  Entrena por zona muscular
-                </h1>
-                <p className="mt-1.5 max-w-[16rem] text-[11px] font-bold leading-6 text-[var(--app-muted)]">
-                  Explora ejercicios visuales y mejora tu técnica.
-                </p>
-               
-              </div>
+          {!selectedMuscle ? (
+            <section className="relative overflow-hidden rounded-[1.5rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_86%,#08101a),var(--app-card))] px-3 py-4 shadow-[0_12px_30px_var(--app-glow)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(0,196,255,0.16),transparent_28%),radial-gradient(circle_at_84%_16%,rgba(60,255,182,0.14),transparent_28%),radial-gradient(circle_at_50%_-10%,rgba(0,196,255,0.08),transparent_58%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.03)_48%,transparent_100%)] opacity-35" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:38px_38px] opacity-12" />
+              <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+              <div className="relative z-10 flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.65)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                    Biblioteca fitness
+                  </span>
+                  <h1 className="mt-1.5 max-w-[15rem] text-[27px] font-black leading-[0.92] text-[var(--app-text)] sm:text-[32px]">
+                    Entrena por zona muscular
+                  </h1>
+                  <p className="mt-1.5 max-w-[16rem] text-[11px] font-bold leading-4 text-[var(--app-muted)]">
+                    Explora ejercicios visuales y mejora tu técnica.
+                  </p>
+                </div>
 
-              <div className="relative -mr-4 -mb-3 -mt-2 shrink-0">
-                <div className="pointer-events-none absolute inset-0 rounded-full" />
-                <MediaIcon
-                  src="/icons/biblioteca/fitness.png"
-                  alt="Fitness"
-                  className="relative grid mr-3 h-[138px] w-[115px]"
-                />
+                <div className="relative -mr-4 -mb-3 -mt-2 shrink-0">
+                  <div className="pointer-events-none absolute inset-0 " />
+                  <MediaIcon
+                    src="/icons/biblioteca/fitness.png"
+                    alt="Fitness"
+                    className="relative grid h-[112px] w-[112px] place-items-center "
+                  />
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSelectedMuscle("")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
+            >
+              <ArrowLeft size={12} />
+              Volver
+            </button>
+          )}
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className={`min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${selectedMuscle ? "pb-[calc(var(--bottom-nav-space)+120px)]" : "pb-1"}`}>
           <div className="space-y-2">
             {!selectedMuscle ? (
               <section data-muscle-grid className="grid grid-cols-1 gap-2">
@@ -137,28 +149,14 @@ export function ExercisesLibrary() {
                 ))}
               </section>
             ) : (
-              <section className="flex min-h-0 flex-col gap-2">
-                <div className="flex items-center justify-between gap-2 px-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMuscle("")}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
-                  >
-                    <ArrowLeft size={12} />
-                    Volver
-                  </button>
-                  <span className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                    {selectedExercises.length} ejercicios
-                  </span>
-                </div>
-
+              <section className="flex min-h-0 flex-col gap-1.5">
                 <section className="relative overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-3 shadow-[0_8px_24px_var(--app-glow)]">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,var(--app-primary-soft),transparent_42%)]" />
                   <div className="relative z-10 flex items-center gap-3">
                     <MediaIcon
                       src={MUSCLE_ICONS[selectedMuscle] || "/icons/biblioteca/fitness.png"}
                       alt={selectedMuscle}
-                      className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]"
+                      className="grid h-[60px] w-[60px] shrink-0 place-items-center"
                     />
                     <div className="min-w-0">
                       <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
