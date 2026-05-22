@@ -12,6 +12,7 @@ import {
   getLastExercisePerformance,
   saveWorkoutSession,
 } from "../../services/workoutSessionService";
+import { preloadExerciseMedia } from "../../services/exercisePreloadService";
 import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
 
 export function WorkoutSession({
@@ -67,6 +68,10 @@ export function WorkoutSession({
       ),
     [exercises]
   );
+
+  useEffect(() => {
+    preloadExerciseMedia(exercises);
+  }, [exercises]);
 
   useEffect(() => {
     if (summary) return undefined;

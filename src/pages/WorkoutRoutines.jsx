@@ -28,6 +28,10 @@ import {
   selectExercisesForDay,
 } from "../services/workoutPlannerService";
 import {
+  preloadCriticalExerciseMedia,
+  preloadRoutineExerciseMedia,
+} from "../services/exercisePreloadService";
+import {
   completeWorkoutForToday,
   getLocalDateKey,
   getTodayWorkoutCompletion,
@@ -116,6 +120,32 @@ export function WorkoutRoutines() {
       }),
     [daysPerWeek, selectedFocus, selectedGoal, selectedLevel, weeklyPlan, workoutCompletions]
   );
+  const todayPlanDay = useMemo(
+    () => getTodayPlanDay({ weeklyPlan, planStats }),
+    [planStats, weeklyPlan]
+  );
+  const selectedDayExercises = useMemo(() => {
+    if (!selectedDay) return [];
+
+    return selectExercisesForDay({
+      day: selectedDay,
+      level: selectedLevel,
+      goal: selectedGoal,
+      focus: selectedFocus,
+      profile,
+    });
+  }, [profile, selectedDay, selectedFocus, selectedGoal, selectedLevel]);
+  const todayPlanExercises = useMemo(() => {
+    if (!todayPlanDay) return [];
+
+    return selectExercisesForDay({
+      day: todayPlanDay,
+      level: selectedLevel,
+      goal: selectedGoal,
+      focus: selectedFocus,
+      profile,
+    });
+  }, [profile, selectedFocus, selectedGoal, selectedLevel, todayPlanDay]);
 
   useEffect(() => {
     if (!workoutMode || typeof document === "undefined") return undefined;
@@ -136,6 +166,18 @@ export function WorkoutRoutines() {
       document.body.classList.remove("exercise-sheet-active");
     };
   }, [selectedExercise]);
+
+  useEffect(() => {
+    preloadCriticalExerciseMedia();
+  }, []);
+
+  useEffect(() => {
+    preloadRoutineExerciseMedia(todayPlanExercises);
+  }, [todayPlanExercises]);
+
+  useEffect(() => {
+    preloadRoutineExerciseMedia(selectedDayExercises);
+  }, [selectedDayExercises]);
 
   function handleGenerateWorkout() {
     saveWorkoutConfig({
@@ -374,18 +416,12 @@ export function WorkoutRoutines() {
       </div>
 
       {activeDay && !workoutMode ? (
-        <DayDetailSheet
-          day={activeDay}
-          exercises={selectExercisesForDay({
-            day: activeDay,
-            level: selectedLevel,
-            goal: selectedGoal,
-            focus: selectedFocus,
-            profile,
-          })}
-          goal={selectedGoal}
-          level={selectedLevel}
-          onClose={() => setActiveDay(null)}
+                <DayDetailSheet
+                  day={activeDay}
+                  exercises={selectedDayExercises}
+                  goal={selectedGoal}
+                  level={selectedLevel}
+                  onClose={() => setActiveDay(null)}
           onExerciseClick={setSelectedExercise}
           onStart={handleStartWorkout}
           onSkip={() => setActiveDay(null)}
@@ -896,7 +932,7 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
       onClick={onClick}
       className="flex min-h-[62px] items-center gap-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left"
     >
-      <ExerciseImage exercise={exercise} className="h-11 w-11" />
+      <ExerciseMediaFrame exercise={exercise} variant="thumb" className="h-11 w-11 shrink-0" />
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-[13px] font-black text-[var(--app-text)]">
           {exercise.name}
@@ -955,7 +991,11 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
           </div>
 
           <div className="min-h-0 overflow-y-auto px-3 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <ExerciseImage exercise={exercise} className="h-[140px] w-full rounded-[0.95rem]" />
+            <ExerciseMediaFrame
+              exercise={exercise}
+              variant="thumb"
+              className="h-[140px] w-full rounded-[0.95rem]"
+            />
 
             <h2 className="mt-2 line-clamp-2 text-[22px] font-black leading-[1.05] text-[var(--app-text)]">
               {exercise.name}
@@ -1007,16 +1047,6 @@ function SelectFilter({ label, value, options, onChange }) {
         ))}
       </select>
     </label>
-  );
-}
-
-function ExerciseImage({ exercise, className = "" }) {
-  return (
-    <ExerciseMediaFrame
-      exercise={exercise}
-      variant="thumb"
-      className={`shrink-0 ${className}`}
-    />
   );
 }
 
