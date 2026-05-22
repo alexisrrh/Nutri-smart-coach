@@ -1,65 +1,72 @@
 import { Dumbbell } from "lucide-react";
-import { memo, useMemo, useState } from "react";
-import { getExerciseMedia } from "../../services/exerciseMediaService";
+import { memo, useState } from "react";
+import { getExerciseMedia, getLocalExerciseCandidates } from "../../services/exerciseMediaService";
 
-function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
-  const media = useMemo(() => getExerciseMedia(exercise), [exercise]);
-  const src = media.gif || media.image;
+function ExerciseMediaFrame({
+  exercise,
+  className = "",
+  showLabels = false,
+}) {
+  const media = getExerciseMedia(exercise);
+  const localCandidates = getLocalExerciseCandidates(exercise);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+  const [loading, setLoading] = useState(Boolean(localCandidates[0]));
   const [failed, setFailed] = useState(false);
-  const [loading, setLoading] = useState(Boolean(src));
-  const [loadedSrc, setLoadedSrc] = useState("");
-  const secondaryMuscles = Array.isArray(exercise?.secondaryMuscles)
-    ? exercise.secondaryMuscles.slice(0, 3)
-    : [];
 
-  const hasGif = Boolean(media.gif && !failed);
-  const shouldShowImage = Boolean(src) && !failed;
+  const currentSrc = localCandidates[candidateIndex] || "";
 
-  const frameTone = hasGif
-    ? "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]"
-    : "shadow-[0_12px_28px_var(--app-glow)]";
+  function handleError() {
+    const nextIndex = candidateIndex + 1;
+    if (nextIndex < localCandidates.length) {
+      setCandidateIndex(nextIndex);
+      setLoading(true);
+      setFailed(false);
+      return;
+    }
+
+    setFailed(true);
+    setLoading(false);
+  }
 
   return (
     <figure
       className={[
         "relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)]",
-        frameTone,
+        "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]",
         className,
       ].join(" ")}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,color-mix(in_srgb,var(--app-primary)_20%,transparent),transparent_42%),linear-gradient(180deg,rgba(0,0,0,0.16),rgba(0,0,0,0.02))]" />
       <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
 
-      <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden bg-[linear-gradient(180deg,rgba(7,10,18,0.95),rgba(13,18,30,0.96))]">
-        {shouldShowImage ? (
+      <div
+        className={[
+          "relative flex h-full min-h-0 items-center justify-center overflow-hidden",
+          currentSrc && !failed
+            ? "bg-white"
+            : "bg-[linear-gradient(180deg,rgba(7,10,18,0.95),rgba(13,18,30,0.96))]",
+        ].join(" ")}
+      >
+        {currentSrc && !failed ? (
           <>
             <img
-              key={src}
-              src={src}
+              key={`${media.mediaKey}-${currentSrc}`}
+              src={currentSrc}
               alt={exercise?.name || "Exercise media"}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoading(false)}
-              onError={() => {
-                setFailed(true);
-                setLoading(false);
-              }}
-              onLoadCapture={() => setLoadedSrc(src)}
+              onError={handleError}
               className={[
-                "h-full w-full object-contain transition-[opacity,transform,filter] duration-500 ease-out",
+                "block h-full w-full object-contain object-center transition-[opacity,transform,filter] duration-500 ease-out",
                 loading ? "scale-[0.985] opacity-0 blur-[1px]" : "scale-100 opacity-100",
-                loadedSrc === src ? "will-change-transform" : "",
               ].join(" ")}
             />
             {loading ? <LoadingOverlay /> : null}
           </>
         ) : (
           <>
-            <PlaceholderState
-              exercise={exercise}
-              media={media}
-              loading={loading}
-            />
+            <PlaceholderState exercise={exercise} media={media} />
             {loading ? <LoadingOverlay /> : null}
           </>
         )}
@@ -71,18 +78,12 @@ function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
             <Badge label="Músculo principal" value={exercise?.muscle || "—"} />
             <Badge
               label="Músculos secundarios"
-              value={secondaryMuscles.length ? secondaryMuscles.join(" · ") : "Sin secundarios"}
+              value={Array.isArray(exercise?.secondaryMuscles) && exercise.secondaryMuscles.length
+                ? exercise.secondaryMuscles.join(" · ")
+                : "Sin secundarios"}
             />
           </div>
         </figcaption>
-      ) : null}
-
-      {hasGif ? (
-        <div className="pointer-events-none absolute left-2 top-2">
-          <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_55%,white_5%)] bg-[color-mix(in_srgb,var(--app-card)_78%,transparent)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] backdrop-blur-md">
-            GIF REAL
-          </span>
-        </div>
       ) : null}
     </figure>
   );
@@ -101,7 +102,7 @@ function LoadingOverlay() {
   );
 }
 
-function PlaceholderState({ exercise, media, loading }) {
+function PlaceholderState({ exercise, media }) {
   return (
     <div className="relative grid h-full w-full place-items-center">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,var(--app-primary-soft),transparent_40%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.02),transparent_32%)]" />
@@ -111,7 +112,7 @@ function PlaceholderState({ exercise, media, loading }) {
         </div>
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            {loading ? "Cargando media" : "Sin media"}
+            Sin media
           </p>
           <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
             {exercise?.name || media?.expectedName || "Ejercicio"}
