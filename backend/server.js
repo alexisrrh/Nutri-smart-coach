@@ -67,6 +67,117 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/exercise-image/:id", async (req, res) => {
+  const exerciseId = String(req.params.id || "").trim();
+
+  if (!exerciseId) {
+    return res.status(400).json({ error: "Falta exerciseId" });
+  }
+
+  const rapidApiKey = process.env.RAPIDAPI_KEY || process.env.VITE_RAPIDAPI_KEY || "";
+  const rapidApiHost = process.env.RAPIDAPI_HOST || process.env.VITE_RAPIDAPI_HOST || "exercisedb.p.rapidapi.com";
+
+  if (!rapidApiKey) {
+    console.error("[exercise-image] Falta RAPIDAPI_KEY");
+    return res.status(500).json({ error: "Falta configurar RAPIDAPI_KEY" });
+  }
+
+  try {
+    const remoteUrl = new URL("https://exercisedb.p.rapidapi.com/image");
+    remoteUrl.searchParams.set("exerciseId", exerciseId);
+    remoteUrl.searchParams.set("resolution", "180");
+
+    const response = await fetch(remoteUrl, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": rapidApiKey,
+        "x-rapidapi-host": rapidApiHost,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("[exercise-image] RapidAPI error", {
+        exerciseId,
+        status: response.status,
+      });
+      return res.status(500).json({
+        error: "RapidAPI devolvió un error al cargar la imagen",
+        status: response.status,
+      });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    res.setHeader("Content-Type", "image/gif");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.send(Buffer.from(arrayBuffer));
+  } catch (error) {
+    console.error("[exercise-image] Falló el proxy", {
+      exerciseId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({
+      error: "No se pudo cargar la imagen de ExerciseDB",
+    });
+  }
+});
+
+app.get("/search-exercise", async (req, res) => {
+  const query = String(req.query.q || "").trim();
+
+  if (!query) {
+    return res.status(400).json({ error: "Falta q" });
+  }
+
+  const rapidApiKey = process.env.RAPIDAPI_KEY || process.env.VITE_RAPIDAPI_KEY || "";
+  const rapidApiHost = process.env.RAPIDAPI_HOST || process.env.VITE_RAPIDAPI_HOST || "exercisedb.p.rapidapi.com";
+
+  if (!rapidApiKey) {
+    console.error("[search-exercise] Falta RAPIDAPI_KEY");
+    return res.status(500).json({ error: "Falta configurar RAPIDAPI_KEY" });
+  }
+
+  try {
+    const remoteUrl = new URL("https://exercisedb.p.rapidapi.com/exercises/name/" + encodeURIComponent(query));
+    const response = await fetch(remoteUrl, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": rapidApiKey,
+        "x-rapidapi-host": rapidApiHost,
+      },
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      console.error("[search-exercise] RapidAPI error", {
+        query,
+        status: response.status,
+        body,
+      });
+      return res.status(500).json({
+        error: "RapidAPI devolvió un error al buscar ejercicios",
+        status: response.status,
+      });
+    }
+
+    const payload = await response.json();
+    const results = Array.isArray(payload)
+      ? payload
+      : payload?.results || payload?.data || payload?.response || payload?.exercises || [];
+
+    return res.json({
+      results,
+    });
+  } catch (error) {
+    console.error("[search-exercise] Falló el proxy", {
+      query,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({
+      error: "No se pudo buscar ejercicios en ExerciseDB",
+    });
+  }
+});
+
 function createTimingLogger(label) {
   const start = performance.now();
   let previous = start;

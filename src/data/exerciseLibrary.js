@@ -31,6 +31,57 @@ const GOAL_REST = {
   Fuerza: "120-150s",
 };
 
+export const englishNameByMediaKey = {
+  "press-banca": "barbell bench press",
+  "press-inclinado-mancuernas": "dumbbell incline bench press",
+  "aperturas-cable": "cable fly",
+  flexiones: "push up",
+  "fondos-pecho": "chest dips",
+  "press-declinado-mancuernas": "dumbbell decline bench press",
+  dominadas: "pull up",
+  "jalon-pecho": "lat pulldown",
+  "remo-barra": "barbell row",
+  "remo-sentado": "seated cable row",
+  "pullover-polea": "cable pullover",
+  "face-pull": "face pull",
+  sentadilla: "barbell squat",
+  "prensa-piernas": "leg press",
+  "peso-muerto-rumano": "romanian deadlift",
+  zancadas: "dumbbell lunge",
+  "extensiones-cuadriceps": "leg extension",
+  "curl-femoral": "leg curl",
+  "hip-thrust": "barbell hip thrust",
+  "patada-gluteo": "glute kickback",
+  "abduccion-cadera": "hip abduction",
+  "sentadilla-sumo": "sumo squat",
+  "puente-gluteo": "glute bridge",
+  "pull-through": "cable pull-through",
+  "press-militar": "overhead press",
+  "elevaciones-laterales": "lateral raise",
+  "face-pull-hombro": "face pull",
+  "elevaciones-frontales": "front raise",
+  "pajaro-mancuernas": "dumbbell reverse fly",
+  "arnold-press": "arnold press",
+  "curl-mancuernas": "biceps curl",
+  "curl-barra-z": "ez bar curl",
+  "curl-martillo": "hammer curl",
+  "curl-inclinado": "incline dumbbell curl",
+  "curl-predicador": "preacher curl",
+  "curl-concentrado": "concentration curl",
+  "fondos-banco": "bench dips",
+  "extension-polea": "rope tricep pushdown",
+  "press-frances": "lying triceps extension",
+  "patada-triceps": "triceps kickback",
+  "press-cerrado": "close grip bench press",
+  "extension-cuerda": "rope tricep pushdown",
+  plancha: "plank",
+  "crunch-cable": "cable crunch",
+  "elevacion-piernas": "leg raise",
+  "dead-bug": "dead bug",
+  "pallof-press": "pallof press",
+  "rueda-abdominal": "ab wheel rollout",
+};
+
 const MOVEMENT_CALORIES = {
   compound: 1.2,
   accessory: 1,
@@ -43,6 +94,7 @@ const MOVEMENT_CALORIES = {
 function createExercise({
   slug,
   name,
+  englishName,
   muscle,
   secondaryMuscles = [],
   difficulty,
@@ -82,11 +134,17 @@ function createExercise({
     resolvedMovementType,
     difficultyScore
   );
+  const resolvedEnglishName = englishName || englishNameByMediaKey[slug] || "";
+
+  if (!resolvedEnglishName) {
+    console.warn("Missing englishName", slug, name);
+  }
 
   return {
     id: slug,
     mediaKey: slug,
     name,
+    englishName: resolvedEnglishName || name,
     muscle,
     secondaryMuscles,
     level: resolvedLevel,

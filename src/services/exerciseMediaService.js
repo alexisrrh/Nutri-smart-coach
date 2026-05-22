@@ -1,10 +1,12 @@
 import { EXERCISE_MEDIA_MAP } from "../data/exerciseMediaMap";
+import { getExerciseImageUrl } from "./exerciseDbService";
 
 const PLACEHOLDER = {
   gif: "",
   image: "",
   placeholder: true,
   localGif: "",
+  remoteGifUrl: "",
   mediaKey: "",
   exerciseDbId: "",
   expectedName: "",
@@ -26,21 +28,23 @@ export function getExerciseMedia(exercise) {
   }
 
   const localGif = mapping.localGif || "";
+  const remoteGifUrl = mapping.remoteGifUrl || getExerciseImageUrl(mapping.exerciseDbId) || "";
   const image = exercise?.image || "";
-  const hasGif = Boolean(localGif);
+  const hasGif = Boolean(localGif || remoteGifUrl);
   const hasImage = Boolean(image);
 
   return {
     mediaKey,
     localGif,
-    gif: hasGif ? localGif : "",
+    remoteGifUrl,
+    gif: localGif || remoteGifUrl || "",
     image: hasImage ? image : "",
     placeholder: !hasGif && !hasImage,
     exerciseDbId: mapping.exerciseDbId || "",
     expectedName: mapping.expectedName || exercise?.name || "",
     target: mapping.target || exercise?.muscle || "",
     equipment: mapping.equipment || exercise?.equipment || "",
-    source: hasGif ? "gif" : hasImage ? "image" : "placeholder",
+    source: localGif ? "localGif" : remoteGifUrl ? "remoteGif" : hasImage ? "image" : "placeholder",
   };
 }
 
@@ -51,4 +55,3 @@ export function getLocalExerciseGif(exercise) {
 export function hasExerciseGif(exercise) {
   return Boolean(getLocalExerciseGif(exercise));
 }
-

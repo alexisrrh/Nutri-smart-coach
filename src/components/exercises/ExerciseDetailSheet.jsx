@@ -5,7 +5,9 @@ import { getExerciseMedia } from "../../services/exerciseMediaService";
 
 export default function ExerciseDetailSheet({ exercise, onClose }) {
   const media = getExerciseMedia(exercise);
-  const hasRealMedia = Boolean(media?.gif || media?.image);
+  const hasRealMedia = Boolean(
+    media?.gif || media?.image || media?.remoteGifUrl || media?.exerciseDbId
+  );
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -19,6 +21,9 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
 
   const tips = exercise?.tips || [];
   const mistakes = exercise?.mistakes || [];
+
+  console.log("selected exercise", exercise);
+  console.log("resolved media", media);
 
   if (!exercise) return null;
 
@@ -50,13 +55,14 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
 
           <div className="min-h-0 overflow-y-auto px-3 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <ExerciseMediaFrame
-              key={exercise?.mediaKey || exercise?.id || exercise?.name}
+              key={media?.mediaKey || exercise?.mediaKey || exercise?.id || exercise?.name}
               exercise={exercise}
               className={
                 hasRealMedia
                   ? "aspect-[16/9] w-full min-h-[220px] max-h-[260px]"
                   : "aspect-[16/10] w-full min-h-[190px] max-h-[220px]"
               }
+              allowDownload
             />
 
             <div className="mt-2 flex flex-wrap items-center gap-1.5">

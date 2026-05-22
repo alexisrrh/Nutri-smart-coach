@@ -12,6 +12,8 @@ export default function ExerciseCard({ exercise, onClick }) {
         key={exercise?.mediaKey || exercise?.id || exercise?.name}
         exercise={exercise}
         className="h-14 w-14 shrink-0"
+        allowDownload
+        downloadCompact
       />
 
       <div className="min-w-0 flex-1">

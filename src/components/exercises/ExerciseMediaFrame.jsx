@@ -1,23 +1,77 @@
-import { Dumbbell } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { Download, Dumbbell } from "lucide-react";
+import { memo, useState } from "react";
+import { downloadRemoteAsset } from "../../services/exerciseDbService";
 import { getExerciseMedia } from "../../services/exerciseMediaService";
 
-function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
-  const media = useMemo(() => getExerciseMedia(exercise), [exercise]);
-  const src = media.gif || media.image;
+function ExerciseMediaFrame({
+  exercise,
+  className = "",
+  showLabels = false,
+  allowDownload = false,
+  downloadCompact = false,
+}) {
+  const media = getExerciseMedia(exercise);
   const [failed, setFailed] = useState(false);
-  const [loading, setLoading] = useState(Boolean(src));
-  const [loadedSrc, setLoadedSrc] = useState("");
+  const [loading, setLoading] = useState(Boolean(media.localGif || media.remoteGifUrl));
+  const [sourceMode, setSourceMode] = useState(
+    media.localGif ? "local" : media.remoteGifUrl ? "remote" : "placeholder"
+  );
+
+  const currentSrc =
+    sourceMode === "local" ? media.localGif : sourceMode === "remote" ? media.remoteGifUrl : "";
+  const hasGif = sourceMode === "local" || sourceMode === "remote";
+  const hasRemoteDownload = sourceMode === "remote" && Boolean(media.remoteGifUrl);
+  const shouldShowImage = Boolean(currentSrc) && !failed;
   const secondaryMuscles = Array.isArray(exercise?.secondaryMuscles)
     ? exercise.secondaryMuscles.slice(0, 3)
     : [];
 
-  const hasGif = Boolean(media.gif && !failed);
-  const shouldShowImage = Boolean(src) && !failed;
+  console.log("selected exercise", exercise);
+  console.log("media", media);
+  console.log("resolved media", media);
 
-  const frameTone = hasGif
-    ? "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]"
-    : "shadow-[0_12px_28px_var(--app-glow)]";
+  const frameTone =
+    sourceMode === "remote" || sourceMode === "local"
+      ? "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]"
+      : "shadow-[0_12px_28px_var(--app-glow)]";
+
+  function handleLocalError() {
+    console.log("local gif failed", media.localGif);
+
+    if (media.remoteGifUrl && sourceMode !== "remote") {
+      console.log("trying remote exercise db", media.exerciseDbId);
+      setSourceMode("remote");
+      setFailed(false);
+      setLoading(true);
+      return;
+    }
+
+    if (sourceMode === "remote") {
+      console.log("remote fetch failed", new Error("Remote image could not be rendered"));
+    }
+
+    setFailed(true);
+    setLoading(false);
+  }
+
+  async function handleDownload(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!media.remoteGifUrl) return;
+
+    await downloadRemoteAsset(
+      media.remoteGifUrl,
+      `${exercise?.mediaKey || exercise?.id || "exercise"}.gif`
+    );
+  }
+
+  function handleDownloadKeyDown(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    handleDownload(event);
+  }
 
   return (
     <figure
@@ -34,21 +88,21 @@ function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
         {shouldShowImage ? (
           <>
             <img
-              key={src}
-              src={src}
+              key={currentSrc}
+              src={currentSrc}
               alt={exercise?.name || "Exercise media"}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoading(false)}
-              onError={() => {
-                setFailed(true);
-                setLoading(false);
+              onLoadCapture={() => {
+                if (sourceMode === "remote") {
+                  console.log("remote gif resolved", currentSrc);
+                }
               }}
-              onLoadCapture={() => setLoadedSrc(src)}
+              onError={handleLocalError}
               className={[
                 "h-full w-full object-contain transition-[opacity,transform,filter] duration-500 ease-out",
                 loading ? "scale-[0.985] opacity-0 blur-[1px]" : "scale-100 opacity-100",
-                loadedSrc === src ? "will-change-transform" : "",
               ].join(" ")}
             />
             {loading ? <LoadingOverlay /> : null}
@@ -83,6 +137,32 @@ function ExerciseMediaFrame({ exercise, className = "", showLabels = false }) {
             GIF REAL
           </span>
         </div>
+      ) : null}
+
+      {allowDownload && hasRemoteDownload ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleDownload}
+          onKeyDown={handleDownloadKeyDown}
+          title="Descargar GIF"
+          aria-label="Descargar GIF"
+          className={[
+            "absolute z-20 inline-flex cursor-pointer items-center border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_78%,transparent)] font-black uppercase tracking-[0.12em] text-[var(--app-text)] shadow-[0_10px_24px_var(--app-glow)] backdrop-blur-md transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--app-primary)]/60",
+            downloadCompact
+              ? "right-1 top-1 h-7 w-7 justify-center rounded-full"
+              : "right-2 top-2 h-8 gap-1 rounded-full px-2.5 text-[8px]",
+          ].join(" ")}
+        >
+          <Download size={10} className="text-[var(--app-primary)]" />
+          {downloadCompact ? null : "Descargar GIF"}
+        </div>
+      ) : null}
+
+      {allowDownload && hasRemoteDownload && !downloadCompact ? (
+        <p className="pointer-events-none absolute bottom-2 left-2 z-10 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_72%,transparent)] px-2 py-0.5 text-[7px] font-semibold text-[var(--app-muted)] backdrop-blur-md">
+          Revisa que coincida antes de guardar.
+        </p>
       ) : null}
     </figure>
   );

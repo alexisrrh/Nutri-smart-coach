@@ -1,9 +1,7 @@
 import ActionCard from "./ActionCard";
 import {
-  Activity,
   ChartNoAxesColumnIncreasing,
   ClipboardList,
-  Dumbbell,
   ScanLine,
   UserRoundSearch,
 } from "lucide-react";
