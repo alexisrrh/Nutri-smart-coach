@@ -1,12 +1,11 @@
 import { EXERCISE_MEDIA_MAP } from "../data/exerciseMediaMap";
-import { getExerciseImageUrl } from "./exerciseDbService";
 
 const PLACEHOLDER = {
   gif: "",
   image: "",
   placeholder: true,
   localGif: "",
-  remoteGifUrl: "",
+  localGifCandidates: [],
   mediaKey: "",
   exerciseDbId: "",
   expectedName: "",
@@ -15,36 +14,55 @@ const PLACEHOLDER = {
   source: "placeholder",
 };
 
-export function getExerciseMedia(exercise) {
-  const mediaKey = String(exercise?.mediaKey || exercise?.id || "");
-  if (!mediaKey) return { ...PLACEHOLDER };
+function getMediaKey(exercise) {
+  return String(exercise?.mediaKey || exercise?.id || "").trim();
+}
 
-  const mapping = EXERCISE_MEDIA_MAP[mediaKey];
-  if (!mapping) {
-    return {
-      ...PLACEHOLDER,
-      mediaKey,
-    };
+function getMediaMapping(exercise) {
+  const mediaKey = getMediaKey(exercise);
+  if (!mediaKey) return { mediaKey: "", mapping: null };
+
+  return {
+    mediaKey,
+    mapping: EXERCISE_MEDIA_MAP[mediaKey] || null,
+  };
+}
+
+export function getLocalExerciseCandidates(exercise) {
+  const { mediaKey, mapping } = getMediaMapping(exercise);
+  if (!mediaKey) return [];
+
+  const firstCandidate = mapping?.localGif || `/exercises/${mediaKey}.webp`;
+  const secondCandidate = `/exercises/${mediaKey}.gif`;
+
+  return Array.from(new Set([firstCandidate, secondCandidate].filter(Boolean)));
+}
+
+export function hasLocalExerciseMedia(exercise) {
+  return getLocalExerciseCandidates(exercise).length > 0;
+}
+
+export function getExerciseMedia(exercise) {
+  const { mediaKey, mapping } = getMediaMapping(exercise);
+  if (!mediaKey) {
+    return { ...PLACEHOLDER, mediaKey };
   }
 
-  const localGif = mapping.localGif || "";
-  const remoteGifUrl = mapping.remoteGifUrl || getExerciseImageUrl(mapping.exerciseDbId) || "";
-  const image = exercise?.image || "";
-  const hasGif = Boolean(localGif || remoteGifUrl);
-  const hasImage = Boolean(image);
+  const localGifCandidates = getLocalExerciseCandidates(exercise);
+  const localGif = localGifCandidates[0] || "";
 
   return {
     mediaKey,
     localGif,
-    remoteGifUrl,
-    gif: localGif || remoteGifUrl || "",
-    image: hasImage ? image : "",
-    placeholder: !hasGif && !hasImage,
-    exerciseDbId: mapping.exerciseDbId || "",
-    expectedName: mapping.expectedName || exercise?.name || "",
-    target: mapping.target || exercise?.muscle || "",
-    equipment: mapping.equipment || exercise?.equipment || "",
-    source: localGif ? "localGif" : remoteGifUrl ? "remoteGif" : hasImage ? "image" : "placeholder",
+    localGifCandidates,
+    gif: localGif,
+    image: "",
+    placeholder: !localGif,
+    exerciseDbId: mapping?.exerciseDbId || "",
+    expectedName: mapping?.expectedName || exercise?.englishName || exercise?.name || "",
+    target: mapping?.target || exercise?.muscle || "",
+    equipment: mapping?.equipment || exercise?.equipment || "",
+    source: localGif ? "localGif" : "placeholder",
   };
 }
 

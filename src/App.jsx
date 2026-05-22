@@ -72,12 +72,6 @@ const ExercisesLibrary = lazy(() =>
   }))
 );
 
-const ExerciseMatchManager = lazy(() =>
-  import("./pages/dev/ExerciseMatchManager").then((module) => ({
-    default: module.default,
-  }))
-);
-
 const BodyScaner = lazy(() =>
   import("./components/Home/BodyScaner").then((module) => ({
     default: module.BodyScaner,
@@ -242,15 +236,6 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <ExercisesLibrary />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dev/exercise-match"
-          element={
-            <ProtectedRoute>
-              <ExerciseMatchManager />
             </ProtectedRoute>
           }
         />

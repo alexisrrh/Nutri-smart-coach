@@ -136,10 +136,6 @@ function createExercise({
   );
   const resolvedEnglishName = englishName || englishNameByMediaKey[slug] || "";
 
-  if (!resolvedEnglishName) {
-    console.warn("Missing englishName", slug, name);
-  }
-
   return {
     id: slug,
     mediaKey: slug,

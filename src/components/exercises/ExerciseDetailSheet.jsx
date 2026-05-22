@@ -5,9 +5,7 @@ import { getExerciseMedia } from "../../services/exerciseMediaService";
 
 export default function ExerciseDetailSheet({ exercise, onClose }) {
   const media = getExerciseMedia(exercise);
-  const hasRealMedia = Boolean(
-    media?.gif || media?.image || media?.remoteGifUrl || media?.exerciseDbId
-  );
+  const hasRealMedia = Boolean(media?.localGif);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -21,9 +19,6 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
 
   const tips = exercise?.tips || [];
   const mistakes = exercise?.mistakes || [];
-
-  console.log("selected exercise", exercise);
-  console.log("resolved media", media);
 
   if (!exercise) return null;
 
@@ -62,7 +57,6 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
                   ? "aspect-[16/9] w-full min-h-[220px] max-h-[260px]"
                   : "aspect-[16/10] w-full min-h-[190px] max-h-[220px]"
               }
-              allowDownload
             />
 
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
