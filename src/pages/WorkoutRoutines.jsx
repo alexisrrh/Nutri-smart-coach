@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/ui";
+import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
 import {
   MUSCLE_GROUPS,
@@ -26,7 +27,6 @@ import {
   getRecommendedDaysForProfile,
   selectExercisesForDay,
 } from "../services/workoutPlannerService";
-import { getExerciseMedia } from "../services/exerciseMediaService";
 import {
   completeWorkoutForToday,
   getLocalDateKey,
@@ -1011,27 +1011,12 @@ function SelectFilter({ label, value, options, onChange }) {
 }
 
 function ExerciseImage({ exercise, className = "" }) {
-  const [failed, setFailed] = useState(false);
-  const media = getExerciseMedia(exercise);
-  const src = media.gif || media.image;
-
   return (
-    <div
-      className={`relative grid shrink-0 place-items-center overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] ${className}`}
-    >
-      {src && !failed ? (
-        <img
-          src={src}
-          alt={exercise.name}
-          onError={() => setFailed(true)}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_50%_30%,var(--app-primary-soft),transparent_52%)] text-[var(--app-primary)]">
-          <Dumbbell size={28} />
-        </div>
-      )}
-    </div>
+    <ExerciseMediaFrame
+      exercise={exercise}
+      variant="thumb"
+      className={`shrink-0 ${className}`}
+    />
   );
 }
 

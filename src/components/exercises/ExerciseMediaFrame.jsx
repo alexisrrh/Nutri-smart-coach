@@ -6,6 +6,7 @@ function ExerciseMediaFrame({
   exercise,
   className = "",
   showLabels = false,
+  variant = "default",
 }) {
   const media = getExerciseMedia(exercise);
   const localCandidates = getLocalExerciseCandidates(exercise);
@@ -30,6 +31,7 @@ function ExerciseMediaFrame({
 
   return (
     <figure
+      data-variant={variant}
       className={[
         "relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[var(--app-card)]",
         "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_16px_34px_var(--app-glow),0_0_42px_var(--app-glow)]",
