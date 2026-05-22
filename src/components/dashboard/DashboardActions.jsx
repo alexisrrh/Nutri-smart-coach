@@ -61,7 +61,7 @@ export default function DashboardActions({ navigate }) {
         />
 
         <ActionCard
-           icon="/icons/ejercicios.jpg"
+           icon="/icons/ejercicios.png"
           fallbackIcon={UserRoundSearch}
           label="EJERCICIOS"
           description="ejercicios por musculo"
