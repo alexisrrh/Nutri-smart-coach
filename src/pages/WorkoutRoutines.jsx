@@ -290,9 +290,9 @@ export function WorkoutRoutines() {
   }
 
   return (
-    <AppShell contentClassName="px-1.5 pb-[var(--bottom-nav-space)] pt-1.5">
-      <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
-        <header className="shrink-0">
+    <AppShell contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-1.5">
+      <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-2 overflow-hidden overflow-x-hidden">
+        <header className="w-full max-w-full shrink-0">
           <button
             type="button"
             onClick={() => navigate("/dashboard")}
@@ -306,10 +306,10 @@ export function WorkoutRoutines() {
             Dashboard
           </button>
 
-          <section className="relative overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_6px_18px_var(--app-glow)]">
+          <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_6px_18px_var(--app-glow)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_40%)]" />
-            <div className="relative z-10 flex items-center justify-between gap-3">
-              <div className="min-w-0">
+            <div className="relative z-10 flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
                   Entrenamientos
                 </p>
@@ -328,8 +328,8 @@ export function WorkoutRoutines() {
           </section>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="space-y-[5px] pb-2">
+        <main className="min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
             {showConfig ? (
               <WorkoutConfigCard
                 daysPerWeek={daysPerWeek}
@@ -366,16 +366,16 @@ export function WorkoutRoutines() {
                 />
 
                 <section>
-                  <div className="mb-1 flex items-center justify-between px-1">
-                    <h2 className="text-[14px] font-black text-[var(--app-text)]">
+                  <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-1">
+                    <h2 className="min-w-0 text-[14px] font-black text-[var(--app-text)]">
                       Toda tu semana
                     </h2>
-                    <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                    <span className="shrink-0 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
                       {planStats.remaining} pendientes
                     </span>
                   </div>
 
-                  <div className="grid gap-1">
+                  <div className="grid w-full max-w-full min-w-0 gap-1">
                     {weeklyPlan.map((day, index) => {
                       const dateKey = getPlanDayDateKey(index);
                       const completion = getCompletionForPlanDay({
@@ -457,7 +457,7 @@ export function WorkoutRoutines() {
       ) : null}
 
       {toggleMessage ? (
-        <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+92px)] left-1/2 z-[95] w-[88%] max-w-[360px] -translate-x-1/2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-4 py-3 text-center text-[12px] font-black text-[var(--app-primary)] shadow-[0_18px_50px_var(--app-glow)]">
+        <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+92px)] left-3 right-3 z-[95] mx-auto max-w-[360px] rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-4 py-3 text-center text-[12px] font-black text-[var(--app-primary)] shadow-[0_18px_50px_var(--app-glow)]">
           {toggleMessage}
         </div>
       ) : null}
@@ -473,9 +473,9 @@ function WorkoutHistoryPreview({ sessions, onOpen }) {
   if (!latestSession) return null;
 
   return (
-    <section className="rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5 shadow-[0_6px_16px_var(--app-glow)]">
-      <div className="mb-1 flex items-center justify-between gap-2 px-0.5">
-        <h2 className="text-[13px] font-black text-[var(--app-text)]">
+    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5 shadow-[0_6px_16px_var(--app-glow)]">
+      <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-0.5">
+        <h2 className="min-w-0 text-[13px] font-black text-[var(--app-text)]">
           Última sesión
         </h2>
         <button
@@ -544,9 +544,9 @@ function WorkoutHistoryCard({ session, compact = false }) {
   const exerciseNames = getCompletedExerciseNames(session);
 
   return (
-    <article className="rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+    <article className="w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             {formatSessionDate(session)}
           </p>
@@ -602,9 +602,9 @@ function WorkoutConfigCard({
   setSelectedLevel,
 }) {
   return (
-    <section className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_24px_var(--app-glow)]">
-      <div className="mb-1.5 flex items-start justify-between gap-2">
-        <div>
+    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_24px_var(--app-glow)]">
+      <div className="mb-1.5 flex min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
             Configuración del plan
           </p>
@@ -617,7 +617,7 @@ function WorkoutConfigCard({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid min-w-0 grid-cols-1 gap-1.5 min-[360px]:grid-cols-2">
         <SelectFilter
           label="Nivel"
           value={selectedLevel}
@@ -635,7 +635,7 @@ function WorkoutConfigCard({
       <p className="mt-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
         ¿Cuántos días puedes entrenar?
       </p>
-      <div className="mt-1.5 grid grid-cols-5 gap-1">
+      <div className="mt-1.5 grid min-w-0 grid-cols-5 gap-1">
         {DAYS_PER_WEEK_OPTIONS.map((days) => (
           <button
             type="button"
@@ -678,23 +678,23 @@ function ActivePlanSummary({
   onAdjust,
 }) {
   return (
-    <section className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_8px_20px_var(--app-glow)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_8px_20px_var(--app-glow)]">
+      <div className="flex min-w-0 flex-col items-start gap-2">
+        <div className="w-full min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
             Plan semanal
           </p>
-          <p className="mt-1 max-w-[260px] text-[13px] font-black leading-4 text-[var(--app-text)]">
+          <p className="mt-1 max-w-full break-words text-[13px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
             {planMeta?.planName || `${selectedLevel} · ${selectedFocus} · ${daysPerWeek} días`}
           </p>
-          <p className="mt-1 text-[9px] font-bold text-[var(--app-muted)]">
+          <p className="mt-1 min-w-0 break-words text-[9px] font-bold text-[var(--app-muted)]">
             {selectedLevel} · {daysPerWeek} días · {selectedFocus}
           </p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-[9px] font-bold text-[var(--app-muted)]">
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+            <span className="min-w-0 text-[9px] font-bold text-[var(--app-muted)]">
               Progreso semanal
             </span>
-            <div className="h-1 w-16 overflow-hidden rounded-full bg-[var(--app-surface)]">
+            <div className="h-1 w-16 max-w-full shrink-0 overflow-hidden rounded-full bg-[var(--app-surface)]">
               <div
                 className="h-full rounded-full bg-[var(--app-primary)] transition-all"
                 style={{ width: `${planStats.weeklyProgress}%` }}
@@ -708,7 +708,7 @@ function ActivePlanSummary({
         <button
           type="button"
           onClick={onAdjust}
-          className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]"
+          className="shrink-0 whitespace-nowrap rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-4 py-1.5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)] transition active:scale-[0.98]"
         >
           Ajustar plan
         </button>
@@ -719,16 +719,16 @@ function ActivePlanSummary({
 
 function TodayWorkoutCard({ day, onStart, todayCompletion }) {
   return (
-    <section className="relative overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_22px_var(--app-glow)]">
+    <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_22px_var(--app-glow)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,var(--app-primary-soft),transparent_42%)]" />
       <div className="relative z-10">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+        <div className="flex min-w-0 items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="flex min-w-0 items-center gap-1 text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               <Flame size={11} />
               Entrenamiento de hoy
             </p>
-            <h2 className="mt-0.5 truncate text-[16px] font-black leading-none text-[var(--app-text)]">
+            <h2 className="mt-0.5 break-words text-[16px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
               {day.name}
             </h2>
             <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
@@ -744,7 +744,7 @@ function TodayWorkoutCard({ day, onStart, todayCompletion }) {
             <button
               type="button"
               onClick={onStart}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full bg-[var(--app-primary)] px-2.5 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-surface)] shadow-[0_8px_20px_var(--app-glow)] transition active:scale-[0.98]"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--app-primary)] px-2.5 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-surface)] shadow-[0_8px_20px_var(--app-glow)] transition active:scale-[0.98]"
             >
               <Play size={12} />
               Comenzar
@@ -770,14 +770,14 @@ function DayCard({ day, status, locked, onClick, onToggle }) {
   return (
     <article
       className={[
-        "min-h-[68px] rounded-[0.9rem] border px-2 py-1.5 text-left shadow-[0_5px_14px_var(--app-glow)] transition active:scale-[0.99]",
+        "w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border px-2 py-1.5 text-left shadow-[0_5px_14px_var(--app-glow)] transition active:scale-[0.99]",
         complete
           ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[0_0_14px_var(--app-glow)]"
           : "border-[var(--app-border)] bg-[var(--app-card)] hover:bg-[var(--app-primary-soft)]/40",
         locked ? "opacity-70" : "",
       ].join(" ")}
     >
-      <div className="flex min-h-[56px] items-center gap-2">
+      <div className="grid min-h-[56px] w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
         <div
           className={[
             "grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-[var(--app-surface)] text-[var(--app-primary)]",
@@ -789,28 +789,28 @@ function DayCard({ day, status, locked, onClick, onToggle }) {
           {complete ? <CheckCircle2 size={15} /> : <span className="text-xs font-black">{day.day}</span>}
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <button
             type="button"
             onClick={onClick}
-            className="block w-full text-left"
+            className="block w-full min-w-0 text-left"
           >
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
                 <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                   Día {day.day}
                 </p>
-                <h3 className="mt-0.5 truncate text-[13px] font-black leading-none text-[var(--app-text)]">
+                <h3 className="mt-0.5 break-words text-[13px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
                   {day.muscles.join(" + ")}
                 </h3>
-                <p className="mt-0.5 truncate text-[9px] font-bold text-[var(--app-muted)]">
+                <p className="mt-0.5 min-w-0 truncate text-[9px] font-bold text-[var(--app-muted)]">
                   {day.duration}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <span
                   className={[
-                    "rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.08em]",
+                    "shrink-0 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.08em]",
                     getDayStatusClass(status),
                   ].join(" ")}
                 >
@@ -875,7 +875,7 @@ function DayDetailSheet({
             <p className="mt-2 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
               Día {day.day} · {day.duration}
             </p>
-            <h2 className="mt-0.5 text-[20px] font-black leading-none text-[var(--app-text)]">
+            <h2 className="mt-0.5 break-words text-[20px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
               {day.name}
             </h2>
           </div>
