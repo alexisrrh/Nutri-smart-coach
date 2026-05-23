@@ -23,6 +23,7 @@ import {
 import { deleteCheckin, listCheckins } from "../services/checkinService";
 import {
   AppShell,
+  ConfirmDialog,
   FormField,
   MetaBadge,
   PrimaryButton,
@@ -48,6 +49,7 @@ export function Progress() {
   const [activeView, setActiveView] = useState("resumen");
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedCheckin, setSelectedCheckin] = useState(null);
+  const [checkinToDelete, setCheckinToDelete] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const getLogs = useCallback(async () => {
@@ -124,10 +126,8 @@ export function Progress() {
   async function handleDeleteCheckin(checkin) {
     if (!checkin?.id || !userId || deletingId) return;
 
-    const confirmed = window.confirm("¿Eliminar este check-in?");
-    if (!confirmed) return;
-
     try {
+      setCheckinToDelete(null);
       setDeletingId(checkin.id);
       setErrorMessage("");
 
@@ -388,7 +388,7 @@ export function Progress() {
                   logs={logs}
                   sortedCheckinsDesc={sortedCheckinsDesc}
                   deletingId={deletingId}
-                  onDelete={handleDeleteCheckin}
+                  onDelete={setCheckinToDelete}
                   onSelect={setSelectedCheckin}
                 />
               </>
@@ -402,6 +402,17 @@ export function Progress() {
             onClose={() => setSelectedCheckin(null)}
           />
         )}
+
+        <ConfirmDialog
+          open={Boolean(checkinToDelete)}
+          variant="danger"
+          title="Eliminar check-in"
+          description="Se eliminara este registro de progreso y su foto asociada. Esta accion no se puede deshacer."
+          cancelLabel="Cancelar"
+          confirmLabel="Eliminar"
+          onCancel={() => setCheckinToDelete(null)}
+          onConfirm={() => handleDeleteCheckin(checkinToDelete)}
+        />
       </div>
     </AppShell>
   );

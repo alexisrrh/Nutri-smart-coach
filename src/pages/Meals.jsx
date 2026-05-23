@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   AppShell,
+  ConfirmDialog,
   MetaBadge,
   StatusBox,
   SurfaceCard,
@@ -37,6 +38,7 @@ export function Meals() {
   const [remoteError, setRemoteError] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   async function loadRemoteMeals() {
     try {
@@ -173,10 +175,9 @@ export function Meals() {
   }
 
   async function clearMeals() {
-    if (!window.confirm("¿Borrar todo el historial?")) return;
-
     try {
       setRemoteError("");
+      setConfirmClearOpen(false);
 
       const {
         data: { user },
@@ -274,7 +275,7 @@ export function Meals() {
 
             {meals.length > 0 && (
                 <button
-                  onClick={clearMeals}
+                  onClick={() => setConfirmClearOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-red-400/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-red-300/75 transition hover:bg-red-400/15 hover:text-red-200"
                 >
                   <Trash2 size={12} />
@@ -313,6 +314,17 @@ export function Meals() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmClearOpen}
+        variant="danger"
+        title="Borrar historial"
+        description="Se eliminaran todas las comidas guardadas en tu historial. Esta accion no se puede deshacer."
+        cancelLabel="Cancelar"
+        confirmLabel="Borrar"
+        onCancel={() => setConfirmClearOpen(false)}
+        onConfirm={clearMeals}
+      />
     </AppShell>
   );
 }

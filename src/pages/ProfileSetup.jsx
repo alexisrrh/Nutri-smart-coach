@@ -22,6 +22,7 @@ import {
 import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import {
   AppShell,
+  ConfirmDialog,
   FormField,
   MetaBadge,
   PrimaryButton,
@@ -37,6 +38,7 @@ export function ProfileSetup() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -94,8 +96,7 @@ export function ProfileSetup() {
   }, [loadProfile]);
 
   async function handleLogout() {
-    if (!window.confirm("¿Cerrar sesión?")) return;
-
+    setConfirmLogoutOpen(false);
     await supabase.auth.signOut();
 
     clearCachedProfile();
@@ -335,7 +336,7 @@ export function ProfileSetup() {
 
               <SecondaryButton
                 type="button"
-                onClick={handleLogout}
+                onClick={() => setConfirmLogoutOpen(true)}
                 icon={<LogOut size={14} />}
                 className="mt-2 py-3 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
               >
@@ -345,6 +346,15 @@ export function ProfileSetup() {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmLogoutOpen}
+        title="Cerrar sesion"
+        description="Se cerrara tu sesion en este dispositivo. Podras volver a entrar cuando quieras."
+        cancelLabel="Cancelar"
+        confirmLabel="Cerrar"
+        onCancel={() => setConfirmLogoutOpen(false)}
+        onConfirm={handleLogout}
+      />
     </AppShell>
   );
 }
