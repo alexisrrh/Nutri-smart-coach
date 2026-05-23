@@ -1313,11 +1313,7 @@ app.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
       return res.status(400).json({ error: "Falta checkinId" });
     }
 
-    if (!requestedUserId) {
-      return res.status(400).json({ error: "Falta user_id" });
-    }
-
-    if (!assertSameUser(userId, requestedUserId)) {
+    if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
     }
 
