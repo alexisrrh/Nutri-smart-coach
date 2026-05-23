@@ -35,7 +35,7 @@ export default function ActionCard({
             <img
               src={icon}
               alt={label}
-              className={`relative z-20 object-contain ${
+              className={`relative z-20 object-cover ${
                 featured
                   ? "h-[76px] w-[76px]  "
                   : "h-[76px] w-[76px]"
