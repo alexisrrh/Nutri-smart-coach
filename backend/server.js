@@ -13,6 +13,9 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  "http://127.0.0.1:5175",
   "https://www.nutrismartcoach.com",
   "https://nutrismartcoach.com",
   "https://nutri-smart-coach.vercel.app",
@@ -60,10 +63,7 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    status: "Backend funcionando correctamente",
-    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
-    hasSupabaseUrl: Boolean(process.env.SUPABASE_URL),
-    hasSupabaseServiceKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    service: "nutrismartcoach-api",
   });
 });
 
@@ -1486,7 +1486,8 @@ app.delete("/meal-analyses/:mealId", async (req, res) => {
     const { error: deleteError } = await supabase
       .from("meal_analyses")
       .delete()
-      .eq("id", mealId);
+      .eq("id", mealId)
+      .eq("user_id", userId);
 
     if (deleteError) {
       return res.status(500).json({
