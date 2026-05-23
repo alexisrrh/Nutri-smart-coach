@@ -53,6 +53,35 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+async function verifySupabaseUser(req, res, next) {
+  try {
+    const authorization = req.get("Authorization") || "";
+    const [scheme, token] = authorization.split(" ");
+
+    if (scheme !== "Bearer" || !token) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data?.user) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    req.authUser = data.user;
+
+    return next();
+  } catch (error) {
+    console.error("Error verificando usuario Supabase:", error);
+
+    return res.status(401).json({ error: "No autorizado" });
+  }
+}
+
+function assertSameUser(authUserId, requestedUserId) {
+  return Boolean(authUserId && requestedUserId && authUserId === requestedUserId);
+}
+
 app.get("/", (req, res) => {
   res.json({
     ok: true,
@@ -88,7 +117,7 @@ function createTimingLogger(label) {
   };
 }
 
-app.post("/analyze-food", upload.single("image"), async (req, res) => {
+app.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (req, res) => {
   const timing = createTimingLogger("analyze-food");
 
   try {
@@ -114,7 +143,13 @@ app.post("/analyze-food", upload.single("image"), async (req, res) => {
     }
 
     const goal = req.body.goal || "perder_grasa";
-    const userId = req.body.user_id || null;
+    const requestedUserId = req.body.user_id || null;
+    const userId = req.authUser.id;
+
+    if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
+
     const imageHash = hasImage ? createImageHash(req.file.buffer) : null;
     timing.mark("hash");
 
@@ -280,16 +315,27 @@ Números: sodium en mg, confidence 1-100, score 1-10. Si imagen clara confidence
 `.trim();
 }
 
-app.post("/generate-diet", async (req, res) => {
+app.post("/generate-diet", verifySupabaseUser, async (req, res) => {
   const timing = createTimingLogger("generate-diet");
   const { profile, preferences, user_id } = req.body || {};
-  const userId = user_id || profile?.id || profile?.user_id || null;
+  const userId = req.authUser.id;
 
   try {
+    if (user_id && !assertSameUser(userId, user_id)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
+
     if (!profile || Object.keys(profile).length === 0) {
       return res.status(400).json({
         error: "Falta completar el perfil del usuario",
       });
+    }
+
+    if (
+      (profile.id && !assertSameUser(userId, profile.id)) ||
+      (profile.user_id && !assertSameUser(userId, profile.user_id))
+    ) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
     }
 
     const dietConfig = buildDietConfig(preferences);
@@ -398,9 +444,14 @@ app.post("/generate-diet", async (req, res) => {
   }
 });
 
-app.post("/checkins", upload.single("image"), async (req, res) => {
+app.post("/checkins", verifySupabaseUser, upload.single("image"), async (req, res) => {
   try {
-    const userId = req.body.user_id || null;
+    const requestedUserId = req.body.user_id || null;
+    const userId = req.authUser.id;
+
+    if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
 
     if (!userId) {
       return res.status(400).json({ error: "Falta user_id" });
@@ -1221,9 +1272,14 @@ function createImageHash(buffer) {
   return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
-app.get("/checkins/:userId", async (req, res) => {
+app.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
 
     const { data, error } = await supabase
       .from("checkins")
@@ -1247,17 +1303,22 @@ app.get("/checkins/:userId", async (req, res) => {
   }
 });
 
-app.delete("/checkins/:checkinId", async (req, res) => {
+app.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
   try {
     const { checkinId } = req.params;
-    const userId = req.query.user_id;
+    const requestedUserId = req.query.user_id;
+    const userId = req.authUser.id;
 
     if (!checkinId) {
       return res.status(400).json({ error: "Falta checkinId" });
     }
 
-    if (!userId) {
+    if (!requestedUserId) {
       return res.status(400).json({ error: "Falta user_id" });
+    }
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
     }
 
     const { data: checkin, error: fetchError } = await supabase
@@ -1319,9 +1380,14 @@ app.delete("/checkins/:checkinId", async (req, res) => {
   }
 });
 
-app.get("/diet-plans/:userId", async (req, res) => {
+app.get("/diet-plans/:userId", verifySupabaseUser, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
 
     const { data, error } = await supabase
       .from("diet_plans")
@@ -1345,9 +1411,14 @@ app.get("/diet-plans/:userId", async (req, res) => {
   }
 });
 
-app.get("/meal-analyses/:userId", async (req, res) => {
+app.get("/meal-analyses/:userId", verifySupabaseUser, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
 
     const { data, error } = await supabase
       .from("meal_analyses")
@@ -1371,12 +1442,17 @@ app.get("/meal-analyses/:userId", async (req, res) => {
   }
 });
 
-app.delete("/meal-analyses/user/:userId", async (req, res) => {
+app.delete("/meal-analyses/user/:userId", verifySupabaseUser, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
 
-    if (!userId) {
+    if (!requestedUserId) {
       return res.status(400).json({ error: "Falta userId" });
+    }
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
     }
 
     const { data: meals, error: fetchError } = await supabase
@@ -1433,17 +1509,22 @@ app.delete("/meal-analyses/user/:userId", async (req, res) => {
   }
 });
 
-app.delete("/meal-analyses/:mealId", async (req, res) => {
+app.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => {
   try {
     const { mealId } = req.params;
-    const userId = req.query.user_id;
+    const requestedUserId = req.query.user_id;
+    const userId = req.authUser.id;
 
     if (!mealId) {
       return res.status(400).json({ error: "Falta mealId" });
     }
 
-    if (!userId) {
+    if (!requestedUserId) {
       return res.status(400).json({ error: "Falta user_id" });
+    }
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
     }
 
     const { data: meal, error: fetchError } = await supabase
