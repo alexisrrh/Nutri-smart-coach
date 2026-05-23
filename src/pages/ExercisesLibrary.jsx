@@ -62,9 +62,7 @@ export function ExercisesLibrary() {
     if (!selectedMuscle) return [];
 
     return EXERCISE_LIBRARY.filter(
-      (exercise) =>
-        exercise.muscle === selectedMuscle ||
-        exercise.secondaryMuscles.includes(selectedMuscle)
+      (exercise) => exercise.muscle === selectedMuscle
     );
   }, [selectedMuscle]);
 

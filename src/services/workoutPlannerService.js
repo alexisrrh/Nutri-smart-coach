@@ -470,9 +470,7 @@ function filterExercisePool({ exercises, day, goal, level }) {
   return exercises.filter((exercise) => {
     const levelMatch = LEVEL_ORDER[exercise.level] ?? LEVEL_ORDER.Principiante;
     const goalMatch = Array.isArray(exercise.goals) ? exercise.goals.includes(goal) : true;
-    const muscleMatch =
-      day.muscles.includes(exercise.muscle) ||
-      (exercise.secondaryMuscles || []).some((muscle) => day.muscles.includes(muscle));
+    const muscleMatch = day.muscles.includes(exercise.muscle);
     const levelAllowed = levelMatch <= levelIndex || levelIndex === LEVEL_ORDER.Avanzado;
 
     return goalMatch && muscleMatch && levelAllowed;

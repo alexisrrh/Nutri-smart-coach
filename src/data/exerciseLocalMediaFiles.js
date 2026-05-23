@@ -32,7 +32,7 @@ export const EXERCISE_LOCAL_MEDIA_FILES = new Set([
   "peso-muerto-rumano.gif",
   "plancha.gif",
   "prensa-pierna.gif",
-  "press-Cerrado.gif",
+  "press-cerrado.gif",
   "press-banca.gif",
   "press-declinado-mancuernas.gif",
   "press-francés.gif",
