@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -20,6 +20,7 @@ import {
   MetaBadge,
   StatusBox,
   SurfaceCard,
+  useToast,
 } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import {
@@ -32,6 +33,7 @@ import {
 
 export function Meals() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [meals, setMeals] = useState(getCachedMeals);
   const [filter, setFilter] = useState("today");
   const [search, setSearch] = useState("");
@@ -40,7 +42,7 @@ export function Meals() {
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
-  async function loadRemoteMeals() {
+  const loadRemoteMeals = useCallback(async () => {
     try {
       setRemoteError("");
 
@@ -53,17 +55,18 @@ export function Meals() {
       setMeals(await listMeals(user.id));
     } catch (error) {
       console.error("Error cargando comidas remotas:", error);
+      toast.error("No se pudo cargar el historial.");
       setRemoteError(
         "Sin conexión con el historial remoto. Mostrando datos guardados en este dispositivo."
       );
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
     Promise.resolve().then(() => {
       loadRemoteMeals();
     });
-  }, []);
+  }, [loadRemoteMeals]);
 
   const filteredMeals = useMemo(() => {
     const now = new Date();
@@ -156,6 +159,7 @@ export function Meals() {
         }
 
         await deleteRemoteMeal(mealId, user.id);
+        toast.success("Comida eliminada del historial.");
       }
 
       const updated = removeMealFromCache(mealToDelete);
@@ -165,6 +169,7 @@ export function Meals() {
       }
     } catch (error) {
       console.error("Error borrando comida:", error);
+      toast.error("No se pudo borrar la comida.");
       setRemoteError(
         error?.message ||
           "No se pudo borrar en remoto. El historial local se mantiene intacto."
@@ -190,8 +195,10 @@ export function Meals() {
       await clearRemoteMeals(user.id);
 
       setMeals([]);
+      toast.success("Historial de comidas borrado.");
     } catch (error) {
       console.error("Error limpiando historial:", error);
+      toast.error("No se pudo borrar el historial.");
       setRemoteError(
         error?.message ||
           "No se pudo borrar el historial remoto. El historial local se mantiene intacto."

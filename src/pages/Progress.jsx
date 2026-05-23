@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -29,12 +29,15 @@ import {
   PrimaryButton,
   StatusBox,
   SurfaceCard,
+  useToast,
 } from "../components/ui";
 
 export function Progress() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id;
+  const toast = useToast();
+  const loadErrorToastShownRef = useRef(false);
 
   const [peso, setPeso] = useState("");
   const [nota, setNota] = useState("");
@@ -52,6 +55,13 @@ export function Progress() {
   const [checkinToDelete, setCheckinToDelete] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  const showLoadErrorToast = useCallback(() => {
+    if (loadErrorToastShownRef.current) return;
+
+    loadErrorToastShownRef.current = true;
+    toast.error("No se pudo cargar el progreso.");
+  }, [toast]);
+
   const getLogs = useCallback(async () => {
     if (!userId) return;
 
@@ -65,10 +75,11 @@ export function Progress() {
     } catch (error) {
       console.error("Error cargando progreso:", error);
       setErrorMessage("No se pudo cargar tu progreso.");
+      showLoadErrorToast();
     } finally {
       setLoadingLogs(false);
     }
-  }, [userId]);
+  }, [showLoadErrorToast, userId]);
 
   const getCheckins = useCallback(async () => {
     if (!userId) return;
@@ -82,13 +93,15 @@ export function Progress() {
     } catch (error) {
       console.error("Error cargando check-ins:", error);
       setErrorMessage("No se pudieron cargar tus check-ins.");
+      showLoadErrorToast();
     } finally {
       setLoadingCheckins(false);
     }
-  }, [userId]);
+  }, [showLoadErrorToast, userId]);
 
   useEffect(() => {
     if (user) {
+      loadErrorToastShownRef.current = false;
       Promise.resolve().then(getLogs);
       Promise.resolve().then(getCheckins);
     }
@@ -112,12 +125,14 @@ export function Progress() {
       setPeso("");
       setNota("");
       setSaved(true);
+      toast.success("Check-in guardado correctamente.");
       getLogs();
 
       setTimeout(() => setSaved(false), 1800);
     } catch (error) {
       console.error("Error guardando progreso:", error);
       setErrorMessage(error.message || "No se pudo guardar tu progreso.");
+      toast.error("No se pudo guardar el check-in.");
     } finally {
       setLoading(false);
     }
@@ -140,9 +155,12 @@ export function Progress() {
       if (String(selectedCheckin?.id) === String(checkin.id)) {
         setSelectedCheckin(null);
       }
+
+      toast.success("Check-in eliminado.");
     } catch (error) {
       console.error("Error borrando check-in:", error);
       setErrorMessage(error.message || "No se pudo borrar el check-in.");
+      toast.error("No se pudo eliminar el check-in.");
     } finally {
       setDeletingId(null);
     }
