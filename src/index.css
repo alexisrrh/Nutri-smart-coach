@@ -147,6 +147,7 @@ body.exercise-sheet-active [data-bottom-nav="true"] {
 [data-theme="dark"] .theme-icon-tile-inner {
   background: linear-gradient(145deg, #050505, #050505) !important;
   }
+
 * {
   box-sizing: border-box;
 }

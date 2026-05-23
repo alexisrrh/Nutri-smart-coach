@@ -8,17 +8,17 @@ import {
 
 export default function DashboardActions({ navigate }) {
   return (
-    <section className="flex h-full min-h-0 flex-col">
+    <section className="flex flex-col">
       <div className="flex items-end justify-between px-1 pb-1">
         <div>
           <p
-            className="ml-28 pb-1 text-center text-[11px] font-black uppercase tracking-[0.2em]"
+            className="pb-1 text-center text-[11px] font-black uppercase tracking-[0.2em]"
             style={{ color: "var(--app-primary)", opacity: 0.55 }}
           >
             Más herramientas
           </p>
 
-          <h2 className="ml-30 mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)]">
+          <h2 className="mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)]">
             Continúa tu plan
           </h2>
         </div>
@@ -34,8 +34,9 @@ export default function DashboardActions({ navigate }) {
           IA
         </div>
       </div>
-
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-1">
+    
+      <div className="grid grid-cols-2 gap-2 ">
+        
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
@@ -53,19 +54,21 @@ export default function DashboardActions({ navigate }) {
         />
 
         <ActionCard
-           icon="/icons/rutinas.png"
-          fallbackIcon={UserRoundSearch}
-          label="RUTINAS"
-          description="rutina semanal"
+          icon="/icons/rutinas.png"
+          fallbackIcon={ClipboardList}
+          label="Rutinas"
+          description="Rutina semanal"
           onClick={() => navigate("/rutinas")}
+          imageClassName="scale-[1.45]"
         />
 
         <ActionCard
-           icon="/icons/ejercicios.png"
-          fallbackIcon={UserRoundSearch}
-          label="EJERCICIOS"
-          description="ejercicios por musculo"
+          icon="/icons/ejercicios.png"
+          fallbackIcon={ClipboardList}
+          label="Ejercicios"
+          description="Ejercicios por músculo"
           onClick={() => navigate("/ejercicios")}
+          imageClassName="scale-[1.45]"
         />
 
         <ActionCard
@@ -83,6 +86,7 @@ export default function DashboardActions({ navigate }) {
           description="Peso y medidas"
           onClick={() => navigate("/progreso")}
         />
+      
       </div>
     </section>
   );
