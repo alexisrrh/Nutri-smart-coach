@@ -1,11 +1,13 @@
 import { API_URL } from "../config/api";
+import { supabase } from "../lib/supabase";
 
 const DEFAULT_TIMEOUT_MS = 15000;
 
 export async function request(path, options = {}, config = {}) {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, operation = "" } = config;
   const controller = new AbortController();
-  const requestOptions = { ...options, signal: controller.signal };
+  const headers = await buildHeaders(options.headers);
+  const requestOptions = { ...options, headers, signal: controller.signal };
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -22,6 +24,18 @@ export async function request(path, options = {}, config = {}) {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function buildHeaders(headers) {
+  const nextHeaders = new Headers(headers || {});
+  const { data } = await supabase.auth.getSession();
+  const token = data?.session?.access_token;
+
+  if (token && !nextHeaders.has("Authorization")) {
+    nextHeaders.set("Authorization", `Bearer ${token}`);
+  }
+
+  return nextHeaders;
 }
 
 async function parseJson(response) {
