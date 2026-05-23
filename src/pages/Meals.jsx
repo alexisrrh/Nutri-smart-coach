@@ -550,9 +550,11 @@ function MealCard({ meal, onDelete, deleting, onSelect }) {
 
           <button
             type="button"
-            onClick={onDelete}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete?.();
+            }}
             disabled={deleting}
-            onClickCapture={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
             onMouseDown={(event) => event.stopPropagation()}
             className="shrink-0 rounded-2xl bg-[var(--app-surface)] p-2 text-[var(--app-muted)] transition hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-45"
