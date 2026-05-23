@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { useAuth } from "./context/useAuth";
 import SplashScreen from "./components/SplashScreen";
+import { ToastProvider } from "./components/ui";
 
 const Home = lazy(() =>
   import("./pages/Home").then((module) => ({ default: module.Home }))
@@ -282,7 +283,9 @@ function AppBootstrap() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppBootstrap />
+      <ToastProvider>
+        <AppBootstrap />
+      </ToastProvider>
     </BrowserRouter>
   );
 }
