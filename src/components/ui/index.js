@@ -1,4 +1,5 @@
 export { default as AppShell } from "./AppShell";
+export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as FormField } from "./FormField";
 export { fieldControlClass } from "./formFieldClasses";
 export { default as MetaBadge } from "./MetaBadge";

@@ -14,6 +14,7 @@ import {
 } from "../../services/workoutSessionService";
 import { preloadExerciseMedia } from "../../services/exercisePreloadService";
 import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 export function WorkoutSession({
   session,
@@ -30,6 +31,7 @@ export function WorkoutSession({
   const [restTotal, setRestTotal] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [summary, setSummary] = useState(null);
+  const [confirmExitOpen, setConfirmExitOpen] = useState(false);
   const exercises = useMemo(() => session.exercises || [], [session.exercises]);
   const exercise = exercises[exerciseIndex];
   const prescription = getPrescription(exercise, level, goal);
@@ -209,14 +211,16 @@ export function WorkoutSession({
   }
 
   function requestClose() {
-    if (
-      hasProgress &&
-      typeof window !== "undefined" &&
-      !window.confirm("¿Salir del entrenamiento? Se perderá el progreso no guardado.")
-    ) {
+    if (hasProgress) {
+      setConfirmExitOpen(true);
       return;
     }
 
+    onClose?.();
+  }
+
+  function confirmClose() {
+    setConfirmExitOpen(false);
     onClose?.();
   }
 
@@ -372,6 +376,17 @@ export function WorkoutSession({
           />
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmExitOpen}
+        variant="danger"
+        title="Salir del entreno"
+        description="Se perdera el progreso no guardado de esta sesion."
+        cancelLabel="Permanecer"
+        confirmLabel="Salir"
+        onCancel={() => setConfirmExitOpen(false)}
+        onConfirm={confirmClose}
+      />
     </div>
   );
 }
