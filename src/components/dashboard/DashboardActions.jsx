@@ -59,7 +59,7 @@ export default function DashboardActions({ navigate }) {
           label="Rutinas"
           description="Rutina semanal"
           onClick={() => navigate("/rutinas")}
-          imageClassName="scale-[1.65] object-contain"
+          imageClassName="scale-[1.15] "
         />
 
         <ActionCard
@@ -68,7 +68,7 @@ export default function DashboardActions({ navigate }) {
           label="Ejercicios"
           description="Ejercicios por músculo"
           onClick={() => navigate("/ejercicios")}
-          imageClassName="scale-[1.65] object-contain"
+          imageClassName="scale-[1.12] "
         />
 
         <ActionCard
