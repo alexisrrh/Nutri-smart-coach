@@ -23,7 +23,7 @@ export default function ActionCard({
     >
       <div className="relative z-10 flex flex-col items-center justify-center gap-1">
         <div
-          className={`theme-icon-tile relative grid h-[72px] w-[75px] place-items-center overflow-hidden rounded-[1rem] bg-[var(--app-primary-soft)] shadow-[0_0_28px_var(--app-glow)] transition-all duration-150 ease-out group-active:translate-y-[3px] group-active:shadow-[inset_0_3px_10px_rgba(0,0,0,0.45)] group-active:brightness-90 ${
+          className={`theme-icon-tile relative grid h-[80px] w-[80px] place-items-center overflow-hidden rounded-[1rem] bg-[var(--app-primary-soft)] shadow-[0_0_28px_var(--app-glow)] transition-all duration-150 ease-out group-active:translate-y-[3px] group-active:shadow-[inset_0_3px_10px_rgba(0,0,0,0.45)] group-active:brightness-90 ${
             featured ? "shadow-[0_0_30px_var(--app-glow)]" : ""
           }`}
         >
@@ -37,8 +37,8 @@ export default function ActionCard({
               alt={label}
               className={`relative z-20 object-contain ${
                 featured
-                  ? "h-[60px] w-[60px] brightness-0 contrast-200"
-                  : "h-[70px] w-[76px]"
+                  ? "h-[76px] w-[76px]  "
+                  : "h-[76px] w-[76px]"
               } ${imageClassName}`}
               onError={() => setImageError(true)}
             />
