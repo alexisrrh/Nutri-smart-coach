@@ -53,14 +53,15 @@ export async function listMeals(userId, { fallbackToCache = true } = {}) {
     const data = await request(`/meal-analyses/${userId}`, {}, {
       operation: "cargar el historial de comidas",
     });
-    const remoteMeals = normalizeMeals(data?.meal_analyses);
 
-    if (remoteMeals.length > 0 || cachedMeals.length === 0) {
-      cacheMeals(remoteMeals);
-      return remoteMeals;
+    if (!Array.isArray(data?.meal_analyses)) {
+      throw new Error("Respuesta inválida al cargar comidas.");
     }
 
-    return cachedMeals;
+    const remoteMeals = normalizeMeals(data.meal_analyses);
+
+    cacheMeals(remoteMeals);
+    return remoteMeals;
   } catch (error) {
     if (fallbackToCache && cachedMeals.length > 0) return cachedMeals;
     throw new Error(
