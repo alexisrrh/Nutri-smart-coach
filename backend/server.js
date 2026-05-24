@@ -1354,16 +1354,23 @@ app.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
       }
     }
 
-    const { error: deleteError } = await supabase
+    const { data: deletedCheckins, error: deleteError } = await supabase
       .from("checkins")
       .delete()
       .eq("id", checkinId)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select("id");
 
     if (deleteError) {
       return res.status(500).json({
         error: "No se pudo borrar el check-in",
         detail: deleteError.message,
+      });
+    }
+
+    if (!deletedCheckins?.length) {
+      return res.status(404).json({
+        error: "Check-in no encontrado",
       });
     }
 
