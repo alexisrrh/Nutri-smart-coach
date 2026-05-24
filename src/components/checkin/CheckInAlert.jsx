@@ -5,6 +5,7 @@ export function CheckInAlert({ type = "success", text = "" }) {
 
   const isError = type === "error";
 
+  
   return (
     <div
       className={`rounded-[26px] border px-3 py-2 text-[10px] font-bold ${
