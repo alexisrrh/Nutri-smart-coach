@@ -83,12 +83,8 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
     });
     const remoteCheckins = normalizeCheckins(data?.checkins);
 
-    if (remoteCheckins.length > 0 || cachedCheckins.length === 0) {
-      cacheCheckins(userId, remoteCheckins);
-      return remoteCheckins;
-    }
-
-    return cachedCheckins;
+    cacheCheckins(userId, remoteCheckins);
+    return remoteCheckins;
   } catch (error) {
     if (fallbackToCache && cachedCheckins.length > 0) return cachedCheckins;
     throw new Error(
