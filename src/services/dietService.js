@@ -32,6 +32,8 @@ export function cacheDietPlans(dietPlans) {
 
   if (activePlan) {
     setCache(DIET_PLAN_KEY, activePlan.week);
+  } else {
+    setCache(DIET_PLAN_KEY, []);
   }
 
   return normalizedPlans;
@@ -87,14 +89,15 @@ export async function listDietPlans(userId, { fallbackToCache = true } = {}) {
 
   try {
     const data = await request(`/diet-plans/${userId}`);
-    const remotePlans = normalizeDietPlans(data?.diet_plans);
 
-    if (remotePlans.length > 0) {
-      cacheDietPlans(remotePlans);
-      return remotePlans;
+    if (!Array.isArray(data?.diet_plans)) {
+      throw new Error("Respuesta inválida al cargar dietas.");
     }
 
-    return fallbackToCache ? cachedPlans : [];
+    const remotePlans = normalizeDietPlans(data.diet_plans);
+
+    cacheDietPlans(remotePlans);
+    return remotePlans;
   } catch (error) {
     if (fallbackToCache) return cachedPlans;
     throw error;

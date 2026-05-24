@@ -81,7 +81,12 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
     const data = await request(`/checkins/${userId}`, {}, {
       operation: "cargar el historial de check-ins",
     });
-    const remoteCheckins = normalizeCheckins(data?.checkins);
+
+    if (!Array.isArray(data?.checkins)) {
+      throw new Error("Respuesta inválida al cargar check-ins.");
+    }
+
+    const remoteCheckins = normalizeCheckins(data.checkins);
 
     cacheCheckins(userId, remoteCheckins);
     return remoteCheckins;

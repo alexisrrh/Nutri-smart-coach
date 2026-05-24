@@ -1,86 +1,29 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import multer from "multer";
-import { GoogleGenAI } from "@google/genai";
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+import { corsOptions } from "./config/cors.js";
+import { ai } from "./config/gemini.js";
+import { upload } from "./config/multer.js";
+import { supabase } from "./config/supabase.js";
+import {
+  assertSameUser,
+  verifySupabaseUser,
+} from "./middleware/auth.js";
+import {
+  getSupabaseStoragePath,
+  uploadImageToSupabase,
+} from "./services/storage.service.js";
+import { createImageHash } from "./utils/files.js";
+import { cleanGeminiJson } from "./utils/json.js";
+import { clamp, toNumberOrNull } from "./utils/numbers.js";
+import { createTimingLogger } from "./utils/timing.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:5175",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:5174",
-  "http://127.0.0.1:5175",
-  "https://www.nutrismartcoach.com",
-  "https://nutrismartcoach.com",
-  "https://nutri-smart-coach.vercel.app",
-];
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS no permitido: ${origin}`));
-    },
-  })
-);
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 4 * 1024 * 1024 },
-});
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-async function verifySupabaseUser(req, res, next) {
-  try {
-    const authorization = req.get("Authorization") || "";
-    const [scheme, token] = authorization.split(" ");
-
-    if (scheme !== "Bearer" || !token) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    const { data, error } = await supabase.auth.getUser(token);
-
-    if (error || !data?.user) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
-    req.authUser = data.user;
-
-    return next();
-  } catch (error) {
-    console.error("Error verificando usuario Supabase:", error);
-
-    return res.status(401).json({ error: "No autorizado" });
-  }
-}
-
-function assertSameUser(authUserId, requestedUserId) {
-  return Boolean(authUserId && requestedUserId && authUserId === requestedUserId);
-}
 
 app.get("/", (req, res) => {
   res.json({
@@ -95,27 +38,6 @@ app.get("/health", (req, res) => {
     service: "nutrismartcoach-api",
   });
 });
-
-function createTimingLogger(label) {
-  const start = performance.now();
-  let previous = start;
-  const marks = {};
-
-  return {
-    mark(name) {
-      const now = performance.now();
-      marks[name] = Math.round(now - previous);
-      previous = now;
-    },
-    done(extra = {}) {
-      console.info(`[timing:${label}]`, {
-        ...marks,
-        total: Math.round(performance.now() - start),
-        ...extra,
-      });
-    },
-  };
-}
 
 app.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (req, res) => {
   const timing = createTimingLogger("analyze-food");
@@ -518,65 +440,6 @@ app.post("/checkins", verifySupabaseUser, upload.single("image"), async (req, re
   }
 });
 
-async function uploadImageToSupabase({ bucket, userId, file }) {
-  if (!process.env.SUPABASE_URL) {
-    throw new Error("Falta SUPABASE_URL en Render");
-  }
-
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY en Render");
-  }
-
-  if (!file) {
-    throw new Error("No se recibió archivo para subir");
-  }
-
-  const extension = getFileExtension(file.mimetype);
-  const filePath = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-      upsert: true,
-    });
-
-  if (uploadError) {
-    console.error("ERROR STORAGE SUPABASE:", uploadError);
-
-    throw new Error(
-      `No se pudo subir imagen al bucket ${bucket}: ${uploadError.message}`
-    );
-  }
-
-  const { data: publicData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
-
-  if (!publicData?.publicUrl) {
-    throw new Error("Supabase no devolvió publicUrl");
-  }
-
-  console.log("Imagen subida correctamente:", publicData.publicUrl);
-
-  return publicData.publicUrl;
-}
-
-function getSupabaseStoragePath({ publicUrl, bucket }) {
-  try {
-    const url = new URL(publicUrl);
-    const marker = `/storage/v1/object/public/${bucket}/`;
-    const markerIndex = url.pathname.indexOf(marker);
-
-    if (markerIndex === -1) return null;
-
-    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
-  } catch {
-    return null;
-  }
-}
-
-
 async function findMealAnalysisByImageHash({ userId, imageHash }) {
   if (!userId || !imageHash) return null;
 
@@ -725,21 +588,6 @@ function normalizeFoodAnalysis(data = {}) {
   };
 }
 
-function cleanGeminiJson(text = "") {
-  const cleaned = String(text)
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-
-  if (firstBrace !== -1 && lastBrace !== -1) {
-    return cleaned.slice(firstBrace, lastBrace + 1);
-  }
-
-  return cleaned;
-}
 function buildDietConfig(preferences = {}) {
   const rawDays =
     preferences.days ||
@@ -1248,28 +1096,6 @@ function varyDetails(details, goal, dayIndex, mealIndex) {
 
   const list = variations[goal] || variations.mantener_peso;
   return list[(dayIndex + mealIndex) % list.length] || details;
-}
-
-function getFileExtension(mimeType = "") {
-  if (mimeType.includes("png")) return "png";
-  if (mimeType.includes("webp")) return "webp";
-  if (mimeType.includes("jpeg")) return "jpg";
-  if (mimeType.includes("jpg")) return "jpg";
-  return "jpg";
-}
-
-function toNumberOrNull(value) {
-  if (value === undefined || value === null || value === "") return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function createImageHash(buffer) {
-  return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
 app.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
