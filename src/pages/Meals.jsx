@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -20,191 +20,32 @@ import {
   MetaBadge,
   StatusBox,
   SurfaceCard,
-  useToast,
 } from "../components/ui";
-import { supabase } from "../lib/supabase";
-import {
-  clearMeals as clearRemoteMeals,
-  deleteMeal as deleteRemoteMeal,
-  getCachedMeals,
-  listMeals,
-  removeMealFromCache,
-} from "../services/mealService";
+import { useMealDeletion } from "../hooks/meals/useMealDeletion";
+import { useMealFiltering } from "../hooks/meals/useMealFiltering";
+import { useMealsHistory } from "../hooks/meals/useMealsHistory";
+import { useMealTotals } from "../hooks/meals/useMealTotals";
 
 export function Meals() {
   const navigate = useNavigate();
-  const toast = useToast();
-  const [meals, setMeals] = useState(getCachedMeals);
-  const [filter, setFilter] = useState("today");
-  const [search, setSearch] = useState("");
-  const [remoteError, setRemoteError] = useState("");
-  const [deletingId, setDeletingId] = useState("");
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
-
-  const loadRemoteMeals = useCallback(async () => {
-    try {
-      setRemoteError("");
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user?.id) return;
-
-      setMeals(await listMeals(user.id));
-    } catch (error) {
-      console.error("Error cargando comidas remotas:", error);
-      toast.error("No se pudo cargar el historial.");
-      setRemoteError(
-        "Sin conexión con el historial remoto. Mostrando datos guardados en este dispositivo."
-      );
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    Promise.resolve().then(() => {
-      loadRemoteMeals();
-    });
-  }, [loadRemoteMeals]);
-
-  const filteredMeals = useMemo(() => {
-    const now = new Date();
-
-    return meals.filter((meal) => {
-      const mealDate = new Date(
-        meal.createdAt || meal.created_at || new Date(0).toISOString()
-      );
-
-      const matchesSearch = (meal.food || "")
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-      const isToday = mealDate.toDateString() === now.toDateString();
-
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(now.getDate() - 7);
-
-      const isWeek = mealDate >= sevenDaysAgo;
-
-      if (filter === "today") return isToday && matchesSearch;
-      if (filter === "week") return isWeek && matchesSearch;
-
-      return matchesSearch;
-    });
-  }, [meals, filter, search]);
-
-  const totals = useMemo(() => {
-    return filteredMeals.reduce(
-      (acc, meal) => {
-        acc.calories += Number(meal.calories) || 0;
-        acc.protein += Number(meal.protein) || 0;
-        acc.carbs += Number(meal.carbs) || 0;
-        acc.fat += Number(meal.fat) || 0;
-        return acc;
-      },
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    );
-  }, [filteredMeals]);
-
-  const scoredMealsCount = useMemo(
-    () => filteredMeals.filter((meal) => Number(meal.score) > 0).length,
-    [filteredMeals]
-  );
-
-  const recommendedMealsCount = useMemo(
-    () => filteredMeals.filter((meal) => Boolean(meal.recommendation)).length,
-    [filteredMeals]
-  );
-
-  const motivationMessage = useMemo(
-    () =>
-      getMealsMotivationMessage({
-        filteredCount: filteredMeals.length,
-        totalCount: meals.length,
-        totals,
-        filter,
-        search,
-        scoredMealsCount,
-        recommendedMealsCount,
-      }),
-    [
-      filteredMeals.length,
-      meals.length,
-      totals,
-      filter,
-      search,
-      scoredMealsCount,
-      recommendedMealsCount,
-    ]
-  );
-
-  async function deleteMeal(mealToDelete) {
-    if (!mealToDelete) return;
-
-    const mealId = mealToDelete.id;
-
-    try {
-      setRemoteError("");
-
-      if (mealId) {
-        setDeletingId(mealId);
-
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user?.id) {
-          throw new Error("No hay usuario conectado para borrar esta comida.");
-        }
-
-        await deleteRemoteMeal(mealId, user.id);
-        toast.success("Comida eliminada del historial.");
-      }
-
-      const updated = removeMealFromCache(mealToDelete);
-      setMeals(updated);
-      if (selectedMeal?.id === mealId) {
-        setSelectedMeal(null);
-      }
-    } catch (error) {
-      console.error("Error borrando comida:", error);
-      toast.error("No se pudo borrar la comida.");
-      setRemoteError(
-        error?.message ||
-          "No se pudo borrar en remoto. El historial local se mantiene intacto."
-      );
-    } finally {
-      setDeletingId("");
-    }
-  }
-
-  async function clearMeals() {
-    try {
-      setRemoteError("");
-      setConfirmClearOpen(false);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user?.id) {
-        throw new Error("No hay usuario conectado para borrar el historial remoto.");
-      }
-
-      await clearRemoteMeals(user.id);
-
-      setMeals([]);
-      toast.success("Historial de comidas borrado.");
-    } catch (error) {
-      console.error("Error limpiando historial:", error);
-      toast.error("No se pudo borrar el historial.");
-      setRemoteError(
-        error?.message ||
-          "No se pudo borrar el historial remoto. El historial local se mantiene intacto."
-      );
-    }
-  }
+  const { meals, setMeals, remoteError, setRemoteError } = useMealsHistory();
+  const { filter, setFilter, search, setSearch, filteredMeals } =
+    useMealFiltering(meals);
+  const { totals, motivationMessage } = useMealTotals({
+    meals,
+    filteredMeals,
+    filter,
+    search,
+  });
+  const { deletingId, deleteMeal, clearMeals } = useMealDeletion({
+    meals,
+    setMeals,
+    selectedMeal,
+    setSelectedMeal,
+    setRemoteError,
+  });
 
   return (
     <AppShell
@@ -330,7 +171,10 @@ export function Meals() {
         cancelLabel="Cancelar"
         confirmLabel="Borrar"
         onCancel={() => setConfirmClearOpen(false)}
-        onConfirm={clearMeals}
+        onConfirm={async () => {
+          setConfirmClearOpen(false);
+          await clearMeals();
+        }}
       />
     </AppShell>
   );
@@ -451,50 +295,6 @@ function SummaryChip({ icon, title, value, unit = "" }) {
             </p>
     </div>
   );
-}
-
-function getMealsMotivationMessage({
-  filteredCount,
-  totalCount,
-  totals,
-  filter,
-  search,
-  scoredMealsCount,
-  recommendedMealsCount,
-}) {
-  if (search && filteredCount === 0) {
-    return "Prueba otro término para revisar tus registros.";
-  }
-
-  if (totalCount === 0) {
-    return "Escanea una comida para empezar a construir tu historial.";
-  }
-
-  if (filteredCount === 0) {
-    return "Tu historial tiene datos; cambia el filtro para ver más comidas.";
-  }
-
-  if (recommendedMealsCount > 0) {
-    return "Revisar tus análisis te ayuda a decidir con más intención.";
-  }
-
-  if (scoredMealsCount >= 3) {
-    return "Tu historial empieza a mostrar patrones útiles.";
-  }
-
-  if (filter === "today") {
-    return "Cada comida registrada mejora tu control nutricional.";
-  }
-
-  if (filter === "week") {
-    return "Buen trabajo: estás construyendo conciencia sobre lo que comes.";
-  }
-
-  if (Number(totals?.protein || 0) > 0 || Number(totals?.calories || 0) > 0) {
-    return "Sigue escaneando: más datos te dan más claridad.";
-  }
-
-  return "Tu historial convierte cada registro en una señal útil.";
 }
 
 function FilterButton({ active, onClick, children }) {
