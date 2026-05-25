@@ -12,6 +12,18 @@ export const EXERCISE_MUSCLES = [
 export const MUSCLE_GROUPS = EXERCISE_MUSCLES;
 export const WORKOUT_LEVELS = ["Principiante", "Intermedio", "Avanzado"];
 export const WORKOUT_GOALS = ["Ganar músculo", "Definir", "Fuerza"];
+export const EXERCISE_EQUIPMENT_TYPES = [
+  "bodyweight",
+  "dumbbell",
+  "barbell",
+  "cable",
+  "machine",
+  "band",
+  "kettlebell",
+  "cardio",
+  "mobility",
+];
+export const EXERCISE_TYPES = ["strength", "core", "cardio", "mobility"];
 
 const LEVEL_SETS = {
   Principiante: 3,
@@ -109,16 +121,20 @@ function createExercise({
   repsByGoal,
   restByGoal,
   estimatedCalories,
+  type,
+  instructions,
+  duration,
 }) {
   const resolvedLevel = normalizeLevel(level);
   const resolvedDifficulty = difficulty || resolvedLevel;
   const resolvedMovementType = movementType || inferMovementType({ slug, name, muscle, secondaryMuscles });
+  const resolvedType = type || getExerciseType(resolvedMovementType);
   const resolvedGoals = Array.isArray(goals) && goals.length ? goals : WORKOUT_GOALS;
   const resolvedSetsByLevel = setsByLevel || { ...LEVEL_SETS };
   const resolvedRepsByGoal = repsByGoal || { ...GOAL_REPS };
   const resolvedRestByGoal = restByGoal || { ...GOAL_REST };
   const difficultyScore = inferDifficultyScore({ level: resolvedDifficulty }, resolvedMovementType);
-  const equipmentType = inferEquipmentType(equipment);
+  const equipmentType = inferEquipmentType({ equipment, slug, name });
   const patternGroup = inferPatternGroup({
     slug,
     name,
@@ -135,6 +151,10 @@ function createExercise({
     difficultyScore
   );
   const resolvedEnglishName = englishName || englishNameByMediaKey[slug] || "";
+  const resolvedInstructions = Array.isArray(instructions) && instructions.length
+    ? instructions
+    : buildInstructions(description, tips);
+  const resolvedDuration = duration || getExerciseDuration(resolvedMovementType, resolvedLevel);
 
   return {
     id: slug,
@@ -143,6 +163,7 @@ function createExercise({
     englishName: resolvedEnglishName || name,
     muscle,
     secondaryMuscles,
+    type: resolvedType,
     level: resolvedLevel,
     difficulty: resolvedDifficulty,
     goal: resolvedGoals[0],
@@ -153,6 +174,8 @@ function createExercise({
     difficultyScore,
     priorityByFocus,
     equipment,
+    instructions: resolvedInstructions,
+    duration: resolvedDuration,
     gif: `/exercises/${slug}.webp`,
     image: `/exercises/${slug}.webp`,
     description,
@@ -244,6 +267,41 @@ function inferMovementType(exercise) {
   return "accessory";
 }
 
+function getExerciseType(movementType) {
+  if (movementType === "core") return "core";
+  if (movementType === "cardio") return "cardio";
+  if (movementType === "mobility") return "mobility";
+  return "strength";
+}
+
+function getExerciseDuration(movementType, level) {
+  const durationByMovement = {
+    compound: "6-10 min",
+    accessory: "4-6 min",
+    isolation: "3-5 min",
+    core: "2-4 min",
+    cardio: "8-15 min",
+    mobility: "3-6 min",
+  };
+
+  const durationByLevel = {
+    Principiante: durationByMovement.accessory,
+    Intermedio: durationByMovement[movementType] || "4-6 min",
+    Avanzado: durationByMovement[movementType] || "5-8 min",
+  };
+
+  return durationByLevel[level] || durationByMovement[movementType] || "4-6 min";
+}
+
+function buildInstructions(description, tips = []) {
+  const base = [];
+
+  if (description) base.push(description);
+  if (Array.isArray(tips)) base.push(...tips);
+
+  return Array.from(new Set(base.filter(Boolean)));
+}
+
 function inferDifficultyScore(exercise, movementType) {
   const levelScore = {
     Principiante: 2,
@@ -284,18 +342,54 @@ function buildPriorityByFocus(exercise, movementType, difficultyScore) {
   };
 }
 
-function inferEquipmentType(equipment) {
-  const token = normalizeExerciseToken(equipment);
+function inferEquipmentType(exercise) {
+  const token = normalizeExerciseToken(
+    [exercise?.equipment, exercise?.slug, exercise?.name].filter(Boolean).join(" ")
+  );
 
+  if (token.includes("kettlebell") || token.includes("pesa rusa")) return "kettlebell";
+  if (
+    token.includes("cardio") ||
+    token.includes("bike") ||
+    token.includes("treadmill") ||
+    token.includes("running") ||
+    token.includes("jump rope")
+  ) {
+    return "cardio";
+  }
+  if (
+    token.includes("movilidad") ||
+    token.includes("stretch") ||
+    token.includes("estir") ||
+    token.includes("warmup")
+  ) {
+    return "mobility";
+  }
   if (token.includes("barra") || token.includes("barbell") || token.includes("z")) return "barbell";
   if (token.includes("mancuerna") || token.includes("dumbbell")) return "dumbbell";
   if (token.includes("polea") || token.includes("cable")) return "cable";
-  if (token.includes("máquina") || token.includes("maquina")) return "machine";
-  if (token.includes("banda")) return "band";
-  if (token.includes("peso corporal") || token.includes("corporal")) return "bodyweight";
-  if (token.includes("rueda")) return "bodyweight";
+  if (
+    token.includes("máquina") ||
+    token.includes("maquina") ||
+    token.includes("machine") ||
+    token.includes("sled")
+  ) {
+    return "machine";
+  }
+  if (token.includes("banda") || token.includes("band")) return "band";
+  if (
+    token.includes("peso corporal") ||
+    token.includes("body weight") ||
+    token.includes("corporal") ||
+    token.includes("paralelas") ||
+    token.includes("barra fija") ||
+    token.includes("predicador") ||
+    token.includes("banco")
+  ) {
+    return "bodyweight";
+  }
 
-  return "other";
+  return "bodyweight";
 }
 
 function inferPatternGroup({ slug, name, muscle, secondaryMuscles = [], movementType }) {
