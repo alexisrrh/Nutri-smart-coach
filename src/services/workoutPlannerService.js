@@ -1,4 +1,7 @@
-import { EXERCISE_LIBRARY as exerciseCatalog } from "../data/exerciseLibrary";
+import {
+  EXERCISE_EQUIPMENT_TYPES,
+  EXERCISE_LIBRARY as exerciseCatalog,
+} from "../data/exerciseLibrary";
 import { DAYS_PER_WEEK_OPTIONS, getWorkoutSplit } from "../data/workoutSplits";
 
 const LEVEL_ORDER = {
@@ -610,7 +613,7 @@ function getProfileBias(exercise, profile) {
 
 function getVarietyScore(exercise, planState, selected, dayIndex) {
   const pattern = getExercisePattern(exercise);
-  const equipmentType = getEquipmentType(exercise.equipment);
+  const equipmentType = getEquipmentType(exercise);
   const levelProfile = getLevelProfile(exercise.level);
   let score = 0;
 
@@ -618,7 +621,7 @@ function getVarietyScore(exercise, planState, selected, dayIndex) {
     score += 5 * (levelProfile.simpleBias || 1);
   }
 
-  if (!selected.some((item) => getEquipmentType(item.equipment) === equipmentType)) {
+  if (!selected.some((item) => getEquipmentType(item) === equipmentType)) {
     score += 2 + (dayIndex % 2 === 0 ? 1 : 0);
   }
 
@@ -658,8 +661,8 @@ function getPatternScore(exercise, day, planState) {
 }
 
 function getEquipmentScore(exercise, planState, selected) {
-  const equipmentType = getEquipmentType(exercise.equipment);
-  const currentCount = selected.filter((item) => getEquipmentType(item.equipment) === equipmentType).length;
+  const equipmentType = getEquipmentType(exercise);
+  const currentCount = selected.filter((item) => getEquipmentType(item) === equipmentType).length;
   const recentCount = Number(planState?.equipmentCounts?.[equipmentType] || 0);
 
   return Math.max(0, 4 - currentCount) + Math.max(0, 3 - recentCount);
@@ -956,7 +959,7 @@ function updatePlanState(planState, day) {
     planState.usedExerciseIds.add(exercise.id);
 
     const pattern = getExercisePattern(exercise);
-    const equipmentType = getEquipmentType(exercise.equipment);
+    const equipmentType = getEquipmentType(exercise);
     const muscle = exercise.muscle;
 
     planState.patternCounts[pattern] = (planState.patternCounts[pattern] || 0) + 1;
@@ -975,7 +978,7 @@ function decorateExercises(exercises, context) {
     const isMainLift = false;
     const prescription = getPersonalizedPrescription(exercise, context.level, context.goal, isMainLift);
     const patternGroup = exercise.patternGroup || getExercisePattern(exercise);
-    const equipmentType = exercise.equipmentType || getEquipmentType(exercise.equipment);
+    const equipmentType = exercise.equipmentType || getEquipmentType(exercise);
     const exerciseScore = Math.round(
       scoreExercise(exercise, {
         ...context,
@@ -1137,15 +1140,57 @@ function getExercisePattern(exercise) {
   return exercise.movementType || "accessory";
 }
 
-function getEquipmentType(equipment = "") {
-  const token = normalizeExerciseToken(equipment);
+function getEquipmentType(exercise = "") {
+  if (exercise && typeof exercise === "object") {
+    const explicit = normalizeEquipmentType(exercise.equipmentType);
+    if (explicit) return explicit;
+  }
+
+  const token = normalizeExerciseToken(
+    typeof exercise === "object" ? exercise.equipment : exercise
+  );
+
+  if (token.includes("kettlebell") || token.includes("pesa rusa")) return "kettlebell";
+  if (
+    token.includes("cardio") ||
+    token.includes("bike") ||
+    token.includes("treadmill") ||
+    token.includes("running") ||
+    token.includes("jump rope")
+  ) {
+    return "cardio";
+  }
+  if (
+    token.includes("movilidad") ||
+    token.includes("stretch") ||
+    token.includes("estir") ||
+    token.includes("warmup")
+  ) {
+    return "mobility";
+  }
   if (token.includes("barra") || token.includes("barbell") || token.includes("z")) return "barbell";
   if (token.includes("mancuerna") || token.includes("dumbbell")) return "dumbbell";
   if (token.includes("polea") || token.includes("cable")) return "cable";
-  if (token.includes("máquina") || token.includes("maquina")) return "machine";
-  if (token.includes("banda")) return "band";
-  if (token.includes("peso corporal") || token.includes("corporal")) return "bodyweight";
-  return "other";
+  if (token.includes("máquina") || token.includes("maquina") || token.includes("machine") || token.includes("sled")) {
+    return "machine";
+  }
+  if (token.includes("banda") || token.includes("band")) return "band";
+  if (
+    token.includes("peso corporal") ||
+    token.includes("body weight") ||
+    token.includes("corporal") ||
+    token.includes("paralelas") ||
+    token.includes("barra fija") ||
+    token.includes("banco")
+  ) {
+    return "bodyweight";
+  }
+
+  return "bodyweight";
+}
+
+function normalizeEquipmentType(value) {
+  return EXERCISE_EQUIPMENT_TYPES.includes(value) ? value : "";
 }
 
 function inferDayRole(day) {

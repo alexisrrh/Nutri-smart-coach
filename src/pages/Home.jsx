@@ -34,7 +34,7 @@ export function Home() {
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
-                Login
+                Iniciar Sesion
               </Link>
               <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
                 Empezar
