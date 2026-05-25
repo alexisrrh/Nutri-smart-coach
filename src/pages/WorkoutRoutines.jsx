@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Dumbbell,
-  Flame,
   Play,
   X,
 } from "lucide-react";
@@ -12,14 +11,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/ui";
 import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
-import {
-  MUSCLE_GROUPS,
-  WORKOUT_GOALS,
-  WORKOUT_LEVELS,
-} from "../data/exerciseLibrary";
-import {
-  DAYS_PER_WEEK_OPTIONS,
-} from "../data/workoutSplits";
+import { MUSCLE_GROUPS } from "../data/exerciseLibrary";
 import {
   buildWeeklyWorkoutPlan,
   buildWorkoutDay,
@@ -31,60 +23,52 @@ import {
   preloadCriticalExerciseMedia,
   preloadRoutineExerciseMedia,
 } from "../services/exercisePreloadService";
-import {
-  completeWorkoutForToday,
-  getLocalDateKey,
-  getTodayWorkoutCompletion,
-  getWorkoutCompletions,
-  markWorkoutCompletion,
-  unmarkWorkoutCompletion,
-} from "../services/gamificationService";
+import { getLocalDateKey } from "../services/gamificationService";
 import { getCachedProfile } from "../services/profileService";
-import { getWorkoutSessions } from "../services/workoutSessionService";
-
-const WORKOUT_FOCUS_OPTIONS = [
-  "General",
-  "Glúteos y piernas",
-  "Torso y brazos",
-  "Core/abdomen",
-  "Fuerza completa",
-];
-const WORKOUT_CONFIG_KEYS = {
-  level: "workout_level",
-  goal: "workout_goal",
-  focus: "workout_focus",
-  daysPerWeek: "workout_days_per_week",
-  completed: "workout_config_completed",
-  generatedAt: "workout_config_generated_at",
-};
+import { useWorkoutConfig } from "../hooks/workouts/useWorkoutConfig";
+import {
+  getCompletionForPlanDay,
+  getPlanDayDateKey,
+  useWorkoutHistory,
+} from "../hooks/workouts/useWorkoutHistory";
+import { useWorkoutSessionLauncher } from "../hooks/workouts/useWorkoutSessionLauncher";
+import { WorkoutConfigCard } from "../components/workouts/WorkoutConfigCard";
+import { ActivePlanSummary } from "../components/workouts/ActivePlanSummary";
+import { TodayWorkoutCard } from "../components/workouts/TodayWorkoutCard";
+import { WorkoutHistoryPreview } from "../components/workouts/WorkoutHistoryPreview";
+import { WorkoutHistorySheet } from "../components/workouts/WorkoutHistorySheet";
 
 export function WorkoutRoutines() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialMuscle = getInitialMuscle(searchParams);
   const profile = getCachedProfile();
-  const savedConfig = getSavedWorkoutConfig(profile);
-  const [selectedLevel, setSelectedLevel] = useState(savedConfig.level);
-  const [selectedGoal] = useState(savedConfig.goal);
-  const [selectedFocus, setSelectedFocus] = useState(savedConfig.focus);
-  const [daysPerWeek, setDaysPerWeek] = useState(savedConfig.daysPerWeek);
-  const [showConfig, setShowConfig] = useState(!savedConfig.completed);
+  const {
+    daysPerWeek,
+    saveWorkoutConfig,
+    savedConfig,
+    selectedFocus,
+    selectedGoal,
+    selectedLevel,
+    setDaysPerWeek,
+    setSelectedFocus,
+    setSelectedLevel,
+    setShowConfig,
+    showConfig,
+  } = useWorkoutConfig(profile);
   const [planConfirmed, setPlanConfirmed] = useState(savedConfig.completed);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState("");
-  const [activeDay, setActiveDay] = useState(null);
-  const [workoutMode, setWorkoutMode] = useState(null);
-  const [todayCompletion, setTodayCompletion] = useState(() =>
-    getTodayWorkoutCompletion()
-  );
-  const [workoutCompletions, setWorkoutCompletions] = useState(() =>
-    getWorkoutCompletions()
-  );
-  const [workoutSessions, setWorkoutSessions] = useState(() =>
-    getWorkoutSessions()
-  );
-  const [showHistory, setShowHistory] = useState(false);
-  const [toggleMessage, setToggleMessage] = useState("");
+  const {
+    handleCompleteWorkout: recordWorkoutCompletion,
+    handleToggleDayCompletion,
+    setShowHistory,
+    showHistory,
+    todayCompletion,
+    toggleMessage,
+    workoutCompletions,
+    workoutSessions,
+  } = useWorkoutHistory();
 
   const workoutPlan = useMemo(
     () =>
@@ -108,6 +92,21 @@ export function WorkoutRoutines() {
     weeklyPlan.find((day) => day.id === selectedDayId) ||
     weeklyPlan.find((day) => day.muscles.includes(initialMuscle)) ||
     weeklyPlan[0];
+  const {
+    activeDay,
+    handleCloseWorkoutSession,
+    handleStartDayWorkout,
+    handleStartWorkout,
+    setActiveDay,
+    setWorkoutMode,
+    workoutMode,
+  } = useWorkoutSessionLauncher({
+    profile,
+    selectedDay,
+    selectedFocus,
+    selectedGoal,
+    selectedLevel,
+  });
   const planStats = useMemo(
     () =>
       getPlanStats({
@@ -146,16 +145,6 @@ export function WorkoutRoutines() {
       profile,
     });
   }, [profile, selectedFocus, selectedGoal, selectedLevel, todayPlanDay]);
-
-  useEffect(() => {
-    if (!workoutMode || typeof document === "undefined") return undefined;
-
-    document.body.classList.add("workout-session-active");
-
-    return () => {
-      document.body.classList.remove("workout-session-active");
-    };
-  }, [workoutMode]);
 
   useEffect(() => {
     if (!selectedExercise || typeof document === "undefined") return undefined;
@@ -206,87 +195,14 @@ export function WorkoutRoutines() {
     setWorkoutMode(null);
   }
 
-  function handleStartWorkout() {
-    const workoutDay = buildWorkoutDay({
-      day: activeDay || selectedDay,
-      level: selectedLevel,
-      goal: selectedGoal,
-      focus: selectedFocus,
-      profile,
-    });
-
-    setWorkoutMode({
-      day: workoutDay,
-      exercises: workoutDay.exercises,
-    });
-  }
-
-  function handleStartDayWorkout(day) {
-    const workoutDay = buildWorkoutDay({
-      day,
-      level: selectedLevel,
-      goal: selectedGoal,
-      focus: selectedFocus,
-      profile,
-    });
-
-    setSelectedDayId(day.id);
-    setActiveDay(workoutDay);
-    setWorkoutMode({
-      day: workoutDay,
-      exercises: workoutDay.exercises,
-    });
-  }
-
   function handleCompleteWorkout() {
-    const day = workoutMode?.day || activeDay || selectedDay;
-    const result = completeWorkoutForToday({
-      muscle: day.muscles.join(" + "),
-      level: selectedLevel,
-      goal: selectedGoal,
-      dayId: day.id,
-      dayName: day.name,
+    return recordWorkoutCompletion({
+      day: workoutMode?.day || activeDay || selectedDay,
+      selectedLevel,
+      selectedGoal,
+      activeDay,
+      selectedDay,
     });
-
-    setTodayCompletion(result.completion);
-    setWorkoutCompletions(getWorkoutCompletions());
-    setWorkoutSessions(getWorkoutSessions());
-    return result;
-  }
-
-  function handleCloseWorkoutSession() {
-    setWorkoutMode(null);
-    setActiveDay(null);
-  }
-
-  function handleToggleDayCompletion(day, index) {
-    const dateKey = getPlanDayDateKey(index);
-    const completion = getCompletionForPlanDay({
-      completions: workoutCompletions,
-      dateKey,
-      dayId: day.id,
-    });
-
-    if (completion) {
-      const nextCompletions = unmarkWorkoutCompletion(dateKey);
-      setWorkoutCompletions(nextCompletions);
-      setTodayCompletion(getTodayWorkoutCompletion());
-      setToggleMessage("Entreno desmarcado");
-    } else {
-      markWorkoutCompletion({
-        date: dateKey,
-        dayId: day.id,
-        dayName: day.name,
-        muscle: day.muscles.join(" + "),
-        level: selectedLevel,
-        goal: selectedGoal,
-      });
-      setWorkoutCompletions(getWorkoutCompletions());
-      setTodayCompletion(getTodayWorkoutCompletion());
-      setToggleMessage("Entreno marcado");
-    }
-
-    window.setTimeout(() => setToggleMessage(""), 1800);
   }
 
   return (
@@ -332,7 +248,9 @@ export function WorkoutRoutines() {
           <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
             {showConfig ? (
               <WorkoutConfigCard
+                SelectFilter={SelectFilter}
                 daysPerWeek={daysPerWeek}
+                getRecommendedDaysForProfile={getRecommendedDaysForProfile}
                 onGenerate={handleGenerateWorkout}
                 profile={profile}
                 selectedFocus={selectedFocus}
@@ -391,7 +309,12 @@ export function WorkoutRoutines() {
                           key={day.id}
                           locked={locked}
                           onClick={() => handleOpenDay(day)}
-                          onToggle={() => handleToggleDayCompletion(day, index)}
+                          onToggle={() =>
+                            handleToggleDayCompletion(day, index, {
+                              selectedGoal,
+                              selectedLevel,
+                            })
+                          }
                           status={getDayStatus({
                             completion,
                             isToday: dateKey === getLocalDateKey(),
@@ -405,6 +328,7 @@ export function WorkoutRoutines() {
 
                 {workoutSessions.length ? (
                   <WorkoutHistoryPreview
+                    WorkoutHistoryCard={WorkoutHistoryCard}
                     sessions={workoutSessions}
                     onOpen={() => setShowHistory(true)}
                   />
@@ -451,6 +375,7 @@ export function WorkoutRoutines() {
 
       {showHistory ? (
         <WorkoutHistorySheet
+          WorkoutHistoryCard={WorkoutHistoryCard}
           sessions={workoutSessions}
           onClose={() => setShowHistory(false)}
         />
@@ -463,79 +388,6 @@ export function WorkoutRoutines() {
       ) : null}
 
     </AppShell>
-  );
-}
-
-function WorkoutHistoryPreview({ sessions, onOpen }) {
-  const recentSessions = getRecentWorkoutSessionsFromList(sessions, 1);
-  const latestSession = recentSessions[0];
-
-  if (!latestSession) return null;
-
-  return (
-    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5 shadow-[0_6px_16px_var(--app-glow)]">
-      <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-0.5">
-        <h2 className="min-w-0 text-[13px] font-black text-[var(--app-text)]">
-          Última sesión
-        </h2>
-        <button
-          type="button"
-          onClick={onOpen}
-          className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]"
-        >
-          Ver historial
-        </button>
-      </div>
-
-      <WorkoutHistoryCard session={latestSession} compact />
-    </section>
-  );
-}
-
-function WorkoutHistorySheet({ sessions, onClose }) {
-  return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-sm">
-      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-12px_38px_rgba(0,0,0,0.42)]">
-        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
-          <div className="shrink-0 border-b border-[var(--app-border)] px-2.5 py-2">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Progreso reciente
-                </p>
-                <h2 className="mt-0.5 text-[20px] font-black leading-none text-[var(--app-text)]">
-                  Historial
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
-                aria-label="Cerrar historial"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          </div>
-
-          <div className="min-h-0 overflow-y-auto px-2.5 pb-3 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {sessions.length ? (
-              <div className="grid gap-1.5">
-                {sessions.map((session) => (
-                  <WorkoutHistoryCard key={session.id} session={session} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-6 text-center">
-                <p className="text-[12px] font-bold text-[var(--app-muted)]">
-                  Aún no tienes entrenamientos guardados.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-    </div>
   );
 }
 
@@ -588,178 +440,6 @@ function HistoryPill({ children }) {
     <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
       {children}
     </span>
-  );
-}
-
-function WorkoutConfigCard({
-  daysPerWeek,
-  onGenerate,
-  profile,
-  selectedFocus,
-  selectedLevel,
-  setDaysPerWeek,
-  setSelectedFocus,
-  setSelectedLevel,
-}) {
-  return (
-    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_24px_var(--app-glow)]">
-      <div className="mb-1.5 flex min-w-0 items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Configuración del plan
-          </p>
-          <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
-            Define la base y ocultaremos este paso.
-          </p>
-        </div>
-        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-          Setup
-        </span>
-      </div>
-
-      <div className="grid min-w-0 grid-cols-1 gap-1.5 min-[360px]:grid-cols-2">
-        <SelectFilter
-          label="Nivel"
-          value={selectedLevel}
-          options={WORKOUT_LEVELS}
-          onChange={setSelectedLevel}
-        />
-        <SelectFilter
-          label="Enfoque principal"
-          value={selectedFocus}
-          options={WORKOUT_FOCUS_OPTIONS}
-          onChange={setSelectedFocus}
-        />
-      </div>
-
-      <p className="mt-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-        ¿Cuántos días puedes entrenar?
-      </p>
-      <div className="mt-1.5 grid min-w-0 grid-cols-5 gap-1">
-        {DAYS_PER_WEEK_OPTIONS.map((days) => (
-          <button
-            type="button"
-            key={days}
-            onClick={() => setDaysPerWeek(days)}
-            className={[
-              "h-9 rounded-[0.9rem] border text-[12px] font-black transition active:scale-[0.98]",
-              daysPerWeek === days
-                ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_18px_var(--app-glow)]"
-                : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]",
-            ].join(" ")}
-          >
-            {days}
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-1.5 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 text-[10px] font-black text-[var(--app-primary)]">
-        Recomendado para tu perfil: {getRecommendedDaysForProfile(profile)} días
-      </p>
-
-      <button
-        type="button"
-        onClick={onGenerate}
-        className="mt-1.5 flex h-12 w-full items-center justify-center gap-2 rounded-[18px] border border-[var(--app-primary)] bg-[var(--app-primary)] px-4 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_26px_var(--app-glow)] transition active:scale-[0.98]"
-      >
-        <Dumbbell size={16} />
-        Generar rutina
-      </button>
-    </section>
-  );
-}
-
-function ActivePlanSummary({
-  daysPerWeek,
-  planMeta,
-  planStats,
-  selectedFocus,
-  selectedLevel,
-  onAdjust,
-}) {
-  return (
-    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 shadow-[0_8px_20px_var(--app-glow)]">
-      <div className="flex min-w-0 flex-col items-start gap-2">
-        <div className="w-full min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Plan semanal
-          </p>
-          <p className="mt-1 max-w-full break-words text-[13px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
-            {planMeta?.planName || `${selectedLevel} · ${selectedFocus} · ${daysPerWeek} días`}
-          </p>
-          <p className="mt-1 min-w-0 break-words text-[9px] font-bold text-[var(--app-muted)]">
-            {selectedLevel} · {daysPerWeek} días · {selectedFocus}
-          </p>
-          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-            <span className="min-w-0 text-[9px] font-bold text-[var(--app-muted)]">
-              Progreso semanal
-            </span>
-            <div className="h-1 w-16 max-w-full shrink-0 overflow-hidden rounded-full bg-[var(--app-surface)]">
-              <div
-                className="h-full rounded-full bg-[var(--app-primary)] transition-all"
-                style={{ width: `${planStats.weeklyProgress}%` }}
-              />
-            </div>
-            <span className="text-[9px] font-black text-[var(--app-primary)]">
-              {planStats.weeklyProgress}%
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onAdjust}
-          className="shrink-0 whitespace-nowrap rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-4 py-1.5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)] transition active:scale-[0.98]"
-        >
-          Ajustar plan
-        </button>
-      </div>
-    </section>
-  );
-}
-
-function TodayWorkoutCard({ day, onStart, todayCompletion }) {
-  return (
-    <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_8px_22px_var(--app-glow)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,var(--app-primary-soft),transparent_42%)]" />
-      <div className="relative z-10">
-        <div className="flex min-w-0 items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="flex min-w-0 items-center gap-1 text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              <Flame size={11} />
-              Entrenamiento de hoy
-            </p>
-            <h2 className="mt-0.5 break-words text-[16px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
-              {day.name}
-            </h2>
-            <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
-              {day.duration}
-            </p>
-          </div>
-          {todayCompletion ? (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
-              <CheckCircle2 size={10} />
-              Hoy
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={onStart}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--app-primary)] px-2.5 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-surface)] shadow-[0_8px_20px_var(--app-glow)] transition active:scale-[0.98]"
-            >
-              <Play size={12} />
-              Comenzar
-            </button>
-          )}
-        </div>
-
-        {todayCompletion ? (
-          <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[9px] font-black text-[var(--app-primary)]">
-            <CheckCircle2 size={11} />
-            Completado hoy
-          </p>
-        ) : null}
-      </div>
-    </section>
   );
 }
 
@@ -1127,15 +807,6 @@ function getWarmupItems(day) {
   ];
 }
 
-function getRecentWorkoutSessionsFromList(sessions, limit) {
-  return [...sessions]
-    .sort(
-      (a, b) =>
-        new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-    )
-    .slice(0, limit);
-}
-
 function getCompletedExercisesCount(session) {
   return session.completedExercises.filter(
     (exercise) => Number(exercise.completedSets || 0) > 0
@@ -1196,21 +867,6 @@ function getDayStatusClass(status) {
   return "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]";
 }
 
-function getCompletionForPlanDay({ completions, dateKey, dayId }) {
-  return completions.find(
-    (completion) =>
-      completion.date === dateKey ||
-      (completion.dayId && completion.dayId === dayId && isThisWeek(completion.date))
-  );
-}
-
-function getPlanDayDateKey(index) {
-  const weekStart = getWeekStartDate();
-  weekStart.setDate(weekStart.getDate() + index);
-
-  return getLocalDateKey(weekStart);
-}
-
 function getTodayPlanDay({ weeklyPlan, planStats }) {
   if (!weeklyPlan.length) return null;
 
@@ -1267,131 +923,4 @@ function getWeekStartDate() {
   weekStart.setHours(0, 0, 0, 0);
 
   return weekStart;
-}
-
-function getSavedWorkoutConfig(profile) {
-  if (typeof localStorage === "undefined") {
-    return getDefaultWorkoutConfig(profile);
-  }
-
-  const level = localStorage.getItem(WORKOUT_CONFIG_KEYS.level);
-  const goal = localStorage.getItem(WORKOUT_CONFIG_KEYS.goal);
-  const focus = localStorage.getItem(WORKOUT_CONFIG_KEYS.focus);
-  const daysPerWeek = Number(
-    localStorage.getItem(WORKOUT_CONFIG_KEYS.daysPerWeek)
-  );
-  const completed =
-    localStorage.getItem(WORKOUT_CONFIG_KEYS.completed) === "true";
-  const generatedAt = localStorage.getItem(WORKOUT_CONFIG_KEYS.generatedAt);
-
-  const profileGoal = getWorkoutGoalFromProfile(profile);
-
-  return {
-    level: WORKOUT_LEVELS.includes(level) ? level : getSuggestedLevel(profile),
-    goal:
-      profileGoal || (WORKOUT_GOALS.includes(goal) ? goal : WORKOUT_GOALS[0]),
-    focus: WORKOUT_FOCUS_OPTIONS.includes(focus)
-      ? focus
-      : getSuggestedFocus(profile),
-    daysPerWeek: DAYS_PER_WEEK_OPTIONS.includes(daysPerWeek)
-      ? daysPerWeek
-      : getSuggestedDaysPerWeek(profile),
-    completed: completed && Boolean(generatedAt),
-  };
-}
-
-function saveWorkoutConfig(config) {
-  if (typeof localStorage === "undefined") return;
-
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.level, config.level);
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.goal, config.goal);
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.focus, config.focus);
-  localStorage.setItem(
-    WORKOUT_CONFIG_KEYS.daysPerWeek,
-    String(config.daysPerWeek)
-  );
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.completed, "true");
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.generatedAt, new Date().toISOString());
-}
-
-function getDefaultWorkoutConfig(profile) {
-  return {
-    level: getSuggestedLevel(profile),
-    goal: getWorkoutGoalFromProfile(profile) || WORKOUT_GOALS[0],
-    focus: getSuggestedFocus(profile),
-    daysPerWeek: getSuggestedDaysPerWeek(profile),
-    completed: false,
-  };
-}
-
-function getWorkoutGoalFromProfile(profile) {
-  const profileGoal =
-    profile?.goal || profile?.objetivo || profile?.preferences?.goal || "";
-
-  if (profileGoal === "perder_grasa" || profileGoal === "bajar") {
-    return "Definir";
-  }
-
-  if (profileGoal === "ganar_musculo" || profileGoal === "subir") {
-    return "Ganar músculo";
-  }
-
-  if (profileGoal === "fuerza" || profileGoal === "strength") {
-    return "Fuerza";
-  }
-
-  if (profileGoal === "mantener_peso" || profileGoal === "mantener") {
-    return "Ganar músculo";
-  }
-
-  return "";
-}
-
-function getSuggestedFocus(profile) {
-  const savedPreference = profile?.preferences?.workout_focus;
-  if (WORKOUT_FOCUS_OPTIONS.includes(savedPreference)) return savedPreference;
-
-  const gender = profile?.gender || profile?.genero || profile?.preferences?.gender;
-
-  if (gender === "female" || gender === "mujer") return "Glúteos y piernas";
-  if (gender === "male" || gender === "hombre") return "General";
-
-  return "General";
-}
-
-function getSuggestedLevel(profile) {
-  const activity =
-    profile?.activity_level ||
-    profile?.activity ||
-    profile?.preferences?.activity ||
-    profile?.preferences?.activity_level;
-  const age = Number(profile?.age);
-
-  if (age >= 55 || activity === "low" || activity === "sedentary") {
-    return "Principiante";
-  }
-
-  if (activity === "high") return "Intermedio";
-
-  return WORKOUT_LEVELS[1];
-}
-
-function getSuggestedDaysPerWeek(profile) {
-  const preference = Number(
-    profile?.preferences?.workout_days_per_week ||
-      profile?.preferences?.training_days_per_week
-  );
-
-  if (DAYS_PER_WEEK_OPTIONS.includes(preference)) return preference;
-
-  const activity =
-    profile?.activity_level ||
-    profile?.activity ||
-    profile?.preferences?.activity ||
-    profile?.preferences?.activity_level;
-
-  if (activity === "high") return 5;
-  if (activity === "low" || activity === "sedentary") return 3;
-
-  return 4;
 }
