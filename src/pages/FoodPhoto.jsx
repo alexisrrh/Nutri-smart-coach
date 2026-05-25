@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
@@ -9,99 +9,37 @@ import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
 import { AppShell } from "../components/ui";
 
+import { useFoodPhotoRecovery } from "../hooks/food-photo/useFoodPhotoRecovery";
 import { supabase } from "../lib/supabase";
 import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import { getCachedProfile, getProfile } from "../services/profileService";
 import {
   analyzeMeal,
   cacheMeal,
-  clearFoodAnalysisProcessState,
   deleteMeal,
-  getCachedMeals,
   getFoodAnalysisProcessState,
   removeMealFromCache,
   setFoodAnalysisProcessState,
 } from "../services/mealService";
 
-function isRecentFoodAnalysisState(state, maxAgeMs = 3 * 60 * 1000) {
-  if (!state || state.status !== "loading" || !state.startedAt) {
-    return false;
-  }
-
-  const startedAtMs = Date.parse(state.startedAt);
-  if (Number.isNaN(startedAtMs)) return true;
-
-  return Date.now() - startedAtMs <= maxAgeMs;
-}
-
 export default function FoodPhoto() {
-  const isMountedRef = useRef(true);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [description, setDescription] = useState("");
-  const [, setAnalysisState] = useState(() =>
-    getFoodAnalysisProcessState()
-  );
-  const [loading, setLoading] = useState(() =>
-    isRecentFoodAnalysisState(getFoodAnalysisProcessState())
-  );
-  const [result, setResult] = useState(() => {
-    const storedState = getFoodAnalysisProcessState();
-    return storedState.status === "success" ? storedState.result || null : null;
-  });
-  const [error, setError] = useState(() => {
-    const storedState = getFoodAnalysisProcessState();
-    return storedState.status === "error" ? storedState.error || "" : "";
-  });
-  const [meals, setMeals] = useState(getCachedMeals);
+  const {
+    isMountedRef,
+    setAnalysisState,
+    loading,
+    setLoading,
+    result,
+    setResult,
+    error,
+    setError,
+    meals,
+    setMeals,
+    resetRecoveryState,
+  } = useFoodPhotoRecovery();
   const [profile, setProfile] = useState(getCachedProfile);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    let cancelled = false;
-
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-
-      const storedState = getFoodAnalysisProcessState();
-
-      if (storedState.status === "loading") {
-        if (isRecentFoodAnalysisState(storedState)) {
-          setLoading(true);
-          setError("");
-        } else {
-          const staleState = {
-            ...storedState,
-            status: "error",
-            updatedAt: new Date().toISOString(),
-            error:
-              "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
-          };
-          setFoodAnalysisProcessState(staleState);
-          setLoading(false);
-          setError(staleState.error);
-        }
-      }
-
-      if (storedState.status === "success" && storedState.result) {
-        setResult(storedState.result);
-        setMeals(getCachedMeals());
-        setLoading(false);
-        setError("");
-      }
-
-      if (storedState.status === "error" && storedState.error) {
-        setError(storedState.error);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      isMountedRef.current = false;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,32 +63,6 @@ export default function FoodPhoto() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!loading) return;
-
-    const intervalId = setInterval(() => {
-      const storedState = getFoodAnalysisProcessState();
-      setAnalysisState(storedState);
-
-      if (storedState.status === "success" && storedState.result) {
-        setResult(storedState.result);
-        setMeals(getCachedMeals());
-        setError("");
-        setLoading(false);
-        clearInterval(intervalId);
-        return;
-      }
-
-      if (storedState.status === "error") {
-        setError(storedState.error || "No se pudo analizar la comida.");
-        setLoading(false);
-        clearInterval(intervalId);
-      }
-    }, 1200);
-
-    return () => clearInterval(intervalId);
-  }, [loading]);
 
   useEffect(() => {
     return () => {
@@ -182,15 +94,7 @@ export default function FoodPhoto() {
   function resetScanner() {
     if (preview) URL.revokeObjectURL(preview);
 
-    clearFoodAnalysisProcessState();
-    setAnalysisState({
-      status: "idle",
-      startedAt: null,
-      updatedAt: null,
-      requestId: null,
-      result: null,
-      error: "",
-    });
+    resetRecoveryState();
     setImage(null);
     setPreview("");
     setDescription("");
@@ -359,7 +263,6 @@ export default function FoodPhoto() {
       }
 
       setMeals(removeMealFromCache(result));
-      clearFoodAnalysisProcessState();
       resetScanner();
     } catch (error) {
       console.error("Error descartando análisis:", error);
