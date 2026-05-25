@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useCheckInUpload({ setError, setMessage }) {
+export function useCheckInUpload({ setError, setMessage = () => {} }) {
   const previewRef = useRef(null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);

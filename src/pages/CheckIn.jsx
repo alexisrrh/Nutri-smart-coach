@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Activity,
   Camera,
@@ -17,13 +17,11 @@ import { AppShell } from "../components/ui";
 import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
 import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
 import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
-import {
-  createCheckin,
-  getCheckinProcessState,
-  setCheckinProcessState,
-} from "../services/checkinService";
+import { useCheckInSubmit } from "../hooks/checkin/useCheckInSubmit";
 
 export function CheckIn() {
+  const clearMessageRef = useRef(() => {});
+
   const {
     error,
     history,
@@ -39,13 +37,27 @@ export function CheckIn() {
     user,
   } = useCheckInLoad();
 
-  const [message, setMessage] = useState("");
   const { form, handleChange, resetForm, setShowMeasures, showMeasures } =
     useCheckInForm();
   const { clearUpload, file, handlePhoto, preview } = useCheckInUpload({
     setError,
-    setMessage,
+    setMessage: (...args) => clearMessageRef.current(...args),
   });
+  const { clearMessage, message, saveCheckIn } = useCheckInSubmit({
+    clearUpload,
+    file,
+    form,
+    isMountedRef,
+    resetForm,
+    setError,
+    setLoading,
+    setSelectedCheckin,
+    setSheetMode,
+    user,
+  });
+  useEffect(() => {
+    clearMessageRef.current = clearMessage;
+  }, [clearMessage]);
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];
@@ -72,107 +84,6 @@ export function CheckIn() {
 
   function closeSheet() {
     setSelectedCheckin(null);
-  }
-
-  async function saveCheckIn() {
-    setError("");
-    setMessage("");
-
-    if (!user) {
-      setError("Necesitas iniciar sesión.");
-      return;
-    }
-
-    if (!file) {
-      setError("Sube una foto frontal o lateral de cuerpo completo.");
-      return;
-    }
-
-    if (!form.weight) {
-      setError("Introduce tu peso actual.");
-      return;
-    }
-
-    try {
-      const requestId = createCheckInRequestId();
-      const startedAt = new Date().toISOString();
-      const loadingState = {
-        status: "loading",
-        startedAt,
-        updatedAt: startedAt,
-        requestId,
-        result: null,
-        error: "",
-      };
-
-      setCheckinProcessState(loadingState);
-      setLoading(true);
-      setSelectedCheckin(null);
-      setSheetMode("detail");
-
-      const checkin = await createCheckinWithRetry({
-        userId: user.id,
-        image: file,
-        weight: form.weight,
-        waist: form.waist,
-        chest: form.chest,
-        hips: form.hips,
-        notes: form.notes,
-      });
-
-      const latestState = getCheckinProcessState();
-
-      if (latestState.requestId && latestState.requestId !== requestId) {
-        return;
-      }
-
-      setSheetMode("analysis");
-      setSelectedCheckin(checkin);
-
-      clearUpload();
-      resetForm();
-
-      const successState = {
-        status: "success",
-        startedAt,
-        updatedAt: new Date().toISOString(),
-        requestId,
-        result: checkin,
-        error: "",
-      };
-
-      setCheckinProcessState(successState);
-
-      setMessage("Check-in guardado correctamente.");
-    } catch (err) {
-      console.error(err);
-
-      const errorMessage =
-        err.message ||
-        "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
-
-      const currentState = getCheckinProcessState();
-      const requestId = currentState.requestId || null;
-      const startedAt =
-        currentState.startedAt || new Date().toISOString();
-      const errorState = {
-        status: "error",
-        startedAt,
-        updatedAt: new Date().toISOString(),
-        requestId,
-        result: null,
-        error: errorMessage,
-      };
-
-      setCheckinProcessState(errorState);
-      if (isMountedRef.current) {
-        setError(errorMessage);
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
-    }
   }
 
   const goal = profile?.goal || profile?.objetivo || "ganar_musculo";
@@ -814,7 +725,7 @@ function CheckInResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(76px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(128px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
       onClick={onClose}
       role="presentation"
     >
@@ -822,7 +733,7 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[72vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
+        className="flex max-h-[calc(100dvh-180px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="shrink-0 px-3 pb-1.5 pt-2">
@@ -898,7 +809,7 @@ function CheckInResultSheet({
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Recomendación
               </p>
-              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
+              <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {recommendation}
               </p>
             </div>
@@ -1062,20 +973,4 @@ function shortFatValue(checkin) {
 
   if (text.length > 12) return "No estim.";
   return text;
-}
-
-function createCheckInRequestId() {
-  return `checkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-async function createCheckinWithRetry(args) {
-  try {
-    return await createCheckin(args);
-  } catch (error) {
-    if (error?.code !== "REQUEST_TIMEOUT") {
-      throw error;
-    }
-
-    return createCheckin(args);
-  }
 }
