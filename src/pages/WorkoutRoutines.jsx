@@ -12,14 +12,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/ui";
 import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
-import {
-  MUSCLE_GROUPS,
-  WORKOUT_GOALS,
-  WORKOUT_LEVELS,
-} from "../data/exerciseLibrary";
-import {
-  DAYS_PER_WEEK_OPTIONS,
-} from "../data/workoutSplits";
+import { MUSCLE_GROUPS, WORKOUT_LEVELS } from "../data/exerciseLibrary";
+import { DAYS_PER_WEEK_OPTIONS } from "../data/workoutSplits";
 import {
   buildWeeklyWorkoutPlan,
   buildWorkoutDay,
@@ -31,60 +25,51 @@ import {
   preloadCriticalExerciseMedia,
   preloadRoutineExerciseMedia,
 } from "../services/exercisePreloadService";
-import {
-  completeWorkoutForToday,
-  getLocalDateKey,
-  getTodayWorkoutCompletion,
-  getWorkoutCompletions,
-  markWorkoutCompletion,
-  unmarkWorkoutCompletion,
-} from "../services/gamificationService";
+import { getLocalDateKey } from "../services/gamificationService";
 import { getCachedProfile } from "../services/profileService";
-import { getWorkoutSessions } from "../services/workoutSessionService";
-
-const WORKOUT_FOCUS_OPTIONS = [
-  "General",
-  "Glúteos y piernas",
-  "Torso y brazos",
-  "Core/abdomen",
-  "Fuerza completa",
-];
-const WORKOUT_CONFIG_KEYS = {
-  level: "workout_level",
-  goal: "workout_goal",
-  focus: "workout_focus",
-  daysPerWeek: "workout_days_per_week",
-  completed: "workout_config_completed",
-  generatedAt: "workout_config_generated_at",
-};
+import {
+  WORKOUT_FOCUS_OPTIONS,
+  useWorkoutConfig,
+} from "../hooks/workouts/useWorkoutConfig";
+import {
+  getCompletionForPlanDay,
+  getPlanDayDateKey,
+  useWorkoutHistory,
+} from "../hooks/workouts/useWorkoutHistory";
 
 export function WorkoutRoutines() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialMuscle = getInitialMuscle(searchParams);
   const profile = getCachedProfile();
-  const savedConfig = getSavedWorkoutConfig(profile);
-  const [selectedLevel, setSelectedLevel] = useState(savedConfig.level);
-  const [selectedGoal] = useState(savedConfig.goal);
-  const [selectedFocus, setSelectedFocus] = useState(savedConfig.focus);
-  const [daysPerWeek, setDaysPerWeek] = useState(savedConfig.daysPerWeek);
-  const [showConfig, setShowConfig] = useState(!savedConfig.completed);
+  const {
+    daysPerWeek,
+    saveWorkoutConfig,
+    savedConfig,
+    selectedFocus,
+    selectedGoal,
+    selectedLevel,
+    setDaysPerWeek,
+    setSelectedFocus,
+    setSelectedLevel,
+    setShowConfig,
+    showConfig,
+  } = useWorkoutConfig(profile);
   const [planConfirmed, setPlanConfirmed] = useState(savedConfig.completed);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState("");
   const [activeDay, setActiveDay] = useState(null);
   const [workoutMode, setWorkoutMode] = useState(null);
-  const [todayCompletion, setTodayCompletion] = useState(() =>
-    getTodayWorkoutCompletion()
-  );
-  const [workoutCompletions, setWorkoutCompletions] = useState(() =>
-    getWorkoutCompletions()
-  );
-  const [workoutSessions, setWorkoutSessions] = useState(() =>
-    getWorkoutSessions()
-  );
-  const [showHistory, setShowHistory] = useState(false);
-  const [toggleMessage, setToggleMessage] = useState("");
+  const {
+    handleCompleteWorkout: recordWorkoutCompletion,
+    handleToggleDayCompletion,
+    setShowHistory,
+    showHistory,
+    todayCompletion,
+    toggleMessage,
+    workoutCompletions,
+    workoutSessions,
+  } = useWorkoutHistory();
 
   const workoutPlan = useMemo(
     () =>
@@ -238,55 +223,19 @@ export function WorkoutRoutines() {
     });
   }
 
-  function handleCompleteWorkout() {
-    const day = workoutMode?.day || activeDay || selectedDay;
-    const result = completeWorkoutForToday({
-      muscle: day.muscles.join(" + "),
-      level: selectedLevel,
-      goal: selectedGoal,
-      dayId: day.id,
-      dayName: day.name,
-    });
-
-    setTodayCompletion(result.completion);
-    setWorkoutCompletions(getWorkoutCompletions());
-    setWorkoutSessions(getWorkoutSessions());
-    return result;
-  }
-
   function handleCloseWorkoutSession() {
     setWorkoutMode(null);
     setActiveDay(null);
   }
 
-  function handleToggleDayCompletion(day, index) {
-    const dateKey = getPlanDayDateKey(index);
-    const completion = getCompletionForPlanDay({
-      completions: workoutCompletions,
-      dateKey,
-      dayId: day.id,
+  function handleCompleteWorkout() {
+    return recordWorkoutCompletion({
+      day: workoutMode?.day || activeDay || selectedDay,
+      selectedLevel,
+      selectedGoal,
+      activeDay,
+      selectedDay,
     });
-
-    if (completion) {
-      const nextCompletions = unmarkWorkoutCompletion(dateKey);
-      setWorkoutCompletions(nextCompletions);
-      setTodayCompletion(getTodayWorkoutCompletion());
-      setToggleMessage("Entreno desmarcado");
-    } else {
-      markWorkoutCompletion({
-        date: dateKey,
-        dayId: day.id,
-        dayName: day.name,
-        muscle: day.muscles.join(" + "),
-        level: selectedLevel,
-        goal: selectedGoal,
-      });
-      setWorkoutCompletions(getWorkoutCompletions());
-      setTodayCompletion(getTodayWorkoutCompletion());
-      setToggleMessage("Entreno marcado");
-    }
-
-    window.setTimeout(() => setToggleMessage(""), 1800);
   }
 
   return (
@@ -391,7 +340,12 @@ export function WorkoutRoutines() {
                           key={day.id}
                           locked={locked}
                           onClick={() => handleOpenDay(day)}
-                          onToggle={() => handleToggleDayCompletion(day, index)}
+                          onToggle={() =>
+                            handleToggleDayCompletion(day, index, {
+                              selectedGoal,
+                              selectedLevel,
+                            })
+                          }
                           status={getDayStatus({
                             completion,
                             isToday: dateKey === getLocalDateKey(),
@@ -1196,21 +1150,6 @@ function getDayStatusClass(status) {
   return "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]";
 }
 
-function getCompletionForPlanDay({ completions, dateKey, dayId }) {
-  return completions.find(
-    (completion) =>
-      completion.date === dateKey ||
-      (completion.dayId && completion.dayId === dayId && isThisWeek(completion.date))
-  );
-}
-
-function getPlanDayDateKey(index) {
-  const weekStart = getWeekStartDate();
-  weekStart.setDate(weekStart.getDate() + index);
-
-  return getLocalDateKey(weekStart);
-}
-
 function getTodayPlanDay({ weeklyPlan, planStats }) {
   if (!weeklyPlan.length) return null;
 
@@ -1267,131 +1206,4 @@ function getWeekStartDate() {
   weekStart.setHours(0, 0, 0, 0);
 
   return weekStart;
-}
-
-function getSavedWorkoutConfig(profile) {
-  if (typeof localStorage === "undefined") {
-    return getDefaultWorkoutConfig(profile);
-  }
-
-  const level = localStorage.getItem(WORKOUT_CONFIG_KEYS.level);
-  const goal = localStorage.getItem(WORKOUT_CONFIG_KEYS.goal);
-  const focus = localStorage.getItem(WORKOUT_CONFIG_KEYS.focus);
-  const daysPerWeek = Number(
-    localStorage.getItem(WORKOUT_CONFIG_KEYS.daysPerWeek)
-  );
-  const completed =
-    localStorage.getItem(WORKOUT_CONFIG_KEYS.completed) === "true";
-  const generatedAt = localStorage.getItem(WORKOUT_CONFIG_KEYS.generatedAt);
-
-  const profileGoal = getWorkoutGoalFromProfile(profile);
-
-  return {
-    level: WORKOUT_LEVELS.includes(level) ? level : getSuggestedLevel(profile),
-    goal:
-      profileGoal || (WORKOUT_GOALS.includes(goal) ? goal : WORKOUT_GOALS[0]),
-    focus: WORKOUT_FOCUS_OPTIONS.includes(focus)
-      ? focus
-      : getSuggestedFocus(profile),
-    daysPerWeek: DAYS_PER_WEEK_OPTIONS.includes(daysPerWeek)
-      ? daysPerWeek
-      : getSuggestedDaysPerWeek(profile),
-    completed: completed && Boolean(generatedAt),
-  };
-}
-
-function saveWorkoutConfig(config) {
-  if (typeof localStorage === "undefined") return;
-
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.level, config.level);
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.goal, config.goal);
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.focus, config.focus);
-  localStorage.setItem(
-    WORKOUT_CONFIG_KEYS.daysPerWeek,
-    String(config.daysPerWeek)
-  );
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.completed, "true");
-  localStorage.setItem(WORKOUT_CONFIG_KEYS.generatedAt, new Date().toISOString());
-}
-
-function getDefaultWorkoutConfig(profile) {
-  return {
-    level: getSuggestedLevel(profile),
-    goal: getWorkoutGoalFromProfile(profile) || WORKOUT_GOALS[0],
-    focus: getSuggestedFocus(profile),
-    daysPerWeek: getSuggestedDaysPerWeek(profile),
-    completed: false,
-  };
-}
-
-function getWorkoutGoalFromProfile(profile) {
-  const profileGoal =
-    profile?.goal || profile?.objetivo || profile?.preferences?.goal || "";
-
-  if (profileGoal === "perder_grasa" || profileGoal === "bajar") {
-    return "Definir";
-  }
-
-  if (profileGoal === "ganar_musculo" || profileGoal === "subir") {
-    return "Ganar músculo";
-  }
-
-  if (profileGoal === "fuerza" || profileGoal === "strength") {
-    return "Fuerza";
-  }
-
-  if (profileGoal === "mantener_peso" || profileGoal === "mantener") {
-    return "Ganar músculo";
-  }
-
-  return "";
-}
-
-function getSuggestedFocus(profile) {
-  const savedPreference = profile?.preferences?.workout_focus;
-  if (WORKOUT_FOCUS_OPTIONS.includes(savedPreference)) return savedPreference;
-
-  const gender = profile?.gender || profile?.genero || profile?.preferences?.gender;
-
-  if (gender === "female" || gender === "mujer") return "Glúteos y piernas";
-  if (gender === "male" || gender === "hombre") return "General";
-
-  return "General";
-}
-
-function getSuggestedLevel(profile) {
-  const activity =
-    profile?.activity_level ||
-    profile?.activity ||
-    profile?.preferences?.activity ||
-    profile?.preferences?.activity_level;
-  const age = Number(profile?.age);
-
-  if (age >= 55 || activity === "low" || activity === "sedentary") {
-    return "Principiante";
-  }
-
-  if (activity === "high") return "Intermedio";
-
-  return WORKOUT_LEVELS[1];
-}
-
-function getSuggestedDaysPerWeek(profile) {
-  const preference = Number(
-    profile?.preferences?.workout_days_per_week ||
-      profile?.preferences?.training_days_per_week
-  );
-
-  if (DAYS_PER_WEEK_OPTIONS.includes(preference)) return preference;
-
-  const activity =
-    profile?.activity_level ||
-    profile?.activity ||
-    profile?.preferences?.activity ||
-    profile?.preferences?.activity_level;
-
-  if (activity === "high") return 5;
-  if (activity === "low" || activity === "sedentary") return 3;
-
-  return 4;
 }
