@@ -3,9 +3,6 @@ import {
   ArrowLeft,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
-  NotebookPen,
-  Plus,
-  Save,
   Scale,
   Sparkles,
   Target,
@@ -15,39 +12,20 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/useAuth";
-import {
-  createProgressLog,
-} from "../services/progressService";
-import { deleteCheckin } from "../services/checkinService";
 import {
   AppShell,
   ConfirmDialog,
-  FormField,
-  MetaBadge,
-  PrimaryButton,
   StatusBox,
   SurfaceCard,
-  useToast,
 } from "../components/ui";
+import { useProgressDeletion } from "../hooks/progress/useProgressDeletion";
 import { useProgressData } from "../hooks/progress/useProgressData";
 
 export function Progress() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const toast = useToast();
-
-  const [peso, setPeso] = useState("");
-  const [nota, setNota] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [activeView, setActiveView] = useState("resumen");
-  const [showManualForm, setShowManualForm] = useState(false);
   const [selectedCheckin, setSelectedCheckin] = useState(null);
-  const [checkinToDelete, setCheckinToDelete] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
   const {
-    userId,
     logs,
     checkins,
     setCheckins,
@@ -56,67 +34,18 @@ export function Progress() {
     errorMessage,
     setErrorMessage,
     usingCache,
-    getLogs,
   } = useProgressData();
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!user?.id) return;
-
-    setLoading(true);
-    setSaved(false);
-    setErrorMessage("");
-
-    try {
-      await createProgressLog({
-        userId: user.id,
-        weight: peso,
-        note: nota,
-      });
-
-      setPeso("");
-      setNota("");
-      setSaved(true);
-      toast.success("Check-in guardado correctamente.");
-      getLogs();
-
-      setTimeout(() => setSaved(false), 1800);
-    } catch (error) {
-      console.error("Error guardando progreso:", error);
-      setErrorMessage(error.message || "No se pudo guardar tu progreso.");
-      toast.error("No se pudo guardar el check-in.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleDeleteCheckin(checkin) {
-    if (!checkin?.id || !userId || deletingId) return;
-
-    try {
-      setCheckinToDelete(null);
-      setDeletingId(checkin.id);
-      setErrorMessage("");
-
-      await deleteCheckin(checkin.id, userId);
-
-      setCheckins((prev) =>
-        prev.filter((item) => String(item.id) !== String(checkin.id))
-      );
-
-      if (String(selectedCheckin?.id) === String(checkin.id)) {
-        setSelectedCheckin(null);
-      }
-
-      toast.success("Check-in eliminado.");
-    } catch (error) {
-      console.error("Error borrando check-in:", error);
-      setErrorMessage(error.message || "No se pudo borrar el check-in.");
-      toast.error("No se pudo eliminar el check-in.");
-    } finally {
-      setDeletingId(null);
-    }
-  }
+  const {
+    checkinToDelete,
+    setCheckinToDelete,
+    deletingId,
+    handleDeleteCheckin,
+  } = useProgressDeletion({
+    setCheckins,
+    setErrorMessage,
+    selectedCheckin,
+    setSelectedCheckin,
+  });
 
   const sortedCheckinsDesc = useMemo(
     () => sortCheckinsByDate(checkins, "desc"),
@@ -291,12 +220,6 @@ export function Progress() {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-3">
-            {saved && (
-              <StatusBox type="success">
-                Progreso guardado correctamente.
-              </StatusBox>
-            )}
-
             {errorMessage && (
               <StatusBox type="error">
                 {errorMessage}
@@ -332,30 +255,8 @@ export function Progress() {
 
             {activeView === "historial" && (
               <>
-                <button
-                  type="button"
-                  onClick={() => setShowManualForm((prev) => !prev)}
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-gradient-to-br from-[var(--app-primary-soft)] via-[var(--app-primary-soft)] to-[var(--app-primary-soft)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-text)] shadow-[0_16px_38px_var(--app-glow)] transition active:scale-[0.98]"
-                >
-                  <span className="absolute -right-8 -top-8 h-16 w-16 rounded-full bg-[var(--app-surface)] blur-2xl" />
-                  <Plus size={13} />
-                  Registro manual
-                </button>
-
-                {showManualForm && (
-                  <ManualProgressForm
-                    peso={peso}
-                    setPeso={setPeso}
-                    nota={nota}
-                    setNota={setNota}
-                    loading={loading}
-                    handleSubmit={handleSubmit}
-                  />
-                )}
-
                 <ProgressHistorySection
                   loadingHistory={loadingHistory}
-                  logs={logs}
                   sortedCheckinsDesc={sortedCheckinsDesc}
                   deletingId={deletingId}
                   onDelete={setCheckinToDelete}
@@ -564,84 +465,8 @@ function MiniWeightSparkline({ checkins }) {
   );
 }
 
-function ManualProgressForm({
-  peso,
-  setPeso,
-  nota,
-  setNota,
-  loading,
-  handleSubmit,
-}) {
-  return (
-    <SurfaceCard as="form" onSubmit={handleSubmit} className="p-4">
-      <div className="mb-5 flex items-center gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--app-primary)] text-[var(--app-surface)]">
-          <Plus size={22} />
-        </div>
-
-        <div>
-          <MetaBadge variant="neutral">Nuevo registro</MetaBadge>
-          <h2 className="mt-2 text-2xl font-black tracking-tight">
-            Nuevo registro
-          </h2>
-          <p className="mt-1 text-sm leading-5 text-[var(--app-muted)]">
-            Añade tu peso y una nota de medidas.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <FormField label="Peso actual" icon={<Scale size={15} />}>
-          <div className="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4 focus-within:border-[var(--app-border)]">
-            <Scale size={17} className="text-[var(--app-primary)]" />
-            <input
-              value={peso}
-              onChange={(e) => setPeso(e.target.value)}
-              className="w-full bg-transparent text-sm font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
-              placeholder="Ej. 72.5"
-              type="number"
-              step="0.1"
-              required
-            />
-            <span className="text-xs font-black uppercase tracking-widest text-[var(--app-muted)]">
-              kg
-            </span>
-          </div>
-        </FormField>
-
-        <FormField label="Nota opcional" icon={<NotebookPen size={15} />}>
-          <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4 focus-within:border-[var(--app-border)]">
-            <div className="mb-2 flex items-center gap-2 text-[var(--app-primary)]">
-              <NotebookPen size={16} />
-              <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                Cómo te sentiste
-              </span>
-            </div>
-
-            <textarea
-              value={nota}
-              onChange={(e) => setNota(e.target.value)}
-              className="min-h-28 w-full resize-none bg-transparent text-sm font-medium text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
-              placeholder="Ej. Me sentí con más energía, bajé abdomen, entrené piernas..."
-            />
-          </div>
-        </FormField>
-
-        <PrimaryButton
-          type="submit"
-          disabled={loading}
-          icon={<Save size={17} />}
-        >
-          {loading ? "Guardando..." : "Guardar peso"}
-        </PrimaryButton>
-      </div>
-    </SurfaceCard>
-  );
-}
-
 function ProgressHistorySection({
   loadingHistory,
-  logs,
   sortedCheckinsDesc,
   deletingId,
   onDelete,
@@ -652,8 +477,8 @@ function ProgressHistorySection({
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            {sortedCheckinsDesc.length || logs.length} registro
-            {(sortedCheckinsDesc.length || logs.length) !== 1 ? "s" : ""}
+            {sortedCheckinsDesc.length} registro
+            {sortedCheckinsDesc.length !== 1 ? "s" : ""}
           </p>
           <h2 className="mt-0.5 text-[15px] font-black uppercase italic tracking-tight text-[var(--app-text)]">
             Historial
@@ -682,18 +507,8 @@ function ProgressHistorySection({
             />
           ))}
         </div>
-      ) : logs.length === 0 ? (
-        <EmptyState />
       ) : (
-        <div className="space-y-2">
-          {logs.map((log, index) => (
-            <ProgressCard
-              key={log.id}
-              log={log}
-              previous={logs[index + 1]}
-            />
-          ))}
-        </div>
+        <EmptyState />
       )}
     </SurfaceCard>
   );
@@ -1180,55 +995,6 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function ProgressCard({ log, previous }) {
-  const current = Number(log.peso) || 0;
-  const prev = Number(previous?.peso) || null;
-  const diff = prev ? Number((current - prev).toFixed(1)) : null;
-
-  return (
-    <SurfaceCard radius="md" className="p-4 transition hover:border-[var(--app-border)] hover:bg-[#0b1d18]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-3xl font-black italic text-[var(--app-primary)]">
-            {current}
-            <span className="ml-1 text-sm text-[var(--app-muted)]">kg</span>
-          </h3>
-
-          <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[var(--app-muted)]">
-            {new Date(log.created_at).toLocaleDateString("es-ES", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-
-        {diff !== null && (
-          <div
-            className={`rounded-full px-3 py-2 text-xs font-black uppercase tracking-[0.12em] ${
-              diff < 0
-                ? "bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
-                : diff > 0
-                ? "bg-amber-400/10 text-amber-200"
-                : "bg-[var(--app-surface)] text-[var(--app-muted)]"
-            }`}
-          >
-            {diff > 0 ? `+${diff}` : diff} kg
-          </div>
-        )}
-      </div>
-
-      {log.nota && (
-        <SurfaceCard variant="soft" radius="sm" className="mt-4 p-3">
-          <p className="text-sm leading-relaxed text-[var(--app-muted)]">
-            {log.nota}
-          </p>
-        </SurfaceCard>
-      )}
-    </SurfaceCard>
   );
 }
 
