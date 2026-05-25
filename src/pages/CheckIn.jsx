@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Activity,
   Camera,
@@ -10,168 +10,54 @@ import {
   X,
 } from "lucide-react";
 
-import { supabase } from "../lib/supabase";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
-import {
-  createCheckin,
-  getCheckinProcessState,
-  listCheckins,
-  setCheckinProcessState,
-} from "../services/checkinService";
-import { getCachedProfile } from "../services/profileService";
 import { AppShell } from "../components/ui";
+import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
+import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
+import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
+import { useCheckInSubmit } from "../hooks/checkin/useCheckInSubmit";
 
 export function CheckIn() {
-  const isMountedRef = useRef(true);
-  const [profile, setProfile] = useState(null);
-  const [user, setUser] = useState(null);
-  const [history, setHistory] = useState([]);
+  const clearMessageRef = useRef(() => {});
 
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const {
+    error,
+    history,
+    isMountedRef,
+    loading,
+    profile,
+    selectedCheckin,
+    setError,
+    setLoading,
+    setSelectedCheckin,
+    setSheetMode,
+    sheetMode,
+    user,
+  } = useCheckInLoad();
 
-  const [form, setForm] = useState({
-    weight: "",
-    waist: "",
-    chest: "",
-    hips: "",
-    notes: "",
+  const { form, handleChange, resetForm, setShowMeasures, showMeasures } =
+    useCheckInForm();
+  const { clearUpload, file, handlePhoto, preview } = useCheckInUpload({
+    setError,
+    setMessage: (...args) => clearMessageRef.current(...args),
   });
-
-  const [loading, setLoading] = useState(() =>
-    isRecentCheckInProcessState(getCheckinProcessState())
-  );
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "error" ? storedState.error || "" : "";
+  const { clearMessage, message, saveCheckIn } = useCheckInSubmit({
+    clearUpload,
+    file,
+    form,
+    isMountedRef,
+    resetForm,
+    setError,
+    setLoading,
+    setSelectedCheckin,
+    setSheetMode,
+    user,
   });
-  const [selectedCheckin, setSelectedCheckin] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? storedState.result || null : null;
-  });
-  const [sheetMode, setSheetMode] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? "analysis" : "detail";
-  });
-  const [showMeasures, setShowMeasures] = useState(false);
-
-  const loadData = useCallback(async () => {
-    if (!isMountedRef.current) return;
-
-    setError("");
-    setProfile(getCachedProfile());
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      if (isMountedRef.current) {
-        setError("Necesitas iniciar sesión para guardar tu check-in físico.");
-      }
-      return;
-    }
-
-    if (!isMountedRef.current) return;
-    setUser(user);
-
-    try {
-      const checkins = await listCheckins(user.id);
-      if (!isMountedRef.current) return;
-      setHistory(checkins);
-    } catch (err) {
-      console.error(err);
-      if (isMountedRef.current) {
-        setError("No se pudo cargar el historial de check-ins.");
-      }
-    }
-  }, []);
-
   useEffect(() => {
-    isMountedRef.current = true;
-    Promise.resolve().then(loadData);
-
-    let cancelled = false;
-
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-
-      const storedState = getCheckinProcessState();
-
-      if (storedState.status === "loading") {
-        if (isRecentCheckInProcessState(storedState)) {
-          setLoading(true);
-        } else {
-          const staleState = {
-            ...storedState,
-            status: "error",
-            updatedAt: new Date().toISOString(),
-            error:
-              "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
-          };
-          setCheckinProcessState(staleState);
-          setLoading(false);
-          setError(staleState.error);
-        }
-      }
-
-      if (storedState.status === "success" && storedState.result) {
-        setSelectedCheckin(storedState.result);
-        setSheetMode("analysis");
-        setHistory((prev) =>
-          mergeCheckinsIntoHistory(prev, storedState.result)
-        );
-        setLoading(false);
-        setError("");
-      }
-
-      if (storedState.status === "error" && storedState.error) {
-        setLoading(false);
-        setError(storedState.error);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      isMountedRef.current = false;
-    };
-  }, [loadData]);
-
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
-
-  useEffect(() => {
-    if (!loading) return;
-
-    const intervalId = setInterval(() => {
-      const storedState = getCheckinProcessState();
-
-      if (storedState.status === "success" && storedState.result) {
-        setHistory((prev) => mergeCheckinsIntoHistory(prev, storedState.result));
-        setSelectedCheckin(storedState.result);
-        setSheetMode("analysis");
-        setError("");
-        setLoading(false);
-        clearInterval(intervalId);
-        return;
-      }
-
-      if (storedState.status === "error") {
-        setError(storedState.error || "No se pudo guardar el check-in.");
-        setLoading(false);
-        clearInterval(intervalId);
-      }
-    }, 1200);
-
-    return () => clearInterval(intervalId);
-  }, [loading]);
+    clearMessageRef.current = clearMessage;
+  }, [clearMessage]);
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];
@@ -198,144 +84,6 @@ export function CheckIn() {
 
   function closeSheet() {
     setSelectedCheckin(null);
-  }
-
-  function handleChange(name, value) {
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  function handlePhoto(e) {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (!selectedFile.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen.");
-      return;
-    }
-
-    if (selectedFile.size > 4 * 1024 * 1024) {
-      setError("La imagen es demasiado pesada. Máximo 4MB.");
-      return;
-    }
-
-    if (preview) URL.revokeObjectURL(preview);
-
-    setError("");
-    setMessage("");
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
-  }
-
-  async function saveCheckIn() {
-    setError("");
-    setMessage("");
-
-    if (!user) {
-      setError("Necesitas iniciar sesión.");
-      return;
-    }
-
-    if (!file) {
-      setError("Sube una foto frontal o lateral de cuerpo completo.");
-      return;
-    }
-
-    if (!form.weight) {
-      setError("Introduce tu peso actual.");
-      return;
-    }
-
-    try {
-      const requestId = createCheckInRequestId();
-      const startedAt = new Date().toISOString();
-      const loadingState = {
-        status: "loading",
-        startedAt,
-        updatedAt: startedAt,
-        requestId,
-        result: null,
-        error: "",
-      };
-
-      setCheckinProcessState(loadingState);
-      setLoading(true);
-      setSelectedCheckin(null);
-      setSheetMode("detail");
-
-      const checkin = await createCheckinWithRetry({
-        userId: user.id,
-        image: file,
-        weight: form.weight,
-        waist: form.waist,
-        chest: form.chest,
-        hips: form.hips,
-        notes: form.notes,
-      });
-
-      const latestState = getCheckinProcessState();
-
-      if (latestState.requestId && latestState.requestId !== requestId) {
-        return;
-      }
-
-      setHistory((prev) => mergeCheckinsIntoHistory(prev, checkin));
-      setSheetMode("analysis");
-      setSelectedCheckin(checkin);
-
-      if (preview) URL.revokeObjectURL(preview);
-
-      setFile(null);
-      setPreview(null);
-
-      setForm({
-        weight: "",
-        waist: "",
-        chest: "",
-        hips: "",
-        notes: "",
-      });
-
-      const successState = {
-        status: "success",
-        startedAt,
-        updatedAt: new Date().toISOString(),
-        requestId,
-        result: checkin,
-        error: "",
-      };
-
-      setCheckinProcessState(successState);
-
-      setMessage("Check-in guardado correctamente.");
-    } catch (err) {
-      console.error(err);
-
-      const errorMessage =
-        err.message ||
-        "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
-
-      const currentState = getCheckinProcessState();
-      const requestId = currentState.requestId || null;
-      const startedAt =
-        currentState.startedAt || new Date().toISOString();
-      const errorState = {
-        status: "error",
-        startedAt,
-        updatedAt: new Date().toISOString(),
-        requestId,
-        result: null,
-        error: errorMessage,
-      };
-
-      setCheckinProcessState(errorState);
-      if (isMountedRef.current) {
-        setError(errorMessage);
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
-    }
   }
 
   const goal = profile?.goal || profile?.objetivo || "ganar_musculo";
@@ -977,7 +725,7 @@ function CheckInResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(76px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(128px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
       onClick={onClose}
       role="presentation"
     >
@@ -985,7 +733,7 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[72vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
+        className="flex max-h-[calc(100dvh-180px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="shrink-0 px-3 pb-1.5 pt-2">
@@ -1061,7 +809,7 @@ function CheckInResultSheet({
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 Recomendación
               </p>
-              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
+              <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {recommendation}
               </p>
             </div>
@@ -1225,41 +973,4 @@ function shortFatValue(checkin) {
 
   if (text.length > 12) return "No estim.";
   return text;
-}
-
-function createCheckInRequestId() {
-  return `checkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function isRecentCheckInProcessState(state, maxAgeMs = 3 * 60 * 1000) {
-  if (!state || state.status !== "loading" || !state.startedAt) {
-    return false;
-  }
-
-  const startedAtMs = Date.parse(state.startedAt);
-  if (Number.isNaN(startedAtMs)) return true;
-
-  return Date.now() - startedAtMs <= maxAgeMs;
-}
-
-async function createCheckinWithRetry(args) {
-  try {
-    return await createCheckin(args);
-  } catch (error) {
-    if (error?.code !== "REQUEST_TIMEOUT") {
-      throw error;
-    }
-
-    return createCheckin(args);
-  }
-}
-
-function mergeCheckinsIntoHistory(history, checkin) {
-  if (!checkin) return history;
-
-  const nextHistory = history.filter(
-    (item) => String(item.id) !== String(checkin.id)
-  );
-
-  return [checkin, ...nextHistory];
 }
