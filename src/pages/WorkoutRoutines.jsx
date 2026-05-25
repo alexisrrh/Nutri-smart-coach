@@ -36,6 +36,7 @@ import {
   getPlanDayDateKey,
   useWorkoutHistory,
 } from "../hooks/workouts/useWorkoutHistory";
+import { useWorkoutSessionLauncher } from "../hooks/workouts/useWorkoutSessionLauncher";
 
 export function WorkoutRoutines() {
   const navigate = useNavigate();
@@ -58,8 +59,6 @@ export function WorkoutRoutines() {
   const [planConfirmed, setPlanConfirmed] = useState(savedConfig.completed);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState("");
-  const [activeDay, setActiveDay] = useState(null);
-  const [workoutMode, setWorkoutMode] = useState(null);
   const {
     handleCompleteWorkout: recordWorkoutCompletion,
     handleToggleDayCompletion,
@@ -93,6 +92,21 @@ export function WorkoutRoutines() {
     weeklyPlan.find((day) => day.id === selectedDayId) ||
     weeklyPlan.find((day) => day.muscles.includes(initialMuscle)) ||
     weeklyPlan[0];
+  const {
+    activeDay,
+    handleCloseWorkoutSession,
+    handleStartDayWorkout,
+    handleStartWorkout,
+    setActiveDay,
+    setWorkoutMode,
+    workoutMode,
+  } = useWorkoutSessionLauncher({
+    profile,
+    selectedDay,
+    selectedFocus,
+    selectedGoal,
+    selectedLevel,
+  });
   const planStats = useMemo(
     () =>
       getPlanStats({
@@ -131,16 +145,6 @@ export function WorkoutRoutines() {
       profile,
     });
   }, [profile, selectedFocus, selectedGoal, selectedLevel, todayPlanDay]);
-
-  useEffect(() => {
-    if (!workoutMode || typeof document === "undefined") return undefined;
-
-    document.body.classList.add("workout-session-active");
-
-    return () => {
-      document.body.classList.remove("workout-session-active");
-    };
-  }, [workoutMode]);
 
   useEffect(() => {
     if (!selectedExercise || typeof document === "undefined") return undefined;
@@ -189,43 +193,6 @@ export function WorkoutRoutines() {
     setSelectedDayId(day.id);
     setActiveDay(workoutDay);
     setWorkoutMode(null);
-  }
-
-  function handleStartWorkout() {
-    const workoutDay = buildWorkoutDay({
-      day: activeDay || selectedDay,
-      level: selectedLevel,
-      goal: selectedGoal,
-      focus: selectedFocus,
-      profile,
-    });
-
-    setWorkoutMode({
-      day: workoutDay,
-      exercises: workoutDay.exercises,
-    });
-  }
-
-  function handleStartDayWorkout(day) {
-    const workoutDay = buildWorkoutDay({
-      day,
-      level: selectedLevel,
-      goal: selectedGoal,
-      focus: selectedFocus,
-      profile,
-    });
-
-    setSelectedDayId(day.id);
-    setActiveDay(workoutDay);
-    setWorkoutMode({
-      day: workoutDay,
-      exercises: workoutDay.exercises,
-    });
-  }
-
-  function handleCloseWorkoutSession() {
-    setWorkoutMode(null);
-    setActiveDay(null);
   }
 
   function handleCompleteWorkout() {
