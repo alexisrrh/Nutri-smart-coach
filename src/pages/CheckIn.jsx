@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Camera,
@@ -10,168 +10,42 @@ import {
   X,
 } from "lucide-react";
 
-import { supabase } from "../lib/supabase";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
+import { AppShell } from "../components/ui";
+import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
+import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
+import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
 import {
   createCheckin,
   getCheckinProcessState,
-  listCheckins,
   setCheckinProcessState,
 } from "../services/checkinService";
-import { getCachedProfile } from "../services/profileService";
-import { AppShell } from "../components/ui";
 
 export function CheckIn() {
-  const isMountedRef = useRef(true);
-  const [profile, setProfile] = useState(null);
-  const [user, setUser] = useState(null);
-  const [history, setHistory] = useState([]);
+  const {
+    error,
+    history,
+    isMountedRef,
+    loading,
+    profile,
+    selectedCheckin,
+    setError,
+    setLoading,
+    setSelectedCheckin,
+    setSheetMode,
+    sheetMode,
+    user,
+  } = useCheckInLoad();
 
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-
-  const [form, setForm] = useState({
-    weight: "",
-    waist: "",
-    chest: "",
-    hips: "",
-    notes: "",
-  });
-
-  const [loading, setLoading] = useState(() =>
-    isRecentCheckInProcessState(getCheckinProcessState())
-  );
   const [message, setMessage] = useState("");
-  const [error, setError] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "error" ? storedState.error || "" : "";
+  const { form, handleChange, resetForm, setShowMeasures, showMeasures } =
+    useCheckInForm();
+  const { clearUpload, file, handlePhoto, preview } = useCheckInUpload({
+    setError,
+    setMessage,
   });
-  const [selectedCheckin, setSelectedCheckin] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? storedState.result || null : null;
-  });
-  const [sheetMode, setSheetMode] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? "analysis" : "detail";
-  });
-  const [showMeasures, setShowMeasures] = useState(false);
-
-  const loadData = useCallback(async () => {
-    if (!isMountedRef.current) return;
-
-    setError("");
-    setProfile(getCachedProfile());
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      if (isMountedRef.current) {
-        setError("Necesitas iniciar sesión para guardar tu check-in físico.");
-      }
-      return;
-    }
-
-    if (!isMountedRef.current) return;
-    setUser(user);
-
-    try {
-      const checkins = await listCheckins(user.id);
-      if (!isMountedRef.current) return;
-      setHistory(checkins);
-    } catch (err) {
-      console.error(err);
-      if (isMountedRef.current) {
-        setError("No se pudo cargar el historial de check-ins.");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    Promise.resolve().then(loadData);
-
-    let cancelled = false;
-
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-
-      const storedState = getCheckinProcessState();
-
-      if (storedState.status === "loading") {
-        if (isRecentCheckInProcessState(storedState)) {
-          setLoading(true);
-        } else {
-          const staleState = {
-            ...storedState,
-            status: "error",
-            updatedAt: new Date().toISOString(),
-            error:
-              "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
-          };
-          setCheckinProcessState(staleState);
-          setLoading(false);
-          setError(staleState.error);
-        }
-      }
-
-      if (storedState.status === "success" && storedState.result) {
-        setSelectedCheckin(storedState.result);
-        setSheetMode("analysis");
-        setHistory((prev) =>
-          mergeCheckinsIntoHistory(prev, storedState.result)
-        );
-        setLoading(false);
-        setError("");
-      }
-
-      if (storedState.status === "error" && storedState.error) {
-        setLoading(false);
-        setError(storedState.error);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      isMountedRef.current = false;
-    };
-  }, [loadData]);
-
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
-
-  useEffect(() => {
-    if (!loading) return;
-
-    const intervalId = setInterval(() => {
-      const storedState = getCheckinProcessState();
-
-      if (storedState.status === "success" && storedState.result) {
-        setHistory((prev) => mergeCheckinsIntoHistory(prev, storedState.result));
-        setSelectedCheckin(storedState.result);
-        setSheetMode("analysis");
-        setError("");
-        setLoading(false);
-        clearInterval(intervalId);
-        return;
-      }
-
-      if (storedState.status === "error") {
-        setError(storedState.error || "No se pudo guardar el check-in.");
-        setLoading(false);
-        clearInterval(intervalId);
-      }
-    }, 1200);
-
-    return () => clearInterval(intervalId);
-  }, [loading]);
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];
@@ -198,32 +72,6 @@ export function CheckIn() {
 
   function closeSheet() {
     setSelectedCheckin(null);
-  }
-
-  function handleChange(name, value) {
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  function handlePhoto(e) {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (!selectedFile.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen.");
-      return;
-    }
-
-    if (selectedFile.size > 4 * 1024 * 1024) {
-      setError("La imagen es demasiado pesada. Máximo 4MB.");
-      return;
-    }
-
-    if (preview) URL.revokeObjectURL(preview);
-
-    setError("");
-    setMessage("");
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
   }
 
   async function saveCheckIn() {
@@ -278,22 +126,11 @@ export function CheckIn() {
         return;
       }
 
-      setHistory((prev) => mergeCheckinsIntoHistory(prev, checkin));
       setSheetMode("analysis");
       setSelectedCheckin(checkin);
 
-      if (preview) URL.revokeObjectURL(preview);
-
-      setFile(null);
-      setPreview(null);
-
-      setForm({
-        weight: "",
-        waist: "",
-        chest: "",
-        hips: "",
-        notes: "",
-      });
+      clearUpload();
+      resetForm();
 
       const successState = {
         status: "success",
@@ -1231,17 +1068,6 @@ function createCheckInRequestId() {
   return `checkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function isRecentCheckInProcessState(state, maxAgeMs = 3 * 60 * 1000) {
-  if (!state || state.status !== "loading" || !state.startedAt) {
-    return false;
-  }
-
-  const startedAtMs = Date.parse(state.startedAt);
-  if (Number.isNaN(startedAtMs)) return true;
-
-  return Date.now() - startedAtMs <= maxAgeMs;
-}
-
 async function createCheckinWithRetry(args) {
   try {
     return await createCheckin(args);
@@ -1252,14 +1078,4 @@ async function createCheckinWithRetry(args) {
 
     return createCheckin(args);
   }
-}
-
-function mergeCheckinsIntoHistory(history, checkin) {
-  if (!checkin) return history;
-
-  const nextHistory = history.filter(
-    (item) => String(item.id) !== String(checkin.id)
-  );
-
-  return [checkin, ...nextHistory];
 }
