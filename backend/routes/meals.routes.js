@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Router } from "express";
 import { ai } from "../config/gemini.js";
 import { upload } from "../config/multer.js";
@@ -62,12 +63,36 @@ router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (
       timing.mark("lookup");
 
       if (existingAnalysis) {
+        let reusedImageUrl = existingAnalysis.image_url || null;
+
+        if (hasImage && !reusedImageUrl) {
+          reusedImageUrl = await uploadImageToSupabase({
+            bucket: "food-photos",
+            userId,
+            file: req.file,
+          });
+        }
+
+        const reusedRecord = await saveMealAnalysis({
+          userId,
+          imageUrl: reusedImageUrl,
+          imageHash,
+          goal,
+          analysis: existingAnalysis,
+        });
+
+        if (!reusedRecord) {
+          throw new Error("No se pudo guardar el análisis reutilizado");
+        }
+
+        timing.mark("upload");
+        timing.mark("insert");
         timing.done({ reused: true });
 
         return res.json({
-          ...existingAnalysis,
+          ...reusedRecord,
           image_hash: imageHash,
-          image_url: existingAnalysis.image_url || null,
+          image_url: reusedRecord.image_url || reusedImageUrl || null,
           reused: true,
           saved: true,
         });
@@ -365,22 +390,26 @@ async function findMealAnalysisByImageHash({ userId, imageHash }) {
     .select("*")
     .eq("user_id", userId)
     .eq("image_hash", imageHash)
-    .maybeSingle();
+    .order("created_at", { ascending: false })
+    .limit(1);
 
   if (error) {
     console.error("Error buscando análisis por image_hash:", error);
     throw new Error("No se pudo comprobar si la imagen ya fue analizada");
   }
 
-  return data || null;
+  return data?.[0] || null;
 }
 
 async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis }) {
   if (!userId) return null;
 
+  const mealId = crypto.randomUUID();
+
   const { data, error } = await supabase
     .from("meal_analyses")
     .insert({
+      id: mealId,
       user_id: userId,
       image_url: imageUrl,
       image_hash: imageHash,
