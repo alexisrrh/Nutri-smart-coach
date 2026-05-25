@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -18,9 +18,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import {
   createProgressLog,
-  listProgressLogs,
 } from "../services/progressService";
-import { deleteCheckin, listCheckins } from "../services/checkinService";
+import { deleteCheckin } from "../services/checkinService";
 import {
   AppShell,
   ConfirmDialog,
@@ -31,81 +30,34 @@ import {
   SurfaceCard,
   useToast,
 } from "../components/ui";
+import { useProgressData } from "../hooks/progress/useProgressData";
 
 export function Progress() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = user?.id;
   const toast = useToast();
-  const loadErrorToastShownRef = useRef(false);
 
   const [peso, setPeso] = useState("");
   const [nota, setNota] = useState("");
-  const [logs, setLogs] = useState([]);
-  const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingLogs, setLoadingLogs] = useState(true);
-  const [loadingCheckins, setLoadingCheckins] = useState(true);
   const [saved, setSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [usingCache, setUsingCache] = useState(false);
   const [activeView, setActiveView] = useState("resumen");
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedCheckin, setSelectedCheckin] = useState(null);
   const [checkinToDelete, setCheckinToDelete] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-
-  const showLoadErrorToast = useCallback(() => {
-    if (loadErrorToastShownRef.current) return;
-
-    loadErrorToastShownRef.current = true;
-    toast.error("No se pudo cargar el progreso.");
-  }, [toast]);
-
-  const getLogs = useCallback(async () => {
-    if (!userId) return;
-
-    setLoadingLogs(true);
-
-    try {
-      const result = await listProgressLogs(userId, { includeMeta: true });
-
-      setLogs(result.logs);
-      setUsingCache(result.fromCache && Boolean(result.error));
-    } catch (error) {
-      console.error("Error cargando progreso:", error);
-      setErrorMessage("No se pudo cargar tu progreso.");
-      showLoadErrorToast();
-    } finally {
-      setLoadingLogs(false);
-    }
-  }, [showLoadErrorToast, userId]);
-
-  const getCheckins = useCallback(async () => {
-    if (!userId) return;
-
-    setLoadingCheckins(true);
-
-    try {
-      const checkinLogs = await listCheckins(userId);
-
-      setCheckins(checkinLogs);
-    } catch (error) {
-      console.error("Error cargando check-ins:", error);
-      setErrorMessage("No se pudieron cargar tus check-ins.");
-      showLoadErrorToast();
-    } finally {
-      setLoadingCheckins(false);
-    }
-  }, [showLoadErrorToast, userId]);
-
-  useEffect(() => {
-    if (user) {
-      loadErrorToastShownRef.current = false;
-      Promise.resolve().then(getLogs);
-      Promise.resolve().then(getCheckins);
-    }
-  }, [getCheckins, getLogs, user]);
+  const {
+    userId,
+    logs,
+    checkins,
+    setCheckins,
+    loadingLogs,
+    loadingCheckins,
+    errorMessage,
+    setErrorMessage,
+    usingCache,
+    getLogs,
+  } = useProgressData();
 
   async function handleSubmit(e) {
     e.preventDefault();
