@@ -1,15 +1,11 @@
 import request from "supertest";
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-let app;
+process.env.SUPABASE_URL = "http://127.0.0.1";
+process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
+process.env.GEMINI_API_KEY = "dummy";
 
-beforeAll(async () => {
-  process.env.SUPABASE_URL = "http://127.0.0.1";
-  process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
-  process.env.GEMINI_API_KEY = "dummy";
-
-  ({ default: app } = await import("../app.js"));
-});
+const { default: app } = await import("../app.js");
 
 describe("Protected routes without JWT", () => {
   it("POST /generate-diet returns 401", async () => {
