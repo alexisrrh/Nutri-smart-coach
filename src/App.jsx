@@ -78,6 +78,12 @@ const CreateRoutine = lazy(() =>
   }))
 );
 
+const SharedRoutine = lazy(() =>
+  import("./pages/SharedRoutine").then((module) => ({
+    default: module.default,
+  }))
+);
+
 const BodyScaner = lazy(() =>
   import("./components/Home/BodyScaner").then((module) => ({
     default: module.BodyScaner,
@@ -262,6 +268,8 @@ function AppRoutes({ splashVisible }) {
             </ProtectedRoute>
           }
         />
+        <Route path="/rutina/:shareId" element={<SharedRoutine />} />
+        <Route path="/rutinas/semana/:shareId" element={<SharedRoutine />} />
         <Route path="/bodyscannerhome" element={<BodyScaner />} />
 
         <Route path="/progresohome" element={<Progreso />} />

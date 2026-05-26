@@ -5,6 +5,8 @@ import {
   ChevronRight,
   Dumbbell,
   Play,
+  Share2,
+  Trash2,
   X,
 } from "lucide-react";
 import { EXERCISE_LIBRARY, MUSCLE_GROUPS } from "../data/exerciseLibrary";
@@ -37,11 +39,41 @@ import { useWorkoutSessionLauncher } from "../hooks/workouts/useWorkoutSessionLa
 import { WorkoutConfigCard } from "../components/workouts/WorkoutConfigCard";
 import { WorkoutHistoryPreview } from "../components/workouts/WorkoutHistoryPreview";
 import { WorkoutHistorySheet } from "../components/workouts/WorkoutHistorySheet";
+import { useToast } from "../components/ui";
 import {
   deleteCustomWorkoutRoutine,
   listCustomWorkoutRoutines,
+  shareCustomWorkoutWeek,
 } from "../services/customWorkoutService";
 import { supabase } from "../lib/supabase";
+
+const SHARED_ROUTINE_BASE_URL = "https://nutrismartcoach.com/rutina";
+
+function buildSharedWeekUrl(shareId) {
+  return `${SHARED_ROUTINE_BASE_URL.replace("/rutina", "/rutinas/semana")}/${shareId}`;
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  if (typeof document === "undefined") return false;
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+  return copied;
+}
 
 export function WorkoutRoutines() {
   const navigate = useNavigate();
@@ -66,9 +98,11 @@ export function WorkoutRoutines() {
   const [selectedDayId, setSelectedDayId] = useState("");
   const [customRoutines, setCustomRoutines] = useState([]);
   const [loadingCustomRoutines, setLoadingCustomRoutines] = useState(false);
+  const [sharingWeek, setSharingWeek] = useState(false);
   const [showCustomRoutines, setShowCustomRoutines] = useState(false);
   const [showWeeklyPlan, setShowWeeklyPlan] = useState(false);
   const [customWorkoutMode, setCustomWorkoutMode] = useState(null);
+  const toast = useToast();
   const {
     handleCompleteWorkout: recordWorkoutCompletion,
     handleToggleDayCompletion,
@@ -220,6 +254,53 @@ export function WorkoutRoutines() {
       );
     } catch (error) {
       console.error("Error eliminando rutina personalizada:", error);
+    }
+  }
+
+  async function handleShareWeeklyCollection() {
+    if (!customRoutines.length) {
+      toast.error("No hay rutinas para compartir.");
+      return;
+    }
+
+    setSharingWeek(true);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user?.id) {
+        toast.error("Necesitas iniciar sesión para compartir esta semana.");
+        return;
+      }
+
+      console.log("[WorkoutRoutines] share week user.id", user.id);
+      const sharedWeek = await shareCustomWorkoutWeek(user.id, customRoutines);
+      const shareUrl = buildSharedWeekUrl(sharedWeek.share_id);
+      const payload = {
+        title: "Mi semana de entrenamiento",
+        text: "Mira mi semana de entrenamiento personalizada.",
+        url: shareUrl,
+      };
+
+      if (navigator.share) {
+        await navigator.share(payload);
+        toast.success("Semana compartida.");
+        return;
+      }
+
+      const copied = await copyTextToClipboard(shareUrl);
+      if (!copied) {
+        throw new Error("No se pudo copiar el enlace.");
+      }
+
+      toast.success("Enlace copiado. Comparte tu semana.");
+    } catch (error) {
+      console.error("Error compartiendo semana de rutinas:", error);
+      toast.error(error.message || "No se pudo compartir la semana.");
+    } finally {
+      setSharingWeek(false);
     }
   }
 
@@ -487,10 +568,12 @@ export function WorkoutRoutines() {
         <CustomRoutinesSheet
           routines={customRoutines}
           onClose={() => setShowCustomRoutines(false)}
-          onCreate={() => navigate("/crear-rutina")}
           onDelete={handleDeleteCustomRoutine}
           onEdit={(routineId) => navigate(`/editar-rutina/${routineId}`)}
           onStart={handleStartCustomRoutine}
+          onShareWeek={handleShareWeeklyCollection}
+          sharingWeek={sharingWeek}
+          workoutSessions={workoutSessions}
         />
       ) : null}
 
@@ -503,52 +586,64 @@ export function WorkoutRoutines() {
     </AppShell>
   );
 }
-function CustomRoutinesSection({ routines, loading, onCreate, onOpen }) {
+function CustomRoutinesSection({
+  routines,
+  loading,
+  onCreate,
+  onOpen,
+}) {
   const count = routines.length;
 
   return (
-    <section className="relative overflow-hidden rounded-[1.15rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-card))] p-3 shadow-[0_12px_26px_rgba(0,0,0,0.16)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.12),transparent_34%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.1),transparent_34%)]" />
-      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+    <section className="relative overflow-hidden rounded-[1.2rem] border border-[color:color-mix(in_srgb,var(--app-primary)_10%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_93%,#08131b),var(--app-card))] p-4 shadow-[0_12px_26px_rgba(0,0,0,0.14)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.1),transparent_30%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.05),transparent_28%)]" />
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/4" />
 
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+      <div className="relative z-10 space-y-2.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.12em] text-[var(--app-primary)]">
+                Mis rutinas
+              </span>
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+                {count > 0
+                  ? `${count} guardadas`
+                  : "Sin rutinas"}
+              </span>
+            </div>
+
+            <h2 className="mt-2.5 text-[18px] font-semibold leading-[1.02] text-[var(--app-text)]">
               Mis rutinas
-            </span>
+            </h2>
+
+            <p className="mt-1.5 max-w-[22rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+              {loading
+                ? "Sincronizando rutinas guardadas..."
+                : count > 0
+                  ? "Gestiona tus rutinas creadas y comparte tu semana completa."
+                  : "Diseña tu primera rutina con los ejercicios de la biblioteca."}
+            </p>
           </div>
-
-          <h2 className="mt-2 text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
-            Crea y guarda tus propias rutinas
-          </h2>
-
-          <p className="mt-1.5 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            {loading
-              ? "Sincronizando tus rutinas guardadas..."
-              : count > 0
-                ? `${count} rutina${count === 1 ? "" : "s"} guardada${count === 1 ? "" : "s"}`
-                : "Selecciona tus ejercicios y crea una rutina a tu medida."}
-          </p>
-
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={count > 0 ? onOpen : onCreate}
-            className="min-w-[96px] rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary)] px-3.5 py-2 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_18px_rgba(0,196,255,0.16)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+            onClick={onCreate}
+            className="inline-flex h-[42px] w-auto items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(135deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_78%,#7df5ff))] px-4 text-[9px] font-semibold text-[var(--app-surface)] shadow-[0_10px_20px_rgba(0,196,255,0.16)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
           >
-            {count > 0 ? "Ver rutinas" : "+ Nueva rutina"}
+            Crear rutina
           </button>
 
           {count > 0 ? (
             <button
               type="button"
-              onClick={onCreate}
-              className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.4)] px-3.5 py-2 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.56)] active:scale-[0.98]"
+              onClick={onOpen}
+              className="inline-flex h-[42px] w-auto items-center justify-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_10%,var(--app-border))] bg-[rgba(8,16,26,0.22)] px-3.5 text-[9px] font-semibold text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.36)] active:scale-[0.98]"
             >
-              + Nueva rutina
+              Ver rutinas
+              <ChevronRight size={11} />
             </button>
           ) : null}
         </div>
@@ -557,63 +652,80 @@ function CustomRoutinesSection({ routines, loading, onCreate, onOpen }) {
   );
 }
 
-function CustomRoutinesSheet({ routines, onClose, onCreate, onDelete, onEdit, onStart }) {
+function CustomRoutinesSheet({
+  routines,
+  onClose,
+  onDelete,
+  onEdit,
+  onStart,
+  onShareWeek,
+  sharingWeek,
+  workoutSessions,
+}) {
+  const count = routines.length;
+
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-md">
-      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
-        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
-        <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-                <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
-                  Rutinas personalizadas
-                </span>
-                <h2 className="mt-2 text-[20px] font-semibold leading-none text-[var(--app-text)]">
-                  Rutinas creadas
+    <div
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 backdrop-blur-md"
+      style={{
+        paddingBottom:
+          "calc(var(--bottom-nav-space) + env(safe-area-inset-bottom) + 20px)",
+      }}
+    >
+      <section
+        className="w-full max-w-[430px] overflow-hidden rounded-t-[1.45rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,#08131b),var(--app-card))] shadow-[0_-18px_46px_rgba(0,0,0,0.5)]"
+        style={{
+          maxHeight:
+            "calc(100dvh - var(--bottom-nav-space) - env(safe-area-inset-bottom) - 22px)",
+        }}
+      >
+        <div className="flex h-full flex-col">
+          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-bold tracking-[0.12em] text-[var(--app-primary)]">
+                    Rutinas personalizadas
+                  </span>
+                  <span className="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+                    {routines.length > 0
+                      ? `${routines.length} guardadas`
+                      : "Sin rutinas"}
+                  </span>
+                </div>
+
+                <h2 className="mt-2 text-[18px] font-semibold leading-none text-[var(--app-text)]">
+                  Mis rutinas
                 </h2>
                 <p className="mt-1 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                  Guarda, revisa e inicia tus rutinas sin mezclarla con la rutina semanal de la app.
+                  Guarda, abre o comparte tus rutinas sin mezclarla con la rutina semanal.
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={onClose}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
-              >
-                <X size={15} />
-              </button>
-            </div>
+              <div className="flex shrink-0 flex-col items-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
+                >
+                  <X size={15} />
+                </button>
 
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={onCreate}
-                className="rounded-[0.95rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-primary-soft)_36%,var(--app-surface)),var(--app-surface))] px-3 py-2.5 text-left shadow-[0_8px_18px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
-              >
-                <p className="text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
-                  Crear rutina
-                </p>
-                <p className="mt-0.5 text-[10px] font-semibold text-[var(--app-text)]">
-                  Nueva rutina
-                </p>
-              </button>
-
-              <div className="rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5">
-                <p className="text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
-                  Estado
-                </p>
-                <p className="mt-0.5 text-[10px] font-medium text-[var(--app-muted)]">
-                  {routines.length > 0
-                    ? `${routines.length} rutina${routines.length === 1 ? "" : "s"} guardada${routines.length === 1 ? "" : "s"}`
-                    : "Sin rutinas guardadas"}
-                </p>
+                <button
+                  type="button"
+                  onClick={onShareWeek}
+                  disabled={!count || sharingWeek}
+                  className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[rgba(8,16,26,0.52)] text-[var(--app-primary)] shadow-[0_0_14px_rgba(0,196,255,0.12)] transition duration-150 hover:bg-[rgba(8,16,26,0.7)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Compartir semana"
+                >
+                  <Share2 size={15} />
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="grid gap-2">
+          <div className="min-h-0 overflow-y-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="grid gap-2.5">
               {routines.map((routine) => {
                 const firstDay = Array.isArray(routine.days)
                   ? routine.days[0]
@@ -624,55 +736,78 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onDelete, onEdit, on
                   firstDay?.muscles?.join(" + ") ||
                   routine.focus ||
                   "General";
+                const lastUsedLabel = getRoutineLastUsedLabel(
+                  routine,
+                  workoutSessions
+                );
+                const routineName = formatRoutineDisplayName(
+                  routine.name || "Rutina personalizada"
+                );
+                const publicLabel = routine.is_public ? "Pública" : "Privada";
 
                 return (
                   <article
                     key={routine.id}
-                    className="relative overflow-hidden rounded-[1.05rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-surface))] p-3 shadow-[0_10px_20px_rgba(0,0,0,0.14)]"
+                    className="relative overflow-hidden rounded-[1.05rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_95%,#08131b),var(--app-surface))] p-2.75 shadow-[0_10px_20px_rgba(0,0,0,0.12)]"
                   >
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(0,196,255,0.12),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(60,255,182,0.08),transparent_30%)]" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(0,196,255,0.06),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(60,255,182,0.03),transparent_30%)]" />
                     <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
-
                     <div className="relative z-10">
-                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.78)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
-                          Creada por ti
-                        </span>
-                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-muted)]">
-                          {exerciseCount} ejercicios
-                        </span>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[7px] font-semibold tracking-[0.12em] text-[var(--app-primary)]">
+                            Creada por ti
+                          </p>
+                          <h3 className="mt-1 text-[15px] font-semibold leading-[1.05] text-[var(--app-text)]">
+                            {routineName}
+                          </h3>
+                          <p className="mt-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+                            {publicLabel}
+                          </p>
+                        </div>
                       </div>
 
-                      <h3 className="text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
-                        {routine.name}
-                      </h3>
-                      <p className="mt-1.5 text-[10px] font-medium text-[var(--app-muted)]">
-                        {muscles} · {routine.level || "Nivel libre"}
+                      <div className="flex flex-wrap gap-1.5">
+                        <InfoChip label={muscles} />
+                        <InfoChip label={routine.level || "Nivel libre"} />
+                        <InfoChip label={`${exerciseCount} ejercicios`} />
+                        {getRoutineEstimatedDurationLabel(routine) ? (
+                          <InfoChip
+                            label={getRoutineEstimatedDurationLabel(routine)}
+                          />
+                        ) : null}
+                      </div>
+
+                      <p className="mt-2 text-[8px] font-medium text-[var(--app-muted)]">
+                        {lastUsedLabel || "Aún no usada"}
                       </p>
 
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-2.5">
                         <button
                           type="button"
                           onClick={() => onStart?.(routine)}
-                          className="flex h-[42px] flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                          className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[linear-gradient(135deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_76%,#7df5ff))] text-[10px] font-semibold tracking-[0.01em] text-[var(--app-surface)] shadow-[0_10px_20px_rgba(0,196,255,0.2)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
                         >
                           <Play size={14} />
-                          Iniciar
+                          Iniciar entrenamiento
                         </button>
+                      </div>
 
+                      <div className="mt-[5px] flex items-center justify-between gap-2">
                         <button
                           type="button"
                           onClick={() => onEdit?.(routine.id)}
-                          className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.36)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.56)] active:scale-[0.98]"
+                          className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[rgba(8,16,26,0.26)] px-3 text-[8px] font-semibold text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.42)] active:scale-[0.98]"
                         >
-                          Editar
+                          Editar rutina
                         </button>
 
                         <button
                           type="button"
                           onClick={() => onDelete?.(routine.id)}
-                          className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,#ff6b7a_28%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,#ff8a98_82%,var(--app-primary))] transition duration-150 hover:bg-[rgba(255,107,122,0.1)] active:scale-[0.98]"
+                          className="inline-flex h-7 items-center justify-center gap-1.5 rounded-full border border-transparent bg-transparent px-2 text-[8px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,#ff8a98_78%,var(--app-primary))] transition duration-150 hover:bg-[rgba(255,107,122,0.08)] active:scale-[0.98]"
                         >
+                          <Trash2 size={11} />
                           Eliminar
                         </button>
                       </div>
@@ -685,6 +820,81 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onDelete, onEdit, on
         </div>
       </section>
     </div>
+  );
+}
+
+function getRoutineLastUsedLabel(routine, sessions) {
+  const lastSession = (sessions || []).find((session) => {
+    const routineId =
+      session?.routineId || session?.routine_id || session?.day?.routineId;
+    const routineName =
+      session?.routineName || session?.routine_name || session?.day?.routineName;
+    const routineType = String(
+      session?.routineType || session?.routine_type || session?.source || ""
+    ).toLowerCase();
+
+    return (
+      routineType === "custom" &&
+      (routineId === routine.id || routineName === routine.name)
+    );
+  });
+
+  const rawDate =
+    lastSession?.completedAt ||
+    lastSession?.completed_at ||
+    lastSession?.date ||
+    lastSession?.createdAt ||
+    lastSession?.created_at;
+
+  if (!rawDate) return null;
+
+  const parsedDate = new Date(rawDate);
+  if (Number.isNaN(parsedDate.getTime())) return null;
+
+  return `Último uso · ${parsedDate.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "short",
+  })}`;
+}
+
+function getRoutineEstimatedDurationLabel(routine) {
+  const firstDay = Array.isArray(routine?.days) ? routine.days[0] : null;
+  const explicitDuration = firstDay?.duration || routine?.duration;
+
+  if (typeof explicitDuration === "string" && explicitDuration.trim()) {
+    return explicitDuration;
+  }
+
+  const exerciseCount = Array.isArray(firstDay?.exercises)
+    ? firstDay.exercises.length
+    : 0;
+
+  if (!exerciseCount) return null;
+
+  const estimatedMinutes = Math.max(20, Math.min(90, exerciseCount * 8));
+  return `${estimatedMinutes} min aprox.`;
+}
+
+function formatRoutineDisplayName(name) {
+  if (!name || typeof name !== "string") return "Rutina personalizada";
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((word) =>
+      word.length > 1
+        ? `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
+        : word.toUpperCase()
+    )
+    .join(" ");
+}
+
+function InfoChip({ label, icon }) {
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+      {icon ? <span className="text-[var(--app-primary)]">{icon}</span> : null}
+      <span className="truncate">{label}</span>
+    </span>
   );
 }
 

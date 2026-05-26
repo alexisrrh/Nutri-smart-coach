@@ -725,7 +725,7 @@ function CheckInResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(128px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(156px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
       onClick={onClose}
       role="presentation"
     >
@@ -733,7 +733,7 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[calc(100dvh-180px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
+        className="flex max-h-[calc(100dvh-214px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="shrink-0 px-3 pb-1.5 pt-2">
@@ -762,7 +762,7 @@ function CheckInResultSheet({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="mb-2 flex gap-2">
             {image ? (
               <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)]">
