@@ -353,26 +353,52 @@ export function WorkoutSession({
             </section>
             <QuickTechnique exercise={exercise} />
 
-            <SeriesRestCoach
-              completedForExercise={completedForExercise}
-              completedSeriesCount={completedSeriesCount}
-              onToggleSet={toggleSet}
-              prescription={prescription}
-              recordFeedback={recordFeedback}
-              setTracking={exerciseTracking}
-              onTrackSet={updateSetTracking}
-            />
-
-            <div className="mt-1">
-              <RestPanel
-                progress={restProgress}
-                remaining={restRemaining}
-                onSkip={() => {
-                  setRestRemaining(0);
-                  setRestTotal(0);
-                }}
-              />
-            </div>
+            {restRemaining > 0 ? (
+              <>
+                <div className="mt-0.5">
+                  <RestPanel
+                    compact
+                    progress={restProgress}
+                    remaining={restRemaining}
+                    onSkip={() => {
+                      setRestRemaining(0);
+                      setRestTotal(0);
+                    }}
+                  />
+                </div>
+                <SeriesRestCoach
+                  completedForExercise={completedForExercise}
+                  completedSeriesCount={completedSeriesCount}
+                  onToggleSet={toggleSet}
+                  prescription={prescription}
+                  recordFeedback={recordFeedback}
+                  setTracking={exerciseTracking}
+                  onTrackSet={updateSetTracking}
+                />
+              </>
+            ) : (
+              <>
+                <SeriesRestCoach
+                  completedForExercise={completedForExercise}
+                  completedSeriesCount={completedSeriesCount}
+                  onToggleSet={toggleSet}
+                  prescription={prescription}
+                  recordFeedback={recordFeedback}
+                  setTracking={exerciseTracking}
+                  onTrackSet={updateSetTracking}
+                />
+                <div className="mt-1">
+                  <RestPanel
+                    progress={restProgress}
+                    remaining={restRemaining}
+                    onSkip={() => {
+                      setRestRemaining(0);
+                      setRestTotal(0);
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </main>
 
@@ -672,7 +698,7 @@ function PerformanceHint({ lastPerformance, recordFeedback }) {
   );
 }
 
-function RestPanel({ progress, remaining, onSkip }) {
+function RestPanel({ compact = false, progress, remaining, onSkip }) {
   const active = remaining > 0;
   const orbProgress = active ? progress : 0;
 
@@ -680,21 +706,23 @@ function RestPanel({ progress, remaining, onSkip }) {
     <div
       className={[
         "relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_34%,var(--app-primary-soft),transparent_42%),radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--app-primary)_8%,transparent),transparent_28%),linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_6%,var(--app-card)),var(--app-surface)_58%,var(--app-card))] px-3 text-center shadow-[0_10px_28px_rgba(0,0,0,0.22)]",
-        active ? "py-1.5" : "py-1",
+        active ? (compact ? "py-1" : "py-1.5") : "py-1",
       ].join(" ")}
     >
       <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--app-primary),transparent)] opacity-45" />
       <div
         className={[
           "relative z-10 mx-auto flex flex-col items-center justify-center",
-          active ? "min-h-[160px]" : "min-h-[84px]",
+          active ? (compact ? "min-h-[132px]" : "min-h-[160px]") : "min-h-[84px]",
         ].join(" ")}
       >
         <div
           className={[
             "relative grid shrink-0 place-items-center rounded-full",
             active
-              ? "h-[100px] w-[100px] shadow-[0_0_20px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
+              ? compact
+                ? "h-[88px] w-[88px] shadow-[0_0_18px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
+                : "h-[100px] w-[100px] shadow-[0_0_20px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
               : "h-[48px] w-[48px] opacity-[0.82]",
           ].join(" ")}
         >
@@ -756,7 +784,7 @@ function RestPanel({ progress, remaining, onSkip }) {
           type="button"
           onClick={onSkip}
           disabled={!active}
-          className="mt-1.5 h-7 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
+          className="mt-1.5 h-8 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition duration-150 hover:-translate-y-0.5 active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
         >
           Saltar
         </button>
