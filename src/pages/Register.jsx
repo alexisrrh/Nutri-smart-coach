@@ -25,18 +25,6 @@ import {
 } from "../components/ui";
 
 
-async function handleSocialLogin(provider) {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: provider,
-    options: {
-      redirectTo: window.location.origin + '/perfil'
-    }
-  });
-  
-  if (error) setError("Error al conectar: " + error.message);
-}
-
-
 export function Register() {
   const navigate = useNavigate();
 
@@ -48,6 +36,17 @@ export function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  async function handleSocialLogin(provider) {
+    const { error: socialError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin + "/perfil",
+      },
+    });
+
+    if (socialError) setError("Error al conectar: " + socialError.message);
+  }
 
   function handleChange(e) {
     setForm({

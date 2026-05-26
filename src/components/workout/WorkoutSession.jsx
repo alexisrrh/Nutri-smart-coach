@@ -12,7 +12,10 @@ import {
   getLastExercisePerformance,
   saveWorkoutSession,
 } from "../../services/workoutSessionService";
-import { preloadExerciseMedia } from "../../services/exercisePreloadService";
+import {
+  preloadExercise,
+  preloadExercises,
+} from "../../services/exerciseMediaService";
 import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
@@ -71,9 +74,17 @@ export function WorkoutSession({
     [exercises]
   );
 
+  const nextExercises = useMemo(
+    () => exercises.slice(exerciseIndex, Math.min(exerciseIndex + 4, exercises.length)),
+    [exerciseIndex, exercises]
+  );
+
   useEffect(() => {
-    preloadExerciseMedia(exercises);
-  }, [exercises]);
+    preloadExercises(nextExercises);
+    if (exercise) {
+      preloadExercise(exercise);
+    }
+  }, [exercise, nextExercises]);
 
   useEffect(() => {
     if (summary) return undefined;

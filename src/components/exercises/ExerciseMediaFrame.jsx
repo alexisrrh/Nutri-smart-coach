@@ -1,6 +1,12 @@
 import { Dumbbell } from "lucide-react";
-import { memo, useState } from "react";
-import { getExerciseMedia, getLocalExerciseCandidates } from "../../services/exerciseMediaService";
+import { memo, useMemo, useState } from "react";
+import {
+  getExerciseMedia,
+  getExerciseMediaStatus,
+  getLocalExerciseCandidates,
+  isExerciseMediaLoaded,
+  setExerciseMediaStatus,
+} from "../../services/exerciseMediaService";
 
 function ExerciseMediaFrame({
   exercise,
@@ -8,25 +14,61 @@ function ExerciseMediaFrame({
   showLabels = false,
   variant = "default",
 }) {
-  const media = getExerciseMedia(exercise);
-  const localCandidates = getLocalExerciseCandidates(exercise);
-  const [candidateIndex, setCandidateIndex] = useState(0);
-  const [loading, setLoading] = useState(Boolean(localCandidates[0]));
-  const [failed, setFailed] = useState(false);
+  const media = useMemo(() => getExerciseMedia(exercise), [exercise]);
+  const localCandidates = useMemo(
+    () => getLocalExerciseCandidates(exercise),
+    [exercise]
+  );
+  const initialCandidateIndex = useMemo(() => {
+    if (!localCandidates.length) return -1;
 
+    const loadedIndex = localCandidates.findIndex((candidate) => isExerciseMediaLoaded(candidate));
+    if (loadedIndex >= 0) {
+      return loadedIndex;
+    }
+
+    const availableIndex = localCandidates.findIndex(
+      (candidate) => getExerciseMediaStatus(candidate) !== "error"
+    );
+    return availableIndex >= 0 ? availableIndex : -1;
+  }, [localCandidates]);
+  const [candidateIndex, setCandidateIndex] = useState(() =>
+    initialCandidateIndex >= 0 ? initialCandidateIndex : 0
+  );
   const currentSrc = localCandidates[candidateIndex] || "";
+  const currentStatus = currentSrc ? getExerciseMediaStatus(currentSrc) : "idle";
+  const [imageState, setImageState] = useState(() => {
+    if (!currentSrc) {
+      return initialCandidateIndex < 0 ? "error" : "loading";
+    }
+
+    if (currentStatus === "loaded") {
+      return "loaded";
+    }
+
+    if (currentStatus === "error") {
+      return "error";
+    }
+
+    return "loading";
+  });
+  const failed = imageState === "error" || currentStatus === "error" || (initialCandidateIndex < 0 && !currentSrc);
+  const loading = !failed && imageState !== "loaded" && currentStatus !== "loaded";
 
   function handleError() {
+    setExerciseMediaStatus(currentSrc, "error");
     const nextIndex = candidateIndex + 1;
     if (nextIndex < localCandidates.length) {
       setCandidateIndex(nextIndex);
-      setLoading(true);
-      setFailed(false);
+      const nextSrc = localCandidates[nextIndex] || "";
+      const nextStatus = nextSrc ? getExerciseMediaStatus(nextSrc) : "idle";
+      setImageState(
+        nextSrc ? (nextStatus === "loaded" ? "loaded" : nextStatus === "error" ? "error" : "loading") : "error"
+      );
       return;
     }
 
-    setFailed(true);
-    setLoading(false);
+    setImageState("error");
   }
 
   return (
@@ -51,13 +93,16 @@ function ExerciseMediaFrame({
       >
         {currentSrc && !failed ? (
           <>
-            <img
+              <img
               key={`${media.mediaKey}-${currentSrc}`}
               src={currentSrc}
               alt={exercise?.name || "Exercise media"}
               loading="lazy"
               decoding="async"
-              onLoad={() => setLoading(false)}
+              onLoad={() => {
+                setExerciseMediaStatus(currentSrc, "loaded");
+                setImageState("loaded");
+              }}
               onError={handleError}
               className={[
                 "block h-full w-full object-contain object-center transition-[opacity,transform,filter] duration-500 ease-out",

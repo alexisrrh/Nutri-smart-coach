@@ -21,6 +21,7 @@ import {
 } from "../services/workoutPlannerService";
 import {
   preloadCriticalExerciseMedia,
+  preloadExerciseMedia,
   preloadRoutineExerciseMedia,
 } from "../services/exercisePreloadService";
 import { getLocalDateKey } from "../services/gamificationService";
@@ -161,12 +162,19 @@ export function WorkoutRoutines() {
   }, []);
 
   useEffect(() => {
-    preloadRoutineExerciseMedia(todayPlanExercises);
+    preloadExerciseMedia(todayPlanExercises.slice(0, 4));
   }, [todayPlanExercises]);
 
   useEffect(() => {
     preloadRoutineExerciseMedia(selectedDayExercises);
   }, [selectedDayExercises]);
+
+  useEffect(() => {
+    if (!selectedExercise) return undefined;
+
+    preloadExerciseMedia(selectedExercise);
+    return undefined;
+  }, [selectedExercise]);
 
   function handleGenerateWorkout() {
     saveWorkoutConfig({

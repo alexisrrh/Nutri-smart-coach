@@ -6,8 +6,11 @@ import ExerciseCard from "../components/exercises/ExerciseCard";
 import ExerciseDetailSheet from "../components/exercises/ExerciseDetailSheet";
 import { EXERCISE_LIBRARY, EXERCISE_MUSCLES } from "../data/exerciseLibrary";
 import {
+  preloadExercise,
+  preloadExercises,
+} from "../services/exerciseMediaService";
+import {
   preloadCriticalExerciseMedia,
-  preloadExerciseMedia,
 } from "../services/exercisePreloadService";
 
 const MUSCLE_ICONS = {
@@ -73,8 +76,14 @@ export function ExercisesLibrary() {
   useEffect(() => {
     if (!selectedExercises.length) return;
 
-    preloadExerciseMedia(selectedExercises);
+    preloadExercises(selectedExercises.slice(0, 4));
   }, [selectedExercises]);
+
+  useEffect(() => {
+    if (!selectedExercise) return;
+
+    preloadExercise(selectedExercise);
+  }, [selectedExercise]);
 
   return (
     <AppShell contentClassName="px-2 pt-2 pb-[calc(var(--bottom-nav-space)+120px)]">
