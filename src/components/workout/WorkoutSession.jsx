@@ -9,13 +9,17 @@ import {
   X,
 } from "lucide-react";
 import {
-  getLastExercisePerformance,
   saveWorkoutSession,
 } from "../../services/workoutSessionService";
 import {
   preloadExercise,
   preloadExercises,
 } from "../../services/exerciseMediaService";
+import {
+  getLastExercisePerformance,
+  getWeightRecommendation,
+} from "../../services/strengthProgressService";
+import { useAuth } from "../../context/useAuth";
 import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
@@ -23,10 +27,13 @@ export function WorkoutSession({
   session,
   level,
   goal,
+  historySessions = [],
   onClose,
   onFinish,
   onDashboard,
 }) {
+  const { user } = useAuth();
+  const userId = user?.id || null;
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [completedSets, setCompletedSets] = useState({});
   const [setTracking, setSetTracking] = useState({});
@@ -53,8 +60,19 @@ export function WorkoutSession({
     [exercise?.id, setTracking]
   );
   const lastPerformance = useMemo(
-    () => getLastExercisePerformance(exercise?.name),
-    [exercise?.name]
+    () => getLastExercisePerformance(exercise?.id || exercise?.name, historySessions),
+    [exercise?.id, exercise?.name, historySessions]
+  );
+  const weightRecommendation = useMemo(
+    () =>
+      getWeightRecommendation({
+        exercise,
+        prescription,
+        level,
+        goal,
+        sessions: historySessions,
+      }),
+    [exercise, goal, historySessions, level, prescription]
   );
   const recordFeedback = useMemo(
     () => getRecordFeedback(exerciseTracking, lastPerformance),
@@ -180,30 +198,52 @@ export function WorkoutSession({
     setRestTotal(0);
   }
 
-  function finishWorkout() {
+  async function finishWorkout() {
     if (!hasProgress) return;
 
     const completedAt = new Date().toISOString();
-    const completedExercises = exercises.map((item) => ({
-      id: item.id,
-      name: item.name,
-      muscle: item.muscle,
-      completedSets: (completedSets[item.id] || []).filter(Boolean).length,
-      targetSets: getPrescription(item, level, goal).sets,
-      sets: buildTrackedSets({
+    const completedExercises = exercises.map((item) => {
+      const trackedSets = buildTrackedSets({
         completed: completedSets[item.id] || [],
         prescription: getPrescription(item, level, goal),
         sets: setTracking[item.id] || [],
         completedAt,
-      }),
-    }));
+      });
+
+      return {
+        id: item.id,
+        exerciseId: item.id,
+        name: item.name,
+        muscle: item.muscle,
+        equipmentType: item.equipmentType || item.equipment || "",
+        type: item.type || "",
+        completedSets: (completedSets[item.id] || []).filter(Boolean).length,
+        targetSets: getPrescription(item, level, goal).sets,
+        completedAt,
+        sets: trackedSets,
+        totalVolume: getCompletedSetVolume(trackedSets),
+        bestSet: getBestTrackedSet(trackedSets),
+      };
+    });
     const workoutStats = getWorkoutWeightStats(completedExercises);
-    const savedSession = saveWorkoutSession({
+    const savedSession = await saveWorkoutSession(userId, {
       completedExercises,
       duration: elapsedSeconds / 60,
       completedAt,
       caloriesEstimate: calories,
+      dayId: session.day?.id,
       dayName: session.day?.name,
+      routineId: session.day?.routineId,
+      routineName: session.day?.routineName,
+      routineType:
+        session.routineType ||
+        session.source ||
+        session.day?.source ||
+        (session.day?.routineId ? "custom" : "ia"),
+      source:
+        session.source ||
+        session.day?.source ||
+        (session.day?.routineId ? "custom" : "ia"),
       muscles: session.day?.muscles,
       ...workoutStats,
     });
@@ -345,6 +385,9 @@ export function WorkoutSession({
                 lastPerformance={lastPerformance}
                 recordFeedback={recordFeedback}
               />
+              {weightRecommendation.hasHistory ? (
+                <StrengthRecommendationCard recommendation={weightRecommendation} />
+              ) : null}
               <div className="mt-1 flex gap-1">
                 <PrescriptionChip label="Series" value={prescription.sets} />
                 <PrescriptionChip label="Reps" value={prescription.reps} />
@@ -377,27 +420,15 @@ export function WorkoutSession({
                 />
               </>
             ) : (
-              <>
-                <SeriesRestCoach
-                  completedForExercise={completedForExercise}
-                  completedSeriesCount={completedSeriesCount}
-                  onToggleSet={toggleSet}
-                  prescription={prescription}
-                  recordFeedback={recordFeedback}
-                  setTracking={exerciseTracking}
-                  onTrackSet={updateSetTracking}
-                />
-                <div className="mt-1">
-                  <RestPanel
-                    progress={restProgress}
-                    remaining={restRemaining}
-                    onSkip={() => {
-                      setRestRemaining(0);
-                      setRestTotal(0);
-                    }}
-                  />
-                </div>
-              </>
+              <SeriesRestCoach
+                completedForExercise={completedForExercise}
+                completedSeriesCount={completedSeriesCount}
+                onToggleSet={toggleSet}
+                prescription={prescription}
+                recordFeedback={recordFeedback}
+                setTracking={exerciseTracking}
+                onTrackSet={updateSetTracking}
+              />
             )}
           </div>
         </main>
@@ -695,6 +726,42 @@ function PerformanceHint({ lastPerformance, recordFeedback }) {
         </span>
       ) : null}
     </div>
+  );
+}
+
+function StrengthRecommendationCard({ recommendation }) {
+  if (!recommendation) return null;
+
+  return (
+    <section className="mt-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_8%,var(--app-card)),var(--app-card))] px-2.5 py-2 shadow-[0_8px_20px_rgba(0,0,0,0.16)]">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+            Última vez
+          </p>
+          <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
+            {recommendation.lastText || "Sin datos"}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+          {recommendation.recommendationTitle}
+        </span>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+            Hoy recomendado
+          </p>
+          <p className="mt-0.5 text-[16px] font-black leading-none text-[var(--app-primary)]">
+            {recommendation.recommendationValue}
+          </p>
+        </div>
+        <p className="min-w-0 flex-1 text-right text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
+          {recommendation.recommendationText}
+        </p>
+      </div>
+    </section>
   );
 }
 

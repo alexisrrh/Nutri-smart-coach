@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../../context/useAuth";
 import {
   completeWorkoutForToday,
   getLocalDateKey,
@@ -7,9 +8,14 @@ import {
   markWorkoutCompletion,
   unmarkWorkoutCompletion,
 } from "../../services/gamificationService";
-import { getWorkoutSessions } from "../../services/workoutSessionService";
+import {
+  getWorkoutSessions,
+  listWorkoutSessions,
+} from "../../services/workoutSessionService";
 
 export function useWorkoutHistory() {
+  const { user, loadingAuth } = useAuth();
+  const userId = user?.id || null;
   const [todayCompletion, setTodayCompletion] = useState(() =>
     getTodayWorkoutCompletion()
   );
@@ -22,11 +28,60 @@ export function useWorkoutHistory() {
   const [showHistory, setShowHistory] = useState(false);
   const [toggleMessage, setToggleMessage] = useState("");
 
-  function refreshWorkoutHistory() {
+  const refreshWorkoutHistory = useCallback(async () => {
     setTodayCompletion(getTodayWorkoutCompletion());
     setWorkoutCompletions(getWorkoutCompletions());
-    setWorkoutSessions(getWorkoutSessions());
-  }
+
+    if (!userId) {
+      setWorkoutSessions([]);
+      return;
+    }
+
+    try {
+      const sessions = await listWorkoutSessions(userId);
+      setWorkoutSessions(sessions);
+    } catch (error) {
+      console.error("Error cargando historial de entrenamientos:", error);
+      setWorkoutSessions(getWorkoutSessions(userId));
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (loadingAuth) return;
+
+    if (!userId) {
+      void Promise.resolve().then(() => {
+        setTodayCompletion(null);
+        setWorkoutCompletions([]);
+        setWorkoutSessions([]);
+      });
+      return;
+    }
+
+    let active = true;
+
+    async function loadWorkoutHistory() {
+      try {
+        const sessions = await listWorkoutSessions(userId);
+        if (!active) return;
+
+        setWorkoutSessions(sessions);
+        setTodayCompletion(getTodayWorkoutCompletion());
+        setWorkoutCompletions(getWorkoutCompletions());
+      } catch (error) {
+        if (!active) return;
+
+        console.error("Error cargando historial de entrenamientos:", error);
+        setWorkoutSessions(getWorkoutSessions(userId));
+      }
+    }
+
+    void loadWorkoutHistory();
+
+    return () => {
+      active = false;
+    };
+  }, [loadingAuth, userId]);
 
   function handleCompleteWorkout({
     day,
@@ -44,7 +99,7 @@ export function useWorkoutHistory() {
       dayName: workoutDay.name,
     });
 
-    refreshWorkoutHistory();
+    void refreshWorkoutHistory();
     return result;
   }
 
