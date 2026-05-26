@@ -389,23 +389,19 @@ export function WorkoutRoutines() {
               />
             ) : null}
 
-            {planConfirmed ? (
-              <>
-                <CustomRoutinesSection
-                  routines={customRoutines}
-                  loading={loadingCustomRoutines}
-                  onCreate={() => navigate("/crear-rutina")}
-                  onOpen={() => setShowCustomRoutines(true)}
-                />
+            <CustomRoutinesSection
+              routines={customRoutines}
+              loading={loadingCustomRoutines}
+              onCreate={() => navigate("/crear-rutina")}
+              onOpen={() => setShowCustomRoutines(true)}
+            />
 
-                {workoutSessions.length ? (
-                  <WorkoutHistoryPreview
-                    WorkoutHistoryCard={WorkoutHistoryCard}
-                    sessions={workoutSessions}
-                    onOpen={() => setShowHistory(true)}
-                  />
-                ) : null}
-              </>
+            {planConfirmed && workoutSessions.length ? (
+              <WorkoutHistoryPreview
+                WorkoutHistoryCard={WorkoutHistoryCard}
+                sessions={workoutSessions}
+                onOpen={() => setShowHistory(true)}
+              />
             ) : null}
           </div>
         </main>
