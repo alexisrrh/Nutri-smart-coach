@@ -4,7 +4,7 @@ import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import { exercises } from "../data/exercises";
-import { preloadExercises } from "../services/exercisePreloadService";
+import { preloadExercises } from "../services/exerciseMediaService";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
