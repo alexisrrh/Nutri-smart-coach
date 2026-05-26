@@ -22,6 +22,7 @@ export function useFoodPhotoAnalysis({
   image,
   preview,
   description,
+  profileContext = null,
   loading,
   setAnalysisState,
   setLoading,
@@ -73,8 +74,9 @@ export function useFoodPhotoAnalysis({
       const mealToSave = await analyzeMealWithRetry({
         image,
         description: trimmedDescription,
-        goal: "perder_grasa",
+        goal: profileContext?.goal || "perder_grasa",
         userId: user?.id,
+        profileContext,
       });
 
       const latestState = getFoodAnalysisProcessState();
@@ -133,6 +135,7 @@ export function useFoodPhotoAnalysis({
     isMountedRef,
     loading,
     preview,
+    profileContext,
     setAnalysisState,
     setError,
     setLoading,

@@ -94,6 +94,7 @@ function InsightRow({ icon, title, text, type }) {
 }
 
 function buildInsights(result) {
+  const goal = normalizeFoodGoal(result.goal);
   const protein = Number(result.protein || 0);
   const calories = Number(result.calories || 0);
   const score = Number(result.score || 0);
@@ -102,19 +103,15 @@ function buildInsights(result) {
 
   if (score >= 8) {
     insights.push({
-      title: "Buena elección",
-      text:
-        result.goal_fit ||
-        "Esta comida encaja bastante bien con tu objetivo actual.",
+      title: getGoalTitle(goal),
+      text: result.goal_fit || getGoalInsight(goal),
       icon: <CheckCircle2 size={14} />,
       type: "success",
     });
   } else {
     insights.push({
-      title: "Se puede mejorar",
-      text:
-        result.goal_fit ||
-        "Conviene ajustar porción o acompañamientos.",
+      title: getGoalTitle(goal),
+      text: result.goal_fit || getGoalInsight(goal),
       icon: <Target size={14} />,
       type: "warning",
     });
@@ -150,4 +147,68 @@ function buildInsights(result) {
   }
 
   return insights.slice(0, 1);
+}
+
+function normalizeFoodGoal(goal) {
+  const normalized = String(goal || "").trim().toLowerCase();
+
+  if (
+    normalized === "ganar_musculo" ||
+    normalized === "ganar músculo" ||
+    normalized === "subir"
+  ) {
+    return "ganar_musculo";
+  }
+
+  if (
+    normalized === "perder_grasa" ||
+    normalized === "perder grasa" ||
+    normalized === "bajar"
+  ) {
+    return "perder_grasa";
+  }
+
+  if (normalized === "mantener_peso" || normalized === "mantener") {
+    return "mantener_peso";
+  }
+
+  if (
+    normalized === "recomposicion" ||
+    normalized === "recomposición" ||
+    normalized === "recomp"
+  ) {
+    return "recomposicion";
+  }
+
+  return "general";
+}
+
+function getGoalTitle(goal) {
+  switch (goal) {
+    case "ganar_musculo":
+      return "Volumen limpio";
+    case "perder_grasa":
+      return "Déficit controlado";
+    case "mantener_peso":
+      return "Equilibrio diario";
+    case "recomposicion":
+      return "Recomposición";
+    default:
+      return "Análisis fitness";
+  }
+}
+
+function getGoalInsight(goal) {
+  switch (goal) {
+    case "ganar_musculo":
+      return "Prioriza proteína y recuperación para ganar masa muscular sin frenar tu rendimiento.";
+    case "perder_grasa":
+      return "Prioriza saciedad y control de calorías para mantener el déficit sin perder adherencia.";
+    case "mantener_peso":
+      return "Mantén un equilibrio entre energía, proteína y porción para sostener el peso actual.";
+    case "recomposicion":
+      return "Busca proteína alta y calorías razonables para mejorar composición corporal sin extremos.";
+    default:
+      return "Ajusta porción y proteína según tu objetivo actual.";
+  }
 }

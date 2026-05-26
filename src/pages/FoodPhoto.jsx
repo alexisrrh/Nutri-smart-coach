@@ -20,6 +20,7 @@ export default function FoodPhoto() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [description, setDescription] = useState("");
+  const [profile, setProfile] = useState(getCachedProfile);
   const {
     isMountedRef,
     setAnalysisState,
@@ -40,10 +41,29 @@ export default function FoodPhoto() {
     setError,
     setResult,
   });
+  const goals = useMemo(() => calculateNutritionGoals(profile), [profile]);
+  const analysisContext = useMemo(
+    () => ({
+      goal: profile?.goal || profile?.objetivo || "general",
+      caloriesGoal: goals.calories,
+      proteinGoal: goals.protein,
+      weight: profile?.weight ?? profile?.peso ?? null,
+      height: profile?.height ?? profile?.altura ?? null,
+      level:
+        profile?.level ||
+        profile?.training_level ||
+        profile?.activity_level ||
+        profile?.activity ||
+        "",
+      phase: profile?.phase || profile?.fase || profile?.preferences?.phase || profile?.preferences?.fase || "",
+    }),
+    [goals.calories, goals.protein, profile]
+  );
   const { analyzeFood, discardAnalysis } = useFoodPhotoAnalysis({
     image,
     preview,
     description,
+    profileContext: analysisContext,
     loading,
     setAnalysisState,
     setLoading,
@@ -54,7 +74,6 @@ export default function FoodPhoto() {
     resetRecoveryState,
     result,
   });
-  const [profile, setProfile] = useState(getCachedProfile);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,8 +116,6 @@ export default function FoodPhoto() {
       { calories: 0, protein: 0 }
     );
   }, [meals]);
-
-  const goals = useMemo(() => calculateNutritionGoals(profile), [profile]);
 
   function resetScanner() {
     if (preview) URL.revokeObjectURL(preview);

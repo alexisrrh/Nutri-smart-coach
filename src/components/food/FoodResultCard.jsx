@@ -185,13 +185,87 @@ function MacroMini({ icon, label, value, unit }) {
 }
 
 function getShortAdvice(result) {
+  const goal = normalizeFoodGoal(result.goal);
   const score = Number(result.score || 0);
   const protein = Number(result.protein || 0);
   const calories = Number(result.calories || 0);
+
+  if (goal === "ganar_musculo") {
+    if (protein >= 30 && score >= 8) {
+      return "Buena base para volumen. Proteína y energía bien alineadas.";
+    }
+
+    if (protein < 20) {
+      return "Para volumen, sube proteína y prioriza recuperación.";
+    }
+
+    if (calories < 350) {
+      return "Puede quedarse corta para volumen. Añade más energía útil.";
+    }
+
+    return "Buena opción para ganar músculo. Ajusta porción si hace falta.";
+  }
+
+  if (goal === "perder_grasa") {
+    if (calories > 850) return "Alta en calorías para déficit. Ajusta porción o salsas.";
+    if (protein < 20) return "Baja en proteína. Añade saciedad con una fuente magra.";
+    return "Buena opción para control de calorías y saciedad.";
+  }
+
+  if (goal === "mantener_peso") {
+    if (score >= 8) return "Buena opción para mantener. Equilibrada y fácil de encajar.";
+    return "Comida correcta. Ajusta porción y acompaña con proteína si hace falta.";
+  }
+
+  if (goal === "recomposicion") {
+    if (protein >= 25 && score >= 8) {
+      return "Muy útil para recomposición: proteína alta y energía controlada.";
+    }
+
+    if (protein < 20) {
+      return "En recomposición conviene subir proteína para proteger masa muscular.";
+    }
+
+    return "Buen encaje para recomposición. Mantén proteína alta y porción medida.";
+  }
 
   if (score >= 8) return "Buena opción. Mantén una porción controlada.";
   if (protein < 20) return "Baja en proteína. Añade una fuente magra.";
   if (calories > 850) return "Alta en calorías. Reduce salsas o fritos.";
 
   return "Comida aceptable. Ajusta porción y proteína.";
+}
+
+function normalizeFoodGoal(goal) {
+  const normalized = String(goal || "").trim().toLowerCase();
+
+  if (
+    normalized === "ganar_musculo" ||
+    normalized === "ganar músculo" ||
+    normalized === "subir"
+  ) {
+    return "ganar_musculo";
+  }
+
+  if (
+    normalized === "perder_grasa" ||
+    normalized === "perder grasa" ||
+    normalized === "bajar"
+  ) {
+    return "perder_grasa";
+  }
+
+  if (normalized === "mantener_peso" || normalized === "mantener") {
+    return "mantener_peso";
+  }
+
+  if (
+    normalized === "recomposicion" ||
+    normalized === "recomposición" ||
+    normalized === "recomp"
+  ) {
+    return "recomposicion";
+  }
+
+  return "general";
 }
