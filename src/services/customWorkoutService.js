@@ -17,6 +17,22 @@ export async function listCustomWorkoutRoutines(userId) {
   return data || [];
 }
 
+export async function getCustomWorkoutRoutineById(routineId) {
+  if (!routineId) {
+    throw new Error("Rutina no válida.");
+  }
+
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select("*")
+    .eq("id", routineId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
 export async function createCustomWorkoutRoutine(userId, routine) {
   if (!userId) {
     throw new Error("Usuario no válido.");

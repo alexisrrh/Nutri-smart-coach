@@ -35,12 +35,11 @@ import {
 } from "../hooks/workouts/useWorkoutHistory";
 import { useWorkoutSessionLauncher } from "../hooks/workouts/useWorkoutSessionLauncher";
 import { WorkoutConfigCard } from "../components/workouts/WorkoutConfigCard";
-import { ActivePlanSummary } from "../components/workouts/ActivePlanSummary";
-import { TodayWorkoutCard } from "../components/workouts/TodayWorkoutCard";
 import { WorkoutHistoryPreview } from "../components/workouts/WorkoutHistoryPreview";
 import { WorkoutHistorySheet } from "../components/workouts/WorkoutHistorySheet";
 import {
-  listCustomWorkoutRoutines
+  deleteCustomWorkoutRoutine,
+  listCustomWorkoutRoutines,
 } from "../services/customWorkoutService";
 import { supabase } from "../lib/supabase";
 
@@ -68,13 +67,13 @@ export function WorkoutRoutines() {
   const [customRoutines, setCustomRoutines] = useState([]);
   const [loadingCustomRoutines, setLoadingCustomRoutines] = useState(false);
   const [showCustomRoutines, setShowCustomRoutines] = useState(false);
+  const [showWeeklyPlan, setShowWeeklyPlan] = useState(false);
   const [customWorkoutMode, setCustomWorkoutMode] = useState(null);
   const {
     handleCompleteWorkout: recordWorkoutCompletion,
     handleToggleDayCompletion,
     setShowHistory,
     showHistory,
-    todayCompletion,
     toggleMessage,
     workoutCompletions,
     workoutSessions,
@@ -171,6 +170,10 @@ export function WorkoutRoutines() {
   }, []);
 
   useEffect(() => {
+    setShowConfig(false);
+  }, [setShowConfig]);
+
+  useEffect(() => {
     preloadExerciseMedia(todayPlanExercises.slice(0, 4));
   }, [todayPlanExercises]);
 
@@ -206,6 +209,20 @@ export function WorkoutRoutines() {
 
     void loadCustomRoutines();
   }, []);
+
+  async function handleDeleteCustomRoutine(routineId) {
+    if (!window.confirm("¿Eliminar esta rutina personalizada?")) return;
+
+    try {
+      await deleteCustomWorkoutRoutine(routineId);
+      setCustomRoutines((current) =>
+        current.filter((routine) => routine.id !== routineId)
+      );
+    } catch (error) {
+      console.error("Error eliminando rutina personalizada:", error);
+    }
+  }
+
   function handleGenerateWorkout() {
     saveWorkoutConfig({
       level: selectedLevel,
@@ -217,6 +234,10 @@ export function WorkoutRoutines() {
     setPlanConfirmed(true);
     setShowConfig(false);
     setSelectedDayId("");
+  }
+
+  function handleOpenWeeklyPlan() {
+    setShowWeeklyPlan(true);
   }
 
   function handleOpenDay(day) {
@@ -232,45 +253,48 @@ export function WorkoutRoutines() {
     setActiveDay(workoutDay);
     setWorkoutMode(null);
   }
-function handleStartCustomRoutine(routine) {
-  const firstDay = Array.isArray(routine.days) ? routine.days[0] : null;
+  function handleStartCustomRoutine(routine) {
+    const firstDay = Array.isArray(routine.days) ? routine.days[0] : null;
 
-  if (!firstDay) return;
+    if (!firstDay) return;
 
-  const customDay = {
-    id: routine.id,
-    day: "Personalizada",
-    name: routine.name,
-    muscles: firstDay.muscles || [routine.focus || "General"],
-    duration: "45 min",
-    warmupItems: ["5 min cardio suave", "Movilidad articular", "Activación ligera"],
-    finalItems: ["Estiramiento breve", "Respiración y recuperación"],
-  exercises: (firstDay.exercises || []).map((customExercise) => {
-  const fullExercise = EXERCISE_LIBRARY.find(
-    (exercise) => exercise.id === customExercise.exerciseId
-  );
+    const customDay = {
+      id: routine.id,
+      day: "Personalizada",
+      name: routine.name,
+      muscles: firstDay.muscles || [routine.focus || "General"],
+      goal: routine.goal || selectedGoal,
+      level: routine.level || selectedLevel,
+      focus: routine.focus || firstDay.muscles?.[0] || "General",
+      duration: "45 min",
+      warmupItems: ["5 min cardio suave", "Movilidad articular", "Activación ligera"],
+      finalItems: ["Estiramiento breve", "Respiración y recuperación"],
+      exercises: (firstDay.exercises || []).map((customExercise) => {
+        const fullExercise = EXERCISE_LIBRARY.find(
+          (exercise) => exercise.id === customExercise.exerciseId
+        );
 
-  return {
-    ...(fullExercise || {}),
-    ...customExercise,
-    id: customExercise.exerciseId,
-    name: customExercise.name || fullExercise?.name,
-    muscle: customExercise.muscle || fullExercise?.muscle,
-    sets: Number(customExercise.sets) || fullExercise?.sets || 3,
-    reps: customExercise.reps || fullExercise?.reps || "8-12",
-    rest: customExercise.rest || fullExercise?.rest || "90s",
-  };
-}),
-  };
+        return {
+          ...(fullExercise || {}),
+          ...customExercise,
+          id: customExercise.exerciseId,
+          name: customExercise.name || fullExercise?.name,
+          muscle: customExercise.muscle || fullExercise?.muscle,
+          sets: Number(customExercise.sets) || fullExercise?.sets || 3,
+          reps: customExercise.reps || fullExercise?.reps || "8-12",
+          rest: customExercise.rest || fullExercise?.rest || "90s",
+        };
+      }),
+    };
 
-  setCustomWorkoutMode({
-    type: "custom",
-    day: customDay,
-    exercises: customDay.exercises,
-  });
+    setCustomWorkoutMode({
+      type: "custom",
+      day: customDay,
+      exercises: customDay.exercises,
+    });
 
-  setShowCustomRoutines(false);
-}
+    setShowCustomRoutines(false);
+  }
   function handleCompleteWorkout() {
     return recordWorkoutCompletion({
       day: workoutMode?.day || activeDay || selectedDay,
@@ -281,8 +305,23 @@ function handleStartCustomRoutine(routine) {
     });
   }
 
+  function handleCompleteCustomWorkout() {
+    const result = recordWorkoutCompletion({
+      day: customWorkoutMode?.day,
+      selectedLevel: customWorkoutMode?.day?.level || selectedLevel,
+      selectedGoal: customWorkoutMode?.day?.goal || selectedGoal,
+      activeDay: customWorkoutMode?.day,
+      selectedDay: customWorkoutMode?.day,
+    });
+
+    return result;
+  }
+
   return (
-    <AppShell contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-1.5">
+    <AppShell
+      hideBottomNav={Boolean(workoutMode || customWorkoutMode)}
+      contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-1.5"
+    >
       <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-2 overflow-hidden overflow-x-hidden">
         <header className="w-full max-w-full shrink-0">
           <button
@@ -322,6 +361,19 @@ function handleStartCustomRoutine(routine) {
 
         <main className="min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
+            <IAWeeklyRoutineCard
+              daysPerWeek={daysPerWeek}
+              onAdjust={() => setShowConfig(true)}
+              onGenerate={handleGenerateWorkout}
+              onOpen={handleOpenWeeklyPlan}
+              planConfirmed={planConfirmed}
+              planMeta={workoutPlan.meta}
+              planStats={planStats}
+              selectedFocus={selectedFocus}
+              selectedGoal={selectedGoal}
+              selectedLevel={selectedLevel}
+            />
+
             {showConfig ? (
               <WorkoutConfigCard
                 SelectFilter={SelectFilter}
@@ -335,78 +387,16 @@ function handleStartCustomRoutine(routine) {
                 setSelectedFocus={setSelectedFocus}
                 setSelectedLevel={setSelectedLevel}
               />
-            ) : (
-              <ActivePlanSummary
-                daysPerWeek={daysPerWeek}
-                planMeta={workoutPlan.meta}
-                planStats={planStats}
-                selectedFocus={selectedFocus}
-                selectedLevel={selectedLevel}
-                onAdjust={() => {
-                  setShowConfig(true);
-                  setPlanConfirmed(false);
-                }}
-              />
-            )}
+            ) : null}
 
             {planConfirmed ? (
               <>
-                <TodayWorkoutCard
-                  day={getTodayPlanDay({ weeklyPlan, planStats })}
-                  onStart={() =>
-                    handleStartDayWorkout(getTodayPlanDay({ weeklyPlan, planStats }))
-                  }
-                  todayCompletion={todayCompletion}
+                <CustomRoutinesSection
+                  routines={customRoutines}
+                  loading={loadingCustomRoutines}
+                  onCreate={() => navigate("/crear-rutina")}
+                  onOpen={() => setShowCustomRoutines(true)}
                 />
-     <CustomRoutinesSection
-  routines={customRoutines}
-  loading={loadingCustomRoutines}
-  onCreate={() => navigate("/crear-rutina")}
-  onOpen={() => setShowCustomRoutines(true)}
-/>
-
-                <section>
-                  <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-1">
-                    <h2 className="min-w-0 text-[14px] font-black text-[var(--app-text)]">
-                      Toda tu semana
-                    </h2>
-                    <span className="shrink-0 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                      {planStats.remaining} pendientes
-                    </span>
-                  </div>
-
-                  <div className="grid w-full max-w-full min-w-0 gap-1">
-                    {weeklyPlan.map((day, index) => {
-                      const dateKey = getPlanDayDateKey(index);
-                      const completion = getCompletionForPlanDay({
-                        completions: workoutCompletions,
-                        dateKey,
-                        dayId: day.id,
-                      });
-                      const locked = !completion && index > planStats.completedCount + 1;
-
-                      return (
-                        <DayCard
-                          day={day}
-                          key={day.id}
-                          locked={locked}
-                          onClick={() => handleOpenDay(day)}
-                          onToggle={() =>
-                            handleToggleDayCompletion(day, index, {
-                              selectedGoal,
-                              selectedLevel,
-                            })
-                          }
-                          status={getDayStatus({
-                            completion,
-                            isToday: dateKey === getLocalDateKey(),
-                            locked,
-                          })}
-                        />
-                      );
-                    })}
-                  </div>
-                </section>
 
                 {workoutSessions.length ? (
                   <WorkoutHistoryPreview
@@ -451,11 +441,11 @@ function handleStartCustomRoutine(routine) {
       goal={customWorkoutMode.day?.goal || selectedGoal}
       level={customWorkoutMode.day?.level || selectedLevel}
       onClose={() => setCustomWorkoutMode(null)}
-      onDashboard={() => navigate("/dashboard")}
-      onFinish={() => {
+      onDashboard={() => {
         setCustomWorkoutMode(null);
-        return true;
+        navigate("/dashboard");
       }}
+      onFinish={handleCompleteCustomWorkout}
     />
   </div>
 ) : null}
@@ -477,14 +467,29 @@ function handleStartCustomRoutine(routine) {
           onClose={() => setShowHistory(false)}
         />
       ) : null}
+      {showWeeklyPlan ? (
+        <WeeklyRoutineSheet
+          days={weeklyPlan}
+          onClose={() => setShowWeeklyPlan(false)}
+          onOpenDay={handleOpenDay}
+          onStartDayWorkout={handleStartDayWorkout}
+          onToggleDayCompletion={handleToggleDayCompletion}
+          planStats={planStats}
+          completions={workoutCompletions}
+          selectedGoal={selectedGoal}
+          selectedLevel={selectedLevel}
+        />
+      ) : null}
       {showCustomRoutines ? (
-  <CustomRoutinesSheet
-    routines={customRoutines}
-    onClose={() => setShowCustomRoutines(false)}
-    onCreate={() => navigate("/crear-rutina")}
-   onStart={handleStartCustomRoutine}
-  />
-) : null}
+        <CustomRoutinesSheet
+          routines={customRoutines}
+          onClose={() => setShowCustomRoutines(false)}
+          onCreate={() => navigate("/crear-rutina")}
+          onDelete={handleDeleteCustomRoutine}
+          onEdit={(routineId) => navigate(`/editar-rutina/${routineId}`)}
+          onStart={handleStartCustomRoutine}
+        />
+      ) : null}
 
       {toggleMessage ? (
         <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+92px)] left-3 right-3 z-[95] mx-auto max-w-[360px] rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-4 py-3 text-center text-[12px] font-black text-[var(--app-primary)] shadow-[0_18px_50px_var(--app-glow)]">
@@ -499,82 +504,109 @@ function CustomRoutinesSection({ routines, loading, onCreate, onOpen }) {
   const count = routines.length;
 
   return (
-    <section className="relative overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_10px_28px_var(--app-glow)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,var(--app-primary-soft),transparent_38%)]" />
+    <section className="relative overflow-hidden rounded-[1.15rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-card))] p-3 shadow-[0_12px_26px_rgba(0,0,0,0.16)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.12),transparent_34%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.1),transparent_34%)]" />
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
 
-      <div className="relative z-10 flex items-center justify-between gap-3">
+      <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Creadas por ti
-          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+              Mis rutinas
+            </span>
+          </div>
 
-          <h2 className="mt-0.5 text-[16px] font-black leading-none text-[var(--app-text)]">
-            Mis rutinas personalizadas
+          <h2 className="mt-2 text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
+            Crea y guarda tus propias rutinas
           </h2>
 
-          <p className="mt-1 text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+          <p className="mt-1.5 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
             {loading
-              ? "Cargando tus rutinas..."
+              ? "Sincronizando tus rutinas guardadas..."
               : count > 0
                 ? `${count} rutina${count === 1 ? "" : "s"} guardada${count === 1 ? "" : "s"}`
-                : "Crea rutinas con tus propios ejercicios."}
+                : "Selecciona tus ejercicios y crea una rutina a tu medida."}
           </p>
+
         </div>
 
-        <button
-          type="button"
-          onClick={count > 0 ? onOpen : onCreate}
-          className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_8px_18px_var(--app-glow)] transition active:scale-[0.96]"
-        >
-          {count > 0 ? "Ver" : "Crear"}
-        </button>
-      </div>
+        <div className="flex shrink-0 flex-col gap-2">
+          <button
+            type="button"
+            onClick={count > 0 ? onOpen : onCreate}
+            className="min-w-[96px] rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary)] px-3.5 py-2 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_18px_rgba(0,196,255,0.16)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+          >
+            {count > 0 ? "Ver rutinas" : "+ Nueva rutina"}
+          </button>
 
-      {count > 0 ? (
-        <button
-          type="button"
-          onClick={onCreate}
-          className="relative z-10 mt-2 w-full rounded-[0.85rem] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] transition active:scale-[0.99]"
-        >
-          + Crear nueva rutina
-        </button>
-      ) : null}
+          {count > 0 ? (
+            <button
+              type="button"
+              onClick={onCreate}
+              className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.4)] px-3.5 py-2 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.56)] active:scale-[0.98]"
+            >
+              + Nueva rutina
+            </button>
+          ) : null}
+        </div>
+      </div>
     </section>
   );
 }
 
-function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
+function CustomRoutinesSheet({ routines, onClose, onCreate, onDelete, onEdit, onStart }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-md">
       <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
         <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
-          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                  Creadas por ti
-                </p>
-                <h2 className="mt-0.5 text-[20px] font-black text-[var(--app-text)]">
-                  Mis rutinas
+        <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+                <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+                  Rutinas personalizadas
+                </span>
+                <h2 className="mt-2 text-[20px] font-semibold leading-none text-[var(--app-text)]">
+                  Rutinas creadas
                 </h2>
+                <p className="mt-1 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                  Guarda, revisa e inicia tus rutinas sin mezclarla con la rutina semanal de la app.
+                </p>
               </div>
 
               <button
                 type="button"
                 onClick={onClose}
-                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
               >
-                <X size={14} />
+                <X size={15} />
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={onCreate}
-              className="mt-2 w-full rounded-[0.9rem] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-left text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]"
-            >
-              + Crear nueva rutina
-            </button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={onCreate}
+                className="rounded-[0.95rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-primary-soft)_36%,var(--app-surface)),var(--app-surface))] px-3 py-2.5 text-left shadow-[0_8px_18px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+              >
+                <p className="text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+                  Crear rutina
+                </p>
+                <p className="mt-0.5 text-[10px] font-semibold text-[var(--app-text)]">
+                  Nueva rutina
+                </p>
+              </button>
+
+              <div className="rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5">
+                <p className="text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+                  Estado
+                </p>
+                <p className="mt-0.5 text-[10px] font-medium text-[var(--app-muted)]">
+                  {routines.length > 0
+                    ? `${routines.length} rutina${routines.length === 1 ? "" : "s"} guardada${routines.length === 1 ? "" : "s"}`
+                    : "Sin rutinas guardadas"}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -593,25 +625,25 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
                 return (
                   <article
                     key={routine.id}
-                    className="relative overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-3 shadow-[0_8px_22px_var(--app-glow)]"
+                    className="relative overflow-hidden rounded-[1.05rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-surface))] p-3 shadow-[0_10px_20px_rgba(0,0,0,0.14)]"
                   >
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,var(--app-primary-soft),transparent_36%)]" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(0,196,255,0.12),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(60,255,182,0.08),transparent_30%)]" />
+                    <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
 
                     <div className="relative z-10">
-                      <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                          Personalizada
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.78)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+                          Creada por ti
                         </span>
-                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-muted)]">
                           {exerciseCount} ejercicios
                         </span>
                       </div>
 
-                      <h3 className="text-[16px] font-black text-[var(--app-text)]">
+                      <h3 className="text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
                         {routine.name}
                       </h3>
-
-                      <p className="mt-1 text-[10px] font-bold text-[var(--app-muted)]">
+                      <p className="mt-1.5 text-[10px] font-medium text-[var(--app-muted)]">
                         {muscles} · {routine.level || "Nivel libre"}
                       </p>
 
@@ -619,7 +651,7 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
                         <button
                           type="button"
                           onClick={() => onStart?.(routine)}
-                          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_8px_18px_var(--app-glow)]"
+                          className="flex h-[42px] flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
                         >
                           <Play size={14} />
                           Iniciar
@@ -627,9 +659,18 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
 
                         <button
                           type="button"
-                          className="h-10 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
+                          onClick={() => onEdit?.(routine.id)}
+                          className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.36)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.56)] active:scale-[0.98]"
                         >
                           Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onDelete?.(routine.id)}
+                          className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,#ff6b7a_28%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,#ff8a98_82%,var(--app-primary))] transition duration-150 hover:bg-[rgba(255,107,122,0.1)] active:scale-[0.98]"
+                        >
+                          Eliminar
                         </button>
                       </div>
                     </div>
@@ -643,6 +684,302 @@ function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
     </div>
   );
 }
+
+function IAWeeklyRoutineCard({
+  daysPerWeek,
+  onAdjust,
+  onGenerate,
+  onOpen,
+  planConfirmed,
+  planMeta,
+  planStats,
+  selectedFocus,
+  selectedGoal,
+  selectedLevel,
+}) {
+  const progress = planConfirmed ? planStats.weeklyProgress : 0;
+  const remainingText = planConfirmed
+    ? `${planStats.completedCount}/${daysPerWeek} completadas`
+    : "Aún no generaste tu rutina automática";
+  const primaryLabel = planConfirmed ? "Continuar rutina" : "Generar rutina IA";
+
+  return (
+    <section className="relative overflow-hidden rounded-[1.15rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-card))] p-3 shadow-[0_12px_26px_rgba(0,0,0,0.14)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(0,196,255,0.12),transparent_34%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.08),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
+                Generada con IA
+              </span>
+            </div>
+
+            <h2 className="mt-2 text-[18px] font-semibold leading-[1.02] text-[var(--app-text)]">
+              Rutina semanal IA
+            </h2>
+
+            <p className="mt-1.5 max-w-[22rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+              La app crea una rutina semanal automáticamente según tu nivel, objetivo y progreso.
+            </p>
+
+            <div className="mt-3 grid gap-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
+                  Progreso semanal
+                </p>
+                <p className="text-[9px] font-semibold text-[var(--app-text)]">{remainingText}</p>
+              </div>
+
+              <div className="h-2 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_72%,#fff))] transition-all duration-300"
+                  style={{ width: `${planConfirmed ? progress : 8}%` }}
+                />
+              </div>
+
+              {planConfirmed ? (
+                <p className="text-[9px] font-medium text-[var(--app-muted)]">
+                  {planStats.planName || planMeta?.planName || "Tu rutina automática"}
+                </p>
+              ) : (
+                <p className="text-[9px] font-medium text-[var(--app-muted)]">
+                  La app creará tu rutina según tu nivel, objetivo y progreso.
+                </p>
+              )}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+                {selectedLevel}
+              </span>
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+                {selectedGoal}
+              </span>
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+                {selectedFocus}
+              </span>
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+                {daysPerWeek} días
+              </span>
+            </div>
+          </div>
+
+          <div className="shrink-0 rounded-[1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] p-2 text-[var(--app-primary)] shadow-[0_0_14px_rgba(0,196,255,0.14)]">
+            <Dumbbell size={20} />
+          </div>
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={planConfirmed ? onOpen : onGenerate}
+            className="flex h-[42px] flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] px-3 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+          >
+            <Play size={14} />
+            {primaryLabel}
+          </button>
+
+          <button
+            type="button"
+            onClick={onAdjust}
+            className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.6)] active:scale-[0.98]"
+          >
+            Ajustar plan
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WeeklyRoutineSheet({
+  days,
+  onClose,
+  onOpenDay,
+  onStartDayWorkout,
+  onToggleDayCompletion,
+  planStats,
+  completions,
+  selectedGoal,
+  selectedLevel,
+}) {
+  return (
+    <div className="fixed inset-0 z-[85] flex items-end justify-center bg-black/66 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-md">
+      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
+        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
+          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2 py-0.5 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-primary)]">
+                  Rutina IA semanal
+                </span>
+                <h2 className="mt-2 text-[20px] font-black leading-none text-[var(--app-text)]">
+                  Tu semana completa
+                </h2>
+                <p className="mt-1 max-w-[20rem] text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+                  Revisa cada día y comienza tu siguiente entrenamiento cuando quieras.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="mt-2 grid gap-2 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
+                  Progreso semanal
+                </p>
+                <p className="text-[9px] font-semibold text-[var(--app-text)]">
+                  {planStats.completedCount}/{days.length} completadas
+                </p>
+              </div>
+
+              <div className="h-2 overflow-hidden rounded-full border border-[var(--app-border)] bg-[rgba(8,16,26,0.62)]">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_72%,#fff))]"
+                  style={{ width: `${planStats.weeklyProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="grid gap-2">
+              {days.map((day, index) => {
+                const dateKey = getPlanDayDateKey(index);
+                const completion = getCompletionForPlanDay({
+                  completions,
+                  dateKey,
+                  dayId: day.id,
+                });
+                const locked = !completion && index > planStats.completedCount + 1;
+                const status = getDayStatus({
+                  completion,
+                  isToday: dateKey === getLocalDateKey(),
+                  locked,
+                });
+
+                return (
+                  <WeeklyRoutineDayCard
+                    key={day.id}
+                    day={day}
+                    locked={locked}
+                    onOpen={() => onOpenDay(day)}
+                    onStart={() => onStartDayWorkout(day)}
+                    onToggle={() =>
+                      onToggleDayCompletion(day, index, {
+                        selectedGoal,
+                        selectedLevel,
+                      })
+                    }
+                    status={status}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WeeklyRoutineDayCard({
+  day,
+  locked,
+  onOpen,
+  onStart,
+  onToggle,
+  status,
+}) {
+  const complete = status === "completado";
+  const statusLabel = getDayStatusLabel(status);
+
+  return (
+    <article
+      className={[
+        "relative overflow-hidden rounded-[1rem] border p-3 shadow-[0_10px_24px_var(--app-glow)] transition active:scale-[0.99]",
+        complete
+          ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)]"
+          : "border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_86%,#08131b),var(--app-surface))]",
+        locked ? "opacity-70" : "",
+      ].join(" ")}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.08),transparent_32%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.05),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-2">
+          <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
+            <div className="flex min-w-0 items-start gap-2">
+              <div
+                className={[
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-[var(--app-surface)] text-[var(--app-primary)]",
+                  complete
+                    ? "border-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]"
+                    : "border-[var(--app-border)]",
+                ].join(" ")}
+              >
+                {complete ? <CheckCircle2 size={16} /> : <span className="text-xs font-black">{day.day}</span>}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                  <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
+                    Día {day.day}
+                  </p>
+                  <h3 className="mt-0.5 line-clamp-2 text-[13px] font-semibold leading-[1.05] text-[var(--app-text)]">
+                    {day.muscles.join(" + ")}
+                  </h3>
+                  <p className="mt-0.5 text-[9px] font-medium text-[var(--app-muted)]">
+                    {day.duration}
+                  </p>
+              </div>
+            </div>
+          </button>
+
+          <span
+            className={[
+              "shrink-0 rounded-full border px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em]",
+              getDayStatusClass(status),
+            ].join(" ")}
+          >
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            onClick={onStart}
+            className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[0.9rem] bg-[var(--app-primary)] text-[8px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+          >
+            <Play size={12} />
+            Comenzar
+          </button>
+
+          <button
+            type="button"
+            onClick={onToggle}
+            className="h-10 rounded-[0.9rem] border border-[var(--app-border)] bg-[rgba(8,16,26,0.46)] px-3.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)] transition duration-150 hover:bg-[rgba(8,16,26,0.58)] active:scale-[0.98]"
+            aria-label={complete ? "Desmarcar entrenamiento" : "Marcar entrenamiento"}
+          >
+            {complete ? "Hecho" : "Marcar"}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function WorkoutHistoryCard({ session, compact = false }) {
   const completedExercisesCount = getCompletedExercisesCount(session);
   const exerciseNames = getCompletedExerciseNames(session);
@@ -695,83 +1032,6 @@ function HistoryPill({ children }) {
   );
 }
 
-function DayCard({ day, status, locked, onClick, onToggle }) {
-  const complete = status === "completado";
-  const statusLabel = getDayStatusLabel(status);
-
-  return (
-    <article
-      className={[
-        "w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border px-2 py-1.5 text-left shadow-[0_5px_14px_var(--app-glow)] transition active:scale-[0.99]",
-        complete
-          ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[0_0_14px_var(--app-glow)]"
-          : "border-[var(--app-border)] bg-[var(--app-card)] hover:bg-[var(--app-primary-soft)]/40",
-        locked ? "opacity-70" : "",
-      ].join(" ")}
-    >
-      <div className="grid min-h-[56px] w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
-        <div
-          className={[
-            "grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-[var(--app-surface)] text-[var(--app-primary)]",
-            complete
-              ? "border-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]"
-              : "border-[var(--app-border)]",
-          ].join(" ")}
-        >
-          {complete ? <CheckCircle2 size={15} /> : <span className="text-xs font-black">{day.day}</span>}
-        </div>
-
-        <div className="min-w-0">
-          <button
-            type="button"
-            onClick={onClick}
-            className="block w-full min-w-0 text-left"
-          >
-            <div className="flex min-w-0 items-center justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                  Día {day.day}
-                </p>
-                <h3 className="mt-0.5 break-words text-[13px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
-                  {day.muscles.join(" + ")}
-                </h3>
-                <p className="mt-0.5 min-w-0 truncate text-[9px] font-bold text-[var(--app-muted)]">
-                  {day.duration}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <span
-                  className={[
-                    "shrink-0 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.08em]",
-                    getDayStatusClass(status),
-                  ].join(" ")}
-                >
-                  {statusLabel}
-                </span>
-                <ChevronRight size={14} className="text-[var(--app-primary)]" />
-              </div>
-            </div>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={complete ? "Desmarcar entrenamiento" : "Marcar entrenamiento"}
-          className={[
-            "grid h-7 w-7 shrink-0 place-items-center rounded-full border transition active:scale-[0.96]",
-            complete
-              ? "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-primary)] opacity-90"
-              : "border-[var(--app-border)] bg-transparent text-[var(--app-muted)] opacity-75",
-          ].join(" ")}
-        >
-          <CheckCircle2 size={13} />
-        </button>
-      </div>
-    </article>
-  );
-}
-
 function DayDetailSheet({
   day,
   exercises,
@@ -798,16 +1058,16 @@ function DayDetailSheet({
               <button
                 type="button"
                 onClick={onSkip}
-                className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
+                className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)] transition duration-150 hover:text-[var(--app-text)]"
               >
                 Saltar
               </button>
             </div>
 
-            <p className="mt-2 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+            <p className="mt-2 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
               Día {day.day} · {day.duration}
             </p>
-            <h2 className="mt-0.5 break-words text-[20px] font-black leading-tight text-[var(--app-text)] line-clamp-2">
+            <h2 className="mt-0.5 break-words text-[20px] font-semibold leading-tight text-[var(--app-text)] line-clamp-2">
               {day.name}
             </h2>
           </div>
@@ -843,7 +1103,7 @@ function DayDetailSheet({
             <button
               type="button"
               onClick={onStart}
-              className="mt-2.5 flex h-12 w-full items-center justify-center gap-2 rounded-[18px] bg-[var(--app-primary)] px-4 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_26px_var(--app-glow)] transition active:scale-[0.98]"
+              className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-4 text-[10px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_18px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
             >
               <Play size={16} />
               Comenzar entrenamiento
@@ -862,17 +1122,17 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[62px] items-center gap-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left"
+      className="flex min-h-[62px] items-center gap-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left transition duration-150 hover:bg-[rgba(8,16,26,0.48)] active:scale-[0.99]"
     >
       <ExerciseMediaFrame exercise={exercise} variant="thumb" className="h-11 w-11 shrink-0" />
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-[13px] font-black text-[var(--app-text)]">
+        <h3 className="truncate text-[13px] font-semibold text-[var(--app-text)]">
           {exercise.name}
         </h3>
-        <p className="mt-0.5 text-[9px] font-bold text-[var(--app-muted)]">
+        <p className="mt-0.5 text-[9px] font-medium text-[var(--app-muted)]">
           {prescription.sets} x {prescription.reps}
         </p>
-        <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
+        <p className="mt-0.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
           Descanso {prescription.rest}
         </p>
       </div>
@@ -884,11 +1144,11 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
 function RoutineBlock({ title, items }) {
   return (
     <section className="mt-2.5 first:mt-0">
-      <p className="px-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+      <p className="px-0.5 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
         {title}
       </p>
       <div className="mt-1 rounded-[0.85rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5">
-        <p className="truncate text-[11px] font-bold text-[var(--app-text)]">
+        <p className="truncate text-[11px] font-medium text-[var(--app-text)]">
           {items.join(" · ")}
         </p>
       </div>
@@ -908,7 +1168,7 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
         <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] flex-col">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-primary)]">
                 {exercise.muscle}
               </span>
               <button
@@ -964,13 +1224,13 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
 function SelectFilter({ label, value, options, onChange }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-muted)]">
+      <span className="mb-1 block text-[9px] font-semibold tracking-[0.08em] text-[var(--app-muted)]">
         {label}
       </span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 text-[10px] font-black text-[var(--app-text)] outline-none focus:border-[var(--app-primary)]"
+        className="h-10 w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 text-[10px] font-semibold text-[var(--app-text)] outline-none transition duration-150 focus:border-[var(--app-primary)]"
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -985,10 +1245,10 @@ function SelectFilter({ label, value, options, onChange }) {
 function SheetChip({ label, value }) {
   return (
     <div className="min-w-0 flex-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-center">
-      <p className="text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+      <p className="text-[8px] font-semibold tracking-[0.06em] text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="truncate text-[10px] font-black text-[var(--app-text)]">
+      <p className="truncate text-[10px] font-semibold text-[var(--app-text)]">
         {value}
       </p>
     </div>
@@ -997,7 +1257,7 @@ function SheetChip({ label, value }) {
 
 function InfoPill({ children }) {
   return (
-    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
+    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
       {children}
     </span>
   );
@@ -1008,7 +1268,7 @@ function CompactInfo({ title, items, clamp = false }) {
 
   return (
     <section className="mt-2">
-      <p className="px-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+      <p className="px-0.5 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
         {title}
       </p>
       <div className="mt-1 rounded-[0.85rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2">

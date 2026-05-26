@@ -238,6 +238,15 @@ function AppRoutes({ splashVisible }) {
         />
 
         <Route
+          path="/editar-rutina/:id"
+          element={
+            <ProtectedRoute>
+              <CreateRoutine />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/ejercicios"
           element={
             <ProtectedRoute>
@@ -245,14 +254,14 @@ function AppRoutes({ splashVisible }) {
             </ProtectedRoute>
           }
         />
-<Route
-  path="/crear-rutina"
-  element={
-    <ProtectedRoute>
-      <CreateRoutine />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/crear-rutina"
+          element={
+            <ProtectedRoute>
+              <CreateRoutine />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/bodyscannerhome" element={<BodyScaner />} />
 
         <Route path="/progresohome" element={<Progreso />} />
