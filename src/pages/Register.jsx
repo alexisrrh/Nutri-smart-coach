@@ -24,6 +24,19 @@ import {
   SurfaceCard,
 } from "../components/ui";
 
+
+async function handleSocialLogin(provider) {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider,
+    options: {
+      redirectTo: window.location.origin + '/perfil'
+    }
+  });
+  
+  if (error) setError("Error al conectar: " + error.message);
+}
+
+
 export function Register() {
   const navigate = useNavigate();
 
@@ -212,7 +225,48 @@ export function Register() {
                 >
                   Iniciar sesión
                 </Link>
-              </p>
+            
+                </p> 
+                <br/>
+
+              <div className="flex flex-col gap-3 mb-6">
+                {/* Botón de Google */}
+                <button
+                  onClick={() => handleSocialLogin('google')}
+                  className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-white text-gray-700 font-medium rounded-xl border border-gray-300 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 text-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 48 48">
+                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                  </svg>
+                  Continuar con Google
+                </button>
+
+                {/* Botón de Apple */}
+                <button
+                  onClick={() => handleSocialLogin('apple')}
+                  className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-black text-white font-medium rounded-xl shadow-sm hover:bg-zinc-900 active:scale-[0.98] transition-all duration-200 text-sm"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 384 512">
+                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-82-22.2-40.3 0-87.3 24.1-107.8 63.4C10.7 232.5-3.3 313 14.5 393.7c10.4 46.4 46.1 106.8 90.3 106.8 31.8 0 46.7-22.2 87.2-22.2 41 0 54.4 22.2 87.8 22.2 43.6 0 76-54.3 86.8-100.7-44.4-18.4-68.1-43.2-67.9-91.1zM286.1 76.7c18-22.1 30.1-52.8 26.8-83.4-26.4 1.1-56.4 17.6-75.3 39.8-16.1 18.7-30.2 50.1-26.8 79.5 29.5 2.3 57.5-13.8 75.3-35.9z" />
+                  </svg>
+                  Continuar con Apple
+                </button>
+
+                {/* Botón de Facebook */}
+                <button
+                  onClick={() => handleSocialLogin('facebook')}
+                  className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-[#1877F2] text-white font-medium rounded-xl shadow-sm hover:bg-[#166fe5] active:scale-[0.98] transition-all duration-200 text-sm"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                  Continuar con Facebook
+                </button>
+              </div>
+
             </div>
           </div>
         </SurfaceCard>
