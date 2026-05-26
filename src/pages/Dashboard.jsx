@@ -4,6 +4,7 @@ import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import { exercises } from "../data/exercises";
+import { preloadExercises } from "../services/exercisePreloadService";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
@@ -62,6 +63,18 @@ export function Dashboard() {
   const [loadingData, setLoadingData] = useState(() => !hasCachedSnapshot);
   const [syncing, setSyncing] = useState(() => hasCachedSnapshot);
   const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    if (!Array.isArray(exercises) || exercises.length === 0) return;
+
+    preloadExercises(exercises.slice(0, 25));
+
+    const delayedPreload = setTimeout(() => {
+      preloadExercises(exercises);
+    }, 1200);
+
+    return () => clearTimeout(delayedPreload);
+  }, []);
 
   const loadRemoteDashboardData = useCallback(async () => {
     setLoadError("");
@@ -202,6 +215,7 @@ export function Dashboard() {
       isSameLocalDate(completionDate, todayKey)
     );
   }, [todayKey, workoutCompletions]);
+
   const workoutRecommendation = useMemo(
     () =>
       getTodayWorkoutRecommendation({
