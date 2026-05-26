@@ -108,23 +108,23 @@ export function ExercisesLibrary() {
               <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
               <div className="relative z-10 flex items-center gap-3">
                 <div className="min-w-0 flex-1">
-                  <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.65)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                  <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.58)] px-2 py-0.5 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
                     Biblioteca fitness
                   </span>
-                  <h1 className="mt-1.5 max-w-[15rem] text-[27px] font-black leading-[0.92] text-[var(--app-text)] sm:text-[32px]">
+                  <h1 className="mt-1.5 max-w-[15rem] text-[24px] font-semibold leading-[0.96] text-[var(--app-text)] sm:text-[28px]">
                     Entrena por zona muscular
                   </h1>
-                  <p className="mt-1.5 max-w-[16rem] text-[11px] font-bold leading-4 text-[var(--app-muted)]">
+                  <p className="mt-1.5 max-w-[16rem] text-[11px] font-medium leading-4 text-[var(--app-muted)]">
                     Explora ejercicios visuales y mejora tu técnica.
                   </p>
                 </div>
 
-                <div className="relative -mr-4 -mb-3 -mt-2 shrink-0">
+                <div className="relative -mr-3 -mt-1 shrink-0 opacity-70">
                   <div className="pointer-events-none absolute inset-0 " />
                   <MediaIcon
                     src="/icons/biblioteca/fitness.png"
                     alt="Fitness"
-                    className="relative grid h-[112px] w-[112px] place-items-center "
+                    className="relative grid h-[112px] w-[112px] place-items-center"
                   />
                 </div>
               </div>
@@ -144,17 +144,55 @@ export function ExercisesLibrary() {
         <main className={`min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${selectedMuscle ? "pb-[calc(var(--bottom-nav-space)+120px)]" : "pb-1"}`}>
           <div className="space-y-2">
             {!selectedMuscle ? (
-              <section data-muscle-grid className="grid grid-cols-1 gap-2">
-                {muscleCards.map((item, index) => (
-                  <MuscleCard
-                    key={item.muscle}
-                    description={item.description}
-                    featured={item.muscle === recommendedMuscle && index === 0}
-                    muscle={item.muscle}
-                    onClick={() => setSelectedMuscle(item.muscle)}
-                  />
-                ))}
-              </section>
+              <>
+                <section className="relative overflow-hidden rounded-[1.1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_88%,#08131b),var(--app-card))] p-3 shadow-[0_12px_30px_var(--app-glow)]">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.16),transparent_34%),radial-gradient(circle_at_100%_0%,rgba(60,255,182,0.12),transparent_30%)]" />
+                  <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+
+                  <div className="relative z-10 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
+                        Mis rutinas
+                      </span>
+                      <h2 className="mt-2 text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
+                        Crea tu rutina
+                      </h2>
+                      <p className="mt-1.5 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                        Selecciona ejercicios de la biblioteca y crea un entrenamiento a tu medida.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/crear-rutina")}
+                      className="flex h-9 flex-1 items-center justify-center gap-2 rounded-[0.85rem] bg-[var(--app-primary)] px-3 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_14px_rgba(0,196,255,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                    >
+                      Crear rutina
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/rutinas")}
+                      className="h-9 rounded-[0.85rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.6)] active:scale-[0.98]"
+                    >
+                      Ver mis rutinas
+                    </button>
+                  </div>
+                </section>
+
+                <section data-muscle-grid className="grid grid-cols-1 gap-2">
+                  {muscleCards.map((item, index) => (
+                    <MuscleCard
+                      key={item.muscle}
+                      description={item.description}
+                      featured={item.muscle === recommendedMuscle && index === 0}
+                      muscle={item.muscle}
+                      onClick={() => setSelectedMuscle(item.muscle)}
+                    />
+                  ))}
+                </section>
+              </>
             ) : (
               <section className="flex min-h-0 flex-col gap-1.5">
                 <section className="relative overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-3 shadow-[0_8px_24px_var(--app-glow)]">
