@@ -19,6 +19,52 @@ import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
 
+function normalizeFoodGoal(goal) {
+  const normalized = String(goal || "").trim().toLowerCase();
+
+  if (
+    normalized === "ganar_musculo" ||
+    normalized === "ganar musculo" ||
+    normalized === "subir"
+  ) {
+    return "ganar_musculo";
+  }
+
+  if (
+    normalized === "perder_grasa" ||
+    normalized === "perder grasa" ||
+    normalized === "bajar"
+  ) {
+    return "perder_grasa";
+  }
+
+  if (normalized === "mantener_peso" || normalized === "mantener") {
+    return "mantener_peso";
+  }
+
+  if (
+    normalized === "recomposicion" ||
+    normalized === "recomposición" ||
+    normalized === "recomp"
+  ) {
+    return "recomposicion";
+  }
+
+  return normalized || "fitness_general";
+}
+
+function parseFoodContext(rawContext) {
+  if (!rawContext) return null;
+
+  if (typeof rawContext === "object") return rawContext;
+
+  try {
+    return JSON.parse(String(rawContext));
+  } catch {
+    return null;
+  }
+}
+
 router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (req, res) => {
   const timing = createTimingLogger("analyze-food");
 
@@ -44,7 +90,8 @@ router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (
       });
     }
 
-    const goal = req.body.goal || "perder_grasa";
+    const profileContext = parseFoodContext(req.body.profile_context);
+    const goal = normalizeFoodGoal(profileContext?.goal || req.body.goal || "fitness_general");
     const requestedUserId = req.body.user_id || null;
     const userId = req.authUser.id;
 
@@ -105,6 +152,7 @@ router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (
       goal,
       description,
       hasImage,
+      profileContext,
     });
 
     const contents = [

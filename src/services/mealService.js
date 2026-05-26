@@ -76,6 +76,7 @@ export async function analyzeMeal({
   description = "",
   goal = "perder_grasa",
   userId,
+  profileContext = null,
 }) {
   const formData = new FormData();
   formData.append("goal", goal);
@@ -90,6 +91,10 @@ export async function analyzeMeal({
 
   if (userId) {
     formData.append("user_id", userId);
+  }
+
+  if (profileContext && typeof profileContext === "object") {
+    formData.append("profile_context", JSON.stringify(profileContext));
   }
 
   const data = await request("/analyze-food", {
