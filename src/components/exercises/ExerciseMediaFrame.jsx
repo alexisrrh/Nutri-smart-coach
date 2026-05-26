@@ -94,16 +94,16 @@ function ExerciseMediaFrame({
         {currentSrc && !failed ? (
           <>
               <img
-              key={`${media.mediaKey}-${currentSrc}`}
-              src={currentSrc}
-              alt={exercise?.name || "Exercise media"}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => {
-                setExerciseMediaStatus(currentSrc, "loaded");
-                setImageState("loaded");
-              }}
-              onError={handleError}
+  key={`${media.mediaKey}-${currentSrc}`}
+  src={currentSrc}
+  alt={exercise?.name || "Exercise media"}
+  loading="eager"
+  decoding="async"
+  onLoad={() => {
+    setExerciseMediaStatus(currentSrc, "loaded");
+    setImageState("loaded");
+  }}
+  onError={handleError}
               className={[
                 "block h-full w-full object-contain object-center transition-[opacity,transform,filter] duration-500 ease-out",
                 loading ? "scale-[0.985] opacity-0 blur-[1px]" : "scale-100 opacity-100",
