@@ -376,15 +376,17 @@ export function WorkoutSession({
           </div>
         </main>
 
-        <section className="shrink-0 pt-1.5 pb-[calc(env(safe-area-inset-bottom)+6px)]">
-          <FooterControls
-            canFinish={hasProgress}
-            canGoBack={exerciseIndex > 0}
-            canGoNext={exerciseIndex < exercises.length - 1}
-            onBack={() => moveExercise(-1)}
-            onFinish={finishWorkout}
-            onNext={() => moveExercise(1)}
-          />
+        <section className="shrink-0 px-0 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+          <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2.5 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+            <FooterControls
+              canFinish={hasProgress}
+              canGoBack={exerciseIndex > 0}
+              canGoNext={exerciseIndex < exercises.length - 1}
+              onBack={() => moveExercise(-1)}
+              onFinish={finishWorkout}
+              onNext={() => moveExercise(1)}
+            />
+          </div>
         </section>
       </div>
 
@@ -446,29 +448,113 @@ function SeriesRestCoach({
   recordFeedback,
   setTracking,
 }) {
+  const [showAllSets, setShowAllSets] = useState(false);
   const nextSetIndex = Array.from(
     { length: prescription.sets },
     (_, index) => Boolean(completedForExercise[index])
   ).findIndex((complete) => !complete);
+  const activeSetIndex = nextSetIndex === -1 ? prescription.sets - 1 : nextSetIndex;
+  const activeTracking = setTracking[activeSetIndex] || {};
+  const remainingSets = Math.max(0, prescription.sets - completedSeriesCount);
+  const activeCompleted = Boolean(completedForExercise[activeSetIndex]);
+  const activeSetNumber = Math.min(activeSetIndex + 1, prescription.sets);
+  const activeReps = activeTracking.reps ?? "";
+  const activeKg = activeTracking.kg ?? "";
 
   return (
-    <section className="overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-1 shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
-      <div className="flex items-center justify-between gap-2 px-0.5">
-        <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Series
-          </p>
-          <p className="text-[12px] font-black leading-none text-[var(--app-text)]">
-            {completedSeriesCount}/{prescription.sets}
-          </p>
+    <section className="overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
+      <div className="rounded-[0.95rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_8%,var(--app-card)),var(--app-surface))] px-2.5 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.16)]">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+              Serie actual
+            </p>
+            <h3 className="mt-0.5 text-[14px] font-black leading-none text-[var(--app-text)]">
+              Serie {activeSetNumber} de {prescription.sets}
+            </h3>
+            <p className="mt-1 text-[10px] font-semibold text-[var(--app-muted)]">
+              {completedSeriesCount} completadas · {remainingSets} restantes
+            </p>
+          </div>
+
+          <span className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
+            {prescription.reps}
+          </span>
         </div>
-        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
-          {prescription.reps} reps
-        </span>
+
+        <div className="mt-2 grid grid-cols-3 gap-1">
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+            <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+              Reps
+            </p>
+            <input
+              inputMode="numeric"
+              value={activeReps}
+              onChange={(event) =>
+                onTrackSet(activeSetIndex, "reps", event.target.value)
+              }
+              placeholder={getDefaultReps(prescription.reps)}
+              className="mt-0.5 w-full bg-transparent text-center text-[11px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
+            />
+          </div>
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+            <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+              Peso
+            </p>
+            <div className="mt-0.5 flex items-center gap-0.5">
+              <input
+                inputMode="decimal"
+                value={activeKg}
+                onChange={(event) =>
+                  onTrackSet(activeSetIndex, "kg", event.target.value)
+                }
+                placeholder="0"
+                className="w-full min-w-0 bg-transparent text-center text-[11px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
+              />
+              <span className="shrink-0 text-[10px] font-black text-[var(--app-primary)]">
+                kg
+              </span>
+            </div>
+          </div>
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+            <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+              Objetivo
+            </p>
+            <p className="mt-0.5 truncate text-[11px] font-black text-[var(--app-primary)]">
+              {prescription.reps}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-primary-soft))]">
+          <div
+            className="h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)] transition-all duration-300"
+            style={{ width: `${prescription.sets ? (completedSeriesCount / prescription.sets) * 100 : 0}%` }}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onToggleSet(activeSetIndex)}
+          disabled={activeCompleted}
+          className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-3 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_22px_var(--app-glow)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-default disabled:opacity-60"
+        >
+          <Check size={14} />
+          Completar serie
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowAllSets((current) => !current)}
+          className="mt-1.5 w-full rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition duration-150 hover:bg-[var(--app-card)] active:scale-[0.98]"
+        >
+          {showAllSets ? "Ocultar todas las series" : "Ver todas las series"}
+        </button>
       </div>
 
-      <div className="mt-1 grid gap-1">
-        {Array.from({ length: prescription.sets }, (_, index) => {
+      {showAllSets ? (
+        <div className="mt-1.5 grid gap-1">
+          {Array.from({ length: prescription.sets }, (_, index) => {
           const complete = Boolean(completedForExercise[index]);
           const active = !complete && (nextSetIndex === index || nextSetIndex === -1);
           const tracking = setTracking[index] || {};
@@ -550,7 +636,8 @@ function SeriesRestCoach({
             </div>
           );
         })}
-      </div>
+        </div>
+      ) : null}
 
       {recordFeedback?.progressKg > 0 ? (
         <p className="mt-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-center text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
@@ -687,13 +774,13 @@ function FooterControls({
   onNext,
 }) {
   return (
-    <footer className="border-t border-[var(--app-border)] bg-[var(--app-surface)] pt-1">
+    <footer className="space-y-1">
       <div className="grid grid-cols-2 gap-1.5">
         <button
           type="button"
           onClick={onBack}
           disabled={!canGoBack}
-          className="flex h-8 items-center justify-center gap-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-45"
+          className="flex h-10 items-center justify-center gap-1 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-45"
         >
           <ChevronLeft size={14} />
           Anterior
@@ -702,7 +789,7 @@ function FooterControls({
           type="button"
           onClick={onNext}
           disabled={!canGoNext}
-          className="flex h-8 items-center justify-center gap-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] disabled:opacity-45"
+          className="flex h-10 items-center justify-center gap-1 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-45"
         >
           Siguiente
           <ChevronRight size={14} />
@@ -713,9 +800,9 @@ function FooterControls({
         onClick={onFinish}
         disabled={!canFinish}
         className={[
-          "mt-1 flex h-8 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 text-[9px] font-black uppercase tracking-[0.14em] transition active:scale-[0.98]",
+          "flex h-11 w-full items-center justify-center gap-2 rounded-[1rem] px-4 text-[9px] font-black uppercase tracking-[0.14em] transition duration-150 active:scale-[0.98]",
           canFinish
-            ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)]"
+            ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)] hover:-translate-y-0.5"
             : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
         ].join(" ")}
       >
