@@ -7,11 +7,12 @@ import {
   Play,
   X,
 } from "lucide-react";
+import { EXERCISE_LIBRARY, MUSCLE_GROUPS } from "../data/exerciseLibrary";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/ui";
 import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
-import { MUSCLE_GROUPS } from "../data/exerciseLibrary";
+
 import {
   buildWeeklyWorkoutPlan,
   buildWorkoutDay,
@@ -38,6 +39,10 @@ import { ActivePlanSummary } from "../components/workouts/ActivePlanSummary";
 import { TodayWorkoutCard } from "../components/workouts/TodayWorkoutCard";
 import { WorkoutHistoryPreview } from "../components/workouts/WorkoutHistoryPreview";
 import { WorkoutHistorySheet } from "../components/workouts/WorkoutHistorySheet";
+import {
+  listCustomWorkoutRoutines
+} from "../services/customWorkoutService";
+import { supabase } from "../lib/supabase";
 
 export function WorkoutRoutines() {
   const navigate = useNavigate();
@@ -60,6 +65,10 @@ export function WorkoutRoutines() {
   const [planConfirmed, setPlanConfirmed] = useState(savedConfig.completed);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState("");
+  const [customRoutines, setCustomRoutines] = useState([]);
+  const [loadingCustomRoutines, setLoadingCustomRoutines] = useState(false);
+  const [showCustomRoutines, setShowCustomRoutines] = useState(false);
+  const [customWorkoutMode, setCustomWorkoutMode] = useState(null);
   const {
     handleCompleteWorkout: recordWorkoutCompletion,
     handleToggleDayCompletion,
@@ -175,7 +184,28 @@ export function WorkoutRoutines() {
     preloadExerciseMedia(selectedExercise);
     return undefined;
   }, [selectedExercise]);
+  useEffect(() => {
+    async function loadCustomRoutines() {
+      setLoadingCustomRoutines(true);
 
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user?.id) return;
+
+        const routines = await listCustomWorkoutRoutines(user.id);
+        setCustomRoutines(routines);
+      } catch (error) {
+        console.error("Error cargando rutinas personalizadas:", error);
+      } finally {
+        setLoadingCustomRoutines(false);
+      }
+    }
+
+    void loadCustomRoutines();
+  }, []);
   function handleGenerateWorkout() {
     saveWorkoutConfig({
       level: selectedLevel,
@@ -202,7 +232,45 @@ export function WorkoutRoutines() {
     setActiveDay(workoutDay);
     setWorkoutMode(null);
   }
+function handleStartCustomRoutine(routine) {
+  const firstDay = Array.isArray(routine.days) ? routine.days[0] : null;
 
+  if (!firstDay) return;
+
+  const customDay = {
+    id: routine.id,
+    day: "Personalizada",
+    name: routine.name,
+    muscles: firstDay.muscles || [routine.focus || "General"],
+    duration: "45 min",
+    warmupItems: ["5 min cardio suave", "Movilidad articular", "Activación ligera"],
+    finalItems: ["Estiramiento breve", "Respiración y recuperación"],
+  exercises: (firstDay.exercises || []).map((customExercise) => {
+  const fullExercise = EXERCISE_LIBRARY.find(
+    (exercise) => exercise.id === customExercise.exerciseId
+  );
+
+  return {
+    ...(fullExercise || {}),
+    ...customExercise,
+    id: customExercise.exerciseId,
+    name: customExercise.name || fullExercise?.name,
+    muscle: customExercise.muscle || fullExercise?.muscle,
+    sets: Number(customExercise.sets) || fullExercise?.sets || 3,
+    reps: customExercise.reps || fullExercise?.reps || "8-12",
+    rest: customExercise.rest || fullExercise?.rest || "90s",
+  };
+}),
+  };
+
+  setCustomWorkoutMode({
+    type: "custom",
+    day: customDay,
+    exercises: customDay.exercises,
+  });
+
+  setShowCustomRoutines(false);
+}
   function handleCompleteWorkout() {
     return recordWorkoutCompletion({
       day: workoutMode?.day || activeDay || selectedDay,
@@ -290,6 +358,12 @@ export function WorkoutRoutines() {
                   }
                   todayCompletion={todayCompletion}
                 />
+     <CustomRoutinesSection
+  routines={customRoutines}
+  loading={loadingCustomRoutines}
+  onCreate={() => navigate("/crear-rutina")}
+  onOpen={() => setShowCustomRoutines(true)}
+/>
 
                 <section>
                   <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-1">
@@ -312,7 +386,7 @@ export function WorkoutRoutines() {
                       const locked = !completion && index > planStats.completedCount + 1;
 
                       return (
-                          <DayCard
+                        <DayCard
                           day={day}
                           key={day.id}
                           locked={locked}
@@ -348,12 +422,12 @@ export function WorkoutRoutines() {
       </div>
 
       {activeDay && !workoutMode ? (
-                <DayDetailSheet
-                  day={activeDay}
-                  exercises={selectedDayExercises}
-                  goal={selectedGoal}
-                  level={selectedLevel}
-                  onClose={() => setActiveDay(null)}
+        <DayDetailSheet
+          day={activeDay}
+          exercises={selectedDayExercises}
+          goal={selectedGoal}
+          level={selectedLevel}
+          onClose={() => setActiveDay(null)}
           onExerciseClick={setSelectedExercise}
           onStart={handleStartWorkout}
           onSkip={() => setActiveDay(null)}
@@ -370,6 +444,21 @@ export function WorkoutRoutines() {
           onFinish={handleCompleteWorkout}
         />
       ) : null}
+{customWorkoutMode ? (
+  <div className="fixed inset-0 z-[9999] bg-[var(--app-surface)]">
+    <WorkoutSession
+      session={customWorkoutMode}
+      goal={customWorkoutMode.day?.goal || selectedGoal}
+      level={customWorkoutMode.day?.level || selectedLevel}
+      onClose={() => setCustomWorkoutMode(null)}
+      onDashboard={() => navigate("/dashboard")}
+      onFinish={() => {
+        setCustomWorkoutMode(null);
+        return true;
+      }}
+    />
+  </div>
+) : null}
 
       {selectedExercise ? (
         <ExerciseSheet
@@ -388,6 +477,14 @@ export function WorkoutRoutines() {
           onClose={() => setShowHistory(false)}
         />
       ) : null}
+      {showCustomRoutines ? (
+  <CustomRoutinesSheet
+    routines={customRoutines}
+    onClose={() => setShowCustomRoutines(false)}
+    onCreate={() => navigate("/crear-rutina")}
+   onStart={handleStartCustomRoutine}
+  />
+) : null}
 
       {toggleMessage ? (
         <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+92px)] left-3 right-3 z-[95] mx-auto max-w-[360px] rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-4 py-3 text-center text-[12px] font-black text-[var(--app-primary)] shadow-[0_18px_50px_var(--app-glow)]">
@@ -398,7 +495,154 @@ export function WorkoutRoutines() {
     </AppShell>
   );
 }
+function CustomRoutinesSection({ routines, loading, onCreate, onOpen }) {
+  const count = routines.length;
 
+  return (
+    <section className="relative overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_10px_28px_var(--app-glow)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,var(--app-primary-soft),transparent_38%)]" />
+
+      <div className="relative z-10 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+            Creadas por ti
+          </p>
+
+          <h2 className="mt-0.5 text-[16px] font-black leading-none text-[var(--app-text)]">
+            Mis rutinas personalizadas
+          </h2>
+
+          <p className="mt-1 text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+            {loading
+              ? "Cargando tus rutinas..."
+              : count > 0
+                ? `${count} rutina${count === 1 ? "" : "s"} guardada${count === 1 ? "" : "s"}`
+                : "Crea rutinas con tus propios ejercicios."}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={count > 0 ? onOpen : onCreate}
+          className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_8px_18px_var(--app-glow)] transition active:scale-[0.96]"
+        >
+          {count > 0 ? "Ver" : "Crear"}
+        </button>
+      </div>
+
+      {count > 0 ? (
+        <button
+          type="button"
+          onClick={onCreate}
+          className="relative z-10 mt-2 w-full rounded-[0.85rem] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] transition active:scale-[0.99]"
+        >
+          + Crear nueva rutina
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function CustomRoutinesSheet({ routines, onClose, onCreate, onStart }) {
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-md">
+      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
+        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
+          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                  Creadas por ti
+                </p>
+                <h2 className="mt-0.5 text-[20px] font-black text-[var(--app-text)]">
+                  Mis rutinas
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={onCreate}
+              className="mt-2 w-full rounded-[0.9rem] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-left text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]"
+            >
+              + Crear nueva rutina
+            </button>
+          </div>
+
+          <div className="min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="grid gap-2">
+              {routines.map((routine) => {
+                const firstDay = Array.isArray(routine.days)
+                  ? routine.days[0]
+                  : null;
+
+                const exerciseCount = firstDay?.exercises?.length || 0;
+                const muscles =
+                  firstDay?.muscles?.join(" + ") ||
+                  routine.focus ||
+                  "General";
+
+                return (
+                  <article
+                    key={routine.id}
+                    className="relative overflow-hidden rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-3 shadow-[0_8px_22px_var(--app-glow)]"
+                  >
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,var(--app-primary-soft),transparent_36%)]" />
+
+                    <div className="relative z-10">
+                      <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                          Personalizada
+                        </span>
+                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                          {exerciseCount} ejercicios
+                        </span>
+                      </div>
+
+                      <h3 className="text-[16px] font-black text-[var(--app-text)]">
+                        {routine.name}
+                      </h3>
+
+                      <p className="mt-1 text-[10px] font-bold text-[var(--app-muted)]">
+                        {muscles} · {routine.level || "Nivel libre"}
+                      </p>
+
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onStart?.(routine)}
+                          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_8px_18px_var(--app-glow)]"
+                        >
+                          <Play size={14} />
+                          Iniciar
+                        </button>
+
+                        <button
+                          type="button"
+                          className="h-10 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
 function WorkoutHistoryCard({ session, compact = false }) {
   const completedExercisesCount = getCompletedExercisesCount(session);
   const exerciseNames = getCompletedExerciseNames(session);
