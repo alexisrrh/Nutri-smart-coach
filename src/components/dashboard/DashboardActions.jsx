@@ -5,8 +5,15 @@ import {
   ScanLine,
   UserRoundSearch,
 } from "lucide-react";
+import { exercises } from "../../data/exercises";
+import { preloadExercises } from "../../services/exerciseMediaService";
 
 export default function DashboardActions({ navigate }) {
+  const preloadAllExercises = () => {
+    if (!Array.isArray(exercises) || exercises.length === 0) return;
+    preloadExercises(exercises);
+  };
+
   return (
     <section className="flex flex-col">
       <div className="flex items-end justify-between px-1 pb-1">
@@ -34,9 +41,8 @@ export default function DashboardActions({ navigate }) {
           IA
         </div>
       </div>
-    
+
       <div className="grid grid-cols-2 gap-2 ">
-        
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
@@ -67,7 +73,10 @@ export default function DashboardActions({ navigate }) {
           fallbackIcon={ClipboardList}
           label="Ejercicios"
           description="Ejercicios por músculo"
-          onClick={() => navigate("/ejercicios")}
+          onClick={() => {
+            preloadAllExercises();
+            navigate("/ejercicios");
+          }}
           imageClassName="scale-[1.12] "
         />
 
@@ -86,7 +95,6 @@ export default function DashboardActions({ navigate }) {
           description="Peso y medidas"
           onClick={() => navigate("/progreso")}
         />
-      
       </div>
     </section>
   );
