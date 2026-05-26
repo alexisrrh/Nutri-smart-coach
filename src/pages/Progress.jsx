@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -21,6 +21,7 @@ import {
 import { useProgressDeletion } from "../hooks/progress/useProgressDeletion";
 import { useProgressData } from "../hooks/progress/useProgressData";
 import { useProgressStats } from "../hooks/progress/useProgressStats";
+import { getStrengthProgressSummary } from "../services/strengthProgressService";
 
 export function Progress() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export function Progress() {
     logs,
     checkins,
     setCheckins,
+    workoutSessions,
     loadingLogs,
     loadingCheckins,
     errorMessage,
@@ -52,6 +54,10 @@ export function Progress() {
     logs,
     checkins,
   });
+  const strengthSummary = useMemo(
+    () => getStrengthProgressSummary(workoutSessions, 5),
+    [workoutSessions]
+  );
 
   const loadingHistory = loadingLogs || loadingCheckins;
 
@@ -169,6 +175,7 @@ export function Progress() {
                   latestCheckin={stats.latestCheckin}
                   previousCheckin={stats.previousCheckin}
                 />
+                <StrengthProgressSection summary={strengthSummary} />
               </>
             )}
 
@@ -703,6 +710,84 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
         </div>
       </div>
     </SurfaceCard>
+  );
+}
+
+function StrengthProgressSection({ summary }) {
+  if (!summary?.items?.length) return null;
+
+  return (
+    <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+            Fuerza
+          </p>
+          <h3 className="mt-1 text-[15px] font-black leading-none text-[var(--app-text)]">
+            Evolución de fuerza
+          </h3>
+          <p className="mt-1 text-[10px] leading-4 text-[var(--app-muted)]">
+            Hasta 5 ejercicios con historial real de volumen y peso.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-right">
+          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+            Ejercicios
+          </p>
+          <p className="text-[14px] font-black text-[var(--app-primary)]">
+            {summary.totalExercises}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {summary.items.map((item) => (
+          <div
+            key={item.exerciseId || item.name}
+            className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-black text-[var(--app-text)]">
+                  {item.name}
+                </p>
+                <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                  {item.muscle || "Fuerza"}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                {formatSignedKg(item.difference)}
+              </span>
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              <MetricRow label="Inicio" value={item.initialWeight || "--"} unit="kg" />
+              <MetricRow label="Actual" value={item.currentWeight || "--"} unit="kg" />
+              <MetricRow label="Mejor" value={item.bestWeight || "--"} unit="kg" />
+              <MetricRow label="Volumen" value={item.totalVolume || 0} unit="kg" />
+            </div>
+
+            <p className="mt-1.5 text-[9px] font-medium text-[var(--app-muted)]">
+              Última fecha: {formatCheckinDate(item.lastCompletedAt)}
+            </p>
+          </div>
+        ))}
+      </div>
+    </SurfaceCard>
+  );
+}
+
+function MetricRow({ label, value, unit = "" }) {
+  return (
+    <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-surface))] px-2 py-1.5">
+      <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+        {label}
+      </p>
+      <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
+        {value}
+        {unit ? <span className="ml-0.5 text-[8px] font-semibold text-[var(--app-muted)]">{unit}</span> : null}
+      </p>
+    </div>
   );
 }
 

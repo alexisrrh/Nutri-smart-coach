@@ -262,6 +262,9 @@ export function WorkoutRoutines() {
       id: routine.id,
       day: "Personalizada",
       name: routine.name,
+      routineId: routine.id,
+      routineName: routine.name,
+      source: "custom",
       muscles: firstDay.muscles || [routine.focus || "General"],
       goal: routine.goal || selectedGoal,
       level: routine.level || selectedLevel,
@@ -291,6 +294,8 @@ export function WorkoutRoutines() {
       type: "custom",
       day: customDay,
       exercises: customDay.exercises,
+      source: "custom",
+      routineType: "custom",
     });
 
     setShowCustomRoutines(false);
@@ -421,14 +426,15 @@ export function WorkoutRoutines() {
       ) : null}
 
       {workoutMode ? (
-        <WorkoutSession
-          session={workoutMode}
-          goal={selectedGoal}
-          level={selectedLevel}
-          onClose={handleCloseWorkoutSession}
-          onDashboard={() => navigate("/dashboard")}
-          onFinish={handleCompleteWorkout}
-        />
+      <WorkoutSession
+        session={workoutMode}
+        goal={selectedGoal}
+        level={selectedLevel}
+        historySessions={workoutSessions}
+        onClose={handleCloseWorkoutSession}
+        onDashboard={() => navigate("/dashboard")}
+        onFinish={handleCompleteWorkout}
+      />
       ) : null}
 {customWorkoutMode ? (
   <div className="fixed inset-0 z-[9999] bg-[var(--app-surface)]">
@@ -436,6 +442,7 @@ export function WorkoutRoutines() {
       session={customWorkoutMode}
       goal={customWorkoutMode.day?.goal || selectedGoal}
       level={customWorkoutMode.day?.level || selectedLevel}
+      historySessions={workoutSessions}
       onClose={() => setCustomWorkoutMode(null)}
       onDashboard={() => {
         setCustomWorkoutMode(null);

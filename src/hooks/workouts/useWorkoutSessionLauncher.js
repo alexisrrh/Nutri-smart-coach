@@ -33,6 +33,8 @@ export function useWorkoutSessionLauncher({
     setWorkoutMode({
       day: workoutDay,
       exercises: workoutDay.exercises,
+      source: "ia",
+      routineType: "ia",
     });
   }
 
@@ -49,6 +51,8 @@ export function useWorkoutSessionLauncher({
     setWorkoutMode({
       day: workoutDay,
       exercises: workoutDay.exercises,
+      source: "ia",
+      routineType: "ia",
     });
   }
 
