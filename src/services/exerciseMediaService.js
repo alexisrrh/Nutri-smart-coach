@@ -32,10 +32,14 @@ export function getLocalExerciseCandidates(exercise) {
   const { mediaKey, mapping } = getMediaMapping(exercise);
   if (!mediaKey) return [];
 
-  const firstCandidate = mapping?.localGif || `/exercises/${mediaKey}.webp`;
-  const secondCandidate = `/exercises/${mediaKey}.gif`;
+  const configuredCandidates = [exercise?.gif, exercise?.image].filter(Boolean);
+  const localCandidates = [
+    ...configuredCandidates,
+    mapping?.localGif || `/exercises/${mediaKey}.gif`,
+    `/exercises/${mediaKey}.webp`,
+  ];
 
-  return Array.from(new Set([firstCandidate, secondCandidate].filter(Boolean)));
+  return Array.from(new Set(localCandidates.filter(Boolean)));
 }
 
 export function hasLocalExerciseMedia(exercise) {
