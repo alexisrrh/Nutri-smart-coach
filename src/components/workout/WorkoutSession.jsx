@@ -812,11 +812,7 @@ function buildTrackedSets({ completed, completedAt, prescription, sets }) {
 
 function getWorkoutWeightStats(completedExercises) {
   const exerciseStats = completedExercises.map((exercise) => {
-    const volume = exercise.sets.reduce((total, set) => {
-      if (!set.completedAt) return total;
-
-      return total + (Number(set.kg) || 0) * (Number(set.reps) || 0);
-    }, 0);
+    const volume = getCompletedSetVolume(exercise.sets);
     const bestSet = getBestTrackedSet(exercise.sets);
     const previous = getLastExercisePerformance(exercise.name);
     const isRecord = previous?.maxKg ? bestSet.kg > previous.maxKg : bestSet.kg > 0;
@@ -841,6 +837,32 @@ function getWorkoutWeightStats(completedExercises) {
     newRecords: exerciseStats.filter((item) => item.isRecord),
     totalWeightMoved: exerciseStats.reduce((total, item) => total + item.volume, 0),
   };
+}
+
+function getCompletedSetVolume(sets) {
+  if (!Array.isArray(sets) || !sets.length) return 0;
+
+  const countedSetIndexes = new Set();
+
+  return sets.reduce((total, set) => {
+    if (!set?.completedAt) return total;
+
+    const setIndex = Number(set?.setIndex);
+    if (Number.isFinite(setIndex)) {
+      if (countedSetIndexes.has(setIndex)) {
+        return total;
+      }
+      countedSetIndexes.add(setIndex);
+    }
+
+    const kg = Number(set?.kg);
+    const reps = Number(set?.reps);
+    if (!Number.isFinite(kg) || !Number.isFinite(reps)) {
+      return total;
+    }
+
+    return total + kg * reps;
+  }, 0);
 }
 
 function getRecordFeedback(sets, lastPerformance) {
