@@ -5,13 +5,15 @@ export default function AppShell({
   className = "",
   contentClassName = "",
   withBottomNav = true,
+  hideBottomNav = false,
   wide = false,
 }) {
+  const showBottomNav = withBottomNav && !hideBottomNav;
   const shellWidthClass = wide ? "max-w-[520px]" : "max-w-[430px]";
-  const rootClass = withBottomNav
+  const rootClass = showBottomNav
     ? "h-[100svh] overflow-hidden"
     : "min-h-[100svh] overflow-y-auto overflow-x-hidden";
-  const sectionClass = withBottomNav
+  const sectionClass = showBottomNav
     ? `relative mx-auto flex h-full min-h-0 w-full ${shellWidthClass} flex-col overflow-hidden px-4 pb-[var(--bottom-nav-space)] pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`
     : `relative mx-auto flex min-h-[100svh] w-full ${shellWidthClass} flex-col overflow-hidden px-4 pb-6 pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`;
 
@@ -34,7 +36,7 @@ export default function AppShell({
 
         <div className="relative z-10 min-h-0 flex-1">{children}</div>
 
-        {withBottomNav && <BottomNav />}
+        {showBottomNav && <BottomNav />}
       </section>
     </main>
   );
