@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowLeft,
   ArrowRight,
+  X,
   Target,
   ScanLine,
   Activity,
@@ -34,6 +35,11 @@ export function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   async function handleSocialLogin(provider) {
     setError("");
@@ -52,6 +58,48 @@ export function Login() {
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function openPasswordReset() {
+    setResetEmail(form.email);
+    setResetError("");
+    setResetMessage("");
+    setResetOpen(true);
+  }
+
+  function closePasswordReset() {
+    if (resetLoading) return;
+    setResetOpen(false);
+    setResetError("");
+  }
+
+  async function handlePasswordReset(e) {
+    e.preventDefault();
+    setResetError("");
+    setResetMessage("");
+
+    const email = resetEmail.trim();
+
+    if (!email) {
+      setResetError("Introduce tu email para enviarte el enlace.");
+      return;
+    }
+
+    setResetLoading(true);
+
+    const { error: resetPasswordError } =
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+    setResetLoading(false);
+
+    if (resetPasswordError) {
+      setResetError("No pudimos enviar el enlace: " + resetPasswordError.message);
+      return;
+    }
+
+    setResetMessage("Te enviamos un enlace para restablecer tu contraseña.");
   }
 
   async function handleSubmit(e) {
@@ -189,6 +237,16 @@ export function Login() {
                 icon={<Lock size={16} />}
               />
 
+              <div className="-mt-1 flex justify-center">
+                <button
+                  type="button"
+                  onClick={openPasswordReset}
+                  className="text-[11px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
               <PrimaryButton
                 disabled={loading}
                 icon={!loading && <ArrowRight size={16} />}
@@ -227,7 +285,105 @@ export function Login() {
           Privacidad segura · Datos protegidos · IA nutricional
         </p>
       </div>
+
+      {resetOpen ? (
+        <PasswordResetModal
+          email={resetEmail}
+          error={resetError}
+          loading={resetLoading}
+          message={resetMessage}
+          onChangeEmail={setResetEmail}
+          onClose={closePasswordReset}
+          onSubmit={handlePasswordReset}
+        />
+      ) : null}
     </AppShell>
+  );
+}
+
+function PasswordResetModal({
+  email,
+  error,
+  loading,
+  message,
+  onChangeEmail,
+  onClose,
+  onSubmit,
+}) {
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-6 backdrop-blur-md">
+      <section
+        className="relative w-full max-w-[390px] overflow-hidden rounded-[1.45rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,#08131b),var(--app-card))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="password-reset-title"
+      >
+        <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[var(--app-primary)]/20 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+
+        <div className="relative z-10">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                Recuperación segura
+              </p>
+              <h2
+                id="password-reset-title"
+                className="mt-1 text-xl font-black uppercase italic leading-tight text-[var(--app-text)]"
+              >
+                Restablecer contraseña
+              </h2>
+              <p className="mt-2 text-sm font-medium leading-5 text-[var(--app-muted)]">
+                Te enviaremos un enlace privado para crear una nueva contraseña.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)] active:scale-[0.96] disabled:opacity-50"
+              aria-label="Cerrar"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {error ? (
+            <StatusBox type="error" className="mb-3 p-3 text-xs leading-5">
+              {error}
+            </StatusBox>
+          ) : null}
+
+          {message ? (
+            <StatusBox type="success" className="mb-3 p-3 text-xs leading-5">
+              {message}
+            </StatusBox>
+          ) : null}
+
+          <form onSubmit={onSubmit} className="space-y-3">
+            <Input
+              label="Email"
+              name="resetEmail"
+              type="email"
+              value={email}
+              onChange={(event) => onChangeEmail(event.target.value)}
+              placeholder="tu@email.com"
+              icon={<Mail size={16} />}
+            />
+
+            <PrimaryButton
+              type="submit"
+              disabled={loading}
+              icon={!loading && <ArrowRight size={16} />}
+              className="py-3"
+            >
+              {loading ? "Enviando..." : "Enviar enlace"}
+            </PrimaryButton>
+          </form>
+        </div>
+      </section>
+    </div>
   );
 }
 

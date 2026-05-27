@@ -23,6 +23,12 @@ const Register = lazy(() =>
   import("./pages/Register").then((module) => ({ default: module.Register }))
 );
 
+const ResetPassword = lazy(() =>
+  import("./pages/ResetPassword").then((module) => ({
+    default: module.ResetPassword,
+  }))
+);
+
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard }))
 );
@@ -152,6 +158,7 @@ function AppRoutes({ splashVisible }) {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route
           path="/dashboard"
