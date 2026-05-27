@@ -28,7 +28,7 @@ import {
   setDietGenerationState,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
-import { AppShell, StatusBox, SurfaceCard } from "../components/ui";
+import { AiErrorNotice, AppShell, StatusBox, SurfaceCard } from "../components/ui";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -411,7 +411,7 @@ export function MealPlan() {
             </StatusBox>
           )}
 
-          {errorMessage && <StatusBox type="error">{errorMessage}</StatusBox>}
+          <AiErrorNotice message={errorMessage} />
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
           {!hasPlan && !loading ? (
