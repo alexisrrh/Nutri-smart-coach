@@ -857,20 +857,21 @@ function CustomRoutinesSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 backdrop-blur-md"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 py-3 backdrop-blur-md"
       style={{
+        paddingTop: "calc(env(safe-area-inset-top) + 12px)",
         paddingBottom:
-          "calc(var(--bottom-nav-space) + env(safe-area-inset-bottom) + 20px)",
+          "calc(env(safe-area-inset-bottom) + 12px)",
       }}
     >
       <section
-        className="w-full max-w-[430px] overflow-hidden rounded-t-[1.45rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,#08131b),var(--app-card))] shadow-[0_-18px_46px_rgba(0,0,0,0.5)]"
+        className="flex w-full max-w-[430px] flex-col overflow-hidden rounded-t-[1.45rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,#08131b),var(--app-card))] shadow-[0_-18px_46px_rgba(0,0,0,0.5)]"
         style={{
           maxHeight:
-            "calc(100dvh - var(--bottom-nav-space) - env(safe-area-inset-bottom) - 22px)",
+            "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px)",
         }}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -915,7 +916,7 @@ function CustomRoutinesSheet({
             </div>
           </div>
 
-          <div className="min-h-0 overflow-y-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2.5">
               {routines.length === 0 ? (
                 <PremiumEmptyState
