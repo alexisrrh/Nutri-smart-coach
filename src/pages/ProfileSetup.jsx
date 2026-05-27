@@ -1,624 +1,186 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Save,
-  UserRound,
   ChevronDown,
-  LogOut,
+  KeyRound,
+  Palette,
+  ShieldCheck,
   Sparkles,
-  Ruler,
-  Weight,
-  Calendar,
-  Activity,
-  Target,
+  UserRound,
+  BrainCircuit,
 } from "lucide-react";
-import { STORAGE_KEYS } from "../config/storageKeys";
-import { supabase } from "../lib/supabase";
-import {
-  clearCachedProfile,
-  getProfile,
-  saveProfile,
-} from "../services/profileService";
-import { calculateNutritionGoals } from "../services/nutritionGoalsService";
-import {
-  AppShell,
-  ConfirmDialog,
-  FormField,
-  MetaBadge,
-  PrimaryButton,
-  SecondaryButton,
-  StatusBox,
-  SurfaceCard,
-} from "../components/ui";
-import { useTheme } from "../context/themeContext";
+import { useAuth } from "../context/useAuth";
+import { getProfile } from "../services/profileService";
+import { AppShell, MetaBadge } from "../components/ui";
+import { SettingsFrame } from "./settings/SettingsShared";
+
 export function ProfileSetup() {
   const navigate = useNavigate();
-  const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [error, setError] = useState("");
-  const [user, setUser] = useState(null);
-  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
-
-  const [form, setForm] = useState({
-    name: "",
-    age: "",
-    weight: "",
-    height: "",
-    gender: "male",
-    activity: "moderate",
-    goal: "perder_grasa",
-    mealsPerDay: "4",
-  });
-
-  const loadProfile = useCallback(async () => {
-    setLoadingProfile(true);
-    setError("");
-
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        clearCachedProfile();
-        navigate("/login");
-        return;
-      }
-
-      setUser(user);
-
-      const profile = await getProfile(user.id);
-
-      setForm({
-        name: profile?.name || "",
-        age: profile?.age || "",
-        weight: profile?.weight || "",
-        height: profile?.height || "",
-        gender: profile?.gender || "male",
-        activity: profile?.activity_level || "moderate",
-        goal: profile?.goal || "perder_grasa",
-        mealsPerDay: String(
-          profile?.meals_per_day || profile?.preferences?.meals_per_day || 4
-        ),
-      });
-    } catch (profileError) {
-      console.error("Error cargando perfil:", profileError);
-      setError("No se pudo cargar el perfil.");
-    } finally {
-      setLoadingProfile(false);
-    }
-  }, [navigate]);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.resolve().then(loadProfile);
-  }, [loadProfile]);
+    let active = true;
 
-  async function handleLogout() {
-    setConfirmLogoutOpen(false);
-    await supabase.auth.signOut();
+    async function loadProfile() {
+      setLoading(true);
 
-    clearCachedProfile();
-    localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
-    localStorage.removeItem(STORAGE_KEYS.DIET_PROGRESS);
-    localStorage.removeItem(STORAGE_KEYS.MEALS);
+      try {
+        if (!user?.id) {
+          return;
+        }
 
-    navigate("/");
-  }
-
-  function handleChange(name, value) {
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setSaved(false);
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setSaved(false);
-    setError("");
-
-    try {
-      const currentUser = user || (await supabase.auth.getUser()).data.user;
-
-      if (!currentUser) {
-        setError("No hay usuario conectado.");
-        return;
+        const nextProfile = await getProfile(user.id);
+        if (active) {
+          setProfile(nextProfile);
+        }
+      } finally {
+        if (active) setLoading(false);
       }
-
-      if (!form.name || !form.age || !form.weight || !form.height) {
-        setError("Completa nombre, edad, peso y altura.");
-        return;
-      }
-
-      await saveProfile({
-        id: currentUser.id,
-        user_id: currentUser.id,
-        email: currentUser.email,
-        name: form.name.trim(),
-        age: Number(form.age),
-        weight: Number(form.weight),
-        height: Number(form.height),
-        gender: form.gender,
-        activity_level: form.activity,
-        goal: form.goal,
-        meals_per_day: Number(form.mealsPerDay),
-        preferences: {
-          gender: form.gender,
-          activity: form.activity,
-          goal: form.goal,
-          meals_per_day: Number(form.mealsPerDay),
-        },
-        updated_at: new Date().toISOString(),
-      });
-
-      setSaved(true);
-      setTimeout(() => navigate("/dashboard"), 800);
-    } catch (saveError) {
-      console.error("Error guardando perfil:", saveError);
-      setError(saveError.message || "No se pudo guardar el perfil.");
-    } finally {
-      setLoading(false);
     }
-  }
 
-  if (loadingProfile) {
-    return (
-      <AppShell withBottomNav={false} contentClassName="px-2 pt-2">
-        <SurfaceCard className="mt-28 p-5 text-center">
+    void loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  const displayName = profile?.name || user?.email?.split("@")[0] || "Tu perfil";
+  const goalLabel = getGoalLabel(profile?.goal);
+  const statusLabel = loading ? "Sincronizando..." : "Sincronizado";
+
+  return (
+    <AppShell contentClassName="!px-2 !pt-2 !pb-[calc(120px+env(safe-area-inset-bottom))]">
+      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <SettingsFrame className="pb-2">
+          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-3 shadow-[0_18px_54px_var(--app-glow)]">
           <div
-            className="mx-auto mb-3 h-12 w-12 animate-pulse rounded-3xl shadow-[0_0_24px_var(--app-glow)]"
-            style={{ backgroundColor: "var(--app-primary-soft)" }}
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 28%)",
+            }}
           />
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Cargando perfil...
-          </p>
-        </SurfaceCard>
-      </AppShell>
-    );
-  }
-
-  return (
-    <AppShell contentClassName="px-2 pb-[88px] pt-2">
-      <div className="flex h-[calc(100dvh-98px)] min-h-0 flex-col gap-2.5">
-        <ProfileHero user={user} goal={form.goal} />
-
-        {error && <StatusBox type="error">{error}</StatusBox>}
-        {saved && <StatusBox type="success">Perfil actualizado con éxito.</StatusBox>}
-
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="space-y-2.5 pb-2">
-            <SurfaceCard className="p-2.5" radius="lg" variant="soft">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                    Información básica
-                  </p>
-                  <p className="mt-0.5 text-xs text-[var(--app-muted)]">
-                    Base para tus metas y macros.
-                  </p>
-                </div>
-                <MetaBadge variant="neutral">AI Profile</MetaBadge>
-              </div>
-
-              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-                <StatPill label="Peso" value={form.weight} unit="kg" />
-                <StatPill label="Altura" value={form.height} unit="cm" />
-                <StatPill label="Edad" value={form.age} unit="años" />
-                <StatPill label="Objetivo" value={goalLabel(form.goal)} />
-                <StatPill
-                  label="Kcal"
-                  value={getPreviewGoals(form).calories}
-                  unit="obj"
-                  accent
-                />
-                <StatPill
-                  label="Prot"
-                  value={getPreviewGoals(form).protein}
-                  unit="g"
-                  accent
-                />
-              </div>
-            </SurfaceCard>
-
-            <SurfaceCard as="form" onSubmit={handleSubmit} className="p-2.5" radius="lg">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                    Objetivo fitness
-                  </p>
-                  <h2 className="mt-0.5 text-sm font-black tracking-tight text-[var(--app-text)]">
-                    Edita tus metas
-                  </h2>
-                </div>
-                <MetaBadge variant="neutral">Editable</MetaBadge>
-              </div>
-
-              <div className="space-y-1.5">
-                <SettingRow
-                  icon={<UserRound size={15} />}
-                  label="Nombre"
-                  name="name"
-                  value={form.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  placeholder="Ej. Alexis Rodríguez"
-                />
-
-                <SettingSelect
-                  icon={<UserRound size={15} />}
-                  label="Género"
-                  value={form.gender}
-                  options={[
-                    { id: "male", label: "Hombre" },
-                    { id: "female", label: "Mujer" },
-                  ]}
-                  onChange={(val) => handleChange("gender", val)}
-                />
-
-                <div className="grid grid-cols-3 gap-1.5">
-                  <SettingRow
-                    icon={<Calendar size={15} />}
-                    label="Edad"
-                    name="age"
-                    type="number"
-                    value={form.age}
-                    onChange={(e) => handleChange("age", e.target.value)}
-                  />
-                  <SettingRow
-                    icon={<Weight size={15} />}
-                    label="Peso"
-                    name="weight"
-                    type="number"
-                    step="0.1"
-                    value={form.weight}
-                    onChange={(e) => handleChange("weight", e.target.value)}
-                    suffix="kg"
-                  />
-                  <SettingRow
-                    icon={<Ruler size={15} />}
-                    label="Altura"
-                    name="height"
-                    type="number"
-                    value={form.height}
-                    onChange={(e) => handleChange("height", e.target.value)}
-                    suffix="cm"
-                  />
-                </div>
-
-                <SettingSelect
-                  icon={<Activity size={15} />}
-                  label="Actividad"
-                  value={form.activity}
-                  options={[
-                    { id: "low", label: "Sedentario" },
-                    { id: "moderate", label: "Moderada" },
-                    { id: "high", label: "Alta" },
-                  ]}
-                  onChange={(val) => handleChange("activity", val)}
-                />
-
-                <SettingSelect
-                  icon={<Target size={15} />}
-                  label="Objetivo"
-                  value={form.goal}
-                  options={[
-                    { id: "perder_grasa", label: "Perder grasa" },
-                    { id: "ganar_musculo", label: "Ganar músculo" },
-                    { id: "mantener_peso", label: "Mantener peso" },
-                  ]}
-                  onChange={(val) => handleChange("goal", val)}
-                />
-
-                <SettingSelect
-                  icon={<Activity size={15} />}
-                  label="Comidas al día"
-                  value={form.mealsPerDay}
-                  options={[
-                    { id: "3", label: "3 comidas" },
-                    { id: "4", label: "4 comidas" },
-                    { id: "5", label: "5 comidas" },
-                    { id: "6", label: "6 comidas" },
-                  ]}
-                  onChange={(val) => handleChange("mealsPerDay", val)}
-                />
-              </div>
-              <div className="mt-2">
-                <ThemeSelector />
-              </div>
-              <PrimaryButton
-                type="submit"
-                disabled={loading}
-                icon={<Save size={17} />}
-                className="mt-2.5 py-3.5 text-[11px]"
-              >
-                {loading ? "Guardando..." : "Guardar cambios"}
-              </PrimaryButton>
-
-              <SecondaryButton
-                type="button"
-                onClick={() => setConfirmLogoutOpen(true)}
-                icon={<LogOut size={14} />}
-                className="mt-2 py-3 text-[10px] text-red-300 hover:border-red-300/30 hover:bg-red-400/15 hover:text-red-200"
-              >
-                Cerrar sesión
-              </SecondaryButton>
-            </SurfaceCard>
-          </div>
-        </div>
-      </div>
-      <ConfirmDialog
-        open={confirmLogoutOpen}
-        title="Cerrar sesion"
-        description="Se cerrara tu sesion en este dispositivo. Podras volver a entrar cuando quieras."
-        cancelLabel="Cancelar"
-        confirmLabel="Cerrar"
-        onCancel={() => setConfirmLogoutOpen(false)}
-        onConfirm={handleLogout}
-      />
-    </AppShell>
-  );
-}
-
-function ProfileHero({ user, goal }) {
-  return (
-    <SurfaceCard className="relative overflow-hidden p-3" radius="lg">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at top, var(--app-primary-soft), transparent 42%), radial-gradient(circle at 75% 15%, color-mix(in srgb, var(--app-primary) 12%, transparent), transparent 30%)",
-        }}
-      />
-
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
-            AI Profile
-          </MetaBadge>
-
-          <div className="mt-3 flex items-center gap-3">
-            <div
-              className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[28px] shadow-[0_0_28px_var(--app-glow)]"
-              style={{
-                backgroundColor: "var(--app-primary-soft)",
-                color: "var(--app-primary)",
-              }}
-            >
-              <UserRound size={30} />
+          <div className="relative z-10 flex items-start gap-3">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[22px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
+              <BrainCircuit size={24} />
             </div>
 
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                Perfil personal
-              </p>
-              <h1 className="truncate text-[24px] font-black leading-none text-[var(--app-text)]">
-                {user?.email?.split("@")[0] || "Tu perfil"}
+            <div className="min-w-0 flex-1">
+              <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
+                AI Settings Hub
+              </MetaBadge>
+              <h1 className="mt-2 truncate text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
+                {displayName}
               </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <MetaBadge variant="neutral">{goalLabel(goal)}</MetaBadge>
-                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Objetivo actual
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <MetaBadge variant="neutral">{goalLabel}</MetaBadge>
+                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
+                  {statusLabel}
                 </span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </SurfaceCard>
-  );
-}
+        </header>
 
-function SettingSelect({ icon, label, value, options, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef(null);
-  const selectedOption = options.find((opt) => opt.id === value);
+        <section className="grid grid-cols-2 gap-1.5">
+          <SettingMetric label="Peso" value={profile?.weight ? `${profile.weight} kg` : "—"} />
+          <SettingMetric label="Altura" value={profile?.height ? `${profile.height} cm` : "—"} />
+          <SettingMetric label="Actividad" value={activityLabel(profile?.activity_level)} />
+          <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
+        </section>
 
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <FormField label={label} icon={icon}>
-      <div ref={containerRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-11 w-full items-center justify-between rounded-2xl px-3 text-left transition shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] ${
-            isOpen
-              ? "shadow-[inset_0_0_0_1px_var(--app-border)]"
-              : ""
-          }`}
-          style={{
-            backgroundColor: isOpen ? "var(--app-primary-soft)" : "var(--app-surface)",
-            boxShadow: isOpen
-              ? "inset 0 0 0 1px var(--app-border)"
-              : "inset 0 0 0 1px var(--app-border)",
-          }}
-        >
-          <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-[var(--app-text)]">
-            <span className="text-[var(--app-primary)]">{icon}</span>
-            <span className="truncate">{selectedOption?.label}</span>
-          </span>
-
-          <ChevronDown
-            size={16}
-            className={`text-[var(--app-primary)] transition-transform duration-300 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+        <div className="space-y-2.5 pb-2">
+          <NavCard
+            icon={<UserRound size={16} />}
+            title="Mi perfil"
+            description="Datos personales, objetivo, nivel y macros."
+            onClick={() => navigate("/settings/profile")}
           />
-        </button>
-
-        {isOpen && (
-          <div
-            className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl shadow-[inset_0_0_0_1px_var(--app-border),0_20px_50px_var(--app-glow)] backdrop-blur-3xl"
-            style={{ backgroundColor: "var(--app-card)" }}
-          >
-            {options.map((opt) => (
-              <button
-                type="button"
-                key={opt.id}
-                onClick={() => {
-                  onChange(opt.id);
-                  setIsOpen(false);
-                }}
-                className={`block w-full px-5 py-4 text-left text-xs font-black uppercase tracking-wider transition hover:bg-[var(--app-primary)] hover:text-[var(--app-surface)] ${
-                  value === opt.id
-                    ? "bg-[var(--app-primary-soft)] text-[var(--app-text)]"
-                    : "text-[var(--app-muted)]"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </FormField>
+          <NavCard
+            icon={<Palette size={16} />}
+            title="Personalización"
+            description="Themes, apariencia y preview visual."
+            onClick={() => navigate("/settings/theme")}
+          />
+          <NavCard
+            icon={<BrainCircuit size={16} />}
+            title="IA y nutrición"
+            description="Límites, estado y expansión del sistema AI."
+            onClick={() => navigate("/settings/ai")}
+          />
+          <NavCard
+            icon={<ShieldCheck size={16} />}
+            title="Privacidad y legal"
+            description="Política, términos y eliminación de datos."
+            onClick={() => navigate("/settings/legal")}
+          />
+          <NavCard
+            icon={<KeyRound size={16} />}
+            title="Cuenta y seguridad"
+            description="Contraseña, proveedor y cierre de sesión."
+            onClick={() => navigate("/settings/security")}
+          />
+        </div>
+        </SettingsFrame>
+      </main>
+    </AppShell>
   );
 }
 
-function SettingRow({ label, icon, suffix, ...props }) {
+function NavCard({ description, icon, onClick, title }) {
   return (
-    <FormField label={label} icon={icon}>
-      <div
-        className="flex items-center gap-3 rounded-2xl px-3 py-3 transition shadow-[inset_0_0_0_1px_var(--app-border)] focus-within:shadow-[inset_0_0_0_1px_var(--app-border)]"
-        style={{ backgroundColor: "var(--app-surface)" }}
-      >
-        <span className="text-[var(--app-primary)]">{icon}</span>
-
-        <input
-          {...props}
-          className="w-full bg-transparent text-xs font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
-        />
-
-        {suffix && (
-          <span className="text-xs font-black uppercase tracking-widest text-[var(--app-muted)]">
-            {suffix}
-          </span>
-        )}
-      </div>
-    </FormField>
-  );
-}
-
-function StatPill({ label, value, unit = "", accent = false }) {
-  return (
-    <div
-      className="rounded-2xl px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]"
-      style={{
-        backgroundColor: accent ? "var(--app-primary-soft)" : "var(--app-surface)",
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),var(--app-card))] px-3 py-3 text-left shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition duration-200 active:scale-[0.985]"
     >
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] transition group-active:scale-[0.98]">
+          {icon}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-black leading-tight text-[var(--app-text)]">
+            {title}
+          </span>
+          <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            {description}
+          </span>
+        </span>
+      </span>
+
+      <ChevronDown
+        size={15}
+        className="-rotate-90 shrink-0 text-[var(--app-primary)] transition-transform group-active:translate-x-0.5"
+      />
+    </button>
+  );
+}
+
+function SettingMetric({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]">
+      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="mt-0.5 text-sm font-black text-[var(--app-text)]">
+      <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
         {value || "—"}
-        {unit && <span className="ml-1 text-[10px] text-[var(--app-primary)]/60">{unit}</span>}
       </p>
     </div>
   );
 }
-function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
 
-  const themes = [
-    { id: "emerald", label: "Emerald", color: "#10b981" },
-    { id: "dark", label: "Dark", color: "#050505" },
-    { id: "white", label: "White", color: "#d1d5db" },
-    { id: "rose", label: "Rose", color: "#fb6fbd" },
-    { id: "blue", label: "Blue", color: "#38bdf8" },
-    { id: "purple", label: "Purple", color: "#a855f7" },
-  ];
-
-  return (
-    <div
-      className="rounded-3xl p-2.5 shadow-[inset_0_0_0_1px_var(--app-border)]"
-      style={{ backgroundColor: "var(--app-card)" }}
-    >
-      <div className="mb-2">
-        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-          Personalización
-        </p>
-
-        <h3 className="mt-0.5 text-[13px] font-black text-[var(--app-text)]">
-          Color de la app
-        </h3>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5">
-        {themes.map((item) => {
-          const active = theme === item.id;
-
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTheme(item.id)}
-              className={`flex min-h-9 min-w-[calc(50%-0.375rem)] flex-1 items-center gap-2 rounded-2xl border px-2.5 py-2 text-left transition sm:min-w-[calc(33.333%-0.5rem)] ${
-                active
-                  ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[inset_0_0_0_1px_var(--app-primary)]"
-                  : "border-[var(--app-border)] bg-[var(--app-surface)] hover:bg-[var(--app-primary-soft)]/50"
-              }`}
-              style={{
-                boxShadow: active
-                  ? "inset 0 0 0 1px var(--app-primary), 0 10px 24px var(--app-glow)"
-                  : "inset 0 0 0 1px var(--app-border)",
-              }}
-            >
-              <div
-                className={`relative h-[20px] w-[20px] shrink-0 rounded-full ring-1 ${
-                  active ? "ring-[var(--app-primary)]/35" : "ring-[var(--app-border)]/70"
-                }`}
-                style={{
-                  background: item.color,
-                  boxShadow: `0 0 18px ${item.color}55`,
-                }}
-              >
-                {active && (
-                  <span className="absolute inset-[4px] rounded-full bg-[var(--app-surface)]/90 shadow-[0_0_0_1px_var(--app-surface)]" />
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p
-                  className="truncate text-[10px] font-black leading-none"
-                  style={{
-                    color: active ? "var(--app-text)" : "var(--app-muted)",
-                  }}
-                >
-                  {item.label}
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-function goalLabel(goal) {
+function getGoalLabel(goal) {
   if (goal === "ganar_musculo") return "Ganar músculo";
   if (goal === "mantener_peso") return "Mantener peso";
   return "Perder grasa";
 }
 
-function getPreviewGoals(form) {
-  return calculateNutritionGoals({
-    weight: form.weight,
-    height: form.height,
-    age: form.age,
-    gender: form.gender,
-    activity_level: form.activity,
-    goal: form.goal,
-    preferences: {
-      meals_per_day: Number(form.mealsPerDay),
-    },
-  });
+function activityLabel(activity) {
+  if (activity === "low") return "Sedentario";
+  if (activity === "high") return "Alta";
+  return "Moderada";
 }

@@ -6,7 +6,7 @@ export default function BottomNav() {
     { to: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
     { to: "/foto-comida", label: "Scan", Icon: Camera },
     { to: "/comidas", label: "Comidas", Icon: Utensils },
-    { to: "/plan-comidas", label: "Plan", Icon: Flame },
+    { to: "/plan-comidas", label: "dieta", Icon: Flame },
     { to: "/perfil", label: "Perfil", Icon: UserRound },
   ];
 
