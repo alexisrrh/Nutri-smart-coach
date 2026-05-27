@@ -47,6 +47,36 @@ const DeleteAccount = lazy(() =>
   }))
 );
 
+const SettingsProfile = lazy(() =>
+  import("./pages/settings/SettingsProfile").then((module) => ({
+    default: module.SettingsProfile,
+  }))
+);
+
+const SettingsTheme = lazy(() =>
+  import("./pages/settings/SettingsTheme").then((module) => ({
+    default: module.SettingsTheme,
+  }))
+);
+
+const SettingsAi = lazy(() =>
+  import("./pages/settings/SettingsAi").then((module) => ({
+    default: module.SettingsAi,
+  }))
+);
+
+const SettingsLegal = lazy(() =>
+  import("./pages/settings/SettingsLegal").then((module) => ({
+    default: module.SettingsLegal,
+  }))
+);
+
+const SettingsSecurity = lazy(() =>
+  import("./pages/settings/SettingsSecurity").then((module) => ({
+    default: module.SettingsSecurity,
+  }))
+);
+
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard }))
 );
@@ -222,6 +252,46 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <ProfileSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/profile"
+          element={
+            <ProtectedRoute>
+              <SettingsProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/theme"
+          element={
+            <ProtectedRoute>
+              <SettingsTheme />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/ai"
+          element={
+            <ProtectedRoute>
+              <SettingsAi />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/legal"
+          element={
+            <ProtectedRoute>
+              <SettingsLegal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/security"
+          element={
+            <ProtectedRoute>
+              <SettingsSecurity />
             </ProtectedRoute>
           }
         />
