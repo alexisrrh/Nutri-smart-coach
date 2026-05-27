@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { EXERCISE_LIBRARY, MUSCLE_GROUPS } from "../data/exerciseLibrary";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AppShell } from "../components/ui";
+import { AppShell, ConfirmDialog } from "../components/ui";
 import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
 
@@ -48,6 +48,16 @@ import {
 import { supabase } from "../lib/supabase";
 
 const SHARED_ROUTINE_BASE_URL = "https://nutrismartcoach.com/rutina";
+const routineActionBaseClass =
+  "inline-flex h-11 min-h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] px-4 py-3 text-[10px] font-bold leading-none tracking-[0.01em] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
+const routinePrimaryActionClass = `${routineActionBaseClass} bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_22px_var(--app-glow)]`;
+const routineSecondaryActionClass = `${routineActionBaseClass} border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_74%,transparent)] text-[var(--app-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[color-mix(in_srgb,var(--app-surface)_90%,transparent)]`;
+const routineSubtitleClass =
+  "text-[12px] font-semibold leading-[1.55] text-[color:color-mix(in_srgb,var(--app-text)_76%,var(--app-muted))] sm:text-[12.5px]";
+const routineSecondaryTextClass =
+  "text-[10.5px] font-medium leading-[1.45] text-[color:color-mix(in_srgb,var(--app-text)_68%,var(--app-muted))]";
+const routinePillClass =
+  "rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_12%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_72%,transparent)] px-[9px] py-[5px] text-[8px] font-medium leading-none tracking-[0.01em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]";
 
 function buildSharedWeekUrl(shareId) {
   return `${SHARED_ROUTINE_BASE_URL.replace("/rutina", "/rutinas/semana")}/${shareId}`;
@@ -102,6 +112,7 @@ export function WorkoutRoutines() {
   const [showCustomRoutines, setShowCustomRoutines] = useState(false);
   const [showWeeklyPlan, setShowWeeklyPlan] = useState(false);
   const [customWorkoutMode, setCustomWorkoutMode] = useState(null);
+  const [routinePendingDelete, setRoutinePendingDelete] = useState(null);
   const toast = useToast();
   const {
     handleCompleteWorkout: recordWorkoutCompletion,
@@ -244,16 +255,26 @@ export function WorkoutRoutines() {
     void loadCustomRoutines();
   }, []);
 
-  async function handleDeleteCustomRoutine(routineId) {
-    if (!window.confirm("¿Eliminar esta rutina personalizada?")) return;
+  function handleRequestDeleteCustomRoutine(routine) {
+    setRoutinePendingDelete(routine);
+  }
+
+  function handleCancelDeleteCustomRoutine() {
+    setRoutinePendingDelete(null);
+  }
+
+  async function handleConfirmDeleteCustomRoutine() {
+    if (!routinePendingDelete?.id) return;
 
     try {
-      await deleteCustomWorkoutRoutine(routineId);
+      await deleteCustomWorkoutRoutine(routinePendingDelete.id);
       setCustomRoutines((current) =>
-        current.filter((routine) => routine.id !== routineId)
+        current.filter((routine) => routine.id !== routinePendingDelete.id)
       );
     } catch (error) {
       console.error("Error eliminando rutina personalizada:", error);
+    } finally {
+      setRoutinePendingDelete(null);
     }
   }
 
@@ -433,7 +454,7 @@ export function WorkoutRoutines() {
                 <h1 className="mt-0.5 text-[20px] font-black leading-none text-[var(--app-text)]">
                   Rutinas
                 </h1>
-                <p className="mt-1 text-[10px] font-bold text-[var(--app-muted)]">
+                <p className={`mt-1 ${routineSubtitleClass}`}>
                   Tu plan semanal de entrenamiento
                 </p>
               </div>
@@ -567,8 +588,9 @@ export function WorkoutRoutines() {
       {showCustomRoutines ? (
         <CustomRoutinesSheet
           routines={customRoutines}
+          onCreate={() => navigate("/crear-rutina")}
           onClose={() => setShowCustomRoutines(false)}
-          onDelete={handleDeleteCustomRoutine}
+          onDelete={handleRequestDeleteCustomRoutine}
           onEdit={(routineId) => navigate(`/editar-rutina/${routineId}`)}
           onStart={handleStartCustomRoutine}
           onShareWeek={handleShareWeeklyCollection}
@@ -582,6 +604,19 @@ export function WorkoutRoutines() {
           {toggleMessage}
         </div>
       ) : null}
+
+      <div className="relative z-[100]">
+        <ConfirmDialog
+          open={Boolean(routinePendingDelete)}
+          title="Eliminar rutina"
+          description="Esta acción eliminará tu rutina personalizada y no se puede deshacer."
+          confirmLabel="Eliminar rutina"
+          cancelLabel="Cancelar"
+          variant="danger"
+          onCancel={handleCancelDeleteCustomRoutine}
+          onConfirm={handleConfirmDeleteCustomRoutine}
+        />
+      </div>
 
     </AppShell>
   );
@@ -606,7 +641,7 @@ function CustomRoutinesSection({
               <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.12em] text-[var(--app-primary)]">
                 Mis rutinas
               </span>
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_62%,var(--app-muted))]">
                 {count > 0
                   ? `${count} guardadas`
                   : "Sin rutinas"}
@@ -617,35 +652,33 @@ function CustomRoutinesSection({
               Mis rutinas
             </h2>
 
-            <p className="mt-1.5 max-w-[22rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            <p className={`mt-1.5 max-w-[22rem] ${routineSubtitleClass}`}>
               {loading
-                ? "Sincronizando rutinas guardadas..."
+                ? "Sincronizando tus rutinas..."
                 : count > 0
-                  ? "Gestiona tus rutinas creadas y comparte tu semana completa."
-                  : "Diseña tu primera rutina con los ejercicios de la biblioteca."}
+                  ? `${count} rutinas guardadas`
+                  : "No tienes rutinas todavía. Crea tu primera rutina aquí."}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={onCreate}
-            className="inline-flex h-[42px] w-auto items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(135deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_78%,#7df5ff))] px-4 text-[9px] font-semibold text-[var(--app-surface)] shadow-[0_10px_20px_rgba(0,196,255,0.16)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+            className={routinePrimaryActionClass}
           >
             Crear rutina
           </button>
 
-          {count > 0 ? (
-            <button
-              type="button"
-              onClick={onOpen}
-              className="inline-flex h-[42px] w-auto items-center justify-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_10%,var(--app-border))] bg-[rgba(8,16,26,0.22)] px-3.5 text-[9px] font-semibold text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.36)] active:scale-[0.98]"
-            >
-              Ver rutinas
-              <ChevronRight size={11} />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={onOpen}
+            className={routineSecondaryActionClass}
+          >
+            Ver rutinas
+            <ChevronRight size={11} />
+          </button>
         </div>
       </div>
     </section>
@@ -654,6 +687,7 @@ function CustomRoutinesSection({
 
 function CustomRoutinesSheet({
   routines,
+  onCreate,
   onClose,
   onDelete,
   onEdit,
@@ -687,7 +721,7 @@ function CustomRoutinesSheet({
                   <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-bold tracking-[0.12em] text-[var(--app-primary)]">
                     Rutinas personalizadas
                   </span>
-                  <span className="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+                  <span className="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_62%,var(--app-muted))]">
                     {routines.length > 0
                       ? `${routines.length} guardadas`
                       : "Sin rutinas"}
@@ -697,7 +731,7 @@ function CustomRoutinesSheet({
                 <h2 className="mt-2 text-[18px] font-semibold leading-none text-[var(--app-text)]">
                   Mis rutinas
                 </h2>
-                <p className="mt-1 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                <p className={`mt-1 max-w-[18rem] ${routineSubtitleClass}`}>
                   Guarda, abre o comparte tus rutinas sin mezclarla con la rutina semanal.
                 </p>
               </div>
@@ -726,7 +760,27 @@ function CustomRoutinesSheet({
 
           <div className="min-h-0 overflow-y-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2.5">
-              {routines.map((routine) => {
+              {routines.length === 0 ? (
+                <div className="relative overflow-hidden rounded-[1.1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#08131b),var(--app-surface))] p-4 text-center shadow-[0_10px_24px_rgba(0,0,0,0.16)]">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_42%)]" />
+                  <div className="relative z-10 mx-auto grid h-11 w-11 place-items-center rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]">
+                    <Dumbbell size={18} />
+                  </div>
+                  <h3 className="relative z-10 mt-3 text-[17px] font-semibold leading-tight text-[var(--app-text)]">
+                    No tienes rutinas disponibles
+                  </h3>
+                  <p className={`relative z-10 mx-auto mt-2 max-w-[19rem] ${routineSubtitleClass}`}>
+                    Crea tu primera rutina personalizada y empieza a entrenar a tu manera.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onCreate}
+                    className={`${routinePrimaryActionClass} relative z-10 mt-4`}
+                  >
+                    + Crear rutina
+                  </button>
+                </div>
+              ) : routines.map((routine) => {
                 const firstDay = Array.isArray(routine.days)
                   ? routine.days[0]
                   : null;
@@ -761,7 +815,7 @@ function CustomRoutinesSheet({
                           <h3 className="mt-1 text-[15px] font-semibold leading-[1.05] text-[var(--app-text)]">
                             {routineName}
                           </h3>
-                          <p className="mt-1 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-muted)]">
+                          <p className="mt-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
                             {publicLabel}
                           </p>
                         </div>
@@ -778,7 +832,7 @@ function CustomRoutinesSheet({
                         ) : null}
                       </div>
 
-                      <p className="mt-2 text-[8px] font-medium text-[var(--app-muted)]">
+                      <p className={`mt-2 ${routineSecondaryTextClass}`}>
                         {lastUsedLabel || "Aún no usada"}
                       </p>
 
@@ -804,7 +858,7 @@ function CustomRoutinesSheet({
 
                         <button
                           type="button"
-                          onClick={() => onDelete?.(routine.id)}
+                          onClick={() => onDelete?.(routine)}
                           className="inline-flex h-7 items-center justify-center gap-1.5 rounded-full border border-transparent bg-transparent px-2 text-[8px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,#ff8a98_78%,var(--app-primary))] transition duration-150 hover:bg-[rgba(255,107,122,0.08)] active:scale-[0.98]"
                         >
                           <Trash2 size={11} />
@@ -891,7 +945,7 @@ function formatRoutineDisplayName(name) {
 
 function InfoChip({ label, icon }) {
   return (
-    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
       {icon ? <span className="text-[var(--app-primary)]">{icon}</span> : null}
       <span className="truncate">{label}</span>
     </span>
@@ -934,7 +988,7 @@ function IAWeeklyRoutineCard({
               Rutina semanal IA
             </h2>
 
-            <p className="mt-1.5 max-w-[22rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            <p className={`mt-1.5 max-w-[22rem] ${routineSubtitleClass}`}>
               La app crea una rutina semanal automáticamente según tu nivel, objetivo y progreso.
             </p>
 
@@ -943,7 +997,7 @@ function IAWeeklyRoutineCard({
                 <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
                   Progreso semanal
                 </p>
-                <p className="text-[9px] font-semibold text-[var(--app-text)]">{remainingText}</p>
+                <p className="text-[10px] font-semibold leading-tight text-[var(--app-text)]">{remainingText}</p>
               </div>
 
               <div className="h-2 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]">
@@ -954,27 +1008,27 @@ function IAWeeklyRoutineCard({
               </div>
 
               {planConfirmed ? (
-                <p className="text-[9px] font-medium text-[var(--app-muted)]">
+                <p className={routineSecondaryTextClass}>
                   {planStats.planName || planMeta?.planName || "Tu rutina automática"}
                 </p>
               ) : (
-                <p className="text-[9px] font-medium text-[var(--app-muted)]">
+                <p className={routineSecondaryTextClass}>
                   La app creará tu rutina según tu nivel, objetivo y progreso.
                 </p>
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className={routinePillClass}>
                 {selectedLevel}
               </span>
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+              <span className={routinePillClass}>
                 {selectedGoal}
               </span>
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+              <span className={routinePillClass}>
                 {selectedFocus}
               </span>
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+              <span className={routinePillClass}>
                 {daysPerWeek} días
               </span>
             </div>
@@ -985,11 +1039,11 @@ function IAWeeklyRoutineCard({
           </div>
         </div>
 
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={planConfirmed ? onOpen : onGenerate}
-            className="flex h-[42px] flex-1 items-center justify-center gap-2 rounded-[0.9rem] bg-[var(--app-primary)] px-3 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+            className={routinePrimaryActionClass}
           >
             <Play size={14} />
             {primaryLabel}
@@ -998,7 +1052,7 @@ function IAWeeklyRoutineCard({
           <button
             type="button"
             onClick={onAdjust}
-            className="h-[42px] rounded-[0.9rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.6)] active:scale-[0.98]"
+            className={routineSecondaryActionClass}
           >
             Ajustar plan
           </button>
@@ -1032,7 +1086,7 @@ function WeeklyRoutineSheet({
                 <h2 className="mt-2 text-[20px] font-black leading-none text-[var(--app-text)]">
                   Tu semana completa
                 </h2>
-                <p className="mt-1 max-w-[20rem] text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+                <p className={`mt-1 max-w-[20rem] ${routineSubtitleClass}`}>
                   Revisa cada día y comienza tu siguiente entrenamiento cuando quieras.
                 </p>
               </div>
@@ -1152,7 +1206,7 @@ function WeeklyRoutineDayCard({
                   <h3 className="mt-0.5 line-clamp-2 text-[13px] font-semibold leading-[1.05] text-[var(--app-text)]">
                     {day.muscles.join(" + ")}
                   </h3>
-                  <p className="mt-0.5 text-[9px] font-medium text-[var(--app-muted)]">
+                  <p className={`mt-0.5 ${routineSecondaryTextClass}`}>
                     {day.duration}
                   </p>
               </div>
@@ -1207,7 +1261,7 @@ function WorkoutHistoryCard({ session, compact = false }) {
           <h3 className="mt-0.5 truncate text-[13px] font-black text-[var(--app-text)]">
             {session.dayName || "Entrenamiento"}
           </h3>
-          <p className="mt-0.5 truncate text-[9px] font-bold text-[var(--app-muted)]">
+          <p className={`mt-0.5 truncate ${routineSecondaryTextClass}`}>
             {formatMuscles(session.muscles)}
           </p>
         </div>
@@ -1228,7 +1282,7 @@ function WorkoutHistoryCard({ session, compact = false }) {
 
       {!compact && exerciseNames.length ? (
         <div className="mt-2 border-t border-[var(--app-border)] pt-2">
-          <p className="line-clamp-2 text-[11px] leading-4 text-[var(--app-muted)]">
+          <p className={`line-clamp-2 ${routineSecondaryTextClass}`}>
             {exerciseNames.join(" · ")}
           </p>
         </div>
@@ -1342,10 +1396,10 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
         <h3 className="truncate text-[13px] font-semibold text-[var(--app-text)]">
           {exercise.name}
         </h3>
-        <p className="mt-0.5 text-[9px] font-medium text-[var(--app-muted)]">
+        <p className={`mt-0.5 ${routineSecondaryTextClass}`}>
           {prescription.sets} x {prescription.reps}
         </p>
-        <p className="mt-0.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+        <p className="mt-0.5 text-[9px] font-medium tracking-[0.01em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
           Descanso {prescription.rest}
         </p>
       </div>
@@ -1405,7 +1459,7 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
             <h2 className="mt-2 line-clamp-2 text-[22px] font-black leading-[1.05] text-[var(--app-text)]">
               {exercise.name}
             </h2>
-            <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--app-muted)]">
+            <p className={`mt-1 line-clamp-2 ${routineSubtitleClass}`}>
               {exercise.description}
             </p>
 
@@ -1470,7 +1524,7 @@ function SheetChip({ label, value }) {
 
 function InfoPill({ children }) {
   return (
-    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-muted)]">
+    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
       {children}
     </span>
   );
@@ -1489,7 +1543,7 @@ function CompactInfo({ title, items, clamp = false }) {
           <p
             key={item}
             className={[
-              "text-[11px] leading-4 text-[var(--app-muted)]",
+              "text-[11.5px] font-medium leading-[1.45] text-[color:color-mix(in_srgb,var(--app-text)_68%,var(--app-muted))]",
               clamp ? "line-clamp-1" : "line-clamp-2",
             ].join(" ")}
           >
