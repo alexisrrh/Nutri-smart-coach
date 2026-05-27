@@ -243,17 +243,6 @@ export function Register() {
                   Continuar con Google
                 </button>
 
-                {/* Botón de Apple */}
-                <button
-                  onClick={() => handleSocialLogin('apple')}
-                  className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-black text-white font-medium rounded-xl shadow-sm hover:bg-zinc-900 active:scale-[0.98] transition-all duration-200 text-sm"
-                >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 384 512">
-                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-14.7 0-51.4-22.2-82-22.2-40.3 0-87.3 24.1-107.8 63.4C10.7 232.5-3.3 313 14.5 393.7c10.4 46.4 46.1 106.8 90.3 106.8 31.8 0 46.7-22.2 87.2-22.2 41 0 54.4 22.2 87.8 22.2 43.6 0 76-54.3 86.8-100.7-44.4-18.4-68.1-43.2-67.9-91.1zM286.1 76.7c18-22.1 30.1-52.8 26.8-83.4-26.4 1.1-56.4 17.6-75.3 39.8-16.1 18.7-30.2 50.1-26.8 79.5 29.5 2.3 57.5-13.8 75.3-35.9z" />
-                  </svg>
-                  Continuar con Apple
-                </button>
-
                 {/* Botón de Facebook */}
                 <button
                   onClick={() => handleSocialLogin('facebook')}

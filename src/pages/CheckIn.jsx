@@ -13,7 +13,7 @@ import {
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
-import { AiErrorNotice, AppShell } from "../components/ui";
+import { AiErrorNotice, AppShell, PremiumEmptyState } from "../components/ui";
 import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
 import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
 import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
@@ -360,6 +360,17 @@ export function CheckIn() {
             </section>
 
             <CheckInLoader loading={loading} />
+
+            {!loading && history.length === 0 ? (
+              <PremiumEmptyState
+                icon={Camera}
+                title="Tu primer check-in marcará el punto de partida"
+                description="Sube una foto y tu peso para activar el análisis corporal y comparar tu evolución."
+                actionLabel="Subir foto"
+                onAction={() => document.getElementById("checkin-photo")?.click()}
+                className="shrink-0 py-4"
+              />
+            ) : null}
 
             <section
               className="shrink-0 rounded-[18px] border p-1 shadow-[0_16px_45px_var(--app-glow)]"

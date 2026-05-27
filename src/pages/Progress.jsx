@@ -17,6 +17,7 @@ import {
   ConfirmDialog,
   StatusBox,
   SurfaceCard,
+  PremiumEmptyState,
 } from "../components/ui";
 import { useProgressDeletion } from "../hooks/progress/useProgressDeletion";
 import { useProgressData } from "../hooks/progress/useProgressData";
@@ -175,7 +176,10 @@ export function Progress() {
                   latestCheckin={stats.latestCheckin}
                   previousCheckin={stats.previousCheckin}
                 />
-                <StrengthProgressSection summary={strengthSummary} />
+                <StrengthProgressSection
+                  summary={strengthSummary}
+                  onAction={() => navigate("/rutinas")}
+                />
               </>
             )}
 
@@ -197,6 +201,7 @@ export function Progress() {
                 deletingId={deletingId}
                 onDelete={setCheckinToDelete}
                 onSelect={setSelectedCheckin}
+                onEmptyAction={() => navigate("/checkin")}
               />
             )}
           </div>
@@ -404,6 +409,7 @@ function ProgressHistorySection({
   loadingHistory,
   sortedCheckinsDesc,
   deletingId,
+  onEmptyAction,
   onDelete,
   onSelect,
 }) {
@@ -443,7 +449,7 @@ function ProgressHistorySection({
           ))}
         </div>
       ) : (
-        <EmptyState />
+        <EmptyState onAction={onEmptyAction} />
       )}
     </SurfaceCard>
   );
@@ -713,8 +719,18 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
   );
 }
 
-function StrengthProgressSection({ summary }) {
-  if (!summary?.items?.length) return null;
+function StrengthProgressSection({ summary, onAction }) {
+  if (!summary?.items?.length) {
+    return (
+      <PremiumEmptyState
+        icon={ChartNoAxesColumnIncreasing}
+        title="Tu evolución de fuerza aparecerá aquí"
+        description="Completa entrenamientos con peso para ver mejoras reales por ejercicio y volumen total."
+        actionLabel="Empezar rutina"
+        onAction={onAction}
+      />
+    );
+  }
 
   return (
     <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
@@ -1011,21 +1027,16 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({ onAction }) {
   return (
-    <SurfaceCard variant="soft" radius="md" className="py-14 text-center">
-      <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
-        <Scale size={30} />
-      </div>
-
-      <h3 className="text-xl font-black uppercase tracking-tight text-[var(--app-text)]">
-        Sin registros todavía
-      </h3>
-
-      <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--app-muted)]">
-        Añade tu primer peso para empezar a medir tu evolución de peso y medidas.
-      </p>
-    </SurfaceCard>
+    <PremiumEmptyState
+      icon={Scale}
+      title="Tu progreso aparecerá aquí"
+      description="Guarda tu primer check-in para empezar a comparar peso, fotos y cambios corporales."
+      actionLabel="Crear check-in"
+      onAction={onAction}
+      className="py-8"
+    />
   );
 }
 
