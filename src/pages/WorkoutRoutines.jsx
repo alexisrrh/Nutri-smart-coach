@@ -29,6 +29,7 @@ import {
 } from "../services/exercisePreloadService";
 import { getLocalDateKey } from "../services/gamificationService";
 import { getCachedProfile } from "../services/profileService";
+import { getStrengthProgressSummary } from "../services/strengthProgressService";
 import { useWorkoutConfig } from "../hooks/workouts/useWorkoutConfig";
 import {
   getCompletionForPlanDay,
@@ -427,23 +428,10 @@ export function WorkoutRoutines() {
   return (
     <AppShell
       hideBottomNav={Boolean(workoutMode || customWorkoutMode)}
-      contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-1.5"
+      contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-0"
     >
       <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-2 overflow-hidden overflow-x-hidden">
         <header className="w-full max-w-full shrink-0">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-semibold transition hover:text-[var(--app-text)]"
-            style={{
-              backgroundColor: "var(--app-primary-soft)",
-              color: "var(--app-muted)",
-            }}
-          >
-            <ArrowLeft size={11} />
-            Dashboard
-          </button>
-
           <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_6px_18px_var(--app-glow)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_40%)]" />
             <div className="relative z-10 flex min-w-0 items-center justify-between gap-3">
@@ -468,6 +456,12 @@ export function WorkoutRoutines() {
 
         <main className="min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
+            <AIPerformanceCore
+              planStats={planStats}
+              workoutCompletions={workoutCompletions}
+              workoutSessions={workoutSessions}
+            />
+
             <IAWeeklyRoutineCard
               daysPerWeek={daysPerWeek}
               onAdjust={() => setShowConfig(true)}
@@ -680,6 +674,155 @@ function CustomRoutinesSection({
             <ChevronRight size={11} />
           </button>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function AIPerformanceCore({
+  planStats,
+  workoutCompletions,
+  workoutSessions,
+}) {
+  const coreStats = useMemo(
+    () =>
+      getAIPerformanceCoreStats({
+        planStats,
+        workoutCompletions,
+        workoutSessions,
+      }),
+    [planStats, workoutCompletions, workoutSessions]
+  );
+  const active = coreStats.hasData;
+
+  return (
+    <section
+      className={[
+        "group relative overflow-hidden rounded-[1.4rem] border p-4 transition duration-200 active:scale-[0.99]",
+        active
+          ? "border-[color:color-mix(in_srgb,var(--app-primary)_28%,var(--app-border))] bg-[radial-gradient(circle_at_34%_22%,color-mix(in_srgb,var(--app-primary)_24%,transparent),transparent_35%),radial-gradient(circle_at_86%_0%,rgba(125,245,255,0.1),transparent_33%),linear-gradient(145deg,color-mix(in_srgb,var(--app-card)_86%,#03130d),var(--app-surface))] shadow-[0_20px_48px_rgba(0,0,0,0.3),0_0_44px_color-mix(in_srgb,var(--app-glow)_68%,transparent)]"
+          : "border-[color:color-mix(in_srgb,var(--app-primary)_12%,var(--app-border))] bg-[radial-gradient(circle_at_34%_22%,color-mix(in_srgb,var(--app-primary)_7%,transparent),transparent_34%),linear-gradient(145deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-surface))] shadow-[0_10px_24px_rgba(0,0,0,0.18)]",
+      ].join(" ")}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.05)_42%,transparent_56%),radial-gradient(circle_at_12%_18%,rgba(45,255,185,0.08),transparent_26%),radial-gradient(circle_at_92%_8%,rgba(125,245,255,0.07),transparent_24%)]" />
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+      <span className={["pointer-events-none absolute left-[11%] top-6 h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]", active ? "animate-ping" : "opacity-45"].join(" ")} />
+      <span className={["pointer-events-none absolute right-[16%] top-10 h-1.5 w-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--app-primary)_70%,#7df5ff)] shadow-[0_0_12px_var(--app-glow)]", active ? "animate-[restOrbPulse_2.8s_ease-in-out_infinite]" : "opacity-40"].join(" ")} />
+      <span className="pointer-events-none absolute bottom-10 left-[19%] h-1 w-1 rounded-full bg-white/45" />
+      <span className="pointer-events-none absolute bottom-16 right-[28%] h-1 w-1 rounded-full bg-[var(--app-primary)] opacity-55 shadow-[0_0_10px_var(--app-glow)]" />
+
+      <div className="relative z-10 grid gap-3">
+        <div className="grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3">
+        <div className="relative grid h-[132px] w-[132px] shrink-0 place-items-center">
+          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--app-primary)_28%,transparent),transparent_64%)] blur-md" />
+          <div
+            className={[
+              "absolute inset-1 rounded-full border",
+              active
+                ? "border-[color:color-mix(in_srgb,var(--app-primary)_34%,transparent)] shadow-[0_0_42px_var(--app-glow)] animate-[restOrbPulse_2.8s_ease-in-out_infinite]"
+                : "border-[color:color-mix(in_srgb,var(--app-primary)_13%,transparent)] shadow-[0_0_14px_rgba(0,0,0,0.18)]",
+            ].join(" ")}
+          />
+          <div className="absolute inset-[12px] rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_12%,transparent)]" />
+          <div
+            className={[
+              "absolute inset-[22px] rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_36%,transparent)]",
+              active ? "animate-[restRingSpin_10s_linear_infinite]" : "",
+            ].join(" ")}
+            style={{
+              borderLeftColor: "transparent",
+              borderBottomColor: "transparent",
+            }}
+          />
+          <div
+            className={[
+              "absolute inset-[38px] rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_30%,transparent)]",
+              active ? "animate-[restRingSpin_7s_linear_infinite_reverse]" : "",
+            ].join(" ")}
+            style={{
+              borderRightColor: "transparent",
+              borderTopColor: "transparent",
+            }}
+          />
+          <span className={["absolute left-3 top-9 h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]", active ? "animate-[restOrbPulse_2.2s_ease-in-out_infinite]" : "opacity-45"].join(" ")} />
+          <span className={["absolute bottom-7 right-4 h-1 w-1 rounded-full bg-white/70", active ? "animate-ping" : "opacity-40"].join(" ")} />
+          <div
+            className={[
+              "relative grid h-[72px] w-[72px] place-items-center rounded-full border bg-[radial-gradient(circle_at_35%_28%,rgba(255,255,255,0.24),transparent_20%),radial-gradient(circle_at_50%_72%,color-mix(in_srgb,var(--app-primary)_34%,transparent),transparent_50%),linear-gradient(145deg,color-mix(in_srgb,var(--app-primary)_38%,#06110e),#06110e)]",
+              active
+                ? "border-[color:color-mix(in_srgb,var(--app-primary)_52%,var(--app-border))] shadow-[0_0_44px_var(--app-glow),inset_0_0_22px_color-mix(in_srgb,var(--app-primary)_26%,transparent)] animate-[restOrbPulse_3.4s_ease-in-out_infinite]"
+                : "border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] shadow-[0_0_16px_rgba(0,0,0,0.22)]",
+            ].join(" ")}
+          >
+            <Dumbbell size={24} className="text-[var(--app-primary)] drop-shadow-[0_0_12px_var(--app-glow)]" />
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_72%,transparent)] px-2 py-1 text-[7px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
+              AI Performance Core
+            </span>
+            <span
+              className={[
+                "h-2 w-2 rounded-full",
+                active
+                  ? "bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]"
+                  : "bg-[color:color-mix(in_srgb,var(--app-text)_36%,var(--app-muted))]",
+              ].join(" ")}
+            />
+          </div>
+
+          <h2 className="mt-2 text-[18px] font-semibold leading-tight text-[var(--app-text)]">
+            AI Performance Core
+          </h2>
+          <p className={`mt-1 max-w-[17.5rem] ${routineSubtitleClass}`}>
+            {active
+              ? "Tu evolución está siendo analizada en tiempo real."
+              : "Completa tu primer entrenamiento para activar el análisis inteligente."}
+          </p>
+        </div>
+      </div>
+
+        <div className="relative h-7 overflow-hidden rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_10%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_58%,transparent)] px-3">
+          <div className="absolute inset-x-3 top-1/2 h-px -translate-y-1/2 bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--app-primary)_42%,transparent),transparent)]" />
+          <span
+            className={[
+              "absolute top-1/2 h-[2px] w-20 -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,transparent,var(--app-primary),transparent)] shadow-[0_0_14px_var(--app-glow)]",
+              active ? "animate-[restBeam_2.5s_ease-in-out_infinite]" : "left-[34%] opacity-35",
+            ].join(" ")}
+          />
+          <div className="relative z-10 flex h-full items-center justify-between">
+            {[0, 1, 2, 3, 4].map((dot) => (
+              <span
+                key={dot}
+                className={[
+                  "h-1.5 w-1.5 rounded-full",
+                  active
+                    ? "bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)] animate-[restOrbPulse_2.6s_ease-in-out_infinite]"
+                    : "bg-[color:color-mix(in_srgb,var(--app-text)_32%,var(--app-muted))]",
+                ].join(" ")}
+                style={{ animationDelay: `${dot * 120}ms` }}
+              />
+            ))}
+          </div>
+        </div>
+
+      <div className="relative z-10 grid grid-cols-4 gap-1.5 opacity-90">
+        {coreStats.metrics.map((metric) => (
+          <div
+            key={metric.label}
+            className="min-w-0 rounded-[0.75rem] border border-white/[0.035] bg-[color-mix(in_srgb,var(--app-surface)_42%,transparent)] px-1.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] backdrop-blur"
+          >
+            <p className="truncate text-[6px] font-semibold uppercase tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-primary)_74%,var(--app-muted))]">
+              {metric.label}
+            </p>
+            <p className="mt-1 truncate text-[10px] font-semibold leading-tight text-[color:color-mix(in_srgb,var(--app-text)_88%,var(--app-muted))]">
+              {metric.value}
+            </p>
+          </div>
+        ))}
+      </div>
       </div>
     </section>
   );
@@ -1553,6 +1696,158 @@ function CompactInfo({ title, items, clamp = false }) {
       </div>
     </section>
   );
+}
+
+function getAIPerformanceCoreStats({
+  planStats,
+  workoutCompletions,
+  workoutSessions,
+}) {
+  const sessions = Array.isArray(workoutSessions) ? workoutSessions : [];
+  const completions = Array.isArray(workoutCompletions) ? workoutCompletions : [];
+  const completedDateKeys = getCompletedWorkoutDateKeys({ completions, sessions });
+  const weeklySessions = getWeeklyCompletedSessions({
+    completions,
+    planStats,
+    sessions,
+  });
+  const totalVolume = sessions.reduce(
+    (total, session) => total + Number(session?.totalWeightMoved || 0),
+    0
+  );
+  const strengthSummary = getStrengthProgressSummary(sessions, 6);
+  const bestImprovement = strengthSummary.items.find(
+    (item) => Number(item.difference || 0) > 0
+  );
+  const currentStreak = getCurrentWorkoutStreak(completedDateKeys);
+  const hasData = sessions.length > 0 || completions.length > 0;
+
+  return {
+    hasData,
+    metrics: [
+      {
+        label: "Racha actual",
+        value: hasData ? formatStreakValue(currentStreak) : "Sin activar",
+      },
+      {
+        label: "Esta semana",
+        value: hasData ? `${weeklySessions} sesiones` : "0 sesiones",
+      },
+      {
+        label: "Volumen total",
+        value: totalVolume > 0 ? formatVolumeValue(totalVolume) : "Sin kg",
+      },
+      {
+        label: "Mejor mejora",
+        value: bestImprovement
+          ? `${bestImprovement.name} +${formatCompactNumber(bestImprovement.difference)} kg`
+          : "Sin PR aún",
+      },
+    ],
+  };
+}
+
+function getCompletedWorkoutDateKeys({ completions, sessions }) {
+  const keys = new Set();
+
+  for (const session of sessions) {
+    const dateKey = getWorkoutDateKey(session?.date || session?.completedAt);
+    if (dateKey) keys.add(dateKey);
+  }
+
+  for (const completion of completions) {
+    const dateKey = getWorkoutDateKey(completion?.date || completion?.completedAt);
+    if (dateKey) keys.add(dateKey);
+  }
+
+  return keys;
+}
+
+function getWeeklyCompletedSessions({ completions, planStats, sessions }) {
+  const weekStart = getCurrentWeekStart();
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+  const sessionsThisWeek = sessions.filter((session) => {
+    const date = getWorkoutDate(session?.date || session?.completedAt);
+    return date && date >= weekStart && date < weekEnd;
+  });
+
+  if (sessionsThisWeek.length > 0) return sessionsThisWeek.length;
+
+  const completionsThisWeek = completions.filter((completion) => {
+    const date = getWorkoutDate(completion?.date || completion?.completedAt);
+    return date && date >= weekStart && date < weekEnd;
+  });
+
+  return completionsThisWeek.length || Number(planStats?.completedCount || 0);
+}
+
+function getCurrentWorkoutStreak(dateKeys) {
+  if (!dateKeys?.size) return 0;
+
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+
+  while (dateKeys.has(getLocalDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  if (streak > 0) return streak;
+
+  cursor.setTime(Date.now());
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() - 1);
+
+  while (dateKeys.has(getLocalDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+}
+
+function getWorkoutDateKey(value) {
+  const date = getWorkoutDate(value);
+  return date ? getLocalDateKey(date) : "";
+}
+
+function getWorkoutDate(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function getCurrentWeekStart() {
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
+}
+
+function formatStreakValue(value) {
+  return value === 1 ? "1 día" : `${value} días`;
+}
+
+function formatVolumeValue(value) {
+  if (value >= 1000) {
+    return `${formatCompactNumber(value / 1000)} t`;
+  }
+
+  return `${formatCompactNumber(value)} kg`;
+}
+
+function formatCompactNumber(value) {
+  const number = Number(value || 0);
+
+  return new Intl.NumberFormat("es-ES", {
+    maximumFractionDigits: number >= 10 ? 0 : 1,
+  }).format(number);
 }
 
 function getInitialMuscle(searchParams) {
