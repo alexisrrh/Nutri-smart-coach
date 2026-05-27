@@ -29,6 +29,24 @@ const ResetPassword = lazy(() =>
   }))
 );
 
+const PrivacyPolicy = lazy(() =>
+  import("./pages/legal/PrivacyPolicy").then((module) => ({
+    default: module.PrivacyPolicy,
+  }))
+);
+
+const TermsOfService = lazy(() =>
+  import("./pages/legal/TermsOfService").then((module) => ({
+    default: module.TermsOfService,
+  }))
+);
+
+const DeleteAccount = lazy(() =>
+  import("./pages/legal/DeleteAccount").then((module) => ({
+    default: module.DeleteAccount,
+  }))
+);
+
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard }))
 );
@@ -110,10 +128,10 @@ const Dietas = lazy(() =>
 
 function AppLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#06110e] text-white">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--app-surface)] text-[var(--app-text)]">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-emerald-400/30 bg-emerald-400/10" />
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">
+        <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-3xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] shadow-[0_0_28px_var(--app-glow)]" />
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-[var(--app-primary)]">
           Cargando...
         </p>
       </div>
@@ -159,6 +177,9 @@ function AppRoutes({ splashVisible }) {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/delete-account" element={<DeleteAccount />} />
 
         <Route
           path="/dashboard"

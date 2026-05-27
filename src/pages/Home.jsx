@@ -1,9 +1,36 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Camera, ArrowRight, Zap } from "lucide-react";
 import SmartImage from "../components/ui/SmartImage";
 import { NavNavigation } from "../components/Home/NavNavigation";
+import { useAuth } from "../context/useAuth";
+import {
+  prefetchDashboardData,
+  preloadDashboardChunk,
+} from "../services/dashboardPrefetchService";
 
 export function Home() {
+  const { user, loadingAuth } = useAuth();
+
+  useEffect(() => {
+    if (loadingAuth || !user?.id) return undefined;
+
+    const runPrefetch = () => {
+      void preloadDashboardChunk();
+      void prefetchDashboardData(user.id);
+    };
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(runPrefetch, { timeout: 1800 });
+
+      return () => window.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = window.setTimeout(runPrefetch, 900);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadingAuth, user?.id]);
+
   return (
     <div className="h-dvh w-full bg-[var(--app-bg)] flex items-center justify-center overflow-hidden font-sans">
       

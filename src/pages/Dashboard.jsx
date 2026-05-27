@@ -1,28 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
 import { supabase } from "../lib/supabase";
-import { exercises } from "../data/exercises";
-import { preloadExercises } from "../services/exerciseMediaService";
+import { useAuth } from "../context/useAuth";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
 import DashboardActions from "../components/dashboard/DashboardActions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
-import DailyProgressCard from "../components/dashboard/DailyProgressCard";
 
-import { getCachedDietPlans, listDietPlans } from "../services/dietService";
-import { getCachedMeals, listMeals } from "../services/mealService";
-import {
-  getCachedCheckins,
-  listCheckins,
-} from "../services/checkinService";
-import {
-  getCachedProgressLogs,
-  listProgressLogs,
-} from "../services/progressService";
-import { getCachedProfile, getProfile } from "../services/profileService";
+import { getCachedDietPlans } from "../services/dietService";
+import { getCachedMeals } from "../services/mealService";
+import { getCachedCheckins } from "../services/checkinService";
+import { getCachedProgressLogs } from "../services/progressService";
+import { getCachedProfile } from "../services/profileService";
+import { loadDashboardData } from "../services/dashboardPrefetchService";
 
 import {
   getGoals,
@@ -38,42 +31,76 @@ import {
   syncGamificationState,
 } from "../services/gamificationService";
 
+const DailyProgressCard = lazy(() =>
+  import("../components/dashboard/DailyProgressCard")
+);
+
+function getInitialDashboardSnapshot() {
+  const profile = getCachedProfile();
+  const userId = profile?.id || profile?.user_id || null;
+  const meals = getCachedMeals();
+  const dietPlans = getCachedDietPlans();
+  const checkins = getCachedCheckins(userId);
+  const progressLogs = getCachedProgressLogs(userId);
+
+  return {
+    profile,
+    meals,
+    dietPlans,
+    checkins,
+    progressLogs,
+    hasCachedSnapshot: Boolean(
+      profile ||
+        meals.length > 0 ||
+        dietPlans.length > 0 ||
+        checkins.length > 0 ||
+        progressLogs.length > 0
+    ),
+  };
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const initialSnapshot = useMemo(() => getInitialDashboardSnapshot(), []);
 
-  const cachedProfile = getCachedProfile();
-  const cachedUserId = cachedProfile?.id || cachedProfile?.user_id || null;
-  const cachedMeals = getCachedMeals();
-  const cachedDietPlans = getCachedDietPlans();
-  const cachedCheckins = getCachedCheckins(cachedUserId);
-  const cachedProgressLogs = getCachedProgressLogs(cachedUserId);
-  const hasCachedSnapshot = Boolean(
-    cachedProfile ||
-      cachedMeals.length > 0 ||
-      cachedDietPlans.length > 0 ||
-      cachedCheckins.length > 0 ||
-      cachedProgressLogs.length > 0
-  );
-
-  const [profile, setProfile] = useState(() => cachedProfile);
-  const [meals, setMeals] = useState(() => cachedMeals);
-  const [dietPlans, setDietPlans] = useState(() => cachedDietPlans);
-  const [checkins, setCheckins] = useState(() => cachedCheckins);
+  const [profile, setProfile] = useState(() => initialSnapshot.profile);
+  const [meals, setMeals] = useState(() => initialSnapshot.meals);
+  const [dietPlans, setDietPlans] = useState(() => initialSnapshot.dietPlans);
+  const [checkins, setCheckins] = useState(() => initialSnapshot.checkins);
   const [workoutCompletions] = useState(() => getWorkoutCompletions());
-  const [loadingData, setLoadingData] = useState(() => !hasCachedSnapshot);
-  const [syncing, setSyncing] = useState(() => hasCachedSnapshot);
+  const [loadingData, setLoadingData] = useState(
+    () => !initialSnapshot.hasCachedSnapshot
+  );
+  const [syncing, setSyncing] = useState(
+    () => initialSnapshot.hasCachedSnapshot
+  );
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    if (!Array.isArray(exercises) || exercises.length === 0) return;
+    let cancelled = false;
 
-    preloadExercises(exercises.slice(0, 25));
+    const preloadWorkoutMedia = async () => {
+      const [{ exercises }, { preloadExercises }] = await Promise.all([
+        import("../data/exercises"),
+        import("../services/exerciseMediaService"),
+      ]);
 
-    const delayedPreload = setTimeout(() => {
+      if (cancelled || !Array.isArray(exercises) || exercises.length === 0) return;
+
+      preloadExercises(exercises.slice(0, 16));
+
       preloadExercises(exercises);
-    }, 1200);
+    };
 
-    return () => clearTimeout(delayedPreload);
+    const timeoutId = window.setTimeout(() => {
+      void preloadWorkoutMedia();
+    }, 1800);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const loadRemoteDashboardData = useCallback(async () => {
@@ -81,13 +108,18 @@ export function Dashboard() {
     setSyncing(true);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let sessionUser = user;
+
+      if (!sessionUser) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        sessionUser = session?.user || null;
+      }
 
       const currentCachedProfile = getCachedProfile();
       const userId =
-        user?.id ||
+        sessionUser?.id ||
         currentCachedProfile?.id ||
         currentCachedProfile?.user_id ||
         null;
@@ -97,47 +129,23 @@ export function Dashboard() {
         return;
       }
 
-      const [profileRes, mealsRes, dietsRes, checkinsRes, progressRes] =
-        await Promise.allSettled([
-          getProfile(userId, { fallbackToCache: false }),
-          listMeals(userId, { fallbackToCache: false }),
-          listDietPlans(userId, { fallbackToCache: false }),
-          listCheckins(userId, { fallbackToCache: false }),
-          listProgressLogs(userId, { fallbackToCache: false }),
-        ]);
+      const dashboardData = await loadDashboardData(userId, {
+        fallbackToCache: false,
+        maxCacheAgeMs: 15000,
+      });
 
-      const errors = [];
+      setProfile(dashboardData.profile || null);
+      setMeals(dashboardData.meals || []);
+      setDietPlans(dashboardData.dietPlans || []);
+      setCheckins(dashboardData.checkins || []);
 
-      if (profileRes.status === "fulfilled") {
-        setProfile(profileRes.value || null);
-      } else {
-        errors.push(profileRes.reason);
-      }
-
-      if (mealsRes.status === "fulfilled") {
-        setMeals(mealsRes.value || []);
-      } else {
-        errors.push(mealsRes.reason);
-      }
-
-      if (dietsRes.status === "fulfilled") {
-        setDietPlans(dietsRes.value || []);
-      } else {
-        errors.push(dietsRes.reason);
-      }
-
-      if (checkinsRes.status === "rejected") {
-        errors.push(checkinsRes.reason);
-      } else {
-        setCheckins(checkinsRes.value || []);
-      }
-
-      if (progressRes.status === "rejected") {
-        errors.push(progressRes.reason);
-      }
-
-      if (errors.length > 0) {
-        setLoadError(formatDashboardError(errors[0], errors.length));
+      if (dashboardData.errors.length > 0) {
+        setLoadError(
+          formatDashboardError(
+            dashboardData.errors[0],
+            dashboardData.errors.length
+          )
+        );
       } else {
         setLoadError("");
       }
@@ -147,7 +155,7 @@ export function Dashboard() {
       setLoadingData(false);
       setSyncing(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -255,7 +263,7 @@ export function Dashboard() {
 
   const [gamification, setGamification] = useState(() =>
     buildGamificationSnapshot(getGamificationState(), {
-      hasActiveDiet: Boolean(cachedDietPlans[0]),
+      hasActiveDiet: Boolean(initialSnapshot.dietPlans[0]),
       hasMealToday: false,
       hasWorkoutToday: false,
       hasCheckinToday: false,
@@ -263,8 +271,8 @@ export function Dashboard() {
       protein: 0,
       proteinGoal: 0,
       dailyMealGoal,
-      totalMeals: cachedMeals.length,
-      totalCheckins: cachedCheckins.length,
+      totalMeals: initialSnapshot.meals.length,
+      totalCheckins: initialSnapshot.checkins.length,
       totalWorkouts: workoutCompletions.length,
     })
   );
@@ -304,25 +312,6 @@ export function Dashboard() {
     ]
   );
 
-  if (loadingData) {
-    return (
-      <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
-        <div
-          className="flex h-full min-h-0 flex-col gap-1"
-          style={{ backgroundColor: "var(--app-surface)" }}
-        >
-          <div className="shrink-0">
-            <DashboardHeader loadingData={loadingData} navigate={navigate} />
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <DashboardSkeleton />
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
       <div
@@ -334,7 +323,10 @@ export function Dashboard() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex flex-col gap-1.5">
+          {loadingData ? (
+            <DashboardSkeleton />
+          ) : (
+            <div className="flex flex-col gap-1.5">
             {syncing ? (
               <DashboardSyncBanner message="Sincronizando..." />
             ) : null}
@@ -364,7 +356,9 @@ export function Dashboard() {
             </div>
 
             <div className="shrink-0">
-              <DailyProgressCard gamification={gamification} />
+              <Suspense fallback={<DailyProgressSkeleton />}>
+                <DailyProgressCard gamification={gamification} />
+              </Suspense>
             </div>
 
             <div className="shrink-0">
@@ -377,10 +371,30 @@ export function Dashboard() {
             <div className="shrink-0">
               <DashboardActions navigate={navigate} />
             </div>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function DailyProgressSkeleton() {
+  return (
+    <section className="animate-pulse rounded-[1.35rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-3 shadow-[0_18px_54px_var(--app-glow)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <div className="h-2.5 w-28 rounded-full bg-[var(--app-primary-soft)]" />
+          <div className="h-5 w-40 rounded-full bg-[var(--app-primary-soft)]" />
+        </div>
+        <div className="h-11 w-11 rounded-2xl bg-[var(--app-primary-soft)]" />
+      </div>
+      <div className="mt-4 h-2.5 rounded-full bg-[var(--app-surface)]" />
+      <div className="mt-3 grid grid-cols-2 gap-1.5">
+        <div className="h-9 rounded-2xl bg-[var(--app-surface)]" />
+        <div className="h-9 rounded-2xl bg-[var(--app-surface)]" />
+      </div>
+    </section>
   );
 }
 
@@ -616,28 +630,30 @@ function getTodayWorkoutRecommendation({ profile, completedToday }) {
   };
   const today = schedule[weekday] || schedule[1];
   const level = getRecommendedWorkoutLevel(profile);
-  const muscleExercises = exercises.filter(
-    (exercise) =>
-      exercise.muscle === today.muscle ||
-      (today.label === "Brazos" &&
-        (exercise.muscle === "Bíceps" || exercise.muscle === "Tríceps"))
-  );
-  const exactLevelExercises = muscleExercises.filter(
-    (exercise) => exercise.level === level
-  );
-  const recommendedExercises =
-    exactLevelExercises.length >= 3 ? exactLevelExercises : muscleExercises;
+  const exerciseNames =
+    DASHBOARD_WORKOUT_EXERCISE_HINTS[today.label] ||
+    DASHBOARD_WORKOUT_EXERCISE_HINTS[today.muscle] ||
+    DASHBOARD_WORKOUT_EXERCISE_HINTS.General;
 
   return {
     muscle: today.label,
     queryMuscle: today.muscle.toLowerCase(),
     level,
     completedToday,
-    exerciseNames: recommendedExercises
-      .slice(0, 3)
-      .map((exercise) => exercise.name),
+    exerciseNames,
   };
 }
+
+const DASHBOARD_WORKOUT_EXERCISE_HINTS = {
+  "Abdomen / descanso activo": ["Plancha", "Crunch controlado", "Movilidad"],
+  Pecho: ["Press", "Flexiones", "Aperturas"],
+  Espalda: ["Remo", "Jalón", "Peso muerto"],
+  Piernas: ["Sentadilla", "Zancadas", "Prensa"],
+  Hombros: ["Press militar", "Elevaciones", "Face pull"],
+  Glúteos: ["Hip thrust", "Puente", "Patada de glúteo"],
+  Brazos: ["Curl bíceps", "Fondos", "Extensión tríceps"],
+  General: ["Fuerza base", "Core", "Movilidad"],
+};
 
 function getRecommendedWorkoutLevel(profile) {
   const activity =

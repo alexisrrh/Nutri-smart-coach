@@ -27,7 +27,10 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        if (isMounted) setUser(data.user);
+        if (isMounted) {
+          setUser(data.user);
+          scheduleDashboardWarmup(data.user?.id);
+        }
       } catch (error) {
         if (isInvalidRefreshTokenError(error)) {
           await resetCorruptSupabaseSession();
@@ -48,6 +51,7 @@ export function AuthProvider({ children }) {
         if (!isMounted) return;
 
         setUser(session?.user ?? null);
+        scheduleDashboardWarmup(session?.user?.id);
         setLoadingAuth(false);
       }
     );
@@ -63,6 +67,46 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+let lastDashboardWarmupUserId = null;
+
+function scheduleDashboardWarmup(userId) {
+  if (!userId || lastDashboardWarmupUserId === userId) return;
+
+  lastDashboardWarmupUserId = userId;
+  const isDashboardEntry = window.location.pathname === "/dashboard";
+
+  const runWarmup = async () => {
+    try {
+      const { preloadDashboardChunk, prefetchDashboardData } = await import(
+        "../services/dashboardPrefetchService"
+      );
+
+      void preloadDashboardChunk();
+      void prefetchDashboardData(userId);
+    } catch (error) {
+      console.warn("No se pudo precargar Dashboard:", error);
+    }
+  };
+
+  if (isDashboardEntry) {
+    window.setTimeout(() => {
+      void runWarmup();
+    }, 0);
+    return;
+  }
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(() => {
+      void runWarmup();
+    }, { timeout: 1200 });
+    return;
+  }
+
+  window.setTimeout(() => {
+    void runWarmup();
+  }, 250);
 }
 
 function isInvalidRefreshTokenError(error) {
@@ -120,4 +164,3 @@ function getSupabaseAuthStorageKey() {
 function isSupabaseAuthKey(key) {
   return /^sb-[a-z0-9-]+-auth-token$/i.test(key || "");
 }
-
