@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ai } from "../config/gemini.js";
-import { upload } from "../config/multer.js";
+import { uploadSingleImage } from "../config/multer.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
@@ -12,12 +12,19 @@ import {
   getSupabaseStoragePath,
   uploadImageToSupabase,
 } from "../services/storage.service.js";
+import {
+  checkDailyAiLimit,
+  enforceRateLimit,
+  registerAiUsage,
+} from "../utils/aiUsage.js";
 import { cleanGeminiJson } from "../utils/json.js";
 import { toNumberOrNull } from "../utils/numbers.js";
 
 const router = Router();
+const DAILY_CHECKIN_ANALYSIS_LIMIT = 1;
+const CHECKIN_ANALYSIS_COOLDOWN_SECONDS = 8;
 
-router.post("/checkins", verifySupabaseUser, upload.single("image"), async (req, res) => {
+router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
   try {
     const requestedUserId = req.body.user_id || null;
     const userId = req.authUser.id;
@@ -34,6 +41,32 @@ router.post("/checkins", verifySupabaseUser, upload.single("image"), async (req,
       return res.status(400).json({ error: "Falta la imagen del check-in" });
     }
 
+    if (process.env.GEMINI_API_KEY) {
+      const limitState = await checkDailyAiLimit({
+        userId,
+        type: "checkin_analysis",
+        limit: DAILY_CHECKIN_ANALYSIS_LIMIT,
+      });
+
+      if (!limitState.allowed) {
+        return res.status(429).json({
+          error: "Has alcanzado el límite diario de check-in IA.",
+        });
+      }
+
+      const rateLimitState = enforceRateLimit({
+        userId,
+        type: "checkin_analysis",
+        seconds: CHECKIN_ANALYSIS_COOLDOWN_SECONDS,
+      });
+
+      if (!rateLimitState.allowed) {
+        return res.status(429).json({
+          error: `Espera ${rateLimitState.waitSeconds} segundos antes de guardar otro check-in IA.`,
+        });
+      }
+    }
+
     const imageUrl = await uploadImageToSupabase({
       bucket: "checkins",
       userId,
@@ -41,6 +74,10 @@ router.post("/checkins", verifySupabaseUser, upload.single("image"), async (req,
     });
 
     const previousCheckins = await getPreviousCheckins(userId);
+
+    if (process.env.GEMINI_API_KEY) {
+      registerAiUsage({ userId, type: "checkin_analysis" });
+    }
 
     const analysis = await analyzeCheckinWithGemini({
       file: req.file,

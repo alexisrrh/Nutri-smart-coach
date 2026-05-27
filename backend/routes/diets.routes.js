@@ -10,11 +10,18 @@ import {
 } from "../normalizers/diet.normalizer.js";
 import { buildDietPrompt } from "../prompts/diet.prompt.js";
 import { createFallbackDiet } from "../services/dietFallback.service.js";
+import {
+  checkDailyAiLimit,
+  enforceRateLimit,
+  registerAiUsage,
+} from "../utils/aiUsage.js";
 import { cleanGeminiJson } from "../utils/json.js";
 import { clamp, toNumberOrNull } from "../utils/numbers.js";
 import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
+const DAILY_DIET_GENERATION_LIMIT = 1;
+const DIET_GENERATION_COOLDOWN_SECONDS = 8;
 
 router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
   const timing = createTimingLogger("generate-diet");
@@ -50,6 +57,32 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
       usedFallback = true;
       warning = "GEMINI_API_KEY no está configurada en Render";
     } else {
+      const limitState = await checkDailyAiLimit({
+        userId,
+        type: "diet_generation",
+        limit: DAILY_DIET_GENERATION_LIMIT,
+      });
+
+      if (!limitState.allowed) {
+        return res.status(429).json({
+          error: "Has alcanzado el límite diario de generación de dietas.",
+        });
+      }
+
+      const rateLimitState = enforceRateLimit({
+        userId,
+        type: "diet_generation",
+        seconds: DIET_GENERATION_COOLDOWN_SECONDS,
+      });
+
+      if (!rateLimitState.allowed) {
+        return res.status(429).json({
+          error: `Espera ${rateLimitState.waitSeconds} segundos antes de generar otra dieta.`,
+        });
+      }
+
+      registerAiUsage({ userId, type: "diet_generation" });
+
       try {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",

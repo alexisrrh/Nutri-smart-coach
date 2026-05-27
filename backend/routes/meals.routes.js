@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Router } from "express";
 import { ai } from "../config/gemini.js";
-import { upload } from "../config/multer.js";
+import { uploadSingleImage } from "../config/multer.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
@@ -14,10 +14,17 @@ import {
   uploadImageToSupabase,
 } from "../services/storage.service.js";
 import { createImageHash } from "../utils/files.js";
+import {
+  checkDailyAiLimit,
+  enforceRateLimit,
+  registerAiUsage,
+} from "../utils/aiUsage.js";
 import { cleanGeminiJson } from "../utils/json.js";
 import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
+const DAILY_FOOD_ANALYSIS_LIMIT = 6;
+const FOOD_ANALYSIS_COOLDOWN_MS = 8 * 1000;
 
 function normalizeFoodGoal(goal) {
   const normalized = String(goal || "").trim().toLowerCase();
@@ -65,7 +72,7 @@ function parseFoodContext(rawContext) {
   }
 }
 
-router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (req, res) => {
+router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
   const timing = createTimingLogger("analyze-food");
 
   try {
@@ -147,6 +154,32 @@ router.post("/analyze-food", verifySupabaseUser, upload.single("image"), async (
     } else {
       timing.mark("lookup");
     }
+
+    const limitState = await checkDailyAiLimit({
+      userId,
+      type: "food_analysis",
+      limit: DAILY_FOOD_ANALYSIS_LIMIT,
+    });
+
+    if (!limitState.allowed) {
+      return res.status(429).json({
+        error: "Has alcanzado el límite diario de 6 análisis. Vuelve mañana.",
+      });
+    }
+
+    const rateLimitState = enforceRateLimit({
+      userId,
+      type: "food_analysis",
+      seconds: FOOD_ANALYSIS_COOLDOWN_MS / 1000,
+    });
+
+    if (!rateLimitState.allowed) {
+      return res.status(429).json({
+        error: `Espera ${rateLimitState.waitSeconds} segundos antes de analizar otra comida.`,
+      });
+    }
+
+    registerAiUsage({ userId, type: "food_analysis" });
 
     const prompt = buildFoodAnalysisPrompt({
       goal,
