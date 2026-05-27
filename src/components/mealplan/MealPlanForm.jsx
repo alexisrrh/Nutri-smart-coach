@@ -154,6 +154,7 @@ export function MealPlanForm({
         </details>
 
         <button
+          id="meal-plan-builder-submit"
           type="submit"
           disabled={loading}
           className="group relative w-full overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-gradient-to-br from-[var(--app-primary-soft)] via-[var(--app-primary-soft)] to-[var(--app-primary-soft)] px-3 py-3 text-[var(--app-text)] shadow-[0_16px_38px_var(--app-glow)] transition duration-300 hover:border-[var(--app-border)] hover:shadow-[0_18px_44px_var(--app-glow)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"

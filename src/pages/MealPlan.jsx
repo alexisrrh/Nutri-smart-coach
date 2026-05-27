@@ -28,7 +28,13 @@ import {
   setDietGenerationState,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
-import { AiErrorNotice, AppShell, StatusBox, SurfaceCard } from "../components/ui";
+import {
+  AiErrorNotice,
+  AppShell,
+  PremiumEmptyState,
+  StatusBox,
+  SurfaceCard,
+} from "../components/ui";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -416,6 +422,14 @@ export function MealPlan() {
 
           {!hasPlan && !loading ? (
             <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <PremiumEmptyState
+                icon={Sparkles}
+                title="Tu plan semanal empieza aquí"
+                description="Configura objetivo, días y comidas para generar una dieta adaptada a tu rutina."
+                actionLabel="Generar dieta"
+                onAction={() => document.getElementById("meal-plan-builder-submit")?.click()}
+                className="mb-2 py-4"
+              />
               <MealPlanForm
                 formData={formData}
                 setFormData={setFormData}

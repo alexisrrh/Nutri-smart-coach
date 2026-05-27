@@ -1,8 +1,22 @@
+import { Activity } from "lucide-react";
+import { PremiumEmptyState } from "../ui";
+
 export function WorkoutHistoryPreview({ sessions, onOpen, WorkoutHistoryCard }) {
   const recentSessions = getRecentWorkoutSessionsFromList(sessions, 1);
   const latestSession = recentSessions[0];
 
-  if (!latestSession) return null;
+  if (!latestSession) {
+    return (
+      <PremiumEmptyState
+        icon={Activity}
+        title="Aún no has registrado entrenamientos"
+        description="Completa una sesión para que tu historial de rendimiento cobre vida."
+        actionLabel="Abrir historial"
+        onAction={onOpen}
+        className="py-4"
+      />
+    );
+  }
 
   return (
     <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5 shadow-[0_6px_16px_var(--app-glow)]">

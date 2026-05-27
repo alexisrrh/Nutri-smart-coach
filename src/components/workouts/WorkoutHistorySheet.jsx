@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { Activity, X } from "lucide-react";
+import { PremiumEmptyState } from "../ui";
 
 export function WorkoutHistorySheet({ sessions, onClose, WorkoutHistoryCard }) {
   return (
@@ -34,11 +35,12 @@ export function WorkoutHistorySheet({ sessions, onClose, WorkoutHistoryCard }) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-6 text-center">
-                <p className="text-[12px] font-bold text-[var(--app-muted)]">
-                  Aún no tienes entrenamientos guardados.
-                </p>
-              </div>
+              <PremiumEmptyState
+                icon={Activity}
+                title="Aún no has registrado entrenamientos"
+                description="Completa una sesión para activar tu historial, volumen y señales de rendimiento."
+                className="py-5"
+              />
             )}
           </div>
         </div>

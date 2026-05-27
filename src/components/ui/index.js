@@ -5,6 +5,7 @@ export { default as FormField } from "./FormField";
 export { fieldControlClass } from "./formFieldClasses";
 export { default as MetaBadge } from "./MetaBadge";
 export { default as PageHeaderCard } from "./PageHeaderCard";
+export { default as PremiumEmptyState } from "./PremiumEmptyState";
 export { default as PrimaryButton } from "./PrimaryButton";
 export { default as SecondaryButton } from "./SecondaryButton";
 export { default as StatCard } from "./StatCard";

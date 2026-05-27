@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { EXERCISE_LIBRARY, MUSCLE_GROUPS } from "../data/exerciseLibrary";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AppShell, ConfirmDialog } from "../components/ui";
+import { AppShell, ConfirmDialog, PremiumEmptyState } from "../components/ui";
 import ExerciseMediaFrame from "../components/exercises/ExerciseMediaFrame";
 import { WorkoutSession } from "../components/workout/WorkoutSession";
 
@@ -503,7 +503,7 @@ export function WorkoutRoutines() {
               onOpen={() => setShowCustomRoutines(true)}
             />
 
-            {planConfirmed && workoutSessions.length ? (
+            {planConfirmed ? (
               <WorkoutHistoryPreview
                 WorkoutHistoryCard={WorkoutHistoryCard}
                 sessions={workoutSessions}
@@ -918,25 +918,13 @@ function CustomRoutinesSheet({
           <div className="min-h-0 overflow-y-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2.5">
               {routines.length === 0 ? (
-                <div className="relative overflow-hidden rounded-[1.1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#08131b),var(--app-surface))] p-4 text-center shadow-[0_10px_24px_rgba(0,0,0,0.16)]">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_42%)]" />
-                  <div className="relative z-10 mx-auto grid h-11 w-11 place-items-center rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]">
-                    <Sparkles size={18} />
-                  </div>
-                  <h3 className="relative z-10 mt-3 text-[17px] font-semibold leading-tight text-[var(--app-text)]">
-                    No tienes rutinas disponibles
-                  </h3>
-                  <p className={`relative z-10 mx-auto mt-2 max-w-[19rem] ${routineSubtitleClass}`}>
-                    Crea tu primera rutina personalizada y empieza a entrenar a tu manera.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={onCreate}
-                    className={`${routinePrimaryActionClass} relative z-10 mt-4`}
-                  >
-                    + Crear rutina
-                  </button>
-                </div>
+                <PremiumEmptyState
+                  icon={Sparkles}
+                  title="No tienes rutinas disponibles"
+                  description="Crea tu primera rutina personalizada y empieza a entrenar a tu manera."
+                  actionLabel="+ Crear rutina"
+                  onAction={onCreate}
+                />
               ) : routines.map((routine) => {
                 const firstDay = Array.isArray(routine.days)
                   ? routine.days[0]
