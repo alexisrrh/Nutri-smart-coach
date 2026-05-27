@@ -7,7 +7,7 @@ import FoodResultCard from "../components/food/FoodResultCard";
 import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
-import { AppShell } from "../components/ui";
+import { AiErrorNotice, AppShell } from "../components/ui";
 
 import { useFoodPhotoAnalysis } from "../hooks/food-photo/useFoodPhotoAnalysis";
 import { useFoodPhotoImageUpload } from "../hooks/food-photo/useFoodPhotoImageUpload";
@@ -145,11 +145,7 @@ export default function FoodPhoto() {
           />
         )}
 
-        {error && (
-          <div className="shrink-0 rounded-[18px] border border-red-400/20 bg-red-400/10 p-2.5 text-xs leading-4 text-red-200">
-            {error}
-          </div>
-        )}
+        <AiErrorNotice message={error} />
 
         {loading && <FoodScannerLoader preview={preview} />}
 

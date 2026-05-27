@@ -1,4 +1,5 @@
 export { default as AppShell } from "./AppShell";
+export { default as AiErrorNotice } from "./AiErrorNotice";
 export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as FormField } from "./FormField";
 export { fieldControlClass } from "./formFieldClasses";

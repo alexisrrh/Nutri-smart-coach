@@ -13,7 +13,7 @@ import {
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
-import { AppShell } from "../components/ui";
+import { AiErrorNotice, AppShell } from "../components/ui";
 import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
 import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
 import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
@@ -158,7 +158,7 @@ export function CheckIn() {
           </div>
         </section>
 
-        <CheckInAlert type="error" text={error} />
+        <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
         <main className="min-h-0 flex-1 overflow-y-auto pb-32 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
