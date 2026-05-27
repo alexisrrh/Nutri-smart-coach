@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { analyzeMeal, cacheMeal, deleteMeal, getFoodAnalysisProcessState, removeMealFromCache, setFoodAnalysisProcessState } from "../../services/mealService";
 
@@ -33,6 +33,8 @@ export function useFoodPhotoAnalysis({
   resetRecoveryState,
   result,
 }) {
+  const analysisInFlightRef = useRef(false);
+
   const analyzeFood = useCallback(async () => {
     const trimmedDescription = description.trim();
 
@@ -42,7 +44,9 @@ export function useFoodPhotoAnalysis({
       return;
     }
 
-    if (loading) return;
+    if (loading || analysisInFlightRef.current) return;
+
+    analysisInFlightRef.current = true;
 
     try {
       const requestId = createAnalysisRequestId();
@@ -125,6 +129,8 @@ export function useFoodPhotoAnalysis({
         setError(errorMessage);
       }
     } finally {
+      analysisInFlightRef.current = false;
+
       if (isMountedRef.current) {
         setLoading(false);
       }

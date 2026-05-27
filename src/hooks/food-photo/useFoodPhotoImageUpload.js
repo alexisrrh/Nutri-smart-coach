@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const TARGET_SIZE = 1.2 * 1024 * 1024;
+const TARGET_SIZE = 1 * 1024 * 1024;
+const MAX_IMAGE_SIDE = 900;
+const COMPRESSION_QUALITIES = [0.7, 0.62, 0.55];
 
 export function useFoodPhotoImageUpload({
   preview,
@@ -72,21 +74,19 @@ export function useFoodPhotoImageUpload({
 }
 
 async function prepareImageForUpload(file) {
-  if (file.size <= TARGET_SIZE && !isHeicImage(file)) {
-    return file;
-  }
-
   if (isHeicImage(file)) {
     return file;
   }
 
-  const compressed = await compressImage(file);
+  for (const quality of COMPRESSION_QUALITIES) {
+    const compressed = await compressImage(file, quality);
 
-  if (compressed.size > TARGET_SIZE) {
-    throw new Error("La imagen sigue siendo demasiado pesada.");
+    if (compressed.size <= TARGET_SIZE) {
+      return compressed;
+    }
   }
 
-  return compressed;
+  throw new Error("La imagen sigue siendo demasiado pesada.");
 }
 
 function isHeicImage(file) {
@@ -97,7 +97,7 @@ function isHeicImage(file) {
   );
 }
 
-function compressImage(file) {
+function compressImage(file, quality = 0.7) {
   return new Promise((resolve, reject) => {
     const image = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -106,8 +106,8 @@ function compressImage(file) {
       URL.revokeObjectURL(objectUrl);
 
       const canvas = document.createElement("canvas");
-      const maxWidth = 1024;
-      const scale = Math.min(1, maxWidth / image.width);
+      const longestSide = Math.max(image.width, image.height);
+      const scale = Math.min(1, MAX_IMAGE_SIDE / longestSide);
 
       canvas.width = Math.round(image.width * scale);
       canvas.height = Math.round(image.height * scale);
@@ -140,7 +140,7 @@ function compressImage(file) {
           resolve(compressedFile);
         },
         "image/jpeg",
-        0.74
+        quality
       );
     };
 
