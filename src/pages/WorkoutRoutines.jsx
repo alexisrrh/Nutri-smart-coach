@@ -3,9 +3,9 @@ import {
   ArrowLeft,
   CheckCircle2,
   ChevronRight,
-  Dumbbell,
   Play,
   Share2,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -447,8 +447,14 @@ export function WorkoutRoutines() {
                 </p>
               </div>
 
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]">
-                <Dumbbell size={16} />
+              <div className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.16),transparent_28%),var(--app-primary-soft)] shadow-[0_0_18px_var(--app-glow)]">
+                <div className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,var(--app-primary-soft),transparent_62%)]" />
+                <img
+                  src="/logo.png"
+                  alt=""
+                  className="relative z-10 h-7 w-7 rounded-full object-cover"
+                  aria-hidden="true"
+                />
               </div>
             </div>
           </section>
@@ -750,11 +756,19 @@ function AIPerformanceCore({
             className={[
               "relative grid h-[72px] w-[72px] place-items-center rounded-full border bg-[radial-gradient(circle_at_35%_28%,rgba(255,255,255,0.24),transparent_20%),radial-gradient(circle_at_50%_72%,color-mix(in_srgb,var(--app-primary)_34%,transparent),transparent_50%),linear-gradient(145deg,color-mix(in_srgb,var(--app-primary)_38%,#06110e),#06110e)]",
               active
-                ? "border-[color:color-mix(in_srgb,var(--app-primary)_52%,var(--app-border))] shadow-[0_0_44px_var(--app-glow),inset_0_0_22px_color-mix(in_srgb,var(--app-primary)_26%,transparent)] animate-[restOrbPulse_3.4s_ease-in-out_infinite]"
+                ? "ai-core-orb-heartbeat border-[color:color-mix(in_srgb,var(--app-primary)_52%,var(--app-border))] shadow-[0_0_44px_var(--app-glow),inset_0_0_22px_color-mix(in_srgb,var(--app-primary)_26%,transparent)]"
                 : "border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] shadow-[0_0_16px_rgba(0,0,0,0.22)]",
             ].join(" ")}
           >
-            <Dumbbell size={24} className="text-[var(--app-primary)] drop-shadow-[0_0_12px_var(--app-glow)]" />
+            <img
+              src="/logo-rutinas.png"
+              alt=""
+              aria-hidden="true"
+              className={[
+                "ai-core-heartbeat h-18 w-30 object-cover drop-shadow-[0_0_14px_var(--app-glow)]",
+                active ? "opacity-100" : "opacity-90",
+              ].join(" ")}
+            />
           </div>
         </div>
 
@@ -907,7 +921,7 @@ function CustomRoutinesSheet({
                 <div className="relative overflow-hidden rounded-[1.1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#08131b),var(--app-surface))] p-4 text-center shadow-[0_10px_24px_rgba(0,0,0,0.16)]">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_42%)]" />
                   <div className="relative z-10 mx-auto grid h-11 w-11 place-items-center rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]">
-                    <Dumbbell size={18} />
+                    <Sparkles size={18} />
                   </div>
                   <h3 className="relative z-10 mt-3 text-[17px] font-semibold leading-tight text-[var(--app-text)]">
                     No tienes rutinas disponibles
@@ -1177,8 +1191,14 @@ function IAWeeklyRoutineCard({
             </div>
           </div>
 
-          <div className="shrink-0 rounded-[1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] p-2 text-[var(--app-primary)] shadow-[0_0_14px_rgba(0,196,255,0.14)]">
-            <Dumbbell size={20} />
+          <div className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.14),transparent_28%),var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
+            <div className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,var(--app-primary-soft),transparent_66%)]" />
+            <img
+              src="/icons/rutinas.png"
+              alt=""
+              aria-hidden="true"
+              className="relative z-10 h-9 w-9 object-contain drop-shadow-[0_0_9px_var(--app-glow)]"
+            />
           </div>
         </div>
 
