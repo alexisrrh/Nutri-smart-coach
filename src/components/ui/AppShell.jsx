@@ -4,30 +4,24 @@ export default function AppShell({
   children,
   className = "",
   contentClassName = "",
+  scrollClassName = "",
   withBottomNav = true,
   hideBottomNav = false,
   wide = false,
 }) {
-  const useBottomNavLayout = withBottomNav;
   const showBottomNav = withBottomNav && !hideBottomNav;
   const shellWidthClass = wide ? "max-w-[520px]" : "max-w-[430px]";
-  const rootClass = useBottomNavLayout
-    ? "h-[100svh] overflow-hidden"
-    : "min-h-[100dvh] overflow-hidden";
-  const sectionClass = useBottomNavLayout
-    ? `relative mx-auto flex h-full min-h-0 w-full ${shellWidthClass} flex-col overflow-hidden px-4 pb-[var(--bottom-nav-space)] pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`
-    : `relative mx-auto flex min-h-[100dvh] w-full ${shellWidthClass} flex-col overflow-visible px-4 pb-6 pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`;
 
   return (
     <main
-      className={`${rootClass} w-full md:flex md:items-center md:justify-center md:p-6 ${className}`}
+      className={`h-[100dvh] w-full overflow-hidden md:flex md:items-center md:justify-center md:p-6 ${className}`}
       style={{
         backgroundColor: "var(--app-surface)",
         color: "var(--app-text)",
       }}
     >
       <section
-        className={sectionClass}
+        className={`relative mx-auto flex h-full w-full ${shellWidthClass} flex-col overflow-hidden px-4 pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`}
         style={{
           backgroundColor: "var(--app-card)",
           borderColor: "var(--app-border)",
@@ -35,9 +29,21 @@ export default function AppShell({
       >
         <AppBackground />
 
-        <div className="relative z-10 min-h-0 flex-1">{children}</div>
+        <div
+          className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-${
+            showBottomNav
+              ? "[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+24px)]"
+              : "[calc(32px+env(safe-area-inset-bottom))]"
+          } [-webkit-overflow-scrolling:touch] ${scrollClassName}`}
+        >
+          {children}
+        </div>
 
-        {showBottomNav && <BottomNav />}
+        {showBottomNav && (
+          <div className="relative z-20 shrink-0">
+            <BottomNav />
+          </div>
+        )}
       </section>
     </main>
   );

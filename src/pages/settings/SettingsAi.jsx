@@ -70,72 +70,74 @@ export function SettingsAi() {
       subtitle="Núcleo vivo, recursos asignados y capas futuras del sistema."
       onBack={() => navigate("/perfil")}
     >
-      <AiCorePanel
-        loading={loading}
-        planLabel={planLabel}
-        premium={premium}
-        provider={provider}
-        usageRows={usageRows}
-      />
+      <div className="space-y-2.5 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]">
+        <AiCorePanel
+          loading={loading}
+          planLabel={planLabel}
+          premium={premium}
+          provider={provider}
+          usageRows={usageRows}
+        />
 
-      <SettingsCard
-        icon={<TimerReset size={16} />}
-        title="Límites y control"
-        description="Asignación de recursos para estabilidad, coste y respuesta consistente."
-      >
-        <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent)_0%,color-mix(in_srgb,var(--app-card)_92%,transparent)_100%)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_14px_34px_rgba(0,0,0,0.12)]">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-70"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 30%), radial-gradient(circle at 82% 24%, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 24%)",
-            }}
-          />
-          <div className="relative grid gap-1.5">
-            {usageRows.map((row) => (
-              <AllocationRow
-                key={row.label}
-                label={row.label}
-                value={premium ? row.premium : row.free}
-                active={premium}
-              />
-            ))}
+        <SettingsCard
+          icon={<TimerReset size={16} />}
+          title="Límites y control"
+          description="Asignación de recursos para estabilidad, coste y respuesta consistente."
+        >
+          <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent)_0%,color-mix(in_srgb,var(--app-card)_92%,transparent)_100%)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_14px_34px_rgba(0,0,0,0.12)]">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-70"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 30%), radial-gradient(circle at 82% 24%, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 24%)",
+              }}
+            />
+            <div className="relative grid gap-1.5">
+              {usageRows.map((row) => (
+                <AllocationRow
+                  key={row.label}
+                  label={row.label}
+                  value={premium ? row.premium : row.free}
+                  active={premium}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </SettingsCard>
+        </SettingsCard>
 
-      <SettingsCard
-        icon={<Sparkles size={16} />}
-        title="Futuras capas"
-        description="Evolución prevista sin romper la base actual ni la lectura premium."
-      >
-        <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent)_0%,color-mix(in_srgb,var(--app-card)_94%,transparent)_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_40px_rgba(0,0,0,0.12)]">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-65"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 30%), radial-gradient(circle at 82% 24%, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 24%), radial-gradient(circle at 50% 92%, color-mix(in srgb, var(--app-primary) 4%, transparent), transparent 28%)",
-            }}
-          />
-          <div className="relative z-10 grid gap-2">
-            <RoadmapLine label="Motor adaptativo" copy="Más contexto con la misma base de datos y la misma seguridad." />
-            <RoadmapLine label="Análisis contextual" copy="Recomendaciones más precisas sin añadir ruido visual." />
-            <RoadmapLine label="Capas futuras" copy="La UI ya respira como un sistema extensible y vivo." />
+        <SettingsCard
+          icon={<Sparkles size={16} />}
+          title="Futuras capas"
+          description="Evolución prevista sin romper la base actual ni la lectura premium."
+        >
+          <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent)_0%,color-mix(in_srgb,var(--app-card)_94%,transparent)_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_40px_rgba(0,0,0,0.12)]">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-65"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 30%), radial-gradient(circle at 82% 24%, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 24%), radial-gradient(circle at 50% 92%, color-mix(in srgb, var(--app-primary) 4%, transparent), transparent 28%)",
+              }}
+            />
+            <div className="relative z-10 grid gap-2">
+              <RoadmapLine label="Motor adaptativo" copy="Más contexto con la misma base de datos y la misma seguridad." />
+              <RoadmapLine label="Análisis contextual" copy="Recomendaciones más precisas sin añadir ruido visual." />
+              <RoadmapLine label="Capas futuras" copy="La UI ya respira como un sistema extensible y vivo." />
+            </div>
           </div>
-        </div>
-      </SettingsCard>
+        </SettingsCard>
 
-      <SettingsCard
-        icon={<CircleSlash2 size={16} />}
-        title="Plataforma"
-        description="La arquitectura actual permanece intacta: misma cuenta, misma seguridad, misma base."
-      >
-        <div className="flex flex-wrap gap-1.5">
-          <InfoChip>{planLabel}</InfoChip>
-          <InfoChip>{premium ? "Límites ampliados" : "Límites Free"}</InfoChip>
-          <InfoChip>Proveedor {provider}</InfoChip>
-        </div>
-      </SettingsCard>
+        <SettingsCard
+          icon={<CircleSlash2 size={16} />}
+          title="Plataforma"
+          description="La arquitectura actual permanece intacta: misma cuenta, misma seguridad, misma base."
+        >
+          <div className="flex flex-wrap gap-1.5">
+            <InfoChip>{planLabel}</InfoChip>
+            <InfoChip>{premium ? "Límites ampliados" : "Límites Free"}</InfoChip>
+            <InfoChip>Proveedor {provider}</InfoChip>
+          </div>
+        </SettingsCard>
+      </div>
     </SettingsScreenShell>
   );
 }

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "../components/ui";
@@ -35,27 +35,17 @@ const DailyProgressCard = lazy(() =>
   import("../components/dashboard/DailyProgressCard")
 );
 
-function getInitialDashboardSnapshot() {
-  const profile = getCachedProfile();
-  const userId = profile?.id || profile?.user_id || null;
-  const meals = getCachedMeals();
-  const dietPlans = getCachedDietPlans();
-  const checkins = getCachedCheckins(userId);
-  const progressLogs = getCachedProgressLogs(userId);
+const DASHBOARD_IMPORT_STARTED_AT =
+  typeof performance !== "undefined" ? performance.now() : 0;
 
+function getInitialDashboardSnapshot() {
   return {
-    profile,
-    meals,
-    dietPlans,
-    checkins,
-    progressLogs,
-    hasCachedSnapshot: Boolean(
-      profile ||
-        meals.length > 0 ||
-        dietPlans.length > 0 ||
-        checkins.length > 0 ||
-        progressLogs.length > 0
-    ),
+    profile: null,
+    meals: [],
+    dietPlans: [],
+    checkins: [],
+    progressLogs: [],
+    hasCachedSnapshot: false,
   };
 }
 
@@ -63,6 +53,9 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const initialSnapshot = useMemo(() => getInitialDashboardSnapshot(), []);
+  const renderStartRef = useRef(DASHBOARD_IMPORT_STARTED_AT);
+  const paintLoggedRef = useRef(false);
+  const hydratedFromCacheRef = useRef(false);
 
   const [profile, setProfile] = useState(() => initialSnapshot.profile);
   const [meals, setMeals] = useState(() => initialSnapshot.meals);
@@ -76,6 +69,53 @@ export function Dashboard() {
     () => initialSnapshot.hasCachedSnapshot
   );
   const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const rafId = window.requestAnimationFrame(() => {
+      if (paintLoggedRef.current) return;
+      paintLoggedRef.current = true;
+      logDashboardTiming("first paint", renderStartRef.current);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, []);
+
+  useEffect(() => {
+    const rafId = window.requestAnimationFrame(() => {
+      if (hydratedFromCacheRef.current) return;
+      hydratedFromCacheRef.current = true;
+
+      const cachedProfile = getCachedProfile();
+      const userId = cachedProfile?.id || cachedProfile?.user_id || null;
+      const cachedMeals = getCachedMeals();
+      const cachedDietPlans = getCachedDietPlans();
+      const cachedCheckins = getCachedCheckins(userId);
+      const cachedProgressLogs = getCachedProgressLogs(userId);
+
+      const hasCachedSnapshot = Boolean(
+        cachedProfile ||
+          cachedMeals.length > 0 ||
+          cachedDietPlans.length > 0 ||
+          cachedCheckins.length > 0 ||
+          cachedProgressLogs.length > 0
+      );
+
+      if (!hasCachedSnapshot) {
+        logDashboardTiming("cache miss", renderStartRef.current);
+        return;
+      }
+
+      setProfile(cachedProfile);
+      setMeals(cachedMeals);
+      setDietPlans(cachedDietPlans);
+      setCheckins(cachedCheckins);
+      setLoadingData(false);
+      setSyncing(true);
+      logDashboardTiming("cache hydrated", renderStartRef.current);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,6 +148,7 @@ export function Dashboard() {
     setSyncing(true);
 
     try {
+      logDashboardTiming("remote load start", renderStartRef.current);
       let sessionUser = user;
 
       if (!sessionUser) {
@@ -133,6 +174,8 @@ export function Dashboard() {
         fallbackToCache: false,
         maxCacheAgeMs: 15000,
       });
+
+      logDashboardTiming("profile loaded", renderStartRef.current);
 
       setProfile(dashboardData.profile || null);
       setMeals(dashboardData.meals || []);
@@ -292,6 +335,16 @@ export function Dashboard() {
     Boolean(activeDiet)
   );
 
+  useEffect(() => {
+    if (!profile) return;
+    logDashboardTiming("stats loaded", renderStartRef.current);
+  }, [profile, meals.length, dietPlans.length, checkins.length]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    logDashboardTiming("auth ready", renderStartRef.current);
+  }, [user?.id]);
+
   const motivationMessage = useMemo(
     () =>
       getDashboardMotivationMessage({
@@ -321,62 +374,71 @@ export function Dashboard() {
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-1 min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain pb-[115px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {loadingData ? (
             <DashboardSkeleton />
           ) : (
             <div className="flex flex-col gap-1.5">
-            {syncing ? (
-              <DashboardSyncBanner message="Sincronizando..." />
-            ) : null}
+              {syncing ? (
+                <DashboardSyncBanner message="Sincronizando..." />
+              ) : null}
 
-            {loadError ? (
-              <DashboardSyncBanner
-                message={loadError}
-                onRetry={syncing ? null : loadRemoteDashboardData}
-              />
-            ) : null}
+              {loadError ? (
+                <DashboardSyncBanner
+                  message={loadError}
+                  onRetry={syncing ? null : loadRemoteDashboardData}
+                />
+              ) : null}
 
-            <div className="shrink-0">
-              <AIHeroCard
-                firstName={firstName}
-                nutritionScore={nutritionScore}
-                totals={totals}
-                goals={goals}
-                navigate={navigate}
-                smartTip={smartTip}
-                todayMeals={todayMeals}
-                dailyMealGoal={dailyMealGoal}
-              />
-            </div>
+              <div className="shrink-0">
+                <AIHeroCard
+                  firstName={firstName}
+                  nutritionScore={nutritionScore}
+                  totals={totals}
+                  goals={goals}
+                  navigate={navigate}
+                  smartTip={smartTip}
+                  todayMeals={todayMeals}
+                  dailyMealGoal={dailyMealGoal}
+                />
+              </div>
 
-            <div className="shrink-0 pt-0.5">
-              <DashboardMotivationCard message={motivationMessage} />
-            </div>
+              <div className="shrink-0 pt-0.5">
+                <DashboardMotivationCard message={motivationMessage} />
+              </div>
 
-            <div className="shrink-0">
-              <Suspense fallback={<DailyProgressSkeleton />}>
-                <DailyProgressCard gamification={gamification} />
-              </Suspense>
-            </div>
+              <div className="shrink-0">
+                <Suspense fallback={<DailyProgressSkeleton />}>
+                  <DailyProgressCard gamification={gamification} />
+                </Suspense>
+              </div>
 
-            <div className="shrink-0">
-              <DashboardWorkoutRecommendationCard
-                recommendation={workoutRecommendation}
-                navigate={navigate}
-              />
-            </div>
+              <div className="shrink-0">
+                <DashboardWorkoutRecommendationCard
+                  recommendation={workoutRecommendation}
+                  navigate={navigate}
+                />
+              </div>
 
-            <div className="shrink-0">
-              <DashboardActions navigate={navigate} />
-            </div>
+              <div className="shrink-0">
+                <DashboardActions navigate={navigate} />
+              </div>
             </div>
           )}
         </div>
       </div>
     </AppShell>
   );
+}
+
+function logDashboardTiming(label, startTime) {
+  if (typeof window === "undefined") return;
+
+  const elapsed = Math.max(Math.round(performance.now() - startTime), 0);
+
+  if (import.meta.env.PROD || import.meta.env.VITE_DEBUG_DASHBOARD_TIMING === "true") {
+    console.debug(`[Dashboard timing] ${label}: ${elapsed}ms`);
+  }
 }
 
 function DailyProgressSkeleton() {

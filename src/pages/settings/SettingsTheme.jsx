@@ -121,96 +121,98 @@ export function SettingsTheme() {
       subtitle="Personaliza la apariencia de NutriSmartCoach."
       onBack={() => navigate("/perfil")}
     >
-      <ThemeHero activeTheme={activeTheme} />
+      <div className="space-y-2.5 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]">
+        <ThemeHero activeTheme={activeTheme} />
 
-      <SettingsCard
-        icon={<Palette size={16} />}
-        title="Colección de temas"
-        description="Elige una piel visual con materiales vivos, no cajas planas."
-        right={<MetaBadge variant="neutral">{activeTheme.label}</MetaBadge>}
-      >
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {THEMES.map((item) => {
-            const active = item.id === theme;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTheme(item.id)}
-                className={`group relative overflow-hidden rounded-[1.35rem] border px-2.5 py-2.5 text-left transition duration-300 active:scale-[0.985] touch-manipulation ${
-                  active
-                    ? "border-[var(--app-primary)] shadow-[0_16px_34px_var(--app-glow),inset_0_0_0_1px_color-mix(in_srgb,var(--app-primary)_18%,transparent)] ring-1 ring-[var(--app-primary)]/20 -translate-y-[1px]"
-                    : "border-[var(--app-border)] hover:-translate-y-[1px] active:bg-[var(--app-primary-soft)]/30"
-                }`}
-                style={{
-                  background: item.preview.bg,
-                  boxShadow: active ? `0 16px 34px ${item.preview.glow}` : "0 10px 22px rgba(0,0,0,0.12)",
-                }}
-                aria-pressed={active}
-              >
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-90"
-                  style={{ backgroundImage: item.preview.ambient }}
-                />
-                <div className="relative z-10 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p
-                      className="text-[11px] font-semibold"
-                      style={{ color: item.preview.text }}
+        <SettingsCard
+          icon={<Palette size={16} />}
+          title="Colección de temas"
+          description="Elige una piel visual con materiales vivos, no cajas planas."
+          right={<MetaBadge variant="neutral">{activeTheme.label}</MetaBadge>}
+        >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {THEMES.map((item) => {
+              const active = item.id === theme;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTheme(item.id)}
+                  className={`group relative overflow-hidden rounded-[1.35rem] border px-2.5 py-2.5 text-left transition duration-300 active:scale-[0.985] touch-manipulation ${
+                    active
+                      ? "border-[var(--app-primary)] shadow-[0_16px_34px_var(--app-glow),inset_0_0_0_1px_color-mix(in_srgb,var(--app-primary)_18%,transparent)] ring-1 ring-[var(--app-primary)]/20 -translate-y-[1px]"
+                      : "border-[var(--app-border)] hover:-translate-y-[1px] active:bg-[var(--app-primary-soft)]/30"
+                  }`}
+                  style={{
+                    background: item.preview.bg,
+                    boxShadow: active ? `0 16px 34px ${item.preview.glow}` : "0 10px 22px rgba(0,0,0,0.12)",
+                  }}
+                  aria-pressed={active}
+                >
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-90"
+                    style={{ backgroundImage: item.preview.ambient }}
+                  />
+                  <div className="relative z-10 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p
+                        className="text-[11px] font-semibold"
+                        style={{ color: item.preview.text }}
+                      >
+                        {item.label}
+                      </p>
+                      <p
+                        className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em]"
+                        style={{ color: item.preview.muted }}
+                      >
+                        {item.tone}
+                      </p>
+                    </div>
+
+                    <span
+                      className="relative h-4 w-4 shrink-0 rounded-full border border-white/10"
+                      style={{
+                        background: item.preview.primary,
+                        boxShadow: `0 0 16px ${item.preview.glow}`,
+                      }}
                     >
-                      {item.label}
-                    </p>
-                    <p
-                      className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em]"
-                      style={{ color: item.preview.muted }}
-                    >
-                      {item.tone}
-                    </p>
+                      {active ? (
+                        <span
+                          className="absolute inset-[-3px] rounded-full border"
+                          style={{ borderColor: item.preview.border }}
+                        />
+                      ) : null}
+                    </span>
                   </div>
 
-                  <span
-                    className="relative h-4 w-4 shrink-0 rounded-full border border-white/10"
-                    style={{
-                      background: item.preview.primary,
-                      boxShadow: `0 0 16px ${item.preview.glow}`,
-                    }}
-                  >
-                    {active ? (
-                      <span
-                        className="absolute inset-[-3px] rounded-full border"
-                        style={{ borderColor: item.preview.border }}
-                      />
-                    ) : null}
-                  </span>
-                </div>
+                  <ThemeTilePreview item={item} active={active} />
 
-                <ThemeTilePreview item={item} active={active} />
+                  {active ? (
+                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] backdrop-blur-md"
+                      style={{
+                        borderColor: item.preview.border,
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        color: item.preview.primary,
+                      }}
+                    >
+                      <Check size={9} />
+                      Activo
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </SettingsCard>
 
-                {active ? (
-                  <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] backdrop-blur-md"
-                    style={{
-                      borderColor: item.preview.border,
-                      backgroundColor: "rgba(255,255,255,0.04)",
-                      color: item.preview.primary,
-                    }}
-                  >
-                    <Check size={9} />
-                    Activo
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </SettingsCard>
-
-      <SettingsCard
-        icon={<Sparkles size={16} />}
-        title="Live preview"
-        description="Una interfaz miniatura para validar materiales, contraste y profundidad."
-      >
-        <ThemeLivePreview themeData={activeTheme.preview} themeLabel={activeTheme.label} />
-      </SettingsCard>
+        <SettingsCard
+          icon={<Sparkles size={16} />}
+          title="Live preview"
+          description="Una interfaz miniatura para validar materiales, contraste y profundidad."
+        >
+          <ThemeLivePreview themeData={activeTheme.preview} themeLabel={activeTheme.label} />
+        </SettingsCard>
+      </div>
     </SettingsScreenShell>
   );
 }

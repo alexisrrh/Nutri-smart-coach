@@ -168,7 +168,10 @@ export function SettingsProfile() {
 
       <AIProfileCore goal={goalLabel(form.goal)} activity={activityLabel(form.activity)} calories={goals.calories} />
 
-      <form onSubmit={handleSubmit} className="space-y-3 pb-[calc(180px+env(safe-area-inset-bottom))]">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-3 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]"
+      >
         <ProfileModule
           icon={<UserRound size={16} />}
           title="Datos básicos"
@@ -277,7 +280,7 @@ export function SettingsProfile() {
           />
         </ProfileModule>
 
-        <div className="sticky bottom-[calc(12px+env(safe-area-inset-bottom))] z-20">
+        <div className="pt-1 pb-[calc(env(safe-area-inset-bottom)+12px)]">
           <div className="rounded-[1.35rem] border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_82%,transparent)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.22)] backdrop-blur-xl">
             <button
               type="submit"
