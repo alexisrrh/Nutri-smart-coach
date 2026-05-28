@@ -2,6 +2,7 @@ import { STORAGE_KEYS } from "../config/storageKeys";
 import { supabase } from "../lib/supabase";
 import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
+import { mergePendingLegalConsent } from "./legalConsentService";
 import { normalizeProfile } from "./normalizers";
 
 const PROFILE_KEY = STORAGE_KEYS.PROFILE;
@@ -47,7 +48,7 @@ export async function getProfile(userId, { fallbackToCache = true } = {}) {
 }
 
 export async function saveProfile(profile, { fallbackToCache = true } = {}) {
-  const normalizedProfile = normalizeProfile(profile);
+  const normalizedProfile = normalizeProfile(mergePendingLegalConsent(profile));
 
   if (!normalizedProfile?.id) {
     throw new Error("No hay usuario conectado.");
@@ -148,6 +149,13 @@ function toProfileRow(profile) {
     activity_level: profile.activity_level,
     goal: profile.goal,
     preferences,
+    accepted_terms: Boolean(profile.accepted_terms),
+    accepted_terms_at: profile.accepted_terms_at || null,
+    accepted_privacy: Boolean(profile.accepted_privacy),
+    accepted_privacy_at: profile.accepted_privacy_at || null,
+    accepted_data_policy: Boolean(profile.accepted_data_policy),
+    accepted_data_policy_at: profile.accepted_data_policy_at || null,
+    legal_version: profile.legal_version || "2026-05-27",
     updated_at: profile.updated_at || new Date().toISOString(),
   };
 }
