@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppShell, MetaBadge, SecondaryButton, SurfaceCard } from "../components/ui";
 
 const comparisonRows = [
-  { label: "Análisis IA", free: "6/día", premium: "Hasta 100/día" },
+  { label: "Análisis IA", free: "4/día", premium: "Hasta 100/día" },
   { label: "Dietas", free: "1/día", premium: "Hasta 10/día" },
   { label: "Prioridad", free: "Normal", premium: "Prioritaria" },
   { label: "Progreso", free: "Básico", premium: "Avanzado" },

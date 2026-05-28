@@ -2,7 +2,7 @@ import { request } from "./apiClient";
 
 export const AI_USAGE_TYPES = {
   food_analysis: {
-    limit: 6,
+    limit: 4,
     premiumLimit: 100,
     label: "análisis de comida",
     singular: "análisis",
@@ -26,6 +26,20 @@ export const AI_USAGE_TYPES = {
 
 export function isPremiumUser(profile) {
   return Boolean(profile?.plan === "premium" || profile?.is_premium === true);
+}
+
+export function getAiUsageLimitForProfile(type, profile) {
+  const meta = AI_USAGE_TYPES[type] || AI_USAGE_TYPES.food_analysis;
+
+  if (isPremiumUser(profile)) {
+    return meta.premiumLimit || meta.limit;
+  }
+
+  return meta.limit;
+}
+
+export function getAiUsagePlanLabel(profile) {
+  return isPremiumUser(profile) ? "Premium activo" : "Plan Free";
 }
 
 export async function fetchDailyAiUsage(userId) {

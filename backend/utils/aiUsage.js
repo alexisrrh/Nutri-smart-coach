@@ -3,7 +3,7 @@ import { supabase } from "../config/supabase.js";
 const rateLimitByUserAndType = new Map();
 
 export const AI_USAGE_LIMITS = {
-  food_analysis: 6,
+  food_analysis: 4,
   diet_generation: 1,
   checkin_analysis: 1,
 };
