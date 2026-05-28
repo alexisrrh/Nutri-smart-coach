@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { saveProfile } from "../services/profileService";
 import {
+  buildAcceptedLegalConsent,
+  setPendingLegalConsent,
+} from "../services/legalConsentService";
+import {
   UserPlus,
   Mail,
   Lock,
@@ -36,8 +40,16 @@ export function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   async function handleSocialLogin(provider) {
+    if (!acceptedPolicies) {
+      setError("Debes aceptar las políticas antes de continuar con OAuth.");
+      return;
+    }
+
+    setPendingLegalConsent(buildAcceptedLegalConsent());
+
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -72,12 +84,21 @@ export function Register() {
       return;
     }
 
+    if (!acceptedPolicies) {
+      setLoading(false);
+      setError("Debes aceptar las políticas y condiciones de NutriSmartCoach.");
+      return;
+    }
+
+    const legalConsent = buildAcceptedLegalConsent();
+
     const { data, error } = await supabase.auth.signUp({
       email: form.email.trim(),
       password: form.password,
       options: {
         data: {
           nombre: form.nombre.trim(),
+          ...legalConsent,
         },
       },
     });
@@ -109,6 +130,7 @@ export function Register() {
             goal: "perder_grasa",
             meals_per_day: 4,
           },
+          ...legalConsent,
           updated_at: new Date().toISOString(),
         });
       } catch (profileError) {
@@ -205,6 +227,11 @@ export function Register() {
                 icon={<Lock size={16} />}
               />
 
+              <LegalConsentCard
+                checked={acceptedPolicies}
+                onChange={setAcceptedPolicies}
+              />
+
               <PrimaryButton
                 disabled={loading}
                 icon={!loading && <ArrowRight size={16} />}
@@ -231,7 +258,8 @@ export function Register() {
               <div className="flex flex-col gap-3 mb-6">
                 {/* Botón de Google */}
                 <button
-                  onClick={() => handleSocialLogin('google')}
+                  type="button"
+                  onClick={() => handleSocialLogin("google")}
                   className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-white text-gray-700 font-medium rounded-xl border border-gray-300 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 text-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -245,7 +273,8 @@ export function Register() {
 
                 {/* Botón de Facebook */}
                 <button
-                  onClick={() => handleSocialLogin('facebook')}
+                  type="button"
+                  onClick={() => handleSocialLogin("facebook")}
                   className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-[#1877F2] text-white font-medium rounded-xl shadow-sm hover:bg-[#166fe5] active:scale-[0.98] transition-all duration-200 text-sm"
                 >
                   <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -258,15 +287,61 @@ export function Register() {
             </div>
           </div>
         </SurfaceCard>
-         <div className="pt-2">   <ActiveCore /></div>
-          <div className="pt-2"> 
-<PlanPreview /> </div>
+        <div className="pt-2">
+          <ActiveCore />
+        </div>
         <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
           Privacidad segura · Datos protegidos · IA nutricional
         </p>
       </div>
    
     </AppShell>
+  );
+}
+
+function LegalConsentCard({ checked, onChange }) {
+  return (
+    <div className="rounded-[22px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),var(--app-card))] p-3 shadow-[inset_0_0_0_1px_var(--app-border)]">
+      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+        Consentimiento legal
+      </p>
+      <p className="mt-1.5 text-[12px] font-medium leading-5 text-[var(--app-muted)]">
+        Al crear tu cuenta aceptas la{" "}
+        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/privacy">
+          Política de privacidad
+        </Link>
+        , los{" "}
+        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/terms">
+          Términos del servicio
+        </Link>
+        {" "}y la{" "}
+        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/delete-account">
+          gestión de tus datos
+        </Link>
+        .
+      </p>
+
+      <label className="mt-3 flex items-start gap-3 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 transition active:scale-[0.99]">
+        <span className="relative mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[7px] border border-[var(--app-border)] bg-[var(--app-card)]">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(event) => onChange(event.target.checked)}
+            className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+          <span className={`h-3.5 w-3.5 rounded-[5px] transition ${checked ? "bg-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]" : "bg-transparent"}`} />
+        </span>
+
+        <span className="min-w-0">
+          <span className="block text-[12px] font-bold leading-5 text-[var(--app-text)]">
+            Acepto las políticas y condiciones de NutriSmartCoach.
+          </span>
+          <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            Necesario para crear tu cuenta y guardar tu consentimiento.
+          </span>
+        </span>
+      </label>
+    </div>
   );
 }
 
@@ -318,68 +393,6 @@ function ActiveCore() {
         </div>
       </div>
     </SurfaceCard>
-  );
-}
-
-function PlanPreview() {
-  return (
-    <SurfaceCard variant="soft" radius="md" className="relative overflow-hidden p-2.5">
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[var(--app-primary-soft)] blur-2xl" />
-
-      <div className="relative z-10">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              Tu primer plan
-            </p>
-            <p className="mt-0.5 text-sm font-bold text-[var(--app-muted)]">
-              Base creada por IA
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-right">
-            <p className="text-sm font-black uppercase italic leading-none text-[var(--app-text)]">
-              Smart
-            </p>
-            <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-cyan-200">
-              setup
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-1.5">
-          <PlanStep icon={<Target size={12} />} label="Objetivo definido" active />
-          <PlanStep icon={<ScanLine size={12} />} label="Dieta inteligente" />
-          <PlanStep icon={<Activity size={12} />} label="Progreso guiado" />
-        </div>
-      </div>
-    </SurfaceCard>
-  );
-}
-
-function PlanStep({ active = false, icon, label }) {
-  return (
-    <div
-      className={`rounded-2xl border px-2 py-2 text-center ${
-        active
-          ? "border-[var(--app-border)] bg-[var(--app-primary-soft)]"
-          : "border-[var(--app-border)] bg-[var(--app-surface)]"
-      }`}
-    >
-      <div className="mx-auto mb-1 flex justify-center text-[var(--app-primary)]">
-        {icon}
-      </div>
-      <p className="text-[10px] font-black uppercase leading-3 text-[var(--app-muted)]">
-        {label}
-      </p>
-      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-[var(--app-surface)]">
-        <div
-          className={`h-full rounded-full ${
-            active ? "w-full bg-[var(--app-primary)]" : "w-2/3 bg-gradient-to-r from-[var(--app-primary)] to-cyan-300"
-          }`}
-        />
-      </div>
-    </div>
   );
 }
 

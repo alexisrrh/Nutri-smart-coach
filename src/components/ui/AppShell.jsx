@@ -8,12 +8,13 @@ export default function AppShell({
   hideBottomNav = false,
   wide = false,
 }) {
+  const useBottomNavLayout = withBottomNav;
   const showBottomNav = withBottomNav && !hideBottomNav;
   const shellWidthClass = wide ? "max-w-[520px]" : "max-w-[430px]";
-  const rootClass = showBottomNav
+  const rootClass = useBottomNavLayout
     ? "h-[100svh] overflow-hidden"
     : "min-h-[100dvh] overflow-hidden";
-  const sectionClass = showBottomNav
+  const sectionClass = useBottomNavLayout
     ? `relative mx-auto flex h-full min-h-0 w-full ${shellWidthClass} flex-col overflow-hidden px-4 pb-[var(--bottom-nav-space)] pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`
     : `relative mx-auto flex min-h-[100dvh] w-full ${shellWidthClass} flex-col overflow-visible px-4 pb-6 pt-5 md:min-h-[880px] md:rounded-[40px] md:border-8 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${contentClassName}`;
 

@@ -35,6 +35,13 @@ export function normalizeProfile(data) {
     activity: activityLevel,
     meals_per_day: mealsPerDay,
     mealsPerDay,
+    accepted_terms: Boolean(data.accepted_terms),
+    accepted_terms_at: data.accepted_terms_at || null,
+    accepted_privacy: Boolean(data.accepted_privacy),
+    accepted_privacy_at: data.accepted_privacy_at || null,
+    accepted_data_policy: Boolean(data.accepted_data_policy),
+    accepted_data_policy_at: data.accepted_data_policy_at || null,
+    legal_version: data.legal_version || "",
     preferences: {
       ...preferences,
       meals_per_day: mealsPerDay,

@@ -1,84 +1,109 @@
-import { ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, FileText, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AppShell, MetaBadge, SecondaryButton, SurfaceCard } from "../../components/ui";
 
 const navLinks = [
-  { to: "/privacy", label: "Privacidad" },
-  { to: "/terms", label: "Términos" },
-  { to: "/delete-account", label: "Eliminar cuenta" },
+  { to: "/privacy", label: "Privacidad", icon: ShieldCheck },
+  { to: "/terms", label: "Términos", icon: FileText },
+  { to: "/delete-account", label: "Eliminar cuenta", icon: Trash2 },
 ];
 
 export function LegalLayout({ children, eyebrow, title, updatedAt }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
-    <AppShell withBottomNav={false} wide contentClassName="!px-3 !pb-6 !pt-3">
-      <div className="flex min-h-0 flex-col gap-3">
-        <header className="shrink-0">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <SecondaryButton
-              onClick={() => navigate(-1)}
-              icon={<ArrowLeft size={14} />}
-              className="w-auto px-2.5 py-1.5 text-[10px]"
-            >
-              Volver
-            </SecondaryButton>
+    <AppShell
+      withBottomNav={true}
+      hideBottomNav
+      wide
+      contentClassName="!px-3 !pb-[calc(120px+env(safe-area-inset-bottom))] !pt-3"
+    >
+      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3 rounded-[36px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-3 py-3 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:min-h-[880px] md:rounded-[40px] md:border-8 md:px-4 md:py-4">
+          <header className="shrink-0">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <SecondaryButton
+                onClick={() => navigate(-1)}
+                icon={<ArrowLeft size={14} />}
+                className="w-auto px-2.5 py-1.5 text-[10px]"
+              >
+                Volver
+              </SecondaryButton>
 
-            <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
-              Legal
-            </MetaBadge>
-          </div>
-
-          <SurfaceCard className="relative overflow-hidden p-4">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
-
-            <div className="relative z-10 flex items-start gap-3">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
-                <ShieldCheck size={22} />
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  {eyebrow}
-                </p>
-                <h1 className="mt-1 text-[26px] font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
-                  {title}
-                </h1>
-                <p className="mt-2 text-sm font-medium leading-5 text-[var(--app-muted)]">
-                  Última actualización: {updatedAt}
-                </p>
-              </div>
+              <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
+                Trust Center
+              </MetaBadge>
             </div>
-          </SurfaceCard>
-        </header>
 
-        <nav className="grid grid-cols-3 gap-1.5">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2 text-center text-[9px] font-black uppercase leading-3 tracking-[0.08em] text-[var(--app-muted)] transition hover:text-[var(--app-primary)] active:scale-[0.98]"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+            <SurfaceCard className="relative overflow-hidden p-3.5 shadow-[0_14px_36px_rgba(0,0,0,0.12)]">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-[var(--app-primary-soft)] blur-3xl opacity-70" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,transparent_30%,rgba(0,0,0,0.08)_100%)]" />
+              <div className="relative z-10 flex items-start gap-3">
+                <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_22px_var(--app-glow)]">
+                  <ShieldCheck size={20} />
+                  <span className="absolute -inset-1 rounded-[20px] border border-[var(--app-primary)]/10" />
+                </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--app-muted)]">
+                    {eyebrow}
+                  </p>
+                  <h1 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
+                    {title}
+                  </h1>
+                  <p className="mt-1.5 max-w-[28rem] text-[12px] font-medium leading-5 text-[var(--app-muted)]">
+                    Centro de confianza para revisar políticas, transparencia y control de datos.
+                  </p>
+                  <p className="mt-2 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
+                    Última actualización: {updatedAt}
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-3 flex flex-wrap gap-1.5">
+                <TrustChip>Datos protegidos</TrustChip>
+                <TrustChip>Gestión disponible</TrustChip>
+                <TrustChip>Cuenta sincronizada</TrustChip>
+              </div>
+            </SurfaceCard>
+          </header>
+
+          <nav className="grid grid-cols-3 gap-1.5 rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5">
+            {navLinks.map((link) => {
+              const active = location.pathname === link.to;
+              const Icon = link.icon;
+
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`group flex items-center justify-center gap-2 rounded-[1rem] border px-2.5 py-2 text-[9px] font-semibold uppercase tracking-[0.1em] transition duration-200 active:scale-[0.98] ${
+                    active
+                      ? "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]"
+                      : "border-transparent bg-transparent text-[var(--app-muted)] hover:text-[var(--app-text)]"
+                  }`}
+                >
+                  <Icon size={12} className={active ? "text-[var(--app-primary)]" : "text-[var(--app-muted)]"} />
+                  <span className="truncate">{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
           <article className="space-y-3 text-[13px] font-medium leading-6 text-[color:color-mix(in_srgb,var(--app-text)_82%,var(--app-muted))]">
             {children}
           </article>
         </div>
-      </div>
+      </main>
     </AppShell>
   );
 }
 
 export function LegalSection({ title, children }) {
   return (
-    <SurfaceCard className="p-4" variant="soft" radius="md">
-      <h2 className="mb-2 text-[15px] font-black uppercase tracking-[0.08em] text-[var(--app-text)]">
+    <SurfaceCard className="p-3.5" variant="soft" radius="md">
+      <h2 className="mb-2 text-[14px] font-semibold tracking-tight text-[var(--app-text)]">
         {title}
       </h2>
       <div className="space-y-2">{children}</div>
@@ -88,13 +113,21 @@ export function LegalSection({ title, children }) {
 
 export function LegalList({ items }) {
   return (
-    <ul className="space-y-1.5">
+    <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="flex gap-2">
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
-          <span>{item}</span>
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-primary)] shadow-[0_0_8px_var(--app-glow)]" />
+          <span className="leading-6">{item}</span>
         </li>
       ))}
     </ul>
+  );
+}
+
+function TrustChip({ children }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_94%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--app-muted)]">
+      {children}
+    </span>
   );
 }

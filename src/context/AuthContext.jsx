@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import {
+  consumePendingLegalConsent,
+  setPendingLegalConsent,
+} from "../services/legalConsentService";
+import { getProfile, saveProfile } from "../services/profileService";
 import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }) {
@@ -30,6 +35,7 @@ export function AuthProvider({ children }) {
         if (isMounted) {
           setUser(data.user);
           scheduleDashboardWarmup(data.user?.id);
+          void syncPendingLegalConsent(data.user);
         }
       } catch (error) {
         if (isInvalidRefreshTokenError(error)) {
@@ -52,6 +58,7 @@ export function AuthProvider({ children }) {
 
         setUser(session?.user ?? null);
         scheduleDashboardWarmup(session?.user?.id);
+        void syncPendingLegalConsent(session?.user);
         setLoadingAuth(false);
       }
     );
@@ -107,6 +114,50 @@ function scheduleDashboardWarmup(userId) {
   window.setTimeout(() => {
     void runWarmup();
   }, 250);
+}
+
+async function syncPendingLegalConsent(user) {
+  const consent = consumePendingLegalConsent();
+  if (!user?.id || !consent) return;
+
+  try {
+    const currentProfile = await getProfile(user.id, { fallbackToCache: false }).catch(
+      () => null
+    );
+
+    const profile = currentProfile || {
+      id: user.id,
+      user_id: user.id,
+      email: user.email || "",
+      name:
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] ||
+        "",
+      age: null,
+      weight: null,
+      height: null,
+      gender: "male",
+      activity_level: "moderate",
+      goal: "perder_grasa",
+      preferences: {
+        gender: "male",
+        activity: "moderate",
+        goal: "perder_grasa",
+      },
+      updated_at: new Date().toISOString(),
+    };
+
+    await saveProfile({
+      ...profile,
+      ...consent,
+      email: profile.email || user.email || "",
+      updated_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("No se pudo guardar el consentimiento legal:", error);
+    setPendingLegalConsent(consent);
+  }
 }
 
 function isInvalidRefreshTokenError(error) {

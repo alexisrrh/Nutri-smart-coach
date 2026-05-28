@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
-import { MetaBadge, SurfaceCard } from "../../components/ui";
+import { AppShell, MetaBadge, SurfaceCard } from "../../components/ui";
 
 export function SettingsScreenShell({
   children,
@@ -10,19 +10,25 @@ export function SettingsScreenShell({
   onBack,
 }) {
   return (
-    <main className="min-h-[100dvh] overflow-y-auto overflow-x-hidden overscroll-contain pb-[160px] [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ backgroundColor: "var(--app-surface)", color: "var(--app-text)" }}>
-      <SettingsFrame>
-        <SettingsHero title={title} subtitle={subtitle} badge={badge} onBack={onBack} />
-        <div className="space-y-2.5">{children}</div>
-      </SettingsFrame>
-    </main>
+    <AppShell
+      withBottomNav={true}
+      hideBottomNav
+      contentClassName="!px-2 !pt-2 !pb-[calc(120px+env(safe-area-inset-bottom))]"
+    >
+      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <SettingsFrame className="pb-2">
+          <SettingsHero title={title} subtitle={subtitle} badge={badge} onBack={onBack} />
+          <div className="space-y-2.5">{children}</div>
+        </SettingsFrame>
+      </main>
+    </AppShell>
   );
 }
 
 export function SettingsFrame({ children, className = "" }) {
   return (
     <div
-      className={`relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] md:my-6 md:min-h-[880px] md:rounded-[40px] md:border-8 md:px-3 md:py-3 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${className}`}
+      className={`relative mx-auto flex w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] md:my-6 md:min-h-[880px] md:rounded-[40px] md:border-8 md:px-3 md:py-3 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${className}`}
     >
       <div
         className="pointer-events-none absolute inset-0 rounded-[inherit]"
@@ -32,7 +38,7 @@ export function SettingsFrame({ children, className = "" }) {
         }}
       />
       <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
-      <div className="relative z-10 flex min-h-[100dvh] w-full flex-col gap-2.5">{children}</div>
+      <div className="relative z-10 flex w-full flex-col gap-2.5">{children}</div>
     </div>
   );
 }
@@ -121,12 +127,12 @@ export function SettingsRow({
   right,
 }) {
   const baseClass =
-    "flex items-center justify-between gap-3 rounded-2xl border px-3 py-3 transition duration-200 active:scale-[0.98] touch-manipulation";
+    "flex w-full min-h-[72px] items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left transition duration-200 active:scale-[0.98] touch-manipulation";
   const toneClass = danger
-    ? "border-red-400/15 bg-[color-mix(in_srgb,var(--app-surface)_80%,transparent)] hover:bg-red-400/10 active:bg-red-400/10"
+    ? "border-red-400/14 bg-[color-mix(in_srgb,var(--app-surface)_84%,transparent)] hover:bg-red-400/8 active:bg-red-400/8"
     : "border-[var(--app-border)] bg-[var(--app-surface)] hover:bg-[var(--app-primary-soft)] active:bg-[var(--app-primary-soft)]";
   const toneIcon = danger
-    ? "border-red-400/20 bg-red-400/10 text-red-200"
+    ? "border-red-400/16 bg-red-400/10 text-red-200"
     : "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-primary)]";
   const content = (
     <>
