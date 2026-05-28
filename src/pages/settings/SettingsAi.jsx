@@ -1,12 +1,67 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrainCircuit, CircleSlash2, Sparkles, TimerReset } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import { SettingsCard, SettingsScreenShell } from "./SettingsShared";
+import { getProfile } from "../../services/profileService";
+import { getAiUsagePlanLabel, isPremiumUser } from "../../services/aiUsageService";
 
 export function SettingsAi() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const provider = getProviderLabel(user);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+
+      try {
+        if (!user?.id) {
+          return;
+        }
+
+        const nextProfile = await getProfile(user.id, { fallbackToCache: false });
+
+        if (!active) return;
+
+        setProfile(nextProfile);
+      } catch (error) {
+        console.warn("No se pudo refrescar IA en Settings:", error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  const premium = isPremiumUser(profile);
+  const planLabel = getAiUsagePlanLabel(profile);
+  const usageRows = [
+    {
+      label: "Análisis de comida",
+      free: "4/día",
+      premium: "Hasta 100/día",
+    },
+    {
+      label: "Dietas IA",
+      free: "1/día",
+      premium: "Hasta 10/día",
+    },
+    {
+      label: "Check-ins IA",
+      free: "1/día",
+      premium: "Hasta 7/día",
+    },
+  ];
 
   return (
     <SettingsScreenShell
@@ -15,7 +70,13 @@ export function SettingsAi() {
       subtitle="Núcleo vivo, recursos asignados y capas futuras del sistema."
       onBack={() => navigate("/perfil")}
     >
-      <AiCorePanel provider={provider} />
+      <AiCorePanel
+        loading={loading}
+        planLabel={planLabel}
+        premium={premium}
+        provider={provider}
+        usageRows={usageRows}
+      />
 
       <SettingsCard
         icon={<TimerReset size={16} />}
@@ -31,10 +92,14 @@ export function SettingsAi() {
             }}
           />
           <div className="relative grid gap-1.5">
-            <AllocationRow label="Análisis de comida" value="6/día" active={false} />
-            <AllocationRow label="Check-in IA" value="1/día" active={false} />
-            <AllocationRow label="Generación de dietas" value="1/día" active={false} />
-            <AllocationRow label="Rutinas" value="Sin límite" active />
+            {usageRows.map((row) => (
+              <AllocationRow
+                key={row.label}
+                label={row.label}
+                value={premium ? row.premium : row.free}
+                active={premium}
+              />
+            ))}
           </div>
         </div>
       </SettingsCard>
@@ -66,9 +131,9 @@ export function SettingsAi() {
         description="La arquitectura actual permanece intacta: misma cuenta, misma seguridad, misma base."
       >
         <div className="flex flex-wrap gap-1.5">
+          <InfoChip>{planLabel}</InfoChip>
+          <InfoChip>{premium ? "Límites ampliados" : "Límites Free"}</InfoChip>
           <InfoChip>Proveedor {provider}</InfoChip>
-          <InfoChip>UI sincronizada</InfoChip>
-          <InfoChip>Base estable</InfoChip>
         </div>
       </SettingsCard>
     </SettingsScreenShell>
@@ -83,7 +148,7 @@ function getProviderLabel(user) {
   return provider || "Local";
 }
 
-function AiCorePanel({ provider }) {
+function AiCorePanel({ loading, planLabel, premium, provider, usageRows }) {
   return (
     <SettingsCard
       icon={<BrainCircuit size={16} />}
@@ -109,13 +174,15 @@ function AiCorePanel({ provider }) {
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--app-muted)]">
-              Perfil sincronizado
+              {loading ? "Sincronizando perfil..." : planLabel}
             </p>
             <h3 className="mt-2 text-[21px] font-semibold tracking-tight text-[var(--app-text)]">
-              Sistema listo para análisis
+              {premium ? "Premium activo" : "Plan Free activo"}
             </h3>
             <p className="mt-2 max-w-[23rem] text-[13px] font-medium leading-5 text-[var(--app-muted)]">
-              Un núcleo silencioso que mantiene el contexto, la lectura y las recomendaciones preparadas.
+              {premium
+                ? "Tu perfil refleja límites ampliados y una cola prioritaria para una experiencia más ágil."
+                : "Tu perfil refleja los límites estándar del plan Free con la misma base estable."}
             </p>
           </div>
 
@@ -129,15 +196,16 @@ function AiCorePanel({ provider }) {
         </div>
 
         <div className="relative z-10 mt-4 grid gap-1.5 sm:grid-cols-3">
-          <AiStat label="Motor" value="Activo" />
+          <AiStat label="Motor" value={premium ? "Premium" : "Free"} accent={premium} />
           <AiStat label="Sincronización" value="Estable" />
-          <AiStat label="Análisis" value="Preparado" accent />
+          <AiStat label="Análisis" value={premium ? "Prioritarios" : "Preparados"} accent />
         </div>
 
         <div className="relative z-10 mt-3 flex flex-wrap items-center gap-1.5">
+          {usageRows.map((row) => (
+            <InfoChip key={row.label}>{premium ? row.premium : row.free}</InfoChip>
+          ))}
           <InfoChip>Proveedor {provider}</InfoChip>
-          <InfoChip>Señal estable</InfoChip>
-          <InfoChip>Contexto listo</InfoChip>
         </div>
       </div>
     </SettingsCard>
