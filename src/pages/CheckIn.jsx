@@ -13,11 +13,17 @@ import {
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
-import { AiErrorNotice, AppShell, PremiumEmptyState } from "../components/ui";
+import {
+  AiErrorNotice,
+  AiUsageCard,
+  AppShell,
+  PremiumEmptyState,
+} from "../components/ui";
 import { useCheckInLoad } from "../hooks/checkin/useCheckInLoad";
 import { useCheckInForm } from "../hooks/checkin/useCheckInForm";
 import { useCheckInUpload } from "../hooks/checkin/useCheckInUpload";
 import { useCheckInSubmit } from "../hooks/checkin/useCheckInSubmit";
+import { useAiUsageStatus } from "../hooks/useAiUsageStatus";
 
 export function CheckIn() {
   const clearMessageRef = useRef(() => {});
@@ -43,6 +49,10 @@ export function CheckIn() {
     setError,
     setMessage: (...args) => clearMessageRef.current(...args),
   });
+  const { refreshUsage, usage } = useAiUsageStatus(
+    "checkin_analysis",
+    user?.id || ""
+  );
   const { clearMessage, message, saveCheckIn } = useCheckInSubmit({
     clearUpload,
     file,
@@ -53,6 +63,7 @@ export function CheckIn() {
     setLoading,
     setSelectedCheckin,
     setSheetMode,
+    onUsageUpdated: refreshUsage,
     user,
   });
   useEffect(() => {
@@ -157,6 +168,13 @@ export function CheckIn() {
             </div>
           </div>
         </section>
+
+        <AiUsageCard
+          profile={profile}
+          type="checkin_analysis"
+          usage={usage}
+          className="shrink-0"
+        />
 
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />

@@ -1,6 +1,10 @@
 import { useCallback, useState } from "react";
 
 import {
+  extractAiUsageFromError,
+  formatAiUsageMessage,
+} from "../../services/aiUsageService";
+import {
   createCheckin,
   getCheckinProcessState,
   setCheckinProcessState,
@@ -16,6 +20,7 @@ export function useCheckInSubmit({
   setLoading,
   setSelectedCheckin,
   setSheetMode,
+  onUsageUpdated,
   user,
 }) {
   const [message, setMessage] = useState("");
@@ -108,12 +113,16 @@ export function useCheckInSubmit({
       setCheckinProcessState(successState);
 
       setMessage("Check-in guardado correctamente.");
+      onUsageUpdated?.(user.id);
     } catch (err) {
       console.error(err);
 
+      const usageError = extractAiUsageFromError(err, "checkin_analysis");
       const errorMessage =
-        err.message ||
-        "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
+        usageError && err?.status === 429
+          ? formatAiUsageMessage("checkin_analysis", usageError)
+          : err.message ||
+            "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
 
       const currentState = getCheckinProcessState();
       const requestId = currentState.requestId || null;
@@ -130,6 +139,10 @@ export function useCheckInSubmit({
       setCheckinProcessState(errorState);
       if (isMountedRef.current) {
         setError(errorMessage);
+      }
+
+      if (usageError) {
+        onUsageUpdated?.(user.id);
       }
     } finally {
       if (isMountedRef.current) {
@@ -148,6 +161,7 @@ export function useCheckInSubmit({
     setLoading,
     setSelectedCheckin,
     setSheetMode,
+    onUsageUpdated,
     user,
   ]);
 

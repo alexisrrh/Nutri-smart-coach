@@ -66,6 +66,9 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
       if (!limitState.allowed) {
         return res.status(429).json({
           error: "Has alcanzado el límite diario de generación de dietas.",
+          usage: {
+            diet_generation: serializeUsageState("diet_generation", limitState),
+          },
         });
       }
 
@@ -78,6 +81,9 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
       if (!rateLimitState.allowed) {
         return res.status(429).json({
           error: `Espera ${rateLimitState.waitSeconds} segundos antes de generar otra dieta.`,
+          usage: {
+            diet_generation: serializeUsageState("diet_generation", limitState),
+          },
         });
       }
 
@@ -267,6 +273,23 @@ async function upsertUserProfile({ userId, profile, preferences }) {
   }
 
   return data;
+}
+
+function serializeUsageState(type, usageState) {
+  return {
+    type,
+    usedToday: usageState.count || 0,
+    limit: usageState.limit || 0,
+    remaining:
+      typeof usageState.remaining === "number"
+        ? usageState.remaining
+        : Math.max((usageState.limit || 0) - (usageState.count || 0), 0),
+    resetAt: usageState.resetAt || null,
+    isLimitReached:
+      typeof usageState.isLimitReached === "boolean"
+        ? usageState.isLimitReached
+        : Boolean(usageState.limit && usageState.count >= usageState.limit),
+  };
 }
 
 function buildDietConfig(preferences = {}) {

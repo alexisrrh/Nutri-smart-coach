@@ -66,6 +66,7 @@ function createHttpError(response, data, operation) {
   error.status = status;
   error.code = status === 401 || status === 403 ? "SESSION_INVALID" : "HTTP_ERROR";
   error.operation = operation;
+  error.data = data;
 
   return error;
 }
