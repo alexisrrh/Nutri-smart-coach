@@ -47,6 +47,10 @@ const DeleteAccount = lazy(() =>
   }))
 );
 
+const Premium = lazy(() =>
+  import("./pages/Premium").then((module) => ({ default: module.Premium }))
+);
+
 const SettingsProfile = lazy(() =>
   import("./pages/settings/SettingsProfile").then((module) => ({
     default: module.SettingsProfile,
@@ -210,6 +214,14 @@ function AppRoutes({ splashVisible }) {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
+        <Route
+          path="/premium"
+          element={
+            <ProtectedRoute>
+              <Premium />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard"

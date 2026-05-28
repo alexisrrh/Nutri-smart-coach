@@ -164,6 +164,9 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     if (!limitState.allowed) {
       return res.status(429).json({
         error: "Has alcanzado el límite diario de 6 análisis. Vuelve mañana.",
+        usage: {
+          food_analysis: serializeUsageState("food_analysis", limitState),
+        },
       });
     }
 
@@ -176,6 +179,9 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     if (!rateLimitState.allowed) {
       return res.status(429).json({
         error: `Espera ${rateLimitState.waitSeconds} segundos antes de analizar otra comida.`,
+        usage: {
+          food_analysis: serializeUsageState("food_analysis", limitState),
+        },
       });
     }
 
@@ -522,6 +528,23 @@ async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis })
   }
 
   return data;
+}
+
+function serializeUsageState(type, usageState) {
+  return {
+    type,
+    usedToday: usageState.count || 0,
+    limit: usageState.limit || 0,
+    remaining:
+      typeof usageState.remaining === "number"
+        ? usageState.remaining
+        : Math.max((usageState.limit || 0) - (usageState.count || 0), 0),
+    resetAt: usageState.resetAt || null,
+    isLimitReached:
+      typeof usageState.isLimitReached === "boolean"
+        ? usageState.isLimitReached
+        : Boolean(usageState.limit && usageState.count >= usageState.limit),
+  };
 }
 
 export default router;

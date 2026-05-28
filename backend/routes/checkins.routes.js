@@ -51,6 +51,9 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
       if (!limitState.allowed) {
         return res.status(429).json({
           error: "Has alcanzado el límite diario de check-in IA.",
+          usage: {
+            checkin_analysis: serializeUsageState("checkin_analysis", limitState),
+          },
         });
       }
 
@@ -63,6 +66,9 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
       if (!rateLimitState.allowed) {
         return res.status(429).json({
           error: `Espera ${rateLimitState.waitSeconds} segundos antes de guardar otro check-in IA.`,
+          usage: {
+            checkin_analysis: serializeUsageState("checkin_analysis", limitState),
+          },
         });
       }
     }
@@ -306,6 +312,23 @@ async function analyzeCheckinWithGemini({
     console.error("Error analizando checkin con Gemini:", error);
     return createFallbackCheckinAnalysis({ weight, previousCheckins });
   }
+}
+
+function serializeUsageState(type, usageState) {
+  return {
+    type,
+    usedToday: usageState.count || 0,
+    limit: usageState.limit || 0,
+    remaining:
+      typeof usageState.remaining === "number"
+        ? usageState.remaining
+        : Math.max((usageState.limit || 0) - (usageState.count || 0), 0),
+    resetAt: usageState.resetAt || null,
+    isLimitReached:
+      typeof usageState.isLimitReached === "boolean"
+        ? usageState.isLimitReached
+        : Boolean(usageState.limit && usageState.count >= usageState.limit),
+  };
 }
 
 function createFallbackCheckinAnalysis({ weight, previousCheckins }) {

@@ -34,7 +34,10 @@ import {
   PremiumEmptyState,
   StatusBox,
   SurfaceCard,
+  AiUsageCard,
 } from "../components/ui";
+import { useAiUsageStatus } from "../hooks/useAiUsageStatus";
+import { formatAiUsageMessage } from "../services/aiUsageService";
 
 const DIET_TYPES = [
   { value: "balanced", label: "Balanceada" },
@@ -91,6 +94,10 @@ export function MealPlan() {
   const [profile] = useState(getCachedProfile);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
+  const { applyUsageError, refreshUsage, usage } = useAiUsageStatus(
+    "diet_generation",
+    profile?.id || profile?.user_id || ""
+  );
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
   const hasPlan = plan.length > 0;
@@ -308,6 +315,7 @@ export function MealPlan() {
           ? "Se generó una dieta base porque la IA tardó demasiado."
           : "Dieta generada correctamente."
       );
+      await refreshUsage(profile?.id || profile?.user_id || "");
     } catch (err) {
       console.error(err);
       if (!requestId || !startedAt) {
@@ -333,7 +341,12 @@ export function MealPlan() {
         setGenerationState(errorState);
       }
 
-      setErrorMessage(errorState.error);
+      applyUsageError(err);
+      setErrorMessage(
+        err?.status === 429
+          ? formatAiUsageMessage("diet_generation", err.data?.usage?.diet_generation, profile)
+          : errorState.error
+      );
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
@@ -405,6 +418,13 @@ export function MealPlan() {
             completionPercent={completionPercent}
             completedMeals={completedMeals}
             totalMeals={totalMeals}
+          />
+
+          <AiUsageCard
+            profile={profile}
+            type="diet_generation"
+            usage={usage}
+            className="shrink-0"
           />
 
           {!profileComplete && (

@@ -7,11 +7,12 @@ import FoodResultCard from "../components/food/FoodResultCard";
 import NutritionInsights from "../components/food/NutritionInsights";
 import SmartSwapCard from "../components/food/SmartSwapCard";
 import DailyGoalCard from "../components/food/DailyGoalCard.jsx";
-import { AiErrorNotice, AppShell } from "../components/ui";
+import { AiErrorNotice, AiUsageCard, AppShell } from "../components/ui";
 
 import { useFoodPhotoAnalysis } from "../hooks/food-photo/useFoodPhotoAnalysis";
 import { useFoodPhotoImageUpload } from "../hooks/food-photo/useFoodPhotoImageUpload";
 import { useFoodPhotoRecovery } from "../hooks/food-photo/useFoodPhotoRecovery";
+import { useAiUsageStatus } from "../hooks/useAiUsageStatus";
 import { supabase } from "../lib/supabase";
 import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import { getCachedProfile, getProfile } from "../services/profileService";
@@ -21,6 +22,7 @@ export default function FoodPhoto() {
   const [preview, setPreview] = useState("");
   const [description, setDescription] = useState("");
   const [profile, setProfile] = useState(getCachedProfile);
+  const [userId, setUserId] = useState("");
   const {
     isMountedRef,
     setAnalysisState,
@@ -42,6 +44,10 @@ export default function FoodPhoto() {
     setResult,
   });
   const goals = useMemo(() => calculateNutritionGoals(profile), [profile]);
+  const {
+    refreshUsage: refreshFoodUsage,
+    usage: foodUsage,
+  } = useAiUsageStatus("food_analysis", userId);
   const analysisContext = useMemo(
     () => ({
       goal: profile?.goal || profile?.objetivo || "general",
@@ -73,6 +79,7 @@ export default function FoodPhoto() {
     isMountedRef,
     resetRecoveryState,
     result,
+    onUsageUpdated: refreshFoodUsage,
   });
 
   useEffect(() => {
@@ -84,6 +91,8 @@ export default function FoodPhoto() {
       } = await supabase.auth.getUser();
 
       if (!user?.id || cancelled) return;
+
+      setUserId(user.id);
 
       try {
         const profileData = await getProfile(user.id);
@@ -133,6 +142,13 @@ export default function FoodPhoto() {
     <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
       <div className="flex h-full min-h-0 flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
+
+        <AiUsageCard
+          profile={profile}
+          type="food_analysis"
+          usage={foodUsage}
+          className="shrink-0"
+        />
 
         {!result && !loading && (
           <FoodUploadCard

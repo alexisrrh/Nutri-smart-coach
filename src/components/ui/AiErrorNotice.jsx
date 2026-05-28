@@ -48,6 +48,7 @@ export default function AiErrorNotice({ message = "", className = "" }) {
 
   const notice = getAiErrorNotice(message);
   const Icon = notice.icon;
+  const showMessageDetail = notice.showDetail || notice.showResetDetail;
 
   return (
     <div
@@ -69,7 +70,7 @@ export default function AiErrorNotice({ message = "", className = "" }) {
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--app-muted)]">
             {notice.description}
           </p>
-          {notice.showDetail ? (
+          {showMessageDetail ? (
             <p className="mt-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-semibold leading-4 text-[var(--app-text)]/80">
               {message}
             </p>
@@ -88,7 +89,10 @@ function getAiErrorNotice(message) {
     normalized.includes("limite diario") ||
     normalized.includes("has alcanzado")
   ) {
-    return NOTICE_TYPES.limit;
+    return {
+      ...NOTICE_TYPES.limit,
+      showResetDetail: normalized.includes("disponible nuevamente"),
+    };
   }
 
   if (

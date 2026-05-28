@@ -1,6 +1,17 @@
 import { useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabase";
-import { analyzeMeal, cacheMeal, deleteMeal, getFoodAnalysisProcessState, removeMealFromCache, setFoodAnalysisProcessState } from "../../services/mealService";
+import {
+  analyzeMeal,
+  cacheMeal,
+  deleteMeal,
+  getFoodAnalysisProcessState,
+  removeMealFromCache,
+  setFoodAnalysisProcessState,
+} from "../../services/mealService";
+import {
+  extractAiUsageFromError,
+  formatAiUsageMessage,
+} from "../../services/aiUsageService";
 
 function createAnalysisRequestId() {
   return `food-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -32,6 +43,7 @@ export function useFoodPhotoAnalysis({
   isMountedRef,
   resetRecoveryState,
   result,
+  onUsageUpdated,
 }) {
   const analysisInFlightRef = useRef(false);
 
@@ -47,6 +59,7 @@ export function useFoodPhotoAnalysis({
     if (loading || analysisInFlightRef.current) return;
 
     analysisInFlightRef.current = true;
+    let activeUserId = null;
 
     try {
       const requestId = createAnalysisRequestId();
@@ -74,6 +87,8 @@ export function useFoodPhotoAnalysis({
       if (userError) {
         console.warn("No se pudo obtener usuario Supabase:", userError.message);
       }
+
+      activeUserId = user?.id || null;
 
       const mealToSave = await analyzeMealWithRetry({
         image,
@@ -105,12 +120,17 @@ export function useFoodPhotoAnalysis({
         setResult(mealToSave);
         setMeals(nextMeals);
       }
+
+      onUsageUpdated?.(activeUserId);
     } catch (error) {
       console.error("Error analizando comida:", error);
 
+      const usageError = extractAiUsageFromError(error, "food_analysis");
       const errorMessage =
-        error?.message ||
-        "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo.";
+        usageError && error?.status === 429
+          ? formatAiUsageMessage("food_analysis", usageError)
+          : error?.message ||
+            "No se pudo analizar la comida. Revisa la conexión e inténtalo de nuevo.";
 
       const currentState = getFoodAnalysisProcessState();
       const errorState = {
@@ -127,6 +147,10 @@ export function useFoodPhotoAnalysis({
       if (isMountedRef.current) {
         setAnalysisState(errorState);
         setError(errorMessage);
+      }
+
+      if (usageError) {
+        onUsageUpdated?.(activeUserId);
       }
     } finally {
       analysisInFlightRef.current = false;
@@ -147,6 +171,7 @@ export function useFoodPhotoAnalysis({
     setLoading,
     setMeals,
     setResult,
+    onUsageUpdated,
   ]);
 
   const discardAnalysis = useCallback(async () => {

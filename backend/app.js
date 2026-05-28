@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import checkinsRoutes from "./routes/checkins.routes.js";
+import aiUsageRoutes from "./routes/aiUsage.routes.js";
 import dietsRoutes from "./routes/diets.routes.js";
 import mealsRoutes from "./routes/meals.routes.js";
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use("/", checkinsRoutes);
+app.use("/", aiUsageRoutes);
 app.use("/", dietsRoutes);
 app.use("/", mealsRoutes);
 

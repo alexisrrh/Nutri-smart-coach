@@ -48,7 +48,11 @@ export async function getProfile(userId, { fallbackToCache = true } = {}) {
 }
 
 export async function saveProfile(profile, { fallbackToCache = true } = {}) {
-  const normalizedProfile = normalizeProfile(mergePendingLegalConsent(profile));
+  const cachedProfile = getCachedProfile();
+  const normalizedProfile = normalizeProfile({
+    ...cachedProfile,
+    ...mergePendingLegalConsent(profile),
+  });
 
   if (!normalizedProfile?.id) {
     throw new Error("No hay usuario conectado.");
@@ -142,6 +146,12 @@ function toProfileRow(profile) {
     id: profile.id,
     email: profile.email,
     name: profile.name,
+    plan: profile.plan || "free",
+    is_premium: Boolean(profile.is_premium),
+    premium_started_at: profile.premium_started_at || null,
+    premium_expires_at: profile.premium_expires_at || null,
+    stripe_customer_id: profile.stripe_customer_id || null,
+    stripe_subscription_id: profile.stripe_subscription_id || null,
     age: profile.age,
     weight: profile.weight,
     height: profile.height,
