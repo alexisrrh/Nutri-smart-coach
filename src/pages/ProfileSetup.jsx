@@ -12,7 +12,6 @@ import {
 import { useAuth } from "../context/useAuth";
 import { getProfile } from "../services/profileService";
 import { AppShell, MetaBadge } from "../components/ui";
-import { SettingsFrame } from "./settings/SettingsShared";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -27,14 +26,10 @@ export function ProfileSetup() {
       setLoading(true);
 
       try {
-        if (!user?.id) {
-          return;
-        }
+        if (!user?.id) return;
 
         const nextProfile = await getProfile(user.id);
-        if (active) {
-          setProfile(nextProfile);
-        }
+        if (active) setProfile(nextProfile);
       } finally {
         if (active) setLoading(false);
       }
@@ -52,81 +47,107 @@ export function ProfileSetup() {
   const statusLabel = loading ? "Sincronizando..." : "Sincronizado";
 
   return (
-    <AppShell contentClassName="!px-2 !pt-2 !pb-[calc(120px+env(safe-area-inset-bottom))]">
-      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <SettingsFrame className="pb-2">
-          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-3 shadow-[0_18px_54px_var(--app-glow)]">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 28%)",
-            }}
-          />
-          <div className="relative z-10 flex items-start gap-3">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[22px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
-              <BrainCircuit size={24} />
-            </div>
+    <AppShell
+      contentClassName="!px-2 !pt-2 !pb-0"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pb-4 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div
+          className="pointer-events-none absolute inset-0 rounded-[inherit]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 10% 10%, color-mix(in srgb, var(--app-primary) 12%, transparent), transparent 32%), radial-gradient(circle at 92% 24%, color-mix(in srgb, var(--app-primary) 7%, transparent), transparent 26%)",
+          }}
+        />
 
-            <div className="min-w-0 flex-1">
-              <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
-                AI Settings Hub
-              </MetaBadge>
-              <h1 className="mt-2 truncate text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
-                {displayName}
-              </h1>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <MetaBadge variant="neutral">{goalLabel}</MetaBadge>
-                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
-                  {statusLabel}
-                </span>
+        <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
+
+        <div className="relative z-10 flex w-full flex-col gap-2.5">
+          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-3 shadow-[0_18px_54px_var(--app-glow)]">
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 28%)",
+              }}
+            />
+
+            <div className="relative z-10 flex items-start gap-3">
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[22px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
+                <BrainCircuit size={24} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
+                  AI Settings Hub
+                </MetaBadge>
+
+                <h1 className="mt-2 truncate text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
+                  {displayName}
+                </h1>
+
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <MetaBadge variant="neutral">{goalLabel}</MetaBadge>
+
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
+                    {statusLabel}
+                  </span>
+                </div>
               </div>
             </div>
+          </header>
+
+          <section className="grid grid-cols-2 gap-1.5">
+            <SettingMetric
+              label="Peso"
+              value={profile?.weight ? `${profile.weight} kg` : "—"}
+            />
+            <SettingMetric
+              label="Altura"
+              value={profile?.height ? `${profile.height} cm` : "—"}
+            />
+            <SettingMetric
+              label="Actividad"
+              value={activityLabel(profile?.activity_level)}
+            />
+            <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
+          </section>
+
+          <div className="space-y-2.5">
+            <NavCard
+              icon={<UserRound size={16} />}
+              title="Mi perfil"
+              description="Datos personales, objetivo, nivel y macros."
+              onClick={() => navigate("/settings/profile")}
+            />
+            <NavCard
+              icon={<Palette size={16} />}
+              title="Personalización"
+              description="Themes, apariencia y preview visual."
+              onClick={() => navigate("/settings/theme")}
+            />
+            <NavCard
+              icon={<BrainCircuit size={16} />}
+              title="IA y nutrición"
+              description="Límites, estado y expansión del sistema AI."
+              onClick={() => navigate("/settings/ai")}
+            />
+            <NavCard
+              icon={<ShieldCheck size={16} />}
+              title="Privacidad y legal"
+              description="Política, términos y eliminación de datos."
+              onClick={() => navigate("/settings/legal")}
+            />
+            <NavCard
+              icon={<KeyRound size={16} />}
+              title="Cuenta y seguridad"
+              description="Contraseña, proveedor y cierre de sesión."
+              onClick={() => navigate("/settings/security")}
+            />
           </div>
-        </header>
-
-        <section className="grid grid-cols-2 gap-1.5">
-          <SettingMetric label="Peso" value={profile?.weight ? `${profile.weight} kg` : "—"} />
-          <SettingMetric label="Altura" value={profile?.height ? `${profile.height} cm` : "—"} />
-          <SettingMetric label="Actividad" value={activityLabel(profile?.activity_level)} />
-          <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
-        </section>
-
-        <div className="space-y-2.5 pb-2">
-          <NavCard
-            icon={<UserRound size={16} />}
-            title="Mi perfil"
-            description="Datos personales, objetivo, nivel y macros."
-            onClick={() => navigate("/settings/profile")}
-          />
-          <NavCard
-            icon={<Palette size={16} />}
-            title="Personalización"
-            description="Themes, apariencia y preview visual."
-            onClick={() => navigate("/settings/theme")}
-          />
-          <NavCard
-            icon={<BrainCircuit size={16} />}
-            title="IA y nutrición"
-            description="Límites, estado y expansión del sistema AI."
-            onClick={() => navigate("/settings/ai")}
-          />
-          <NavCard
-            icon={<ShieldCheck size={16} />}
-            title="Privacidad y legal"
-            description="Política, términos y eliminación de datos."
-            onClick={() => navigate("/settings/legal")}
-          />
-          <NavCard
-            icon={<KeyRound size={16} />}
-            title="Cuenta y seguridad"
-            description="Contraseña, proveedor y cierre de sesión."
-            onClick={() => navigate("/settings/security")}
-          />
         </div>
-        </SettingsFrame>
-      </main>
+      </div>
     </AppShell>
   );
 }
@@ -142,6 +163,7 @@ function NavCard({ description, icon, onClick, title }) {
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] transition group-active:scale-[0.98]">
           {icon}
         </span>
+
         <span className="min-w-0">
           <span className="block text-[13px] font-black leading-tight text-[var(--app-text)]">
             {title}

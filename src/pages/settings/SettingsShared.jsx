@@ -12,23 +12,24 @@ export function SettingsScreenShell({
   return (
     <AppShell
       withBottomNav={true}
-      hideBottomNav
-      contentClassName="!px-2 !pt-2 !pb-[calc(120px+env(safe-area-inset-bottom))]"
+      hideBottomNav={false}
+      contentClassName="!px-2 !pt-2"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <SettingsFrame className="pb-2">
-          <SettingsHero title={title} subtitle={subtitle} badge={badge} onBack={onBack} />
-          <div className="space-y-2.5">{children}</div>
-        </SettingsFrame>
-      </main>
+      <SettingsFrame className="pb-2">
+        <SettingsHero title={title} subtitle={subtitle} badge={badge} onBack={onBack} />
+        <div className="space-y-2.5">{children}</div>
+      </SettingsFrame>
     </AppShell>
   );
 }
 
-export function SettingsFrame({ children, className = "" }) {
+export function SettingsFrame({ children, className = "", compact = false }) {
   return (
     <div
-      className={`relative mx-auto flex w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] md:my-6 md:min-h-[880px] md:rounded-[40px] md:border-8 md:px-3 md:py-3 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${className}`}
+      className={`relative mx-auto flex w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] md:my-6 md:rounded-[40px] md:border-8 md:px-3 md:py-3 md:shadow-[0_32px_64px_-12px_var(--app-glow)] ${
+        compact ? "h-auto min-h-0" : "md:min-h-[880px]"
+      } ${className}`}
     >
       <div
         className="pointer-events-none absolute inset-0 rounded-[inherit]"
@@ -37,8 +38,12 @@ export function SettingsFrame({ children, className = "" }) {
             "radial-gradient(circle at 10% 10%, color-mix(in srgb, var(--app-primary) 12%, transparent), transparent 32%), radial-gradient(circle at 92% 24%, color-mix(in srgb, var(--app-primary) 7%, transparent), transparent 26%), radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--app-primary) 4%, transparent), transparent 32%)",
         }}
       />
+
       <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
-      <div className="relative z-10 flex w-full flex-col gap-2.5">{children}</div>
+
+      <div className="relative z-10 flex w-full flex-col gap-2.5">
+        {children}
+      </div>
     </div>
   );
 }

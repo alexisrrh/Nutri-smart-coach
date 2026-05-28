@@ -16,16 +16,16 @@ export default function DashboardActions({ navigate }) {
 
   return (
     <section className="flex flex-col">
-      <div className="flex items-end justify-between px-1 pb-1">
+      <div className="flex items-end justify-between px-1 pb-1 justify-center pl-9">
         <div>
           <p
-            className="pb-1 text-center text-[11px] font-black uppercase tracking-[0.2em]"
+            className="pb-1 text-center text-[15px] font-black uppercase tracking-[0.2em]"
             style={{ color: "var(--app-primary)", opacity: 0.55 }}
           >
             Más herramientas
           </p>
 
-          <h2 className="mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)]">
+          <h2 className="mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)] text-center">
             Continúa tu plan
           </h2>
         </div>
