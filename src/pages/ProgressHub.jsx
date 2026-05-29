@@ -188,7 +188,7 @@ export function ProgressHub() {
               <Target size={14} className="text-[var(--app-primary)]" />
             </div>
 
-            <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+           <div className="mt-2 grid grid-cols-1 gap-2">
               {missions.map((mission) => (
                 <MissionCard key={mission.id} mission={mission} />
               ))}
@@ -266,7 +266,7 @@ export function ProgressHub() {
               <Lock size={14} className="text-[var(--app-primary)]" />
             </div>
 
-            <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-2">
               {lockedAchievements.length > 0 ? (
                 lockedAchievements.slice(0, 4).map((achievement) => (
                   <LockedRewardCard key={achievement.id} achievement={achievement} />
