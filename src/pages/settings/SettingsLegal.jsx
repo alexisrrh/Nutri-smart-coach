@@ -13,7 +13,7 @@ export function SettingsLegal() {
       subtitle="Trust center para revisar políticas y gestionar tus datos con transparencia."
       onBack={() => navigate("/perfil")}
     >
-        <div className="space-y-2.5 pb-2">
+        <div className="space-y-3 pb-2 ">
       <SettingsCard
         icon={<ShieldCheck size={16} />}
         title="Trust Center"
@@ -54,7 +54,7 @@ export function SettingsLegal() {
           </div>
         </div>
       </SettingsCard>
-
+<div className="mb-2">
       <SettingsCard
         icon={<ShieldCheck size={16} />}
         title="Control y transparencia"
@@ -64,7 +64,9 @@ export function SettingsLegal() {
           <p>Tus datos siguen bajo tu control.</p>
           <p>Puedes revisar políticas o solicitar eliminación cuando lo necesites.</p>
         </div>
+
       </SettingsCard>
+      </div>
       </div>
     </SettingsScreenShell>
   );
