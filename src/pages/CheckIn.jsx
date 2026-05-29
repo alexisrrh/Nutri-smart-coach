@@ -107,7 +107,10 @@ export function CheckIn() {
   });
 
   return (
-    <AppShell contentClassName="px-2 pb-44 pt-2">
+    <AppShell
+      contentClassName="px-2 pb-44 pt-2"
+      scrollClassName="!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
+    >
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         <section
           className="relative shrink-0 overflow-hidden rounded-[20px] border p-2.5 shadow-[0_16px_45px_var(--app-glow)]"
@@ -179,7 +182,7 @@ export function CheckIn() {
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto pb-32 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className="min-h-0 flex-1 overflow-y-auto pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full flex-col gap-2.5">
             <section
               className="relative shrink-0 overflow-hidden rounded-[20px] border p-2 shadow-[0_16px_45px_var(--app-glow)]"

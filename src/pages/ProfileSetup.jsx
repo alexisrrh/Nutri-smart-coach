@@ -49,7 +49,7 @@ export function ProfileSetup() {
   return (
     <AppShell
       contentClassName="!px-2 !pt-2 !pb-0"
-      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden !pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
     >
       <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-2 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pb-3 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div
