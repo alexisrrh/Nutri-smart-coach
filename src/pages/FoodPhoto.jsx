@@ -139,7 +139,11 @@ export default function FoodPhoto() {
   }
 
   return (
-    <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
+    <AppShell
+      className="overflow-hidden"
+      contentClassName="px-2 pt-2"
+      scrollClassName="!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
+    >
       <div className="flex h-full min-h-0 flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
 
@@ -167,7 +171,7 @@ export default function FoodPhoto() {
 
         {result && !loading && (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto pb-[140px] pr-0.5 [scrollbar-width:none] md:pb-[150px] [&::-webkit-scrollbar]:hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="space-y-2">
                 <FoodResultCard result={result} preview={preview} />
                 <NutritionInsights result={result} />

@@ -105,6 +105,12 @@ const Progress = lazy(() =>
   import("./pages/Progress").then((module) => ({ default: module.Progress }))
 );
 
+const ProgressHub = lazy(() =>
+  import("./pages/ProgressHub").then((module) => ({
+    default: module.ProgressHub,
+  }))
+);
+
 const Meals = lazy(() =>
   import("./pages/Meals").then((module) => ({ default: module.Meals }))
 );
@@ -322,6 +328,15 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <MealPlan />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressHub />
             </ProtectedRoute>
           }
         />
