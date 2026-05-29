@@ -47,7 +47,7 @@ export function Meals() {
       className="overflow-hidden"
       contentClassName="px-2 pt-2"
     >
-      <section className="flex h-full min-h-0 flex-col gap-1">
+      <section className="flex h-full min-h-0 flex-col gap-1 pb-[calc(var(--bottom-nav-space)+48px)]">
         <div className="shrink-0 space-y-1.5">
           <HistoryHeader
             onBack={() => navigate("/dashboard")}
@@ -127,7 +127,7 @@ export function Meals() {
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredMeals.length === 0 ? (
               <Empty onClick={() => navigate("/foto-comida")} />
             ) : (
