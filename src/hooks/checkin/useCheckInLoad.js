@@ -9,28 +9,28 @@ import { getCachedProfile } from "../../services/profileService";
 
 export function useCheckInLoad() {
   const isMountedRef = useRef(true);
+
   const [profile, setProfile] = useState(null);
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+
   const [loading, setLoading] = useState(() =>
     isRecentCheckInProcessState(getCheckinProcessState())
   );
+
   const [error, setError] = useState(() => {
     const storedState = getCheckinProcessState();
     return storedState.status === "error" ? storedState.error || "" : "";
   });
-  const [selectedCheckin, setSelectedCheckin] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? storedState.result || null : null;
-  });
-  const [sheetMode, setSheetMode] = useState(() => {
-    const storedState = getCheckinProcessState();
-    return storedState.status === "success" ? "analysis" : "detail";
-  });
+
+  const [selectedCheckin, setSelectedCheckin] = useState(null);
+  const [sheetMode, setSheetMode] = useState("detail");
 
   const loadData = useCallback(async () => {
     if (!isMountedRef.current) return;
 
+    setInitialLoading(true);
     setError("");
     setProfile(getCachedProfile());
 
@@ -42,6 +42,7 @@ export function useCheckInLoad() {
     if (userError || !user) {
       if (isMountedRef.current) {
         setError("Necesitas iniciar sesión para guardar tu check-in físico.");
+        setInitialLoading(false);
       }
       return;
     }
@@ -51,12 +52,19 @@ export function useCheckInLoad() {
 
     try {
       const checkins = await listCheckins(user.id);
+
       if (!isMountedRef.current) return;
+
       setHistory(checkins);
     } catch (err) {
       console.error(err);
+
       if (isMountedRef.current) {
         setError("No se pudo cargar el historial de check-ins.");
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setInitialLoading(false);
       }
     }
   }, []);
@@ -83,6 +91,7 @@ export function useCheckInLoad() {
             error:
               "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
           };
+
           setCheckinProcessState(staleState);
           setLoading(false);
           setError(staleState.error);
@@ -90,11 +99,16 @@ export function useCheckInLoad() {
       }
 
       if (storedState.status === "success" && storedState.result) {
-        setSelectedCheckin(storedState.result);
-        setSheetMode("analysis");
         setHistory((prev) => mergeCheckinsIntoHistory(prev, storedState.result));
         setLoading(false);
         setError("");
+
+        setCheckinProcessState({
+          status: "idle",
+          result: null,
+          error: "",
+          updatedAt: new Date().toISOString(),
+        });
       }
 
       if (storedState.status === "error" && storedState.error) {
@@ -121,6 +135,14 @@ export function useCheckInLoad() {
         setSheetMode("analysis");
         setError("");
         setLoading(false);
+
+        setCheckinProcessState({
+          status: "idle",
+          result: null,
+          error: "",
+          updatedAt: new Date().toISOString(),
+        });
+
         clearInterval(intervalId);
         return;
       }
@@ -138,6 +160,7 @@ export function useCheckInLoad() {
   return {
     error,
     history,
+    initialLoading,
     isMountedRef,
     loading,
     profile,

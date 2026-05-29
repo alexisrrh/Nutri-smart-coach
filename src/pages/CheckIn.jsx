@@ -37,6 +37,7 @@ export function CheckIn() {
     isMountedRef,
     loading,
     profile,
+    initialLoading,
     selectedCheckin,
     setError,
     setLoading,
@@ -113,7 +114,7 @@ function closeSheet() {
     previousCheckin,
     weightDiff,
   });
-
+  
   return (
     <AppShell
       contentClassName="px-2 pb-10 pt-2"
@@ -390,7 +391,7 @@ function closeSheet() {
 
             <CheckInLoader loading={loading} />
 
-            {!loading && history.length === 0 ? (
+       {!initialLoading && !loading && history.length === 0 ? (
               <PremiumEmptyState
                 icon={Camera}
                 title="Tu primer check-in marcará el punto de partida"
@@ -588,7 +589,9 @@ function CheckInFlowSteps({ hasPhoto, hasWeight }) {
   ];
 
   return (
+   
     <div className="mb-2 grid grid-cols-3 gap-1 rounded-full bg-[var(--app-surface)] p-0.5">
+
       {steps.map((step) => (
         <div
           key={step.label}
