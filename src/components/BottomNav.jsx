@@ -1,13 +1,22 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Camera, Utensils, Flame, UserRound } from "lucide-react";
+import {
+  LayoutDashboard,
+  Camera,
+  Utensils,
+  UserRound,
+  MonitorCheck,
+  Dumbbell,
+} from "lucide-react";
 
 export default function BottomNav() {
   const items = [
     { to: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
     { to: "/foto-comida", label: "Scan", Icon: Camera },
-    { to: "/comidas", label: "Comidas", Icon: Utensils },
-    { to: "/plan-comidas", label: "dieta", Icon: Flame },
+    { to: "/checkin", label: "Checkin", Icon:  MonitorCheck},
+     { to: "/rutinas", label: "Rutinas", Icon: Dumbbell},
+    { to: "/plan-comidas", label: "Dieta", Icon: Utensils},
     { to: "/perfil", label: "Perfil", Icon: UserRound },
+    
   ];
 
   return (
@@ -19,14 +28,14 @@ export default function BottomNav() {
         borderColor: "var(--app-border)",
       }}
     >
-      <div className="grid grid-cols-5 gap-1">
+      <div className="grid grid-cols-6 gap-1">
         {items.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === "/dashboard"}
             className={({ isActive }) =>
-              `group relative flex min-h-[46px] flex-col items-center justify-center gap-0.5 rounded-[1rem] px-1.5 py-1.5 text-[10px] font-black uppercase tracking-wide transition-all duration-300 ${
+              `group relative flex min-h-[40px] flex-col items-center justify-center gap-0.5 rounded-[1rem] px-1.5 py-1.5 text-[10px] font-black uppercase tracking-wide transition-all duration-300 ${
                 isActive
                   ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_0_22px_var(--app-glow)]"
                   : "text-[var(--app-muted)] hover:bg-[var(--app-primary-soft)] hover:text-[var(--app-text)]"
@@ -42,7 +51,7 @@ export default function BottomNav() {
                       : "bg-[var(--app-primary-soft)] text-[var(--app-muted)] group-hover:bg-[var(--app-primary-soft)] group-hover:text-[var(--app-text)]"
                   }`}
                 >
-                  <Icon size={15} />
+                  <Icon size={25} />
                 </div>
 
                 <span>{label}</span>

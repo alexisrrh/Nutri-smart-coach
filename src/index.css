@@ -359,6 +359,126 @@ select {
   }
 }
 
+@keyframes progressOrbPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px var(--app-glow));
+  }
+
+  50% {
+    transform: scale(1.03);
+    filter:
+      drop-shadow(0 0 20px var(--app-glow))
+      drop-shadow(0 0 10px var(--app-primary-soft));
+  }
+}
+
+@keyframes progressFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: translate3d(0, -8px, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.75;
+  }
+
+  100% {
+    transform: translateX(140%);
+    opacity: 0;
+  }
+}
+
+@keyframes progressBarFlow {
+  0% {
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateX(140%);
+    opacity: 0;
+  }
+}
+
+@keyframes progressParticle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: translateY(-6px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes progressTrophyGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px var(--app-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  50% {
+    box-shadow:
+      0 0 22px var(--app-glow),
+      0 0 8px color-mix(in srgb, var(--app-primary) 18%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+}
+
+.progress-orb-pulse {
+  animation: progressOrbPulse 4.8s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, filter;
+}
+
+.progress-float {
+  animation: progressFloat 5.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.progress-shine {
+  animation: progressShine 4.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.progress-bar-flow {
+  animation: progressBarFlow 3.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.progress-particle {
+  animation: progressParticle 4.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.progress-trophy-glow {
+  animation: progressTrophyGlow 3.8s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ai-core-heartbeat,
   .ai-core-orb-heartbeat {
@@ -366,8 +486,13 @@ select {
     transform: none !important;
   }
 
-  .ai-core-ambient-breath,
-  .ai-core-live-dot {
+.ai-core-ambient-breath,
+.ai-core-live-dot,
+  .progress-orb-pulse,
+  .progress-float,
+  .progress-shine,
+  .progress-particle,
+  .progress-trophy-glow {
     animation: none !important;
     transform: none !important;
   }
