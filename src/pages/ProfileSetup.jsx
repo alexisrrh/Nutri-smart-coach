@@ -51,7 +51,7 @@ export function ProfileSetup() {
       contentClassName="!px-2 !pt-2 !pb-0"
       scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-2.5 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pb-4 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-2 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pb-3 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div
           className="pointer-events-none absolute inset-0 rounded-[inherit]"
           style={{
@@ -63,7 +63,7 @@ export function ProfileSetup() {
         <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
 
         <div className="relative z-10 flex w-full flex-col gap-2.5">
-          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-3 shadow-[0_18px_54px_var(--app-glow)]">
+          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
             <div
               className="pointer-events-none absolute inset-0"
               style={{
@@ -72,9 +72,9 @@ export function ProfileSetup() {
               }}
             />
 
-            <div className="relative z-10 flex items-start gap-3">
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[22px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_28px_var(--app-glow)]">
-                <BrainCircuit size={24} />
+            <div className="relative z-10 flex items-start gap-2.5">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow)]">
+                <BrainCircuit size={20} />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -82,14 +82,14 @@ export function ProfileSetup() {
                   AI Settings Hub
                 </MetaBadge>
 
-                <h1 className="mt-2 truncate text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
+                <h1 className="mt-1.5 truncate text-[18px] font-black leading-none tracking-tight text-[var(--app-text)]">
                   {displayName}
                 </h1>
 
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <div className="mt-1.5 flex flex-wrap items-center gap-1">
                   <MetaBadge variant="neutral">{goalLabel}</MetaBadge>
 
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
                     {statusLabel}
                   </span>
@@ -98,7 +98,7 @@ export function ProfileSetup() {
             </div>
           </header>
 
-          <section className="grid grid-cols-2 gap-1.5">
+          <section className="grid grid-cols-2 gap-1">
             <SettingMetric
               label="Peso"
               value={profile?.weight ? `${profile.weight} kg` : "—"}
@@ -114,7 +114,9 @@ export function ProfileSetup() {
             <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
           </section>
 
-          <div className="space-y-2.5">
+          <ProgressAndAchievementsCard onOpenProgress={() => navigate("/progress")} />
+
+        <div className="space-y-2">
             <NavCard
               icon={<UserRound size={16} />}
               title="Mi perfil"
@@ -147,38 +149,149 @@ export function ProfileSetup() {
             />
           </div>
         </div>
+
       </div>
     </AppShell>
   );
 }
+
 
 function NavCard({ description, icon, onClick, title }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),var(--app-card))] px-3 py-3 text-left shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition duration-200 active:scale-[0.985]"
+      className="group flex w-full items-center justify-between gap-2.5 rounded-[1.2rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),var(--app-card))] px-2.5 py-3.5 text-left shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition duration-200 active:scale-[0.985]"
     >
-      <span className="flex min-w-0 items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)] transition group-active:scale-[0.98]">
+      <span className="flex min-w-0 items-center gap-2.5">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)] transition group-active:scale-[0.98]">
           {icon}
         </span>
 
         <span className="min-w-0">
-          <span className="block text-[13px] font-black leading-tight text-[var(--app-text)]">
+          <span className="block text-[15px] font-black leading-tight text-[var(--app-text)]">
             {title}
           </span>
-          <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+          <span className="mt-0.5 block text-[11px] font-medium leading-4 text-[var(--app-muted)]">
             {description}
           </span>
         </span>
       </span>
 
       <ChevronDown
-        size={15}
+        size={14}
         className="-rotate-90 shrink-0 text-[var(--app-primary)] transition-transform group-active:translate-x-0.5"
       />
     </button>
+  );
+}
+
+function ProgressAndAchievementsCard({ onOpenProgress }) {
+  return (
+    <section className="relative mt-0.5 overflow-hidden rounded-[1.4rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-surface))] px-2.5 py-2 shadow-[0_18px_46px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--app-primary) 14%, transparent), transparent 28%), radial-gradient(circle at 86% 20%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 24%), radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--app-primary) 5%, transparent), transparent 30%)",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_30%,rgba(0,0,0,0.12)_100%)]" />
+
+      <div className="relative z-10 flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <MetaBadge variant="neutral" icon={<BrainCircuit size={11} />}>
+              PROGRESO
+            </MetaBadge>
+            <h2 className="mt-1.5 text-[14px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
+              Nivel 4
+            </h2>
+            <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
+              840 XP · 160 XP para Nivel 5
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 rounded-[1.25rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+          <div className="relative flex h-[5.9rem] w-[5.9rem] shrink-0 items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "conic-gradient(var(--app-primary) 0 84%, color-mix(in_srgb,var(--app-border)_75%,transparent) 84% 100%)",
+                    boxShadow: "0 0 24px var(--app-glow)",
+                  }}
+                />
+                <div className="absolute inset-[0.28rem] rounded-full bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,transparent),color-mix(in_srgb,var(--app-surface)_92%,transparent))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]" />
+                <div className="absolute inset-[0.78rem] rounded-full border border-[var(--app-primary)]/10 ai-core-ambient-breath" />
+                <div className="absolute inset-[1.04rem] rounded-full border border-[var(--app-primary)]/16 ai-core-orb-heartbeat bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.16),transparent_24%),linear-gradient(180deg,var(--app-primary-soft)_0%,color-mix(in_srgb,var(--app-primary)_14%,transparent)_100%)] shadow-[0_0_18px_var(--app-glow)]" />
+                <div className="absolute inset-[0.46rem] rounded-full border border-[var(--app-primary)]/7" />
+                <div className="absolute left-1/2 top-[11%] h-[56%] w-[1px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.26),transparent)] opacity-70" />
+                <div className="absolute left-[16%] top-1/2 h-[1px] w-[68%] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--app-primary)_28%,transparent),transparent)] opacity-80" />
+                <div className="absolute left-[19%] top-[24%] h-2 w-2 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)] ai-core-live-dot" />
+                <div className="absolute right-[18%] bottom-[24%] h-1.5 w-1.5 rounded-full bg-[var(--app-primary)]/70 shadow-[0_0_10px_var(--app-glow)]" />
+                <div className="absolute inset-[16%] rounded-full border border-white/5" />
+
+                <div className="relative z-10 text-center">
+                  <div className="text-[18px] font-black leading-none text-[var(--app-text)] shadow-[0_0_12px_var(--app-glow)]">
+                    84%
+                  </div>
+                  <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                    Nivel 4
+                  </p>
+                </div>
+              </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                  Próximo logro
+                </p>
+                <p className="mt-1 text-[12px] font-black text-[var(--app-text)]">
+                  Nutri Master
+                </p>
+                <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
+                  10 comidas restantes
+                </p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
+                76%
+              </span>
+            </div>
+
+            <div className="mt-2 h-2 rounded-full bg-[color-mix(in_srgb,var(--app-surface)_90%,transparent)]">
+              <div className="h-full w-[76%] rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_60%,white))] shadow-[0_0_12px_var(--app-glow)]" />
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-1">
+              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                🔥 7
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                🍽 43
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                📸 12
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                💪 18
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenProgress}
+          className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_92%,transparent))] px-3 py-2 text-[10px] font-semibold tracking-[0.03em] text-[var(--app-text)] shadow-[0_8px_18px_color-mix(in_srgb,var(--app-primary)_18%,transparent),inset_0_1px_0_rgba(255,255,255,0.04)] transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_22px_color-mix(in_srgb,var(--app-primary)_22%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)] active:scale-[0.985]"
+        >
+          <Sparkles size={12} className="text-[var(--app-primary)]" />
+          <span>Progress Hub</span>
+          <ChevronDown size={11} className="-rotate-90 text-[var(--app-primary)]" />
+        </button>
+      </div>
+    </section>
   );
 }
 
