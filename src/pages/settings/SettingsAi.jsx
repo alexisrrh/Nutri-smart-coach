@@ -70,7 +70,7 @@ export function SettingsAi() {
       subtitle="Núcleo vivo, recursos asignados y capas futuras del sistema."
       onBack={() => navigate("/perfil")}
     >
-      <div className="space-y-2.5 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]">
+      <div className="space-y-2.5 pb-5">
         <AiCorePanel
           loading={loading}
           planLabel={planLabel}

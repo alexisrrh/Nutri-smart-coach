@@ -125,7 +125,7 @@ export function SettingsSecurity() {
           </div>
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
+        <div className="mt-2 grid grid-cols-3 gap-1.5 ">
           <SettingsMetric label="Proveedor" value={providerLabel} accent />
           <SettingsMetric label="Estado" value={socialOnly ? "Social" : "Local"} />
           <SettingsMetric label="Sesión" value="Activa" accent />
@@ -137,7 +137,7 @@ export function SettingsSecurity() {
         title="Contraseña y salida"
         description="Gestiona tu acceso local o cierra la sesión activa."
       >
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 ">
           <SettingsRow
             icon={<KeyRound size={15} />}
             label="Cambiar contraseña"
@@ -153,7 +153,7 @@ export function SettingsSecurity() {
           />
         </div>
 
-        <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 shadow-[inset_0_0_0_1px_var(--app-border)]">
+        <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 shadow-[inset_0_0_0_1px_var(--app-border)] ">
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-muted)]">
             Control activo
           </p>
@@ -162,6 +162,7 @@ export function SettingsSecurity() {
             acceso sigue gestionado por tu cuenta externa.
           </p>
         </div>
+      
       </SettingsCard>
 
       {confirmLogoutOpen ? (
@@ -281,7 +282,7 @@ function PasswordModal({
   success,
 }) {
   return (
-    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/65 px-3 py-3 backdrop-blur-md sm:items-center sm:py-6">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-3 backdrop-blur-md sm:items-center sm:py-6">
       <section
         className="relative w-full max-w-[420px] max-h-[calc(100dvh-1.25rem)] overflow-y-auto overscroll-contain rounded-[1.45rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,#08131b),var(--app-card))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"

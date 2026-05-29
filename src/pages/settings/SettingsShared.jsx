@@ -16,7 +16,7 @@ export function SettingsScreenShell({
       contentClassName="!px-2 !pt-2"
       scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <SettingsFrame className="pb-2">
+      <SettingsFrame className="pb-25">
         <SettingsHero title={title} subtitle={subtitle} badge={badge} onBack={onBack} />
         <div className="space-y-2.5">{children}</div>
       </SettingsFrame>
