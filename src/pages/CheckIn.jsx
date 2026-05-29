@@ -9,7 +9,10 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-
+import {
+  getCheckinProcessState,
+  setCheckinProcessState,
+} from "../services/checkinService";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
@@ -93,10 +96,15 @@ export function CheckIn() {
     setSelectedCheckin(checkin);
   }
 
-  function closeSheet() {
-    setSelectedCheckin(null);
-  }
+function closeSheet() {
+  setSelectedCheckin(null);
 
+  setCheckinProcessState({
+    status: "idle",
+    result: null,
+    updatedAt: new Date().toISOString(),
+  });
+}
   const goal = profile?.goal || profile?.objetivo || "ganar_musculo";
   const lastImage = getCheckinImage(lastCheckin);
   const previousImage = getCheckinImage(previousCheckin);
@@ -108,7 +116,7 @@ export function CheckIn() {
 
   return (
     <AppShell
-      contentClassName="px-2 pb-44 pt-2"
+      contentClassName="px-2 pb-10 pt-2"
       scrollClassName="!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
     >
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
@@ -182,7 +190,7 @@ export function CheckIn() {
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className="min-h-0 flex-1 overflow-y-auto pb-4 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full flex-col gap-2.5">
             <section
               className="relative shrink-0 overflow-hidden rounded-[20px] border p-2 shadow-[0_16px_45px_var(--app-glow)]"

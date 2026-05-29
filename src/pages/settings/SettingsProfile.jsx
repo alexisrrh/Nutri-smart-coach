@@ -170,7 +170,7 @@ export function SettingsProfile() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-3 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]"
+      className="space-y-3 pb-20"
       >
         <ProfileModule
           icon={<UserRound size={16} />}

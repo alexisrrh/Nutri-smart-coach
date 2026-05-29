@@ -18,7 +18,7 @@ export function LegalLayout({ children, eyebrow, title, updatedAt }) {
       hideBottomNav={false}
       wide
       contentClassName="!px-3 !pt-3"
-      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-[calc(var(--bottom-nav-space)+140px+env(safe-area-inset-bottom))]"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden space-y-3 pb-25"
     >
       <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3 rounded-[36px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-3 py-3 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:min-h-[880px] md:rounded-[40px] md:border-8 md:px-4 md:py-4">
           <header className="shrink-0">

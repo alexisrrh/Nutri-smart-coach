@@ -30,10 +30,8 @@ export default function AppShell({
         <AppBackground />
 
         <div
-          className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-${
-            showBottomNav
-              ? "[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+24px)]"
-              : "[calc(32px+env(safe-area-inset-bottom))]"
+          className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain 
+           
           } [-webkit-overflow-scrolling:touch] ${scrollClassName}`}
         >
           {children}

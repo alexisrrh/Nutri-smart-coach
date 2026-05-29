@@ -1,6 +1,6 @@
 import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
-const contactEmail = "alexisrrh123@gmail.com";
+const contactEmail = "info@nutrismartcoach.com";
 
 export function PrivacyPolicy() {
   return (
