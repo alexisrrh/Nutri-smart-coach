@@ -754,7 +754,7 @@ function AIPerformanceCore({
           <span className={["absolute bottom-7 right-4 h-1 w-1 rounded-full bg-white/70", active ? "animate-ping" : "opacity-40"].join(" ")} />
           <div
             className={[
-              "relative grid h-[72px] w-[72px] place-items-center rounded-full border bg-[radial-gradient(circle_at_35%_28%,rgba(255,255,255,0.24),transparent_20%),radial-gradient(circle_at_50%_72%,color-mix(in_srgb,var(--app-primary)_34%,transparent),transparent_50%),linear-gradient(145deg,color-mix(in_srgb,var(--app-primary)_38%,#06110e),#06110e)]",
+              "relative grid h-[72px] w-[80px] place-items-center rounded-full border bg-[radial-gradient(circle_at_35%_28%,rgba(255,255,255,0.24),transparent_20%),radial-gradient(circle_at_50%_72%,color-mix(in_srgb,var(--app-primary)_34%,transparent),transparent_50%),linear-gradient(145deg,color-mix(in_srgb,var(--app-primary)_38%,#06110e),#06110e)]",
               active
                 ? "ai-core-orb-heartbeat border-[color:color-mix(in_srgb,var(--app-primary)_52%,var(--app-border))] shadow-[0_0_44px_var(--app-glow),inset_0_0_22px_color-mix(in_srgb,var(--app-primary)_26%,transparent)]"
                 : "border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] shadow-[0_0_16px_rgba(0,0,0,0.22)]",
@@ -765,7 +765,7 @@ function AIPerformanceCore({
               alt=""
               aria-hidden="true"
               className={[
-                "ai-core-heartbeat h-18 w-30 object-cover drop-shadow-[0_0_14px_var(--app-glow)]",
+                "ai-core-heartbeat h-20 w-48 object-cover drop-shadow-[0_0_14px_var(--app-glow)]",
                 active ? "opacity-100" : "opacity-90",
               ].join(" ")}
             />

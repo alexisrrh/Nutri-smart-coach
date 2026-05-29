@@ -47,13 +47,13 @@ export function Navbar() {
 
         <div className="hidden gap-5 md:flex">
           <NavItem to="/" icon={<Home size={16} />} label="Home" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/dashboard" icon={<LayoutDashboard size={16} />} label="Dashboard" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" linkClass={linkClass} activeClass={activeClass} />
           <NavItem to="/resumen" icon={<BarChart size={16} />} label="Resumen" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/calculadora" icon={<Calculator size={16} />} label="Calculadora" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/plan-comidas" icon={<Flame size={16} />} label="Plan" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/comidas" icon={<Utensils size={16} />} label="Comidas" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/foto-comida" icon={<Camera size={16} />} label="Foto IA" linkClass={linkClass} activeClass={activeClass} />
-          <NavItem to="/progreso" icon={<LineChart size={16} />} label="Peso y medidas" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/calculadora" icon={<Calculator size={20} />} label="Calculadora" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/plan-comidas" icon={<Flame size={20} />} label="Plan" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/comidas" icon={<Utensils size={20} />} label="Comidas" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/foto-comida" icon={<Camera size={20} />} label="Foto IA" linkClass={linkClass} activeClass={activeClass} />
+          <NavItem to="/progreso" icon={<LineChart size={20} />} label="Peso y medidas" linkClass={linkClass} activeClass={activeClass} />
         </div>
 
         <button

@@ -9,10 +9,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import {
-  getCheckinProcessState,
-  setCheckinProcessState,
-} from "../services/checkinService";
+import { setCheckinProcessState } from "../services/checkinService";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";

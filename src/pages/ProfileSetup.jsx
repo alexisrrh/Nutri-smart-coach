@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Camera,
+  Dumbbell,
   ChevronDown,
+  Flame,
   KeyRound,
   Palette,
   ShieldCheck,
   Sparkles,
+  UtensilsCrossed,
   UserRound,
   BrainCircuit,
-    Flame,
-  UtensilsCrossed,
-  Camera,
-  Dumbbell,
 } from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { useProgressSummary } from "../hooks/progress/useProgressSummary";
 import { getProfile } from "../services/profileService";
 import { AppShell, MetaBadge } from "../components/ui";
 
@@ -22,6 +23,8 @@ export function ProfileSetup() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { summary: progressSummary, loading: loadingProgress } =
+    useProgressSummary();
 
   useEffect(() => {
     let active = true;
@@ -48,12 +51,13 @@ export function ProfileSetup() {
 
   const displayName = profile?.name || user?.email?.split("@")[0] || "Tu perfil";
   const goalLabel = getGoalLabel(profile?.goal);
-  const statusLabel = loading ? "Sincronizando..." : "Sincronizado";
+  const statusLabel =
+    loading || loadingProgress ? "Sincronizando..." : "Sincronizado";
 
   return (
     <AppShell
       contentClassName="!px-2 !pt-2 !pb-0"
-      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-20"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-27"
     >
       <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-2 rounded-[32px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2 pb-8 pt-2 shadow-[0_18px_54px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div
@@ -118,9 +122,13 @@ export function ProfileSetup() {
             <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
           </section>
 
-          <ProgressAndAchievementsCard onOpenProgress={() => navigate("/progress")} />
+          <ProgressAndAchievementsCard
+            onOpenProgress={() => navigate("/progress")}
+            progress={progressSummary}
+            loading={loadingProgress}
+          />
 
-        <div className="space-y-2">
+          <div className="space-y-2">
             <NavCard
               icon={<UserRound size={16} />}
               title="Mi perfil"
@@ -153,7 +161,6 @@ export function ProfileSetup() {
             />
           </div>
         </div>
-
       </div>
     </AppShell>
   );
@@ -190,7 +197,17 @@ function NavCard({ description, icon, onClick, title }) {
   );
 }
 
-function ProgressAndAchievementsCard({ onOpenProgress }) {
+function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
+  const xp = progress?.xp ?? 0;
+  const remainingXp = progress?.remainingXp ?? 0;
+  const nextLevel = progress?.nextLevel ?? 5;
+  const percent = progress?.percent ?? 0;
+  const level = progress?.level ?? 1;
+  const streak = progress?.streak ?? 0;
+  const mealsCount = progress?.mealsCount ?? 0;
+  const checkinsCount = progress?.checkinsCount ?? 0;
+  const workoutsCount = progress?.workoutsCount ?? 0;
+
   return (
     <section className="relative mt-0.5 overflow-hidden rounded-[1.4rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-surface))] px-2.5 py-2 shadow-[0_18px_46px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div
@@ -209,10 +226,12 @@ function ProgressAndAchievementsCard({ onOpenProgress }) {
               PROGRESO
             </MetaBadge>
             <h2 className="mt-1.5 text-[14px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
-              Nivel 4
+              Nivel {level}
             </h2>
             <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-              840 XP · 160 XP para Nivel 5
+              {loading
+                ? "Sincronizando progreso..."
+                : `${xp} XP · ${remainingXp} XP para Nivel ${nextLevel}`}
             </p>
           </div>
         </div>
@@ -221,94 +240,71 @@ function ProgressAndAchievementsCard({ onOpenProgress }) {
           <div className="relative flex h-[5.9rem] w-[5.9rem] shrink-0 items-center justify-center">
             <div
               className="absolute inset-0 rounded-full"
-                  style={{
-                    background:
-                      "conic-gradient(var(--app-primary) 0 84%, color-mix(in_srgb,var(--app-border)_75%,transparent) 84% 100%)",
-                    boxShadow: "0 0 24px var(--app-glow)",
-                  }}
-                />
-                <div className="absolute inset-[0.28rem] rounded-full bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,transparent),color-mix(in_srgb,var(--app-surface)_92%,transparent))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]" />
-                <div className="absolute inset-[0.78rem] rounded-full border border-[var(--app-primary)]/10 ai-core-ambient-breath" />
-                <div className="absolute inset-[1.04rem] rounded-full border border-[var(--app-primary)]/16 ai-core-orb-heartbeat bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.16),transparent_24%),linear-gradient(180deg,var(--app-primary-soft)_0%,color-mix(in_srgb,var(--app-primary)_14%,transparent)_100%)] shadow-[0_0_18px_var(--app-glow)]" />
-                <div className="absolute inset-[0.46rem] rounded-full border border-[var(--app-primary)]/7" />
-                <div className="absolute left-1/2 top-[11%] h-[56%] w-[1px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.26),transparent)] opacity-70" />
-                <div className="absolute left-[16%] top-1/2 h-[1px] w-[68%] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--app-primary)_28%,transparent),transparent)] opacity-80" />
-                <div className="absolute left-[19%] top-[24%] h-2 w-2 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)] ai-core-live-dot" />
-                <div className="absolute right-[18%] bottom-[24%] h-1.5 w-1.5 rounded-full bg-[var(--app-primary)]/70 shadow-[0_0_10px_var(--app-glow)]" />
-                <div className="absolute inset-[16%] rounded-full border border-white/5" />
+              style={{
+                background:
+                  "conic-gradient(var(--app-primary) 0 84%, color-mix(in_srgb,var(--app-border)_75%,transparent) 84% 100%)",
+                boxShadow: "0 0 24px var(--app-glow)",
+              }}
+            />
+            <div className="absolute inset-[0.28rem] rounded-full bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,transparent),color-mix(in_srgb,var(--app-surface)_92%,transparent))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]" />
+            <div className="absolute inset-[0.78rem] rounded-full border border-[var(--app-primary)]/10 ai-core-ambient-breath" />
+            <div className="absolute inset-[1.04rem] rounded-full border border-[var(--app-primary)]/16 ai-core-orb-heartbeat bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.16),transparent_24%),linear-gradient(180deg,var(--app-primary-soft)_0%,color-mix(in_srgb,var(--app-primary)_14%,transparent)_100%)] shadow-[0_0_18px_var(--app-glow)]" />
+            <div className="absolute inset-[0.46rem] rounded-full border border-[var(--app-primary)]/7" />
+            <div className="absolute left-1/2 top-[11%] h-[56%] w-[1px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.26),transparent)] opacity-70" />
+            <div className="absolute left-[16%] top-1/2 h-[1px] w-[68%] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--app-primary)_28%,transparent),transparent)] opacity-80" />
+            <div className="absolute left-[19%] top-[24%] h-2 w-2 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)] ai-core-live-dot" />
+            <div className="absolute right-[18%] bottom-[24%] h-1.5 w-1.5 rounded-full bg-[var(--app-primary)]/70 shadow-[0_0_10px_var(--app-glow)]" />
+            <div className="absolute inset-[16%] rounded-full border border-white/5" />
 
-                <div className="relative z-10 text-center">
-                  <div className="text-[18px] font-black leading-none text-[var(--app-text)] shadow-[0_0_12px_var(--app-glow)]">
-                    84%
-                  </div>
-                  <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                    Nivel 4
-                  </p>
-                </div>
+            <div className="relative z-10 text-center">
+              <div className="text-[18px] font-black leading-none text-[var(--app-text)] shadow-[0_0_12px_var(--app-glow)]">
+                {percent}%
               </div>
+              <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                Nivel {level}
+              </p>
+            </div>
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Próximo logro
+                  Próximo nivel
                 </p>
                 <p className="mt-1 text-[12px] font-black text-[var(--app-text)]">
-                  Nutri Master
+                  Tu siguiente hito
                 </p>
                 <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-                  10 comidas restantes
+                  {remainingXp} XP para el siguiente nivel
                 </p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
-                76%
+                {percent}%
               </span>
             </div>
 
             <div className="mt-2 h-2 rounded-full bg-[color-mix(in_srgb,var(--app-surface)_90%,transparent)]">
-              <div className="h-full w-[76%] rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_60%,white))] shadow-[0_0_12px_var(--app-glow)]" />
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_60%,white))] shadow-[0_0_12px_var(--app-glow)]"
+                style={{ width: `${Math.max(8, percent)}%` }}
+              />
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
-    <Flame
-      size={15}
-      className="text-[var(--app-primary)]"
-    />
-    <span className="text-[11px] font-bold text-[var(--app-text)]">
-      7
-    </span>
-  </div>
-
-  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
-    <UtensilsCrossed
-      size={15}
-      className="text-[var(--app-primary)]"
-    />
-    <span className="text-[11px] font-bold text-[var(--app-text)]">
-      43
-    </span>
-  </div>
-
-  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
-    <Camera
-      size={15}
-      className="text-[var(--app-primary)]"
-    />
-    <span className="text-[11px] font-bold text-[var(--app-text)]">
-      12
-    </span>
-  </div>
-
-  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
-    <Dumbbell
-      size={15}
-      className="text-[var(--app-primary)]"
-    />
-    <span className="text-[11px] font-bold text-[var(--app-text)]">
-      18
-    </span>
-  </div>
-</div>
+              <ProgressStatChip icon={Flame} label={`Racha ${streak}`} />
+              <ProgressStatChip
+                icon={UtensilsCrossed}
+                label={`${mealsCount} comidas`}
+              />
+              <ProgressStatChip
+                icon={Camera}
+                label={`${checkinsCount} check-ins`}
+              />
+              <ProgressStatChip
+                icon={Dumbbell}
+                label={`${workoutsCount} entrenos`}
+              />
+            </div>
           </div>
         </div>
 
@@ -318,11 +314,10 @@ function ProgressAndAchievementsCard({ onOpenProgress }) {
           className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_92%,transparent))] px-3 py-2 text-[10px] font-semibold tracking-[0.03em] text-[var(--app-text)] shadow-[0_8px_18px_color-mix(in_srgb,var(--app-primary)_18%,transparent),inset_0_1px_0_rgba(255,255,255,0.04)] transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_22px_color-mix(in_srgb,var(--app-primary)_22%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)] active:scale-[0.985]"
         >
           <Sparkles size={12} className="text-[var(--app-primary)] items-center" />
-         <span>Centro de progreso</span>
+          <span>Centro de progreso</span>
           <ChevronDown size={11} className="-rotate-90 text-[var(--app-primary)]" />
         </button>
-        </div>
-      
+      </div>
     </section>
   );
 }
@@ -336,6 +331,17 @@ function SettingMetric({ label, value }) {
       <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
         {value || "—"}
       </p>
+    </div>
+  );
+}
+
+function ProgressStatChip({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+      <Icon size={13} className="text-[var(--app-primary)]" />
+      <span className="whitespace-nowrap text-[10px] font-semibold leading-none text-[var(--app-text)]">
+        {label}
+      </span>
     </div>
   );
 }
