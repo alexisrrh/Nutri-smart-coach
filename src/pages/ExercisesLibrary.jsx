@@ -86,7 +86,7 @@ export function ExercisesLibrary() {
   }, [selectedExercise]);
 
   return (
-    <AppShell contentClassName="px-2 pt-2 pb-[calc(var(--bottom-nav-space)+120px)]">
+    <AppShell contentClassName="px-2 pt-2 pb-22">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(0,196,255,0.04),transparent_28%),radial-gradient(circle_at_20%_18%,rgba(60,255,182,0.03),transparent_22%)]">
         <header className="shrink-0">
           {!selectedMuscle ? (
@@ -141,7 +141,7 @@ export function ExercisesLibrary() {
           )}
         </header>
 
-        <main className={`min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${selectedMuscle ? "pb-[calc(var(--bottom-nav-space)+120px)]" : "pb-1"}`}>
+        <main className={`min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${selectedMuscle ? "pb-2" : "pb-1"}`}>
           <div className="space-y-2">
             {!selectedMuscle ? (
               <>

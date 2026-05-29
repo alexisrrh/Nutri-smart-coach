@@ -409,9 +409,9 @@ export function MealPlan() {
       <PrintablePlan plan={plan} />
 
       <AppShell
-        className="overflow-hidden"
+        className="overflow-hidden pb-20"
         contentClassName="px-2 pt-2"
-        scrollClassName="!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
+       
       >
         <div className="flex h-full min-h-0 flex-col gap-1">
           <DietHeroCard
@@ -442,7 +442,7 @@ export function MealPlan() {
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
           {!hasPlan && !loading ? (
-            <div className="min-h-0 flex-1 overflow-y-auto pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+           <div className="overflow-y-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <PremiumEmptyState
                 icon={Sparkles}
                 title="Tu plan semanal empieza aquí"
@@ -465,7 +465,7 @@ export function MealPlan() {
             </div>
           ) : (
             <SurfaceCard
-              className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-1"
+              className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 pb-10"
               radius="lg"
             >
             <div
@@ -552,7 +552,7 @@ export function MealPlan() {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-2 pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="overflow-y-auto p-2 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {loading && <GeneratingDietLoader formData={formData} />}
 
               {!loading && hasPlan && (

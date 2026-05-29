@@ -121,7 +121,7 @@ export function SettingsTheme() {
       subtitle="Personaliza la apariencia de NutriSmartCoach."
       onBack={() => navigate("/perfil")}
     >
-      <div className="space-y-2.5 pb-[calc(var(--bottom-nav-space)+120px+env(safe-area-inset-bottom))]">
+      <div className="space-y-2 pb-23">
         <ThemeHero activeTheme={activeTheme} />
 
         <SettingsCard

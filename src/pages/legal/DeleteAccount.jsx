@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
 import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
-const contactEmail = "alexisrrh123@gmail.com";
+const contactEmail = "info@nutrismartcoach.com";
 const subject = "Eliminar cuenta NutriSmartCoach";
 
 export function DeleteAccount() {

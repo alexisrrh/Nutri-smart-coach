@@ -40,7 +40,7 @@ export default function FoodResultCard({ result, preview }) {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to top, var(--app-surface) 0%, color-mix(in srgb, var(--app-surface) 35%, transparent) 65%, transparent 100%)",
+                "linear-gradient(to top, color-mix(in srgb, var(--app-surface) 92%, transparent) 0%, color-mix(in srgb, var(--app-surface) 45%, transparent) 58%, transparent 100%)",
             }}
           />
 
