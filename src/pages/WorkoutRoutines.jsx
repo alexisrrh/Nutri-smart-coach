@@ -916,7 +916,7 @@ function CustomRoutinesSheet({
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-28 pt-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2.5">
               {routines.length === 0 ? (
                 <PremiumEmptyState
@@ -1226,9 +1226,8 @@ function WeeklyRoutineSheet({
   selectedLevel,
 }) {
   return (
-    <div className="fixed inset-0 z-[85] flex items-end justify-center bg-black/66 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-md">
-      <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
-        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
+  <div className="fixed inset-0 z-[85] flex items-end justify-center bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+12px)] backdrop-blur-md">
+<section className="flex h-[calc(100dvh-var(--bottom-nav-space)-24px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
@@ -1269,9 +1268,10 @@ function WeeklyRoutineSheet({
                 />
               </div>
             </div>
+            
           </div>
 
-          <div className="min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2">
               {days.map((day, index) => {
                 const dateKey = getPlanDayDateKey(index);
@@ -1306,9 +1306,9 @@ function WeeklyRoutineSheet({
               })}
             </div>
           </div>
+          </section>
         </div>
-      </section>
-    </div>
+   
   );
 }
 
@@ -1464,7 +1464,7 @@ function DayDetailSheet({
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-sm">
       <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-12px_38px_rgba(0,0,0,0.42)]">
-        <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b border-[var(--app-border)] px-2.5 py-2">
             <div className="flex items-center justify-between gap-2">
               <button

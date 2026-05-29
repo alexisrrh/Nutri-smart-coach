@@ -8,6 +8,10 @@ import {
   Sparkles,
   UserRound,
   BrainCircuit,
+    Flame,
+  UtensilsCrossed,
+  Camera,
+  Dumbbell,
 } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { getProfile } from "../services/profileService";
@@ -264,20 +268,47 @@ function ProgressAndAchievementsCard({ onOpenProgress }) {
               <div className="h-full w-[76%] rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_60%,white))] shadow-[0_0_12px_var(--app-glow)]" />
             </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-1">
-              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                🔥 7
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                🍽 43
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                📸 12
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_60%,transparent),var(--app-surface))] px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                💪 18
-              </span>
-            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+    <Flame
+      size={15}
+      className="text-[var(--app-primary)]"
+    />
+    <span className="text-[11px] font-bold text-[var(--app-text)]">
+      7
+    </span>
+  </div>
+
+  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+    <UtensilsCrossed
+      size={15}
+      className="text-[var(--app-primary)]"
+    />
+    <span className="text-[11px] font-bold text-[var(--app-text)]">
+      43
+    </span>
+  </div>
+
+  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+    <Camera
+      size={15}
+      className="text-[var(--app-primary)]"
+    />
+    <span className="text-[11px] font-bold text-[var(--app-text)]">
+      12
+    </span>
+  </div>
+
+  <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+    <Dumbbell
+      size={15}
+      className="text-[var(--app-primary)]"
+    />
+    <span className="text-[11px] font-bold text-[var(--app-text)]">
+      18
+    </span>
+  </div>
+</div>
           </div>
         </div>
 
@@ -286,11 +317,12 @@ function ProgressAndAchievementsCard({ onOpenProgress }) {
           onClick={onOpenProgress}
           className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_92%,transparent))] px-3 py-2 text-[10px] font-semibold tracking-[0.03em] text-[var(--app-text)] shadow-[0_8px_18px_color-mix(in_srgb,var(--app-primary)_18%,transparent),inset_0_1px_0_rgba(255,255,255,0.04)] transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_22px_color-mix(in_srgb,var(--app-primary)_22%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)] active:scale-[0.985]"
         >
-          <Sparkles size={12} className="text-[var(--app-primary)]" />
-          <span>Progress Hub</span>
+          <Sparkles size={12} className="text-[var(--app-primary)] items-center" />
+         <span>Centro de progreso</span>
           <ChevronDown size={11} className="-rotate-90 text-[var(--app-primary)]" />
         </button>
-      </div>
+        </div>
+      
     </section>
   );
 }
