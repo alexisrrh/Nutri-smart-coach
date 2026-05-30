@@ -61,10 +61,10 @@ export function Home() {
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
-                Iniciar Sesion
+                INICIAR SESIÓN
               </Link>
               <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
-                Empezar
+                REGÍSTRATE
               </Link>
             </div>
           </nav>
@@ -82,6 +82,8 @@ export function Home() {
               <h1 className="text-[1.8rem] font-black italic uppercase leading-none tracking-tight">
                 Domina <span className="bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">tu cuerpo</span>
               </h1>
+              <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">ANALISAMOS TU COMIDA CON PRECISIÓN</p>
+
             </div>
 
             {/* RECUADRO DE ANÁLISIS */}

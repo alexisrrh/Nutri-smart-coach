@@ -61,10 +61,10 @@ export function Dietas() {
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-text)]">
-                Login
+                INICIAR SESIÓN
               </Link>
               <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition-transform active:scale-95">
-                Empezar
+                REGÍSTRATE
               </Link>
             </div>
           </nav>
@@ -76,6 +76,8 @@ export function Dietas() {
             <h1 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--app-text)]">
               Mi Dieta <span className="text-[var(--app-primary)]">Hoy</span>
             </h1>
+            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">Generamos tu dieta en segundos con IA</p>
+
           </div>
 
           {/* IMAGEN HERO */}
