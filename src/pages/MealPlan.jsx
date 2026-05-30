@@ -6,6 +6,7 @@ import {
   Share2,
   ShoppingCart,
   Sparkles,
+  Utensils,
   Timer,
    Loader2,
    ScanLine,
@@ -408,12 +409,12 @@ export function MealPlan() {
     <>
       <PrintablePlan plan={plan} />
 
-      <AppShell
-        className="overflow-hidden pb-20"
-        contentClassName="px-2 pt-2"
-       
-      >
-        <div className="flex h-full min-h-0 flex-col gap-1">
+     <AppShell
+  className="overflow-hidden pb-18"
+  contentClassName="overflow-x-hidden px-2 pt-2"
+  scrollClassName="overflow-x-hidden overscroll-x-none touch-pan-y"
+>
+        <div className="flex h-full min-h-0 flex-col gap-3">
           <DietHeroCard
             hasPlan={hasPlan}
             completionPercent={completionPercent}
@@ -444,12 +445,11 @@ export function MealPlan() {
           {!hasPlan && !loading ? (
 <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-[calc(var(--bottom-nav-space)+28px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <PremiumEmptyState
-                icon={Sparkles}
+                icon={Utensils}
                 title="Tu plan semanal empieza aquí"
                 description="Configura objetivo, días y comidas para generar una dieta adaptada a tu rutina."
                 actionLabel="Generar dieta"
-                onAction={() => document.getElementById("meal-plan-builder-submit")?.click()}
-                className="mb-2 py-4"
+               
               />
               <MealPlanForm
                 formData={formData}
