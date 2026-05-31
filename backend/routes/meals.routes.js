@@ -15,6 +15,7 @@ import {
 } from "../services/storage.service.js";
 import { createImageHash } from "../utils/files.js";
 import {
+  AI_USAGE_LIMITS,
   checkDailyAiLimit,
   enforceRateLimit,
   registerAiUsage,
@@ -23,7 +24,7 @@ import { cleanGeminiJson } from "../utils/json.js";
 import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
-const DAILY_FOOD_ANALYSIS_LIMIT = 6;
+const DAILY_FOOD_ANALYSIS_LIMIT = AI_USAGE_LIMITS.food_analysis;
 const FOOD_ANALYSIS_COOLDOWN_MS = 8 * 1000;
 
 function normalizeFoodGoal(goal) {
@@ -163,7 +164,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
     if (!limitState.allowed) {
       return res.status(429).json({
-        error: "Has alcanzado el límite diario de 6 análisis. Vuelve mañana.",
+        error: `Has alcanzado el límite diario de ${DAILY_FOOD_ANALYSIS_LIMIT} análisis. Vuelve mañana.`,
         usage: {
           food_analysis: serializeUsageState("food_analysis", limitState),
         },
