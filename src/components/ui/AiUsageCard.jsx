@@ -4,7 +4,7 @@ import {
   formatAiUsageCounter,
   formatAiUsageDetail,
   formatAiUsageMessage,
-  isPremiumUser,
+  isPremiumUsage,
 } from "../../services/aiUsageService";
 import SurfaceCard from "./SurfaceCard";
 
@@ -20,7 +20,7 @@ export default function AiUsageCard({
   type,
   usage,
 }) {
-  const premium = isPremiumUser(profile);
+  const premium = isPremiumUsage(usage, profile);
   const Icon = premium ? Crown : ICON_BY_TYPE[type] || Sparkles;
   const title = formatAiUsageMessage(type, usage, profile);
   const detail = formatAiUsageDetail(type, usage, profile);
@@ -79,7 +79,7 @@ export default function AiUsageCard({
                   Obtén Premium para ampliar tus análisis diarios.
                 </span>
                 <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  Próximamente
+                  Activar Premium
                 </span>
               </span>
 

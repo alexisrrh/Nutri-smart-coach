@@ -164,10 +164,12 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
     if (!limitState.allowed) {
       return res.status(429).json({
-        error: `Has alcanzado el límite diario de ${DAILY_FOOD_ANALYSIS_LIMIT} análisis. Vuelve mañana.`,
+        error: `Has alcanzado el límite diario de ${limitState.limit} análisis. Vuelve mañana.`,
         usage: {
           food_analysis: serializeUsageState("food_analysis", limitState),
         },
+        plan: limitState.plan,
+        upgradeAvailable: limitState.upgradeAvailable,
       });
     }
 
@@ -183,6 +185,8 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
         usage: {
           food_analysis: serializeUsageState("food_analysis", limitState),
         },
+        plan: limitState.plan,
+        upgradeAvailable: false,
       });
     }
 
@@ -536,6 +540,8 @@ function serializeUsageState(type, usageState) {
     type,
     usedToday: usageState.count || 0,
     limit: usageState.limit || 0,
+    plan: usageState.plan || "free",
+    upgradeAvailable: Boolean(usageState.upgradeAvailable),
     remaining:
       typeof usageState.remaining === "number"
         ? usageState.remaining

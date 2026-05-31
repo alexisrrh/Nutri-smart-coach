@@ -25,7 +25,17 @@ export const AI_USAGE_TYPES = {
 };
 
 export function isPremiumUser(profile) {
-  return Boolean(profile?.plan === "premium" || profile?.is_premium === true);
+  return Boolean(
+    profile?.plan === "premium" &&
+      profile?.is_premium === true &&
+      ["active", "trialing"].includes(profile?.subscription_status)
+  );
+}
+
+export function isPremiumUsage(usage, profile) {
+  if (usage?.plan) return usage.plan === "premium";
+
+  return isPremiumUser(profile);
 }
 
 export function getAiUsageLimitForProfile(type, profile) {
@@ -54,6 +64,7 @@ export async function fetchDailyAiUsage(userId) {
   return {
     usage: data?.usage || {},
     limits: data?.limits || AI_USAGE_TYPES,
+    plan: data?.plan || "free",
   };
 }
 
@@ -68,7 +79,7 @@ export function extractAiUsageFromError(error, type) {
 export function formatAiUsageMessage(type, usage, profile) {
   const meta = AI_USAGE_TYPES[type] || AI_USAGE_TYPES.food_analysis;
 
-  if (isPremiumUser(profile)) {
+  if (isPremiumUsage(usage, profile)) {
     return getPremiumUsageMessage(type, meta);
   }
 
@@ -86,7 +97,7 @@ export function formatAiUsageMessage(type, usage, profile) {
 }
 
 export function formatAiUsageDetail(type, usage, profile) {
-  if (isPremiumUser(profile)) {
+  if (isPremiumUsage(usage, profile)) {
     return "Uso avanzado para usuarios premium con límites ampliados.";
   }
 
@@ -106,9 +117,9 @@ export function formatAiUsageCounter(type, usage, profile) {
   const premiumLimit = getPremiumLimit(type, meta);
   const remaining = Number(usage?.remaining);
 
-  if (isPremiumUser(profile)) {
+  if (isPremiumUsage(usage, profile)) {
     const usedToday = Number(usage?.usedToday || 0);
-    return `${usedToday}/${premiumLimit}`;
+    return `${usedToday}/${usage?.limit || premiumLimit}`;
   }
 
   if (!usage) {

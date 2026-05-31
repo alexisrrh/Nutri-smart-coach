@@ -27,10 +27,12 @@ import {
   getDietProgress,
   listDietProgress,
   listDietPlans,
+  rewriteDietMeal,
   setDietGenerationState,
   syncDietMealProgress,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
+import { getPremiumStatus } from "../services/premiumService";
 import {
   AiErrorNotice,
   AppShell,
@@ -98,14 +100,24 @@ export function MealPlan() {
   const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
   const [profile] = useState(getCachedProfile);
+  const [premiumStatus, setPremiumStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
+  const [rewriteTarget, setRewriteTarget] = useState(null);
+  const [rewriteReason, setRewriteReason] = useState("");
+  const [rewriteMealState, setRewriteMealState] = useState({});
   const { applyUsageError, refreshUsage, usage } = useAiUsageStatus(
     "diet_generation",
     profile?.id || profile?.user_id || ""
   );
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
+  const userId = profile?.id || profile?.user_id || "";
+  const isPremium = Boolean(
+    premiumStatus?.plan === "premium" &&
+      premiumStatus?.is_premium === true &&
+      ["active", "trialing"].includes(premiumStatus?.subscription_status)
+  );
   const hasPlan = plan.length > 0;
   const safeActiveDay = hasPlan
     ? Math.max(0, Math.min(activeDay, plan.length - 1))
@@ -211,7 +223,6 @@ export function MealPlan() {
   }, [generationState, hasPlan]);
 
   useEffect(() => {
-    const userId = profile?.id || profile?.user_id;
     if (!userId) return;
 
     Promise.resolve().then(async () => {
@@ -236,7 +247,20 @@ export function MealPlan() {
         console.error("Error cargando dietas:", error);
       }
     });
-  }, [profile]);
+  }, [profile, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    Promise.resolve().then(async () => {
+      try {
+        const status = await getPremiumStatus();
+        if (isMountedRef.current) setPremiumStatus(status);
+      } catch (error) {
+        console.warn("No se pudo consultar Premium para dieta:", error);
+      }
+    });
+  }, [userId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -396,8 +420,6 @@ export function MealPlan() {
   }
 
   function toggleMeal(mealId) {
-    const userId = profile?.id || profile?.user_id || "";
-
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
       cacheDietProgress(updated);
@@ -415,6 +437,55 @@ export function MealPlan() {
 
       return updated;
     });
+  }
+
+  function openRewriteMeal(target) {
+    setRewriteTarget(target);
+    setRewriteReason("");
+    setErrorMessage("");
+  }
+
+  async function submitRewriteMeal() {
+    if (!rewriteTarget) return;
+
+    if (!isPremium) {
+      navigate("/premium");
+      return;
+    }
+
+    try {
+      setErrorMessage("");
+      setNotice("");
+      setRewriteMealState({ mealId: rewriteTarget.mealId });
+
+      const data = await rewriteDietMeal({
+        dietPlanId,
+        userId,
+        dayIndex: rewriteTarget.dayIndex,
+        mealId: rewriteTarget.mealId,
+        meal: rewriteTarget.meal,
+        reason: rewriteReason,
+      });
+
+      if (!Array.isArray(data.week) || data.week.length === 0) {
+        throw new Error("La IA no devolvió una dieta actualizada.");
+      }
+
+      setPlan(data.week);
+      setRewriteTarget(null);
+      setRewriteReason("");
+      setNotice("Comida cambiada correctamente.");
+    } catch (error) {
+      if (error?.status === 403 && error?.data?.upgradeAvailable) {
+        setErrorMessage("Esta función requiere Premium.");
+        navigate("/premium");
+        return;
+      }
+
+      setErrorMessage(error.message || "No se pudo cambiar la comida.");
+    } finally {
+      setRewriteMealState({});
+    }
   }
 
   async function handleShare() {
@@ -602,6 +673,9 @@ export function MealPlan() {
                         activeDay={safeActiveDay}
                         setActiveDay={setActiveDay}
                         progress={progress}
+                        isPremium={isPremium}
+                        onRewriteMeal={openRewriteMeal}
+                        rewriteMealState={rewriteMealState}
                         toggleMeal={toggleMeal}
                       />
                     </>
@@ -615,6 +689,18 @@ export function MealPlan() {
           )}
         </div>
       </AppShell>
+
+      {rewriteTarget && (
+        <RewriteMealDialog
+          isPremium={isPremium}
+          reason={rewriteReason}
+          setReason={setRewriteReason}
+          loading={Boolean(rewriteMealState.mealId)}
+          onClose={() => setRewriteTarget(null)}
+          onConfirm={submitRewriteMeal}
+          onUpgrade={() => navigate("/premium")}
+        />
+      )}
     </>
   );
 }
@@ -732,6 +818,84 @@ function DietMotivationCard({ message }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function RewriteMealDialog({
+  isPremium,
+  reason,
+  setReason,
+  loading,
+  onClose,
+  onConfirm,
+  onUpgrade,
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/75 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-sm rounded-[24px] border border-[var(--app-primary)]/20 bg-[var(--app-card)] p-3 shadow-[0_24px_80px_var(--app-glow)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+              Edición inteligente
+            </p>
+            <h3 className="mt-1 text-[16px] font-black text-[var(--app-text)]">
+              Cambiar comida
+            </h3>
+            <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
+              {isPremium
+                ? "Escribe qué quieres cambiar y la IA mantendrá macros y objetivo similares."
+                : "Esta función requiere Premium para editar una comida sin regenerar toda la dieta."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={onClose}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+          >
+            ×
+          </button>
+        </div>
+
+        {isPremium ? (
+          <textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Ej: sin arroz, algo más barato, no me gusta el atún..."
+            className="mt-3 min-h-24 w-full resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[12px] font-medium text-[var(--app-text)] outline-none focus:border-[var(--app-primary)]"
+          />
+        ) : null}
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            onClick={isPremium ? onConfirm : onUpgrade}
+            disabled={loading}
+            className="rounded-2xl bg-[var(--app-primary)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] disabled:opacity-50"
+          >
+            {loading ? "Cambiando..." : isPremium ? "Cambiar" : "Ver Premium"}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 

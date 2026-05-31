@@ -65,4 +65,27 @@ describe("Protected routes without JWT", () => {
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: "No autorizado" });
   });
+
+  it("POST /stripe/create-checkout-session returns 401", async () => {
+    const response = await request(app)
+      .post("/stripe/create-checkout-session")
+      .send({ plan: "monthly" });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "No autorizado" });
+  });
+
+  it("POST /stripe/create-portal-session returns 401", async () => {
+    const response = await request(app).post("/stripe/create-portal-session");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "No autorizado" });
+  });
+
+  it("GET /premium/status returns 401", async () => {
+    const response = await request(app).get("/premium/status");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "No autorizado" });
+  });
 });

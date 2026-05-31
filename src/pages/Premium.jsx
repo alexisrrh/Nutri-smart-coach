@@ -1,6 +1,14 @@
 import { ArrowLeft, ArrowRight, BarChart3, Bolt, Crown, Layers3, Sparkles, TimerReset } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { AppShell, MetaBadge, SecondaryButton, SurfaceCard } from "../components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AppShell, MetaBadge, PrimaryButton, SecondaryButton, SurfaceCard } from "../components/ui";
+import { useAuth } from "../context/useAuth";
+import { getFriendlyErrorMessage } from "../services/apiClient";
+import {
+  createCustomerPortalSession,
+  createPremiumCheckoutSession,
+  getPremiumStatus,
+} from "../services/premiumService";
 
 const comparisonRows = [
   { label: "Análisis IA", free: "4/día", premium: "Hasta 100/día" },
@@ -35,6 +43,89 @@ const premiumHighlights = [
 
 export function Premium() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, loadingAuth } = useAuth();
+  const [premiumStatus, setPremiumStatus] = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [actionLoading, setActionLoading] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const checkoutState = searchParams.get("checkout");
+  const isPremium = Boolean(premiumStatus?.is_premium);
+  const statusLabel = useMemo(() => {
+    if (loadingAuth || loadingStatus) return "Sincronizando";
+    if (!user) return "Inicia sesión";
+    if (isPremium) return "Premium activo";
+
+    return "Plan Free";
+  }, [isPremium, loadingAuth, loadingStatus, user]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPremiumStatus() {
+      if (!user?.id) {
+        setLoadingStatus(false);
+        return;
+      }
+
+      try {
+        setLoadingStatus(true);
+        const status = await getPremiumStatus();
+
+        if (isMounted) setPremiumStatus(status);
+      } catch (error) {
+        if (isMounted) {
+          setErrorMessage(getFriendlyErrorMessage(error, "consultar el estado premium"));
+        }
+      } finally {
+        if (isMounted) setLoadingStatus(false);
+      }
+    }
+
+    void loadPremiumStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  async function handleCheckout(plan) {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setErrorMessage("");
+      setActionLoading(plan);
+      const url = await createPremiumCheckoutSession(plan);
+
+      if (!url) throw new Error("Stripe no devolvió una sesión de pago.");
+
+      window.location.assign(url);
+    } catch (error) {
+      setErrorMessage(getFriendlyErrorMessage(error, "crear la sesión de pago"));
+    } finally {
+      setActionLoading("");
+    }
+  }
+
+  async function handleCustomerPortal() {
+    try {
+      setErrorMessage("");
+      setActionLoading("portal");
+      const url = await createCustomerPortalSession();
+
+      if (!url) throw new Error("Stripe no devolvió el portal de cliente.");
+
+      window.location.assign(url);
+    } catch (error) {
+      setErrorMessage(getFriendlyErrorMessage(error, "abrir el portal de cliente"));
+    } finally {
+      setActionLoading("");
+    }
+  }
 
   return (
     <AppShell
@@ -80,10 +171,10 @@ export function Premium() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <MetaBadge variant="neutral">Premium</MetaBadge>
+                    <MetaBadge variant="neutral">{statusLabel}</MetaBadge>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
-                      Próximamente
+                      Stripe
                     </span>
                   </div>
 
@@ -184,12 +275,14 @@ export function Premium() {
           <SurfaceCard className="p-3.5" radius="lg" variant="soft">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <MetaBadge variant="neutral">CTA</MetaBadge>
+                <MetaBadge variant="neutral">Suscripción</MetaBadge>
                 <h2 className="mt-2 text-[17px] font-semibold tracking-tight text-[var(--app-text)]">
-                  Próximamente
+                  {isPremium ? "Gestiona tu plan" : "Activa Premium"}
                 </h2>
                 <p className="mt-1.5 text-[12px] font-medium leading-5 text-[var(--app-muted)]">
-                  La base ya está preparada. El bloqueo de pago todavía no está activo.
+                  {isPremium
+                    ? "Tu estado premium viene del backend y se actualiza desde Stripe."
+                    : "Checkout seguro con Stripe. El acceso premium se activa cuando el webhook confirma la suscripción."}
                 </p>
               </div>
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[1.1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
@@ -197,15 +290,68 @@ export function Premium() {
               </span>
             </div>
 
-            <div className="mt-3">
-              <SecondaryButton disabled icon={<Sparkles size={14} />}>
-                Próximamente
-              </SecondaryButton>
+            {checkoutState === "success" ? (
+              <StatusNotice>
+                Pago recibido. Estamos confirmando la suscripción con Stripe.
+              </StatusNotice>
+            ) : null}
+
+            {checkoutState === "cancelled" ? (
+              <StatusNotice>
+                Pago cancelado. Puedes retomarlo cuando quieras.
+              </StatusNotice>
+            ) : null}
+
+            {errorMessage ? <StatusNotice tone="error">{errorMessage}</StatusNotice> : null}
+
+            <div className="mt-3 grid gap-2">
+              {isPremium ? (
+                <PrimaryButton
+                  disabled={Boolean(actionLoading)}
+                  icon={<Sparkles size={14} />}
+                  onClick={handleCustomerPortal}
+                >
+                  {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
+                </PrimaryButton>
+              ) : (
+                <>
+                  <PrimaryButton
+                    disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
+                    icon={<Sparkles size={14} />}
+                    onClick={() => handleCheckout("monthly")}
+                  >
+                    {actionLoading === "monthly" ? "Abriendo..." : "Premium mensual"}
+                  </PrimaryButton>
+                  <SecondaryButton
+                    disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
+                    icon={<Crown size={14} />}
+                    onClick={() => handleCheckout("yearly")}
+                  >
+                    {actionLoading === "yearly" ? "Abriendo..." : "Premium anual"}
+                  </SecondaryButton>
+                </>
+              )}
             </div>
           </SurfaceCard>
         </div>
       </main>
     </AppShell>
+  );
+}
+
+function StatusNotice({ children, tone = "default" }) {
+  const isError = tone === "error";
+
+  return (
+    <div
+      className={`mt-3 rounded-2xl border px-3 py-2 text-[11px] font-semibold leading-5 ${
+        isError
+          ? "border-red-500/30 bg-red-500/10 text-red-200"
+          : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+      }`}
+    >
+      {children}
+    </div>
   );
 }
 

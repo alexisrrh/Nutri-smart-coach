@@ -192,6 +192,53 @@ export async function generateDietPlan({ profile, preferences, userId }) {
   };
 }
 
+export async function rewriteDietMeal({
+  dietPlanId,
+  userId,
+  dayIndex,
+  mealId,
+  meal,
+  reason = "",
+}) {
+  if (!dietPlanId) {
+    throw new Error("No hay una dieta guardada para editar.");
+  }
+
+  const data = await request(
+    `/diet-plans/${dietPlanId}/rewrite-meal`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        day_index: dayIndex,
+        meal_id: mealId,
+        meal,
+        reason,
+      }),
+    },
+    {
+      timeoutMs: 60000,
+      operation: "cambiar la comida",
+    }
+  );
+  const updatedWeek = normalizeDietWeek(data?.week || []);
+
+  if (updatedWeek.length) {
+    cacheDietPlan({
+      id: data?.diet_plan_id || dietPlanId,
+      user_id: userId,
+      week: updatedWeek,
+    });
+  }
+
+  return {
+    ...data,
+    meal: data?.meal || null,
+    week: updatedWeek,
+  };
+}
+
 function normalizeDietGenerationState(state) {
   if (!state || typeof state !== "object") {
     return { ...DEFAULT_GENERATION_STATE };
