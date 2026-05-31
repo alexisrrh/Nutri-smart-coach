@@ -25,8 +25,10 @@ import {
   getDietGenerationState,
   getDietPlanWeek,
   getDietProgress,
+  listDietProgress,
   listDietPlans,
   setDietGenerationState,
+  syncDietMealProgress,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
 import {
@@ -89,6 +91,9 @@ export function MealPlan() {
     isLoadingStateRecent(getDietGenerationState())
   );
   const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
+  const [dietPlanId, setDietPlanId] = useState(
+    () => getCachedDietPlan()?.id || null
+  );
   const [activeDay, setActiveDay] = useState(0);
   const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
@@ -216,7 +221,16 @@ export function MealPlan() {
 
         if (activePlan) {
           setPlan(getDietPlanWeek(activePlan));
+          setDietPlanId(activePlan.id || null);
           setActiveDay(0);
+
+          const remoteProgress = await listDietProgress(userId, {
+            dietPlanId: activePlan.id || null,
+          });
+
+          if (isMountedRef.current) {
+            setProgress(remoteProgress);
+          }
         }
       } catch (error) {
         console.error("Error cargando dietas:", error);
@@ -293,6 +307,7 @@ export function MealPlan() {
       }
 
       setPlan(cleanPlan);
+      setDietPlanId(data.diet_plan_id || data.dietPlan?.id || null);
       setProgress({});
       setActiveDay(0);
       cacheDietProgress({});
@@ -357,6 +372,7 @@ export function MealPlan() {
 
   function handleResetPlan() {
     setPlan([]);
+    setDietPlanId(null);
     setProgress({});
     setActiveDay(0);
     setShowShopping(false);
@@ -380,9 +396,23 @@ export function MealPlan() {
   }
 
   function toggleMeal(mealId) {
+    const userId = profile?.id || profile?.user_id || "";
+
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
       cacheDietProgress(updated);
+
+      if (userId) {
+        void syncDietMealProgress({
+          userId,
+          mealId,
+          completed: updated[mealId],
+          dietPlanId,
+        }).catch((error) => {
+          console.warn("No se pudo sincronizar el progreso de dieta:", error);
+        });
+      }
+
       return updated;
     });
   }

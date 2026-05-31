@@ -215,6 +215,99 @@ router.get("/diet-plans/:userId", verifySupabaseUser, async (req, res) => {
   }
 });
 
+router.get("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
+  try {
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
+
+    const query = supabase
+      .from("meal_logs")
+      .select("meal_id, completed")
+      .eq("user_id", userId)
+      .eq("source", "diet_plan");
+
+    if (req.query.diet_plan_id) {
+      query.eq("diet_plan_id", req.query.diet_plan_id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return res.status(500).json({
+        error: "No se pudo cargar el progreso de la dieta",
+        detail: error.message,
+      });
+    }
+
+    return res.json({
+      progress: buildDietProgressMap(data || []),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error cargando progreso de dieta",
+      detail: error.message,
+    });
+  }
+});
+
+router.put("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
+  try {
+    const requestedUserId = req.params.userId;
+    const userId = req.authUser.id;
+
+    if (!assertSameUser(userId, requestedUserId)) {
+      return res.status(403).json({ error: "No autorizado para este usuario" });
+    }
+
+    const mealId = String(req.body?.meal_id || "").trim();
+
+    if (!mealId) {
+      return res.status(400).json({ error: "Falta meal_id" });
+    }
+
+    const completed = Boolean(req.body?.completed);
+    const dietPlanId = req.body?.diet_plan_id || null;
+    const now = new Date().toISOString();
+    const payload = {
+      user_id: userId,
+      meal_id: mealId,
+      diet_plan_id: dietPlanId,
+      source: "diet_plan",
+      completed,
+      completed_at: completed ? now : null,
+      updated_at: now,
+    };
+
+    const { data, error } = await saveDietMealProgress({
+      userId,
+      mealId,
+      dietPlanId,
+      payload,
+    });
+
+    if (error) {
+      return res.status(500).json({
+        error: "No se pudo guardar el progreso de la dieta",
+        detail: error.message,
+      });
+    }
+
+    return res.json({
+      ok: true,
+      meal: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Error guardando progreso de dieta",
+      detail: error.message,
+    });
+  }
+});
+
 async function saveDietPlan({
   userId,
   profile,
@@ -244,6 +337,48 @@ async function saveDietPlan({
   }
 
   return data;
+}
+
+function buildDietProgressMap(mealLogs) {
+  return mealLogs.reduce((progress, mealLog) => {
+    if (mealLog?.meal_id) {
+      progress[mealLog.meal_id] = Boolean(mealLog.completed);
+    }
+
+    return progress;
+  }, {});
+}
+
+async function saveDietMealProgress({ userId, mealId, dietPlanId, payload }) {
+  const updateQuery = supabase
+    .from("meal_logs")
+    .update(payload)
+    .eq("user_id", userId)
+    .eq("meal_id", mealId)
+    .eq("source", "diet_plan");
+
+  if (dietPlanId) {
+    updateQuery.eq("diet_plan_id", dietPlanId);
+  }
+
+  const { data: updatedRows, error: updateError } = await updateQuery
+    .select("meal_id, completed");
+
+  if (updateError) {
+    return { data: null, error: updateError };
+  }
+
+  if (updatedRows?.length) {
+    return { data: updatedRows[0], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("meal_logs")
+    .insert(payload)
+    .select("meal_id, completed")
+    .single();
+
+  return { data, error };
 }
 
 async function upsertUserProfile({ userId, profile, preferences }) {
