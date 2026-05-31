@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { assertSameUser, verifySupabaseUser } from "../middleware/auth.js";
-import { getAllDailyAiUsageWithProfile, getAiUsageLimits } from "../utils/aiUsage.js";
+import { getAllDailyAiUsageWithProfile, getAiUsageLimits, getAiUsagePlan } from "../utils/aiUsage.js";
 import { supabase } from "../config/supabase.js";
 
 const router = Router();
@@ -16,7 +16,7 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("plan, is_premium")
+      .select("plan, is_premium, subscription_status")
       .eq("id", userId)
       .maybeSingle();
 
@@ -32,6 +32,7 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
     return res.json({
       usage,
       limits: getAiUsageLimits(profile),
+      plan: getAiUsagePlan(profile),
     });
   } catch (error) {
     return res.status(500).json({

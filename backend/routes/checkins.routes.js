@@ -54,6 +54,8 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
           usage: {
             checkin_analysis: serializeUsageState("checkin_analysis", limitState),
           },
+          plan: limitState.plan,
+          upgradeAvailable: limitState.upgradeAvailable,
         });
       }
 
@@ -69,6 +71,8 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
           usage: {
             checkin_analysis: serializeUsageState("checkin_analysis", limitState),
           },
+          plan: limitState.plan,
+          upgradeAvailable: false,
         });
       }
     }
@@ -319,6 +323,8 @@ function serializeUsageState(type, usageState) {
     type,
     usedToday: usageState.count || 0,
     limit: usageState.limit || 0,
+    plan: usageState.plan || "free",
+    upgradeAvailable: Boolean(usageState.upgradeAvailable),
     remaining:
       typeof usageState.remaining === "number"
         ? usageState.remaining

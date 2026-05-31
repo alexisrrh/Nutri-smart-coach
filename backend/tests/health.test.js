@@ -12,9 +12,11 @@ describe("GET /health", () => {
     const response = await request(app).get("/health");
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({
+    expect(response.body).toMatchObject({
       ok: true,
       service: "nutrismartcoach-api",
     });
+    expect(response.body.uptime).toEqual(expect.any(Number));
+    expect(response.body.timestamp).toEqual(expect.any(String));
   });
 });

@@ -14,6 +14,8 @@ export const PREMIUM_AI_USAGE_LIMITS = {
   checkin_analysis: 7,
 };
 
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
+
 export class AiUsageError extends Error {
   constructor(message, status = 429) {
     super(message);
@@ -29,6 +31,8 @@ export async function checkDailyAiLimit({ userId, type, limit }) {
     allowed: !usage.isLimitReached,
     count: usage.usedToday,
     limit: usage.limit,
+    plan: usage.plan,
+    upgradeAvailable: usage.upgradeAvailable,
     remaining: usage.remaining,
     resetAt: usage.resetAt,
     isLimitReached: usage.isLimitReached,
@@ -62,14 +66,17 @@ export function registerAiUsage({ userId, type }) {
   );
 }
 
-export async function getDailyAiUsage({ userId, type, limit }) {
-  const resolvedLimit = await resolveUsageLimit({ userId, type, limit });
+export async function getDailyAiUsage({ userId, type, limit, profile }) {
+  const resolvedLimit = await resolveUsageLimit({ userId, type, limit, profile });
+  const limitValue = resolvedLimit.limit;
+  const resolvedProfile = resolvedLimit.profile;
 
   if (!userId) {
     return buildUsageState({
       type,
       usedToday: 0,
-      limit: resolvedLimit,
+      limit: limitValue,
+      plan: "free",
     });
   }
 
@@ -78,7 +85,8 @@ export async function getDailyAiUsage({ userId, type, limit }) {
   return buildUsageState({
     type,
     usedToday,
-    limit: resolvedLimit,
+    limit: limitValue,
+    plan: getAiUsagePlan(resolvedProfile),
   });
 }
 
@@ -108,12 +116,20 @@ export function isPremiumProfile(profileOrPlan) {
   if (!profileOrPlan) return false;
 
   if (typeof profileOrPlan === "string") {
-    return profileOrPlan === "premium";
+    return false;
   }
 
+  const subscriptionStatus = profileOrPlan?.subscription_status || "inactive";
+
   return Boolean(
-    profileOrPlan?.is_premium === true || profileOrPlan?.plan === "premium"
+    profileOrPlan?.is_premium === true &&
+      profileOrPlan?.plan === "premium" &&
+      ACTIVE_SUBSCRIPTION_STATUSES.has(subscriptionStatus)
   );
+}
+
+export function getAiUsagePlan(profileOrPlan) {
+  return isPremiumProfile(profileOrPlan) ? "premium" : "free";
 }
 
 export function getAiUsageLimit(type, profileOrPlan) {
@@ -129,6 +145,7 @@ export function getAiUsageLimits(profileOrPlan) {
       type,
       {
         limit: getAiUsageLimit(type, profileOrPlan),
+        plan: getAiUsagePlan(profileOrPlan),
       },
     ])
   );
@@ -158,25 +175,39 @@ async function countDailyUsage({ userId, type }) {
 
 async function resolveUsageLimit({ userId, type, limit, profile }) {
   if (profile) {
-    return getAiUsageLimit(type, profile);
+    return {
+      limit: getAiUsageLimit(type, profile),
+      profile,
+    };
   }
 
   if (userId) {
     const resolvedProfile = await getUserProfileForAiUsage(userId);
     if (resolvedProfile) {
-      return getAiUsageLimit(type, resolvedProfile);
+      return {
+        limit: getAiUsageLimit(type, resolvedProfile),
+        profile: resolvedProfile,
+      };
     }
   }
 
-  if (limit) return limit;
+  if (limit) {
+    return {
+      limit,
+      profile: null,
+    };
+  }
 
-  return AI_USAGE_LIMITS[type] || 0;
+  return {
+    limit: AI_USAGE_LIMITS[type] || 0,
+    profile: null,
+  };
 }
 
 async function getUserProfileForAiUsage(userId) {
   const { data, error } = await supabase
     .from("profiles")
-    .select("plan, is_premium")
+    .select("plan, is_premium, subscription_status")
     .eq("id", userId)
     .maybeSingle();
 
@@ -274,15 +305,18 @@ function getNextResetAt() {
   return end;
 }
 
-function buildUsageState({ type, usedToday, limit }) {
+function buildUsageState({ type, usedToday, limit, plan }) {
   const safeLimit = Number(limit) > 0 ? Number(limit) : 0;
   const safeUsed = Number(usedToday) > 0 ? Number(usedToday) : 0;
   const remaining = Math.max(safeLimit - safeUsed, 0);
+  const resolvedPlan = plan === "premium" ? "premium" : "free";
 
   return {
     type,
     usedToday: safeUsed,
     limit: safeLimit,
+    plan: resolvedPlan,
+    upgradeAvailable: resolvedPlan === "free",
     remaining,
     resetAt: getNextResetAt(),
     isLimitReached: safeLimit > 0 ? safeUsed >= safeLimit : false,
