@@ -7,15 +7,24 @@ const localOrigins = [
   "http://127.0.0.1:5175",
 ];
 
+const productionOrigins = [
+  "https://www.nutrismartcoach.com",
+  "https://nutrismartcoach.com",
+];
+
 export const allowedOrigins = [
   ...new Set([
     ...localOrigins,
+    ...productionOrigins,
     ...parseOrigins(process.env.FRONTEND_URL),
     ...parseOrigins(process.env.CORS_ORIGINS),
   ]),
 ];
 
 export const corsOptions = {
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Authorization", "Content-Type", "X-Request-Id"],
+  optionsSuccessStatus: 204,
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
