@@ -9,11 +9,10 @@ export function errorHandler(err, req, res, next) {
     JSON.stringify({
       timestamp: new Date().toISOString(),
       requestId,
-      method: req.method,
       route: getSafeRoute(req),
       statusCode,
-      errorName: err?.name || "Error",
       errorCode: err?.code || null,
+      errorName: err?.name || "Error",
     })
   );
 
