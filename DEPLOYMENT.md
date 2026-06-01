@@ -77,7 +77,7 @@ Recommended production setup:
 
 Set `VITE_API_URL=https://api.nutrismartcoach.com` in Vercel.
 Set `FRONTEND_URL=https://www.nutrismartcoach.com` in the backend.
-If the frontend also serves the apex domain, add it to `CORS_ORIGINS`.
+Set `CORS_ORIGINS=https://www.nutrismartcoach.com,https://nutrismartcoach.com`.
 
 ## CORS
 

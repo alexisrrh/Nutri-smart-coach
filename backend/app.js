@@ -22,6 +22,7 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(requestLogger);
 app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(globalRateLimiter);
 app.use("/", paymentsRoutes);
 app.use(express.json({ limit: "10mb" }));
