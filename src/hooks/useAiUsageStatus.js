@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  createFallbackAiUsageState,
   extractAiUsageFromError,
   fetchDailyAiUsage,
   getAiUsageForType,
@@ -30,7 +31,17 @@ export function useAiUsageStatus(type, userId) {
           return nextUsage;
         }
 
-        return null;
+        const fallbackUsage = createFallbackAiUsageState(type);
+        setUsage(fallbackUsage);
+        console.warn("No se pudo sincronizar el uso diario de IA:", {
+          type,
+          userId: nextUserId || null,
+          status: error?.status || null,
+          code: error?.code || null,
+          message: error?.message || "",
+        });
+
+        return fallbackUsage;
       } finally {
         setLoading(false);
       }

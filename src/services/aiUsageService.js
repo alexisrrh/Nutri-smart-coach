@@ -72,6 +72,24 @@ export function getAiUsageForType(usageByType, type) {
   return usageByType?.[type] || null;
 }
 
+export function createFallbackAiUsageState(type, usedToday = 0) {
+  const meta = AI_USAGE_TYPES[type] || AI_USAGE_TYPES.food_analysis;
+  const safeUsed = Math.max(Number(usedToday) || 0, 0);
+  const safeLimit = meta.limit || 0;
+
+  return {
+    type,
+    usedToday: safeUsed,
+    limit: safeLimit,
+    plan: "free",
+    upgradeAvailable: true,
+    remaining: Math.max(safeLimit - safeUsed, 0),
+    resetAt: null,
+    isLimitReached: safeLimit > 0 ? safeUsed >= safeLimit : false,
+    isFallback: true,
+  };
+}
+
 export function extractAiUsageFromError(error, type) {
   return error?.data?.usage?.[type] || null;
 }
@@ -99,6 +117,10 @@ export function formatAiUsageMessage(type, usage, profile) {
 export function formatAiUsageDetail(type, usage, profile) {
   if (isPremiumUsage(usage, profile)) {
     return "Uso avanzado para usuarios premium con límites ampliados.";
+  }
+
+  if (usage?.isFallback) {
+    return "No se pudo sincronizar el cupo diario. Se muestran límites Free de respaldo.";
   }
 
   if (!usage) {
