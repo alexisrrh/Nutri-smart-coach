@@ -106,6 +106,7 @@ export function MealPlan() {
   const [rewriteTarget, setRewriteTarget] = useState(null);
   const [rewriteReason, setRewriteReason] = useState("");
   const [rewriteMealState, setRewriteMealState] = useState({});
+  const currentGenerationRequestIdRef = useRef(null);
   const { applyUsageError, refreshUsage, usage } = useAiUsageStatus(
     "diet_generation",
     profile?.id || profile?.user_id || ""
@@ -194,8 +195,27 @@ export function MealPlan() {
         return;
       }
 
-      if (generationState.status === "error" && generationState.error) {
-        setErrorMessage(generationState.error);
+      if (generationState.status === "error") {
+        if (
+          generationState.requestId &&
+          generationState.requestId === currentGenerationRequestIdRef.current
+        ) {
+          return;
+        }
+
+        const idleState = {
+          status: "idle",
+          startedAt: null,
+          updatedAt: null,
+          requestId: null,
+          result: null,
+          error: "",
+        };
+
+        persistGenerationState(idleState);
+        setGenerationState(idleState);
+        setErrorMessage("");
+        setNotice("");
         setLoading(false);
         return;
       }
@@ -214,6 +234,7 @@ export function MealPlan() {
             : "Dieta generada correctamente."
         );
         setLoading(false);
+        setErrorMessage("");
       }
     });
 
@@ -243,8 +264,16 @@ export function MealPlan() {
             setProgress(remoteProgress);
           }
         }
+
+        if (isMountedRef.current) {
+          setErrorMessage("");
+        }
       } catch (error) {
-        console.error("Error cargando dietas:", error);
+        logMealPlanIssue({
+          endpoint: `/diet-plans/${userId}`,
+          operation: "cargar dietas guardadas",
+          error,
+        });
       }
     });
   }, [profile, userId]);
@@ -257,7 +286,12 @@ export function MealPlan() {
         const status = await getPremiumStatus();
         if (isMountedRef.current) setPremiumStatus(status);
       } catch (error) {
-        console.warn("No se pudo consultar Premium para dieta:", error);
+        logMealPlanIssue({
+          endpoint: "/premium/status",
+          operation: "consultar el estado premium",
+          error,
+          level: "warn",
+        });
       }
     });
   }, [userId]);
@@ -298,6 +332,7 @@ export function MealPlan() {
       };
 
       requestId = createGenerationRequestId();
+      currentGenerationRequestIdRef.current = requestId;
       startedAt = new Date().toISOString();
       const loadingState = {
         status: "loading",
@@ -357,7 +392,11 @@ export function MealPlan() {
       );
       await refreshUsage(profile?.id || profile?.user_id || "");
     } catch (err) {
-      console.error(err);
+      logMealPlanIssue({
+        endpoint: "/generate-diet",
+        operation: "generar dieta",
+        error: err,
+      });
       if (!requestId || !startedAt) {
         setErrorMessage(
           err.message || "La generación tardó demasiado. Inténtalo de nuevo."
@@ -402,6 +441,7 @@ export function MealPlan() {
     setShowShopping(false);
     setNotice("");
     setErrorMessage("");
+    currentGenerationRequestIdRef.current = null;
     clearDietPlanCache();
     clearDietProgress();
     clearDietGenerationState();
@@ -481,6 +521,12 @@ export function MealPlan() {
         navigate("/premium");
         return;
       }
+
+      logMealPlanIssue({
+        endpoint: `/diet-plans/${dietPlanId}/rewrite-meal`,
+        operation: "cambiar la comida",
+        error,
+      });
 
       setErrorMessage(error.message || "No se pudo cambiar la comida.");
     } finally {
@@ -1148,6 +1194,18 @@ function isLoadingStateRecent(state, maxAgeMs = 3 * 60 * 1000) {
 
 function persistGenerationState(state) {
   setDietGenerationState(state);
+}
+
+function logMealPlanIssue({ endpoint, operation, error, level = "error" }) {
+  const logger = level === "warn" ? console.warn : console.error;
+
+  logger("MealPlan request failed:", {
+    endpoint,
+    operation,
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    message: error?.message || "",
+  });
 }
 
 async function generateDietPlanWithRetry(args) {

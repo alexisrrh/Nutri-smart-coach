@@ -89,6 +89,13 @@ export async function listDietProgress(
     cacheDietProgress(mergedProgress);
     return mergedProgress;
   } catch (error) {
+    logDietServiceIssue({
+      endpoint: `/diet-progress/${userId}${query}`,
+      operation: "cargar el progreso de la dieta",
+      error,
+      fallbackUsed: Boolean(fallbackToCache),
+    });
+
     if (fallbackToCache) return cachedProgress;
     throw error;
   }
@@ -157,6 +164,13 @@ export async function listDietPlans(userId, { fallbackToCache = true } = {}) {
     cacheDietPlans(remotePlans);
     return remotePlans;
   } catch (error) {
+    logDietServiceIssue({
+      endpoint: `/diet-plans/${userId}`,
+      operation: "cargar dietas guardadas",
+      error,
+      fallbackUsed: Boolean(fallbackToCache),
+    });
+
     if (fallbackToCache) return cachedPlans;
     throw error;
   }
@@ -237,6 +251,17 @@ export async function rewriteDietMeal({
     meal: data?.meal || null,
     week: updatedWeek,
   };
+}
+
+function logDietServiceIssue({ endpoint, operation, error, fallbackUsed = false }) {
+  console.warn("Diet service request failed:", {
+    endpoint,
+    operation,
+    fallbackUsed,
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    message: error?.message || "",
+  });
 }
 
 function normalizeDietGenerationState(state) {

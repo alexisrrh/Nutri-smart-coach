@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import { supabase } from "../config/supabase.js";
-import { verifySupabaseUser } from "../middleware/auth.js";
+import { requireAuthenticatedUser, verifySupabaseUser } from "../middleware/auth.js";
 import {
   assertStripeCheckoutConfig,
   assertStripeWebhookConfig,
@@ -45,7 +45,9 @@ router.post(
     try {
       assertStripeCheckoutConfig();
 
-      const userId = req.authUser.id;
+      const userId = requireAuthenticatedUser(req, res);
+
+      if (!userId) return;
       const plan = req.body?.plan === "yearly" ? "yearly" : "monthly";
       const priceId = getConfiguredPriceId(plan);
 
@@ -84,7 +86,11 @@ router.post(
     try {
       assertStripeCheckoutConfig();
 
-      const profile = await getProfileByUserId(req.authUser.id);
+      const userId = requireAuthenticatedUser(req, res);
+
+      if (!userId) return;
+
+      const profile = await getProfileByUserId(userId);
 
       if (!profile?.stripe_customer_id) {
         return res.status(400).json({
@@ -103,7 +109,11 @@ router.post(
 
 router.get("/premium/status", verifySupabaseUser, async (req, res, next) => {
   try {
-    const profile = await getProfileByUserId(req.authUser.id);
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
+
+    const profile = await getProfileByUserId(userId);
 
     return res.json({
       premium: serializePremiumProfile(profile),

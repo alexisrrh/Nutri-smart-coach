@@ -4,6 +4,7 @@ import { uploadSingleImage } from "../config/multer.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
+  requireAuthenticatedUser,
   verifySupabaseUser,
 } from "../middleware/auth.js";
 import { normalizeCheckinAnalysis } from "../normalizers/checkin.normalizer.js";
@@ -27,7 +28,9 @@ const CHECKIN_ANALYSIS_COOLDOWN_SECONDS = 8;
 router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
   try {
     const requestedUserId = req.body.user_id || null;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -141,7 +144,9 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
 router.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -173,7 +178,9 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
   try {
     const { checkinId } = req.params;
     const requestedUserId = req.query.user_id;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!checkinId) {
       return res.status(400).json({ error: "Falta checkinId" });

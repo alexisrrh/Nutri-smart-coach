@@ -13,6 +13,7 @@ export function errorHandler(err, req, res, next) {
       route: getSafeRoute(req),
       statusCode,
       errorName: err?.name || "Error",
+      errorCode: err?.code || null,
     })
   );
 
@@ -37,6 +38,14 @@ function getStatusCode(err) {
     return statusCode;
   }
 
+  if (isForbiddenLikeError(err)) {
+    return 403;
+  }
+
+  if (isAuthLikeError(err)) {
+    return 401;
+  }
+
   return 500;
 }
 
@@ -50,4 +59,35 @@ function getSafeMessage(err, statusCode) {
   }
 
   return "No se pudo procesar la solicitud.";
+}
+
+function isAuthLikeError(err) {
+  const code = String(err?.code || "").toLowerCase();
+  const message = String(err?.message || "").toLowerCase();
+
+  return (
+    code.includes("auth") ||
+    code.includes("jwt") ||
+    code.includes("token") ||
+    message.includes("no autorizado") ||
+    message.includes("unauthorized") ||
+    message.includes("not authorized") ||
+    message.includes("invalid token") ||
+    message.includes("jwt") ||
+    message.includes("session") ||
+    message.includes("token")
+  );
+}
+
+function isForbiddenLikeError(err) {
+  const code = String(err?.code || "").toLowerCase();
+  const message = String(err?.message || "").toLowerCase();
+
+  return (
+    code.includes("forbidden") ||
+    message.includes("no autorizado para este usuario") ||
+    message.includes("forbidden") ||
+    message.includes("not allowed") ||
+    message.includes("permission denied")
+  );
 }

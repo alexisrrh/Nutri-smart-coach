@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { assertSameUser, verifySupabaseUser } from "../middleware/auth.js";
+import {
+  assertSameUser,
+  requireAuthenticatedUser,
+  verifySupabaseUser,
+} from "../middleware/auth.js";
 import { getAllDailyAiUsageWithProfile, getAiUsageLimits, getAiUsagePlan } from "../utils/aiUsage.js";
 import { supabase } from "../config/supabase.js";
 
@@ -8,7 +12,9 @@ const router = Router();
 router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
