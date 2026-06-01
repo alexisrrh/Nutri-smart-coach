@@ -3,6 +3,7 @@ import { ai } from "../config/gemini.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
+  requireAuthenticatedUser,
   verifySupabaseUser,
 } from "../middleware/auth.js";
 import {
@@ -28,7 +29,9 @@ const DIET_GENERATION_COOLDOWN_SECONDS = 8;
 router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
   const timing = createTimingLogger("generate-diet");
   const { profile, preferences, user_id } = req.body || {};
-  const userId = req.authUser.id;
+  const userId = requireAuthenticatedUser(req, res);
+
+  if (!userId) return;
 
   try {
     if (user_id && !assertSameUser(userId, user_id)) {
@@ -193,7 +196,9 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
 router.get("/diet-plans/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -223,7 +228,9 @@ router.get("/diet-plans/:userId", verifySupabaseUser, async (req, res) => {
 
 router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (req, res) => {
   try {
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
     const requestedUserId = req.body?.user_id || "";
     const dietPlanId = req.params.dietPlanId;
 
@@ -331,7 +338,9 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
 router.get("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -370,7 +379,9 @@ router.get("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
 router.put("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
