@@ -1,6 +1,7 @@
 import { supabase } from "../config/supabase.js";
 
 const rateLimitByUserAndType = new Map();
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
 
 export const AI_USAGE_LIMITS = {
   food_analysis: 4,
@@ -13,8 +14,6 @@ export const PREMIUM_AI_USAGE_LIMITS = {
   diet_generation: 10,
   checkin_analysis: 7,
 };
-
-const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
 
 export class AiUsageError extends Error {
   constructor(message, status = 429) {
@@ -115,16 +114,15 @@ export async function getAllDailyAiUsageWithProfile(userId, profile) {
 export function isPremiumProfile(profileOrPlan) {
   if (!profileOrPlan) return false;
 
-  if (typeof profileOrPlan === "string") {
-    return false;
-  }
-
-  const subscriptionStatus = profileOrPlan?.subscription_status || "inactive";
+  const subscriptionStatus = String(profileOrPlan?.subscription_status || "inactive").toLowerCase();
+  const premiumExpiresAt = parsePremiumDate(profileOrPlan?.premium_expires_at);
+  const now = Date.now();
 
   return Boolean(
     profileOrPlan?.is_premium === true &&
       profileOrPlan?.plan === "premium" &&
-      ACTIVE_SUBSCRIPTION_STATUSES.has(subscriptionStatus)
+      ACTIVE_SUBSCRIPTION_STATUSES.has(subscriptionStatus) &&
+      (premiumExpiresAt === null || premiumExpiresAt > now)
   );
 }
 
@@ -207,7 +205,18 @@ async function resolveUsageLimit({ userId, type, limit, profile }) {
 async function getUserProfileForAiUsage(userId) {
   const { data, error } = await supabase
     .from("profiles")
-    .select("plan, is_premium, subscription_status")
+    .select(
+      [
+        "plan",
+        "is_premium",
+        "subscription_status",
+        "premium_source",
+        "premium_product_id",
+        "premium_platform_transaction_id",
+        "premium_expires_at",
+        "premium_last_verified_at",
+      ].join(", ")
+    )
     .eq("id", userId)
     .maybeSingle();
 
@@ -321,6 +330,14 @@ function buildUsageState({ type, usedToday, limit, plan }) {
     resetAt: getNextResetAt(),
     isLimitReached: safeLimit > 0 ? safeUsed >= safeLimit : false,
   };
+}
+
+function parsePremiumDate(value) {
+  if (!value) return null;
+
+  const timestamp = new Date(value).getTime();
+
+  return Number.isNaN(timestamp) ? null : timestamp;
 }
 
 function getUsageKey({ userId, type }) {

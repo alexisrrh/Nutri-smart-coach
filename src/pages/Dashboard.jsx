@@ -1,6 +1,14 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, Crown, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Crown,
+  Sparkles,
+  Target,
+  UtensilsCrossed,
+} from "lucide-react";
 import { AppShell, SurfaceCard } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
@@ -604,56 +612,97 @@ function DashboardMotivationCard({ message }) {
 }
 
 function PremiumDashboardCard({ isPremium, onPress }) {
-  const title = isPremium ? "Premium activo" : "Desbloquea Premium";
+  const title = isPremium ? "Premium activo" : "Progresa más rápido";
   const subtitle = isPremium
-    ? "Límites ampliados activos"
-    : "100 análisis IA/día · 10 dietas IA/día · 7 check-ins IA/día";
-  const buttonLabel = isPremium ? "Gestionar plan" : "Ver Premium";
+    ? "Tus límites ampliados están activos."
+    : "Seguimiento inteligente y planes avanzados para mejorar tus resultados.";
+  const buttonLabel = isPremium ? "Gestionar plan" : "Mejorar mi plan";
+  const benefits = [
+    { icon: Target, label: "Dietas personalizadas" },
+    { icon: UtensilsCrossed, label: "Resultados más rápidos" },
+    { icon: BarChart3, label: "Más constancia" },
+    { icon: CheckCircle2, label: "Funciones exclusivas" },
+  ];
 
   return (
     <SurfaceCard
       as="button"
       type="button"
       onClick={onPress}
-      className="relative overflow-hidden p-3 text-left transition active:scale-[0.99]"
-      radius="lg"
+      className="group relative w-full overflow-hidden border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] p-4 text-left transition duration-200 active:scale-[0.995] sm:p-5"
+      radius="xl"
       variant="soft"
     >
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--app-primary) 14%, transparent), transparent 38%), radial-gradient(circle at 88% 20%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 34%)",
+            "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 26%, transparent), transparent 34%), radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--app-primary) 22%, transparent), transparent 28%), linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 10%, transparent) 0%, transparent 42%, color-mix(in srgb, var(--app-primary) 8%, transparent) 100%)",
         }}
       />
 
-      <div className="relative z-10 flex items-start gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_20px_var(--app-glow)]">
-          <Crown size={17} />
-        </div>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 opacity-90"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--app-primary) 6%, transparent) 100%)",
+          filter: "blur(14px)",
+        }}
+      />
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Premium
-            </span>
-            <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-              IA
-            </span>
+      <div className="relative z-10">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-black leading-[1.08] text-[var(--app-text)] sm:text-[18px]">
+              {title}
+            </p>
+            <p className="mt-1 max-w-[36rem] text-[11px] font-medium leading-[1.32] text-[var(--app-muted)] sm:text-[12px]">
+              {subtitle}
+            </p>
           </div>
 
-          <p className="mt-1 text-[12px] font-black leading-5 text-[var(--app-text)]">
-            {title}
-          </p>
-          <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            {subtitle}
-          </p>
-
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-            {buttonLabel}
-            <Sparkles size={11} />
-          </span>
+          <div className="flex shrink-0 basis-[18%] items-start justify-end pt-0.25">
+          <div
+            className="relative grid h-[4.1rem] w-[4.1rem] place-items-center rounded-[25px] border border-[color-mix(in_srgb,#ffd966_34%,var(--app-border))] text-[#ffd966] shadow-[0_0_34px_rgba(255,215,0,0.41),0_0_50px_rgba(255,215,0,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 20%, rgba(255,215,0,0.28), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--app-primary-soft) 92%, transparent) 0%, color-mix(in srgb, var(--app-card) 98%, transparent) 100%)",
+            }}
+          >
+            <div className="absolute inset-0 rounded-[25px] border border-[color-mix(in_srgb,#ffd966_28%,transparent)] opacity-60 animate-pulse" />
+            <Crown size={30} strokeWidth={2.15} className="text-[#ffd966]" />
+          </div>
+          </div>
         </div>
+
+        {!isPremium ? (
+          <div className="mt-2 grid w-full grid-cols-2 gap-1.25">
+            {benefits.map((benefit) => {
+              const Icon = benefit.icon;
+
+              return (
+                <div
+                  key={benefit.label}
+                  className="flex min-w-0 items-center gap-1.5 rounded-[0.85rem] border border-[color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-primary-soft)_88%,var(--app-surface))] px-2 py-1.5 text-[8.75px] font-bold leading-[1.1] text-[var(--app-text)]"
+                >
+                  <span className="grid h-4.5 w-4.5 shrink-0 place-items-center rounded-full border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-surface)] text-[var(--app-primary)]">
+                    <Icon size={9} />
+                  </span>
+                  <span className="min-w-0">{benefit.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={onPress}
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--app-primary)_28%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_28%,#ffd54d)_0%,color-mix(in_srgb,var(--app-primary)_12%,var(--app-surface))_100%)] px-2.5 py-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[0_9px_14px_rgba(255,215,0,0.12),0_0_12px_var(--app-glow)] transition-all duration-200 ease-out hover:translate-y-[-1px] hover:shadow-[0_10px_16px_rgba(255,215,0,0.15),0_0_14px_var(--app-glow)] active:scale-[0.96] active:translate-y-[1px] active:brightness-95"
+        >
+          {buttonLabel}
+          <Crown size={10} className="text-[#ffd966]" />
+        </button>
       </div>
     </SurfaceCard>
   );
