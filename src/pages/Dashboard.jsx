@@ -1,9 +1,11 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, Sparkles } from "lucide-react";
-import { AppShell } from "../components/ui";
+import { AlertCircle, Crown, Sparkles } from "lucide-react";
+import { AppShell, SurfaceCard } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/useAuth";
+import { getPremiumStatus } from "../services/premiumService";
+import { trackEvent } from "../services/analytics";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import AIHeroCard from "../components/dashboard/AIHeroCard";
@@ -61,6 +63,7 @@ export function Dashboard() {
   const [meals, setMeals] = useState(() => initialSnapshot.meals);
   const [dietPlans, setDietPlans] = useState(() => initialSnapshot.dietPlans);
   const [checkins, setCheckins] = useState(() => initialSnapshot.checkins);
+  const [premiumStatus, setPremiumStatus] = useState(null);
   const [workoutCompletions] = useState(() => getWorkoutCompletions());
   const [loadingData, setLoadingData] = useState(
     () => !initialSnapshot.hasCachedSnapshot
@@ -208,6 +211,30 @@ export function Dashboard() {
     return () => clearTimeout(timeoutId);
   }, [loadRemoteDashboardData]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPremiumStatus() {
+      if (!user?.id) {
+        if (!cancelled) setPremiumStatus(null);
+        return;
+      }
+
+      try {
+        const status = await getPremiumStatus();
+        if (!cancelled) setPremiumStatus(status);
+      } catch {
+        if (!cancelled) setPremiumStatus(null);
+      }
+    }
+
+    void loadPremiumStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   const goals = useMemo(() => getGoals(profile), [profile]);
 
   const todayMeals = useMemo(() => {
@@ -334,6 +361,12 @@ export function Dashboard() {
     todayMeals.length,
     Boolean(activeDiet)
   );
+  const premiumSource = premiumStatus || profile;
+  const isPremium = Boolean(
+    premiumSource?.plan === "premium" &&
+      premiumSource?.is_premium === true &&
+      ["active", "trialing"].includes(premiumSource?.subscription_status)
+  );
 
   useEffect(() => {
     if (!profile) return;
@@ -400,6 +433,16 @@ export function Dashboard() {
                   smartTip={smartTip}
                   todayMeals={todayMeals}
                   dailyMealGoal={dailyMealGoal}
+                />
+              </div>
+
+              <div className="shrink-0">
+                <PremiumDashboardCard
+                  isPremium={isPremium}
+                  onPress={() => {
+                    trackEvent("premium_card_clicked", { source: "dashboard" });
+                    navigate("/premium");
+                  }}
                 />
               </div>
 
@@ -557,6 +600,62 @@ function DashboardMotivationCard({ message }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function PremiumDashboardCard({ isPremium, onPress }) {
+  const title = isPremium ? "Premium activo" : "Desbloquea Premium";
+  const subtitle = isPremium
+    ? "Límites ampliados activos"
+    : "100 análisis IA/día · 10 dietas IA/día · 7 check-ins IA/día";
+  const buttonLabel = isPremium ? "Gestionar plan" : "Ver Premium";
+
+  return (
+    <SurfaceCard
+      as="button"
+      type="button"
+      onClick={onPress}
+      className="relative overflow-hidden p-3 text-left transition active:scale-[0.99]"
+      radius="lg"
+      variant="soft"
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--app-primary) 14%, transparent), transparent 38%), radial-gradient(circle at 88% 20%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 34%)",
+        }}
+      />
+
+      <div className="relative z-10 flex items-start gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_20px_var(--app-glow)]">
+          <Crown size={17} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+              Premium
+            </span>
+            <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
+              IA
+            </span>
+          </div>
+
+          <p className="mt-1 text-[12px] font-black leading-5 text-[var(--app-text)]">
+            {title}
+          </p>
+          <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            {subtitle}
+          </p>
+
+          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+            {buttonLabel}
+            <Sparkles size={11} />
+          </span>
+        </div>
+      </div>
+    </SurfaceCard>
   );
 }
 

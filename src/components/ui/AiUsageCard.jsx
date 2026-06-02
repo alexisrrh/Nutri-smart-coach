@@ -6,6 +6,7 @@ import {
   formatAiUsageMessage,
   isPremiumUsage,
 } from "../../services/aiUsageService";
+import { trackEvent } from "../../services/analytics";
 import SurfaceCard from "./SurfaceCard";
 
 const ICON_BY_TYPE = {
@@ -69,17 +70,22 @@ export default function AiUsageCard({
             {detail}
           </p>
 
-          {!premium && usage?.isLimitReached ? (
+          {!premium && (usage?.upgradeAvailable === true || usage?.isLimitReached) ? (
             <Link
               to="/premium"
+              onClick={() =>
+                trackEvent("premium_limit_cta_clicked", {
+                  type,
+                })
+              }
               className="mt-3 flex items-center justify-between gap-3 rounded-[1.05rem] border border-[color-mix(in_srgb,var(--app-border)_82%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_86%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-3 py-2.5 text-left shadow-[0_12px_24px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] transition duration-200 active:scale-[0.985] touch-manipulation hover:-translate-y-[1px]"
             >
               <span className="min-w-0">
                 <span className="block text-[11px] font-semibold leading-4 text-[var(--app-text)]">
-                  Obtén Premium para ampliar tus análisis diarios.
+                  Hazte Premium para ampliar tus límites diarios.
                 </span>
                 <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  Activar Premium
+                  Hazte Premium
                 </span>
               </span>
 

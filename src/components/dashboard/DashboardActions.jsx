@@ -2,10 +2,12 @@ import ActionCard from "./ActionCard";
 import {
   ChartNoAxesColumnIncreasing,
   ClipboardList,
+  Crown,
   ScanLine,
   UserRoundSearch,
 } from "lucide-react";
 import { exercises } from "../../data/exercises";
+import { trackEvent } from "../../services/analytics";
 import { preloadExercises } from "../../services/exerciseMediaService";
 
 export default function DashboardActions({ navigate }) {
@@ -43,6 +45,18 @@ export default function DashboardActions({ navigate }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 ">
+        <ActionCard
+          fallbackIcon={Crown}
+          label="Premium"
+          description="Límites IA ampliados"
+          onClick={() => {
+            trackEvent("premium_card_clicked", {
+              source: "dashboard_actions",
+            });
+            navigate("/premium");
+          }}
+        />
+
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}

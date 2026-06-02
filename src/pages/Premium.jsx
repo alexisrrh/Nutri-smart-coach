@@ -9,7 +9,7 @@ import {
   createPremiumCheckoutSession,
   getPremiumStatus,
 } from "../services/premiumService";
-
+import { trackEvent } from "../services/analytics";
 const comparisonRows = [
   { label: "Análisis IA", free: "4/día", premium: "Hasta 100/día" },
   { label: "Dietas", free: "1/día", premium: "Hasta 10/día" },
@@ -51,6 +51,11 @@ export function Premium() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const checkoutState = searchParams.get("checkout");
+  useEffect(() => {
+  if (checkoutState === "success") {
+    trackEvent("premium_subscription_created");
+  }
+}, [checkoutState]);
   const isPremium = Boolean(premiumStatus?.is_premium);
   const statusLabel = useMemo(() => {
     if (loadingAuth || loadingStatus) return "Sincronizando";
@@ -92,12 +97,16 @@ export function Premium() {
 
   async function handleCheckout(plan) {
     if (!user) {
+   
       navigate("/login");
       return;
     }
 
     try {
       setErrorMessage("");
+         trackEvent("premium_checkout_started", {
+  plan,
+});
       setActionLoading(plan);
       const url = await createPremiumCheckoutSession(plan);
 
