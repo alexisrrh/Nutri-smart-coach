@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowLeftRight,
   BarChart3,
   Bolt,
   Crown,
@@ -14,7 +15,6 @@ import {
   AppShell,
   MetaBadge,
   PrimaryButton,
-  SecondaryButton,
   SurfaceCard,
 } from "../components/ui";
 import { useAuth } from "../context/useAuth";
@@ -29,32 +29,13 @@ import { getRuntimePlatform } from "../services/platform";
 
 const comparisonRows = [
   { label: "Análisis IA", free: "4/día", premium: "100/día" },
-  { label: "Dietas", free: "1/día", premium: "10/día" },
-  { label: "Check-ins", free: "1/día", premium: "7/día" },
-  { label: "Prioridad", free: "Normal", premium: "Prioritaria" },
-];
-
-const premiumHighlights = [
-  {
-    icon: Bolt,
-    title: "Límites ampliados",
-    copy: "Más capacidad diaria para IA.",
-  },
-  {
-    icon: BarChart3,
-    title: "Progreso avanzado",
-    copy: "Lecturas más claras y útiles.",
-  },
-  {
-    icon: TimerReset,
-    title: "Prioridad operativa",
-    copy: "Respuestas con menos espera.",
-  },
-  {
-    icon: Layers3,
-    title: "Futuras funciones",
-    copy: "Acceso temprano a nuevas capas.",
-  },
+  { label: "Dietas IA", free: "1/día", premium: "10/día" },
+  { label: "Check-ins IA", free: "1/día", premium: "7/día" },
+  { label: "Cambiar comidas", free: "❌", premium: "✅" },
+  { label: "Personalización", free: "Básica", premium: "Avanzada" },
+  { label: "Seguimiento", free: "Básico", premium: "Avanzado" },
+  { label: "Recomendaciones IA", free: "Básicas", premium: "Avanzadas" },
+  { label: "Historial", free: "Limitado", premium: "Completo" },
 ];
 
 export function Premium() {
@@ -72,32 +53,32 @@ export function Premium() {
   const isWebPlatform = runtimePlatform === "web";
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
-  const statusLabel = useMemo(() => {
-    if (loadingAuth || loadingStatus) return "Sincronizando";
-    if (!user) return "Inicia sesión";
-    if (isPremium) return "Premium activo";
-    if (!isWebPlatform) return "Compra preparada";
+  const premiumSourceLabel = useMemo(() => {
+    if (premiumSource === "stripe") return "Gestionado por Stripe";
+    if (premiumSource === "apple") return "Gestionado por App Store";
+    if (premiumSource === "google") return "Gestionado por Google Play";
 
-    return "Plan Free";
-  }, [isPremium, isWebPlatform, loadingAuth, loadingStatus, user]);
+    return "";
+  }, [premiumSource]);
 
-  const heroTitle = isPremium ? "Premium activo" : "Desbloquea Premium";
+  const heroTitle = isPremium ? "Premium activo" : "Consigue resultados más rápido";
   const heroSubtitle = isPremium
-    ? "Tus límites ampliados están activos."
-    : isWebPlatform
-      ? "100 análisis IA/día · 10 dietas IA/día · 7 check-ins IA/día"
-      : "Compra segura dentro de la app.";
+    ? "Tus límites ampliados y herramientas avanzadas están activos."
+    : "Todo lo que necesitas para mantener la constancia y alcanzar tus objetivos antes.";
   const heroChips = isPremium
-    ? ["100 análisis", "10 dietas", "7 check-ins", "Prioridad IA"]
-    : ["Límites ampliados", "100 análisis", "10 dietas", "7 check-ins"];
-  const billingBadge = isWebPlatform
-    ? "Pago seguro"
-    : "Compra segura dentro de la app";
-  const billingDetail = isWebPlatform
-    ? premiumSource === "stripe"
-      ? "Gestionado por Stripe"
-      : "Pago seguro gestionado por el backend"
-    : "TODO: Apple IAP / Google Play Billing";
+    ? [
+        { icon: Bolt, label: "100 análisis IA" },
+        { icon: BarChart3, label: "10 dietas IA" },
+        { icon: TimerReset, label: "7 check-ins IA" },
+        { icon: Layers3, label: "Seguimiento avanzado" },
+      ]
+    : [
+        { icon: Sparkles, label: "Dietas personalizadas" },
+        { icon: BarChart3, label: "Seguimiento inteligente" },
+        { icon: ArrowLeftRight, label: "Cambios ilimitados" },
+        { icon: Layers3, label: "Progreso avanzado" },
+      ];
+  const billingBadge = "PAGO SEGURO";
 
   useEffect(() => {
     if (checkoutState === "success" && !trackedCheckoutSuccessRef.current) {
@@ -179,18 +160,19 @@ export function Premium() {
   }
 
   return (
-    <AppShell wide contentClassName="!px-2 !pt-2 !pb-28">
+    <AppShell wide contentClassName="!px-2 !pt-2 pb-21">
       <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-2.5 rounded-[28px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2.5 py-2.5 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:min-h-[720px] md:rounded-[34px] md:border-8 md:px-3 md:py-3">
+        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-2 rounded-[28px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2.5 py-2.5 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:rounded-[34px] md:border-8 md:px-3 md:py-3">
           <header className="shrink-0">
             <div className="mb-1.5 flex items-center justify-between gap-3">
-              <SecondaryButton
+              <button
+                type="button"
                 onClick={() => navigate(-1)}
-                icon={<ArrowLeft size={14} />}
-                className="w-auto px-2.5 py-1.5 text-[10px]"
+                aria-label="Volver"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] text-[var(--app-text)] shadow-[0_0_14px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:shadow-[0_0_18px_var(--app-glow)] active:scale-[0.96] active:translate-y-[1px]"
               >
-                Volver
-              </SecondaryButton>
+                <ArrowLeft size={14} />
+              </button>
 
               <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
                 {billingBadge}
@@ -217,7 +199,7 @@ export function Premium() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <MetaBadge variant="neutral">{statusLabel}</MetaBadge>
+                    <MetaBadge variant="neutral">PREMIUM</MetaBadge>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
                       {billingBadge}
@@ -231,15 +213,17 @@ export function Premium() {
                     {heroSubtitle}
                   </p>
 
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  <div className="mt-2.5 grid grid-cols-1 gap-1.5 min-[390px]:grid-cols-2">
                     {heroChips.map((chip) => (
-                      <PremiumChip key={chip}>{chip}</PremiumChip>
+                      <PremiumChip key={chip.label} icon={chip.icon}>
+                        {chip.label}
+                      </PremiumChip>
                     ))}
                   </div>
 
-                  {isPremium && premiumSource === "stripe" ? (
+                  {isPremium && premiumSourceLabel ? (
                     <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                      Gestionado por Stripe
+                      {premiumSourceLabel}
                     </p>
                   ) : null}
                 </div>
@@ -253,166 +237,211 @@ export function Premium() {
                 <div className="min-w-0">
                   <MetaBadge variant="neutral">Estado</MetaBadge>
                   <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                    Beneficios activos
+                    Premium activo
                   </h2>
                   <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                    100 análisis IA/día · 10 dietas IA/día · 7 check-ins IA/día
+                    Tus límites ampliados y herramientas avanzadas están activos.
                   </p>
                 </div>
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
                   <Sparkles size={15} />
                 </span>
               </div>
-            </SurfaceCard>
-          ) : null}
 
-          <SurfaceCard className="p-3" radius="lg" variant="soft">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <MetaBadge variant="neutral">Suscripción</MetaBadge>
-                <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                  {isPremium ? "Gestiona tu suscripción" : isWebPlatform ? "Activa Premium" : "Compras dentro de la app"}
-                </h2>
-                <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                  {isPremium
-                    ? "Administra el plan desde Stripe."
-                    : isWebPlatform
-                      ? "Checkout seguro con Stripe. El acceso premium se activa cuando el webhook confirma la suscripción."
-                      : "TODO: Apple IAP / Google Play Billing. La compra dentro de la app se conectará en una siguiente fase."}
-                </p>
-                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                  {billingDetail}
-                </p>
+              <div className="mt-3 grid grid-cols-2 gap-1.5">
+                {[
+                  { icon: Bolt, title: "100 análisis IA diarios" },
+                  { icon: BarChart3, title: "10 dietas IA diarias" },
+                  { icon: TimerReset, title: "7 check-ins IA diarios" },
+                  { icon: Layers3, title: "Seguimiento avanzado" },
+                ].map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <div
+                      key={item.title}
+                      className="flex min-w-0 items-center gap-1.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]">
+                        <Icon size={14} />
+                      </span>
+                      <span className="min-w-0 text-[11px] font-semibold leading-tight text-[var(--app-text)]">
+                        {item.title}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
-                <ArrowRight size={15} />
-              </span>
-            </div>
 
-            {checkoutState === "success" ? (
-              <StatusNotice>Pago recibido. Confirmamos la suscripción con Stripe.</StatusNotice>
-            ) : null}
-
-            {checkoutState === "cancelled" ? (
-              <StatusNotice>Pago cancelado. Puedes retomarlo cuando quieras.</StatusNotice>
-            ) : null}
-
-            {errorMessage ? <StatusNotice tone="error">{errorMessage}</StatusNotice> : null}
-
-            {isWebPlatform ? (
               <div className="mt-3 grid gap-2">
-                {isPremium ? (
-                  <PrimaryButton
-                    disabled={Boolean(actionLoading)}
-                    icon={<Sparkles size={14} />}
-                    onClick={handleCustomerPortal}
-                  >
-                    {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
-                  </PrimaryButton>
-                ) : (
-                  <>
-                    <PrimaryButton
-                      disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
-                      icon={<Sparkles size={14} />}
-                      onClick={() => handleCheckout("monthly")}
-                    >
-                      {actionLoading === "monthly" ? "Abriendo..." : "Premium mensual"}
-                    </PrimaryButton>
-                    <SecondaryButton
-                      disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
-                      icon={<Crown size={14} />}
-                      onClick={() => handleCheckout("yearly")}
-                    >
-                      {actionLoading === "yearly" ? "Abriendo..." : "Premium anual"}
-                    </SecondaryButton>
-                  </>
-                )}
+                <PrimaryButton
+                  disabled={Boolean(actionLoading) || premiumSource !== "stripe"}
+                  icon={<Sparkles size={14} />}
+                  onClick={handleCustomerPortal}
+                >
+                  {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
+                </PrimaryButton>
+                {premiumSourceLabel ? (
+                  <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--app-muted)]">
+                    {premiumSourceLabel}
+                  </p>
+                ) : null}
               </div>
-            ) : (
-              <div className="mt-3 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                Compra segura dentro de la app.
-                <br />
-                TODO: Apple IAP / Google Play Billing.
-              </div>
-            )}
-          </SurfaceCard>
-
-          {!isPremium && isWebPlatform ? (
+            </SurfaceCard>
+          ) : (
             <>
               <SurfaceCard className="p-3" radius="lg" variant="soft">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <MetaBadge variant="neutral">Comparación</MetaBadge>
+                  <div className="min-w-0">
+                    <MetaBadge variant="neutral">Suscripción</MetaBadge>
                     <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                      Free vs Premium
+                      {isWebPlatform ? "Activa Premium" : "Compra dentro de la app"}
                     </h2>
                     <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                      Capacidad diaria y prioridad.
+                      {isWebPlatform
+                        ? "Elige el plan que mejor encaja contigo."
+                        : "La suscripción Premium estará disponible mediante la tienda de tu dispositivo."}
                     </p>
                   </div>
-                  <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                    Vista previa
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
+                    <ArrowRight size={15} />
                   </span>
                 </div>
 
-                <div className="mt-2.5 grid gap-1.5">
-                  <div className="grid grid-cols-[1.2fr_.8fr_.9fr] gap-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                    <span />
-                    <span className="text-center">Free</span>
-                    <span className="text-center text-[var(--app-primary)]">Premium</span>
-                  </div>
+                {checkoutState === "success" ? (
+                  <StatusNotice>Pago recibido. Confirmamos la suscripción con Stripe.</StatusNotice>
+                ) : null}
 
-                  {comparisonRows.map((row) => (
-                    <div
-                      key={row.label}
-                      className="grid grid-cols-[1.2fr_.8fr_.9fr] items-center gap-1.5 rounded-[0.9rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+                {checkoutState === "cancelled" ? (
+                  <StatusNotice>Pago cancelado. Puedes retomarlo cuando quieras.</StatusNotice>
+                ) : null}
+
+                {errorMessage ? <StatusNotice tone="error">{errorMessage}</StatusNotice> : null}
+
+                {isWebPlatform ? (
+                  <div className="mt-3 grid gap-2">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--app-muted)]">
+                      ⭐ Precio especial para usuarios beta
+                    </p>
+
+                    <button
+                      type="button"
+                      disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
+                      onClick={() => handleCheckout("monthly")}
+                      className="group relative flex w-full items-center justify-between rounded-[1.1rem] border border-[color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_86%,transparent)_0%,color-mix(in_srgb,var(--app-card)_97%,transparent)_100%)] px-3 py-2 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] hover:shadow-[0_0_20px_var(--app-glow)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      <span className="min-w-0 truncate text-[11px] font-medium text-[var(--app-text)]">
-                        {row.label}
-                      </span>
-                      <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-muted)]">
-                        {row.free}
-                      </span>
-                      <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_72%,transparent)_0%,color-mix(in_srgb,var(--app-primary-soft)_42%,transparent)_100%)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-text)] shadow-[0_0_14px_var(--app-glow)]">
-                        {row.premium}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </SurfaceCard>
-
-              <SurfaceCard className="p-3" radius="lg" variant="soft">
-                <MetaBadge variant="neutral">Ventajas</MetaBadge>
-                <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                  Lo que desbloquea
-                </h2>
-                <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {premiumHighlights.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <div
-                        key={item.title}
-                        className="flex items-start gap-2.5 rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
-                      >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]">
-                          <Icon size={15} />
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                          Premium mensual
                         </span>
-                        <span className="min-w-0">
-                          <span className="block text-[12px] font-semibold leading-tight text-[var(--app-text)]">
-                            {item.title}
-                          </span>
-                          <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                            {item.copy}
-                          </span>
+                        <span className="mt-0.5 block text-[16px] font-black leading-none text-[var(--app-text)]">
+                          7,99 €/mes
+                        </span>
+                      </span>
+                      <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                        Pago seguro
+                      </span>
+                    </button>
+
+                    <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_97%,transparent)_100%)] p-3 shadow-[0_0_22px_var(--app-glow)]">
+                      <div className="absolute left-3 top-3">
+                        <span className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                          Más popular
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="pt-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                              Premium anual
+                            </span>
+                            <span className="mt-0.5 block text-[18px] font-black leading-none text-[var(--app-text)]">
+                              59,99 €/año
+                            </span>
+                            <span className="mt-1 block text-[10px] font-medium text-[var(--app-muted)]">
+                              Equivale a 4,99€/mes
+                            </span>
+                          </div>
+                          <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_90%,transparent)_0%,color-mix(in_srgb,var(--app-primary-soft)_56%,transparent)_100%)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                            Ahorra 37%
+                          </span>
+                        </div>
+
+                        <PrimaryButton
+                          disabled={loadingAuth || loadingStatus || Boolean(actionLoading)}
+                          icon={<Crown size={14} />}
+                          onClick={() => handleCheckout("yearly")}
+                          className="mt-3 transition-all duration-200 ease-out hover:shadow-[0_0_28px_var(--app-glow)] active:scale-[0.97] active:translate-y-[2px] active:brightness-95"
+                        >
+                          {actionLoading === "yearly" ? "Abriendo..." : "Activar Premium"}
+                        </PrimaryButton>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
+                    <p className="text-[11px] font-medium leading-5 text-[var(--app-muted)]">
+                      La suscripción Premium estará disponible mediante la tienda de tu dispositivo.
+                    </p>
+                    <button
+                      type="button"
+                      disabled
+                      className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--app-muted)] opacity-70"
+                    >
+                      Disponible próximamente
+                    </button>
+                  </div>
+                )}
               </SurfaceCard>
+
+              {!isPremium ? (
+                <>
+                  <SurfaceCard className="p-3" radius="lg" variant="soft">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <MetaBadge variant="neutral">Gratis vs Premium</MetaBadge>
+                        <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
+                          Gratis vs Premium
+                        </h2>
+                        <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
+                          Descubre todo lo que desbloqueas al actualizar tu plan.
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                        Vista previa
+                      </span>
+                    </div>
+
+                    <div className="mt-2.5 grid gap-1.5">
+                      <div className="grid grid-cols-[1.35fr_.8fr_.95fr] gap-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)] sm:grid-cols-[1.5fr_.75fr_.95fr]">
+                        <span />
+                        <span className="text-center">Gratis</span>
+                        <span className="text-center text-[var(--app-primary)]">Premium</span>
+                      </div>
+
+                      {comparisonRows.map((row) => (
+                        <div
+                          key={row.label}
+                          className="grid grid-cols-[1.35fr_.8fr_.95fr] items-center gap-1.5 rounded-[0.9rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] sm:grid-cols-[1.5fr_.75fr_.95fr]"
+                        >
+                          <span className="min-w-0 text-[10px] font-medium leading-tight text-[var(--app-text)] sm:text-[11px]">
+                            {row.label}
+                          </span>
+                          <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-muted)] sm:text-[9px]">
+                            {row.free}
+                          </span>
+                          <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_72%,transparent)_0%,color-mix(in_srgb,var(--app-primary-soft)_42%,transparent)_100%)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)] sm:text-[9px]">
+                            {row.premium}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </SurfaceCard>
+
+                </>
+              ) : null}
             </>
-          ) : null}
+          )}
         </div>
       </main>
     </AppShell>
@@ -435,10 +464,11 @@ function StatusNotice({ children, tone = "default" }) {
   );
 }
 
-function PremiumChip({ children }) {
+function PremiumChip({ children, icon: Icon }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--app-border)_82%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_84%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2 py-[3px] text-[8px] font-medium tracking-[0.12em] text-[var(--app-text)] shadow-[0_0_12px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
-      {children}
+    <span className="inline-flex min-w-0 items-center gap-2 rounded-[0.95rem] border border-[color-mix(in_srgb,var(--app-border)_82%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_82%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-2 text-[10px] font-semibold leading-tight tracking-[0.02em] text-[var(--app-text)] shadow-[0_0_10px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
+      {Icon ? <Icon size={11} className="shrink-0 text-[var(--app-primary)]" /> : null}
+      <span className="min-w-0">{children}</span>
     </span>
   );
 }
