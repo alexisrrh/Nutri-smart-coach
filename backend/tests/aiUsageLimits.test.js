@@ -86,6 +86,49 @@ describe("AI usage premium limits", () => {
     });
   });
 
+  it("accepts premium access when the backend still has a valid expiry", async () => {
+    mockState.profile = {
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+      premium_source: "manual",
+      premium_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+    mockState.count = 2;
+
+    const usage = await getDailyAiUsage({
+      userId: "user-expiring",
+      type: "diet_generation",
+    });
+
+    expect(usage).toMatchObject({
+      limit: 10,
+      plan: "premium",
+      upgradeAvailable: false,
+      isLimitReached: false,
+    });
+  });
+
+  it("rejects expired premium access even with premium flags", async () => {
+    mockState.profile = {
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+      premium_source: "apple",
+      premium_expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    };
+    mockState.count = 1;
+
+    const usage = await getDailyAiLimitWithExpiredProfile();
+
+    expect(usage).toMatchObject({
+      limit: 1,
+      plan: "free",
+      upgradeAvailable: true,
+      isLimitReached: true,
+    });
+  });
+
   it("returns clear 429 limit state with plan metadata", async () => {
     mockState.profile = {
       plan: "free",
@@ -109,6 +152,13 @@ describe("AI usage premium limits", () => {
     });
   });
 });
+
+async function getDailyAiLimitWithExpiredProfile() {
+  return getDailyAiUsage({
+    userId: "user-expired",
+    type: "diet_generation",
+  });
+}
 
 function createQuery(table) {
   return {

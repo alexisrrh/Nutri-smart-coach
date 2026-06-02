@@ -22,7 +22,18 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("plan, is_premium, subscription_status")
+      .select(
+        [
+          "plan",
+          "is_premium",
+          "subscription_status",
+          "premium_source",
+          "premium_product_id",
+          "premium_platform_transaction_id",
+          "premium_expires_at",
+          "premium_last_verified_at",
+        ].join(", ")
+      )
       .eq("id", userId)
       .maybeSingle();
 

@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { isPremiumProfile } from "../utils/aiUsage.js";
 
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
 const WEBHOOK_TOLERANCE_SECONDS = 300;
@@ -156,17 +157,18 @@ export function constructStripeWebhookEvent(rawBody, signatureHeader) {
 
 export function serializePremiumProfile(profile) {
   const subscriptionStatus = profile?.subscription_status || "inactive";
-  const isPremium =
-    profile?.plan === "premium" &&
-    Boolean(profile?.is_premium) &&
-    PREMIUM_STATUSES.has(subscriptionStatus);
+  const isPremium = isPremiumProfile(profile);
 
   return {
     plan: isPremium ? "premium" : "free",
     is_premium: isPremium,
     subscription_status: subscriptionStatus,
+    premium_source: profile?.premium_source || null,
+    premium_product_id: profile?.premium_product_id || null,
+    premium_platform_transaction_id: profile?.premium_platform_transaction_id || null,
+    premium_expires_at: profile?.premium_expires_at || profile?.stripe_current_period_end || null,
+    premium_last_verified_at: profile?.premium_last_verified_at || null,
     premium_started_at: profile?.premium_started_at || null,
-    premium_expires_at: profile?.premium_expires_at || null,
     stripe_current_period_end: profile?.stripe_current_period_end || null,
     stripe_cancel_at_period_end: Boolean(profile?.stripe_cancel_at_period_end),
   };
@@ -177,19 +179,24 @@ export function buildSubscriptionProfileUpdate(subscription, userId) {
   const isPremium = PREMIUM_STATUSES.has(status);
   const periodEnd = toIsoDate(subscription?.current_period_end);
   const priceId = subscription?.items?.data?.[0]?.price?.id || null;
+  const now = new Date().toISOString();
 
   return {
     id: userId,
     plan: isPremium ? "premium" : "free",
     is_premium: isPremium,
     subscription_status: status,
+    premium_source: "stripe",
+    premium_product_id: priceId,
+    premium_platform_transaction_id: getStripeId(subscription?.id),
+    premium_last_verified_at: now,
     stripe_customer_id: getStripeId(subscription?.customer),
     stripe_subscription_id: getStripeId(subscription?.id),
     stripe_price_id: priceId,
     stripe_current_period_end: periodEnd,
     stripe_cancel_at_period_end: Boolean(subscription?.cancel_at_period_end),
     premium_started_at: isPremium ? new Date().toISOString() : null,
-    premium_expires_at: isPremium ? periodEnd : new Date().toISOString(),
+    premium_expires_at: periodEnd,
     updated_at: new Date().toISOString(),
   };
 }
