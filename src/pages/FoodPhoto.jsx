@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
+import { trackEvent } from "../services/analytics";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
@@ -137,6 +137,18 @@ export default function FoodPhoto() {
     setError("");
     setLoading(false);
   }
+
+  useEffect(() => {
+  if (!result) return;
+
+  trackEvent("analyze_food", {
+    food: result.food || "unknown",
+    calories: Number(result.calories || 0),
+    protein: Number(result.protein || 0),
+    score: Number(result.score || 0),
+  });
+}, [result]);
+
 
   return (
     <AppShell

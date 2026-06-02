@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "../services/analytics";
 import {
   Download,
   RefreshCcw,
@@ -367,6 +368,12 @@ export function MealPlan() {
 
       setPlan(cleanPlan);
       setDietPlanId(data.diet_plan_id || data.dietPlan?.id || null);
+      trackEvent("generate_diet", {
+  diet_type: formData.dietType,
+  goal: formData.goal,
+  days: formData.planDays,
+  meals_per_day: formData.mealsPerDay,
+});
       setProgress({});
       setActiveDay(0);
       cacheDietProgress({});
@@ -489,6 +496,9 @@ export function MealPlan() {
     if (!rewriteTarget) return;
 
     if (!isPremium) {
+      trackEvent("premium_feature_clicked", {
+  feature: "rewrite_meal",
+});
       navigate("/premium");
       return;
     }

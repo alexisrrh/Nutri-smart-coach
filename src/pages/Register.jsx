@@ -27,7 +27,7 @@ import {
   StatusBox,
   SurfaceCard,
 } from "../components/ui";
-
+import { trackEvent } from "../services/analytics";
 
 export function Register() {
   const navigate = useNavigate();
@@ -49,6 +49,12 @@ export function Register() {
     }
 
     setPendingLegalConsent(buildAcceptedLegalConsent());
+
+      // Evento Analytics
+ trackEvent("oauth_started", {
+  provider,
+});
+
 
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
@@ -132,7 +138,12 @@ export function Register() {
           },
           ...legalConsent,
           updated_at: new Date().toISOString(),
+          
         });
+        trackEvent("sign_up", {
+  method: "email",
+});
+
       } catch (profileError) {
         console.error("Error creando perfil:", profileError);
       }

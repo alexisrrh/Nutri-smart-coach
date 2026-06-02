@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackEvent } from "../services/analytics";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { STORAGE_KEYS } from "../config/storageKeys";
@@ -44,6 +45,9 @@ export function Login() {
   async function handleSocialLogin(provider) {
     setError("");
 
+    trackEvent("login_started", {
+  provider,
+});
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -119,6 +123,9 @@ export function Login() {
     }
 
     const user = data.user;
+    trackEvent("login", {
+  method: "email",
+});
 
     clearCachedProfile();
     localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
