@@ -59,13 +59,16 @@ export async function createCheckoutSession({
   priceId,
   userId,
   plan,
+  trialDays = 0,
 }) {
   const frontendUrl = getFrontendUrl();
+  const safeTrialDays = Math.max(Number(trialDays) || 0, 0);
 
   return stripeRequest("/checkout/sessions", {
     method: "POST",
     params: {
       mode: "subscription",
+      payment_method_collection: "always",
       customer: customerId || undefined,
       customer_email: customerId ? undefined : email || undefined,
       client_reference_id: userId,
@@ -77,6 +80,8 @@ export async function createCheckoutSession({
       "metadata[plan]": plan,
       "subscription_data[metadata][user_id]": userId,
       "subscription_data[metadata][plan]": plan,
+      "subscription_data[trial_period_days]":
+        safeTrialDays > 0 ? String(safeTrialDays) : undefined,
     },
   });
 }
@@ -174,12 +179,17 @@ export function serializePremiumProfile(profile) {
   };
 }
 
-export function buildSubscriptionProfileUpdate(subscription, userId) {
+export function buildSubscriptionProfileUpdate(subscription, userId, existingProfile = null) {
   const status = subscription?.status || "inactive";
   const isPremium = PREMIUM_STATUSES.has(status);
   const periodEnd = toIsoDate(subscription?.current_period_end);
   const priceId = subscription?.items?.data?.[0]?.price?.id || null;
   const now = new Date().toISOString();
+  const premiumStartedAt = existingProfile?.premium_started_at
+    ? existingProfile.premium_started_at
+    : isPremium
+    ? now
+    : null;
 
   return {
     id: userId,
@@ -195,9 +205,9 @@ export function buildSubscriptionProfileUpdate(subscription, userId) {
     stripe_price_id: priceId,
     stripe_current_period_end: periodEnd,
     stripe_cancel_at_period_end: Boolean(subscription?.cancel_at_period_end),
-    premium_started_at: isPremium ? new Date().toISOString() : null,
+    premium_started_at: premiumStartedAt,
     premium_expires_at: periodEnd,
-    updated_at: new Date().toISOString(),
+    updated_at: now,
   };
 }
 

@@ -1,0 +1,500 @@
+import { randomBytes } from "node:crypto";
+import { supabase } from "../config/supabase.js";
+import {
+  INFLUENCER_TRIAL_DAYS,
+  STANDARD_TRIAL_DAYS,
+  registerSubscriptionAcquisition,
+} from "./acquisition.service.js";
+
+const DEFAULT_INFLUENCER_COMMISSION_PERCENT = 30;
+const DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT = 12;
+
+export async function createUserReferralCode(userId, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const existing = await repo.getActiveCodeByUserAndType(userId, "user");
+  if (existing) return existing;
+
+  let code = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const candidate = buildUserReferralCode();
+    const inUse = await repo.getCodeByCode(candidate);
+    if (!inUse) {
+      code = candidate;
+      break;
+    }
+  }
+
+  if (!code) {
+    const error = createPublicError("No se pudo generar un código único.", 500);
+    throw error;
+  }
+
+  return repo.insertCode({
+    userId,
+    code,
+    type: "user",
+    trialDays: 0,
+    commissionPercent: 0,
+    commissionMonthsLimit: 0,
+    isActive: true,
+  });
+}
+
+export async function createInfluencerCode(userId, code, options = {}) {
+  assertUserId(userId);
+  assertInfluencerCodeAccess({ userId, authUser: options.authUser });
+
+  const normalizedCode = normalizeReferralCode(code);
+  if (!normalizedCode) {
+    throw createPublicError("El código influencer es obligatorio.", 400);
+  }
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const existingByCode = await repo.getCodeByCode(normalizedCode);
+  if (existingByCode && existingByCode.user_id !== userId) {
+    throw createPublicError("Ese código ya está en uso.", 409);
+  }
+
+  const existingByUser = await repo.getCodeByUserAndType(userId, "influencer");
+  const payload = {
+    userId,
+    code: normalizedCode,
+    type: "influencer",
+    trialDays: INFLUENCER_TRIAL_DAYS,
+    commissionPercent: DEFAULT_INFLUENCER_COMMISSION_PERCENT,
+    commissionMonthsLimit: DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT,
+    isActive: true,
+  };
+
+  if (existingByUser) {
+    return repo.updateCode(existingByUser.id, payload);
+  }
+
+  return repo.insertCode(payload);
+}
+
+export async function applyReferralCode(
+  { userId, code },
+  options = {}
+) {
+  assertUserId(userId);
+
+  const normalizedCode = normalizeReferralCode(code);
+  if (!normalizedCode) {
+    throw createPublicError("Debes indicar un código válido.", 400);
+  }
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const registerSubscriptionAcquisitionFn =
+    options.registerSubscriptionAcquisitionFn || registerSubscriptionAcquisition;
+
+  const referralCode = await repo.getCodeByCode(normalizedCode);
+  if (!referralCode || referralCode.is_active === false) {
+    throw createPublicError("Código de referido no válido.", 404);
+  }
+
+  if (String(referralCode.user_id) === String(userId)) {
+    throw createPublicError("No puedes usar tu propio código.", 400);
+  }
+
+  const existingReferral = await repo.getReferralByReferredUserId(userId);
+  if (existingReferral) {
+    throw createPublicError("Ya tienes un código aplicado.", 409);
+  }
+
+  const hasAnyAcquisition = await repo.hasAnyAcquisitionByUserId(userId);
+  if (hasAnyAcquisition) {
+    throw createPublicError(
+      "El código solo puede aplicarse durante el registro inicial.",
+      409
+    );
+  }
+
+  const profile = await repo.getProfileByUserId(userId);
+  if (hasExistingPremiumHistory(profile)) {
+    throw createPublicError(
+      "El código solo puede aplicarse durante el registro inicial.",
+      409
+    );
+  }
+
+  const type = referralCode.type;
+  const trialDays = Number(
+    referralCode.trial_days || (type === "influencer" ? INFLUENCER_TRIAL_DAYS : STANDARD_TRIAL_DAYS)
+  );
+  const status = "pending";
+
+  const referral = await repo.insertReferral({
+    referralCodeId: referralCode.id,
+    referrerUserId: referralCode.user_id,
+    referredUserId: userId,
+    type,
+    status,
+    trialStartedAt: null,
+    trialEndsAt: null,
+    premiumStartedAt: null,
+    rewardAvailable: false,
+  });
+
+  const acquisition = await registerSubscriptionAcquisitionFn(
+    {
+      userId,
+      premiumSource: "manual",
+      acquisitionSource: type === "influencer" ? "influencer" : "referral",
+      referralCodeId: referralCode.id,
+      referrerUserId: referralCode.user_id,
+      influencerUserId: type === "influencer" ? referralCode.user_id : null,
+      trialSource: type === "influencer" ? "influencer_trial" : "standard_trial",
+      trialStartedAt: null,
+      trialEndsAt: null,
+      commissionPercent:
+        type === "influencer"
+          ? Number(referralCode.commission_percent || DEFAULT_INFLUENCER_COMMISSION_PERCENT)
+          : 0,
+      commissionMonthsLimit:
+        type === "influencer"
+          ? Number(
+              referralCode.commission_months_limit ||
+                DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT
+            )
+          : 0,
+      status,
+    },
+    options
+  );
+
+  return {
+    referral,
+    acquisition,
+    trial: type === "influencer"
+      ? {
+          source: "influencer_trial",
+          startsAt: null,
+          endsAt: null,
+          trialDays,
+        }
+      : {
+          source: "standard_trial",
+          startsAt: null,
+          endsAt: null,
+          trialDays,
+        },
+    todo:
+      type === "influencer"
+        ? "TODO: usar trial nativo oficial del checkout antes de activar Premium."
+        : null,
+  };
+}
+
+export async function getMyReferralStats(userId, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const codes = await repo.listCodesByUserId(userId);
+  const referrals = await repo.listReferralsByReferrerUserId(userId);
+  const commissions = await repo.listAffiliateCommissionsByInfluencerUserId(userId);
+  const rewards = await repo.listReferralRewardsByReferrerUserId(userId);
+
+  const premiumActiveReferrals = referrals.filter((referral) =>
+    ["premium_active", "rewarded"].includes(referral.status)
+  ).length;
+  const rewardAvailableCount = rewards.filter((reward) => reward.status === "available").length;
+  const payableCommissionTotal = commissions
+    .filter((commission) => commission.status === "payable")
+    .reduce((total, commission) => total + Number(commission.amount || 0), 0);
+
+  return {
+    codes,
+    summary: {
+      totalReferrals: referrals.length,
+      premiumActiveReferrals,
+      rewardAvailableCount,
+      pendingReferrals: referrals.filter((referral) => referral.status === "pending").length,
+      trialingReferrals: referrals.filter((referral) => referral.status === "trialing").length,
+      influencerCommissionsCount: commissions.length,
+      payableCommissionTotal: Number(payableCommissionTotal.toFixed(2)),
+    },
+    referrals,
+    commissions,
+  };
+}
+
+export function createReferralRepository(supabaseClient) {
+  return {
+    async getCodeByUserAndType(userId, type) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("type", type)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el código.", error);
+      return data || null;
+    },
+
+    async getActiveCodeByUserAndType(userId, type) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("type", type)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el código.", error);
+      return data || null;
+    },
+
+    async getCodeByCode(code) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("code", code)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el código.", error);
+      return data || null;
+    },
+
+    async insertCode(payload) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .insert(toDbCodePayload(payload))
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo crear el código.", error);
+      return data;
+    },
+
+    async updateCode(id, payload) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .update(toDbCodePayload(payload))
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo actualizar el código.", error);
+      return data;
+    },
+
+    async getReferralByReferredUserId(referredUserId) {
+      const { data, error } = await supabaseClient
+        .from("referrals")
+        .select("*")
+        .eq("referred_user_id", referredUserId)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el referido.", error);
+      return data || null;
+    },
+
+    async hasAnyAcquisitionByUserId(userId) {
+      const { count, error } = await supabaseClient
+        .from("subscription_acquisitions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (error) throw wrapDbError("No se pudo consultar la adquisición.", error);
+      return (count || 0) > 0;
+    },
+
+    async getProfileByUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select(
+          [
+            "id",
+            "plan",
+            "is_premium",
+            "subscription_status",
+            "premium_source",
+            "premium_product_id",
+            "premium_platform_transaction_id",
+            "premium_started_at",
+            "premium_expires_at",
+            "stripe_customer_id",
+            "stripe_subscription_id",
+          ].join(", ")
+        )
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el perfil.", error);
+      return data || null;
+    },
+
+    async insertReferral(payload) {
+      const { data, error } = await supabaseClient
+        .from("referrals")
+        .insert(toDbReferralPayload(payload))
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo crear el referido.", error);
+      return data;
+    },
+
+    async listCodesByUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar los códigos.", error);
+      return data || [];
+    },
+
+    async listReferralsByReferrerUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("referrals")
+        .select("*")
+        .eq("referrer_user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar los referidos.", error);
+      return data || [];
+    },
+
+    async listAffiliateCommissionsByInfluencerUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("affiliate_commissions")
+        .select("*")
+        .eq("influencer_user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar las comisiones.", error);
+      return data || [];
+    },
+
+    async listReferralRewardsByReferrerUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("referral_rewards")
+        .select("*")
+        .eq("referrer_user_id", userId)
+        .order("milestone_number", { ascending: true });
+
+      if (error) throw wrapDbError("No se pudieron listar las recompensas.", error);
+      return data || [];
+    },
+  };
+}
+
+export function canCreateInfluencerCode({ userId, authUser } = {}) {
+  const roles = [
+    authUser?.role,
+    authUser?.app_metadata?.role,
+    authUser?.user_metadata?.role,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase());
+  if (roles.includes("service_role") || roles.includes("admin")) {
+    return true;
+  }
+
+  const email = String(authUser?.email || "")
+    .trim()
+    .toLowerCase();
+  const allowlistedUserIds = parseAllowlist(process.env.INFLUENCER_CODE_ALLOWLIST_USER_IDS);
+  const allowlistedEmails = parseAllowlist(process.env.INFLUENCER_CODE_ALLOWLIST_EMAILS);
+
+  return allowlistedUserIds.has(String(userId || "").trim()) || allowlistedEmails.has(email);
+}
+
+function toDbCodePayload(payload = {}) {
+  return {
+    user_id: payload.userId,
+    code: normalizeReferralCode(payload.code),
+    type: payload.type,
+    trial_days: Number(payload.trialDays || 0),
+    commission_percent: Number(payload.commissionPercent || 0),
+    commission_months_limit: Number(payload.commissionMonthsLimit || 0),
+    is_active: payload.isActive !== false,
+  };
+}
+
+function toDbReferralPayload(payload = {}) {
+  return {
+    referral_code_id: payload.referralCodeId,
+    referrer_user_id: payload.referrerUserId,
+    referred_user_id: payload.referredUserId,
+    type: payload.type,
+    status: payload.status,
+    trial_started_at: payload.trialStartedAt,
+    trial_ends_at: payload.trialEndsAt,
+    premium_started_at: payload.premiumStartedAt,
+    reward_available: Boolean(payload.rewardAvailable),
+  };
+}
+
+function normalizeReferralCode(code) {
+  return String(code || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, "");
+}
+
+function assertInfluencerCodeAccess({ userId, authUser }) {
+  if (canCreateInfluencerCode({ userId, authUser })) return;
+
+  throw createPublicError("No tienes permisos para crear códigos influencer.", 403);
+}
+
+function hasExistingPremiumHistory(profile) {
+  if (!profile) return false;
+
+  const status = String(profile.subscription_status || "")
+    .trim()
+    .toLowerCase();
+
+  return Boolean(
+    profile.is_premium === true ||
+      profile.plan === "premium" ||
+      profile.premium_source ||
+      profile.premium_product_id ||
+      profile.premium_platform_transaction_id ||
+      profile.premium_started_at ||
+      profile.premium_expires_at ||
+      profile.stripe_customer_id ||
+      profile.stripe_subscription_id ||
+      (status && status !== "inactive")
+  );
+}
+
+function parseAllowlist(value) {
+  return new Set(
+    String(value || "")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function buildUserReferralCode() {
+  return `NSC${randomBytes(4).toString("hex").toUpperCase()}`;
+}
+
+function wrapDbError(message, error) {
+  const wrapped = new Error(message);
+  wrapped.statusCode = 500;
+  wrapped.cause = error;
+  return wrapped;
+}
+
+function assertUserId(userId) {
+  if (!userId) {
+    throw createPublicError("Usuario no válido.", 400);
+  }
+}
+
+function createPublicError(message, statusCode = 400) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  error.expose = true;
+  return error;
+}
