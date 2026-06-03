@@ -13,6 +13,7 @@ import {
 import { buildDietPrompt } from "../prompts/diet.prompt.js";
 import { createFallbackDiet } from "../services/dietFallback.service.js";
 import {
+  AI_USAGE_RULES,
   checkDailyAiLimit,
   enforceRateLimit,
   isPremiumProfile,
@@ -23,7 +24,7 @@ import { clamp, toNumberOrNull } from "../utils/numbers.js";
 import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
-const DAILY_DIET_GENERATION_LIMIT = 1;
+const DAILY_DIET_GENERATION_LIMIT = AI_USAGE_RULES.diet_generation.freeLimit;
 const DIET_GENERATION_COOLDOWN_SECONDS = 8;
 
 router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
@@ -70,7 +71,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
 
       if (!limitState.allowed) {
         return res.status(429).json({
-          error: "Has alcanzado el límite diario de generación de dietas.",
+          error: "Has alcanzado tu límite de dietas IA en este periodo. Se reinicia pronto.",
           usage: {
             diet_generation: serializeUsageState("diet_generation", limitState),
           },

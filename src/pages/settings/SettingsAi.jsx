@@ -48,18 +48,18 @@ export function SettingsAi() {
   const usageRows = [
     {
       label: "Análisis de comida",
-      free: "4/día",
-      premium: "Hasta 100/día",
+      free: "3/día",
+      premium: "20/día",
     },
     {
       label: "Dietas IA",
-      free: "1/día",
-      premium: "Hasta 10/día",
+      free: "1/semana",
+      premium: "5/día",
     },
     {
       label: "Check-ins IA",
-      free: "1/día",
-      premium: "Hasta 7/día",
+      free: "1/semana",
+      premium: "1/día",
     },
   ];
 
@@ -82,7 +82,7 @@ export function SettingsAi() {
         <SettingsCard
           icon={<TimerReset size={16} />}
           title="Límites y control"
-          description="Asignación de recursos para estabilidad, coste y respuesta consistente."
+          description="Asignación oficial de recursos por plan para estabilidad, coste y respuesta consistente."
         >
           <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent)_0%,color-mix(in_srgb,var(--app-card)_92%,transparent)_100%)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_14px_34px_rgba(0,0,0,0.12)]">
             <div
@@ -183,8 +183,8 @@ function AiCorePanel({ loading, planLabel, premium, provider, usageRows }) {
             </h3>
             <p className="mt-2 max-w-[23rem] text-[13px] font-medium leading-5 text-[var(--app-muted)]">
               {premium
-                ? "Tu perfil refleja límites ampliados y una cola prioritaria para una experiencia más ágil."
-                : "Tu perfil refleja los límites estándar del plan Free con la misma base estable."}
+                ? "Tu perfil refleja los límites Premium oficiales y una cola prioritaria para una experiencia más ágil."
+                : "Tu perfil refleja los límites oficiales del plan Free con la misma base estable."}
             </p>
           </div>
 

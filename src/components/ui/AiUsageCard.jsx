@@ -4,6 +4,7 @@ import {
   formatAiUsageCounter,
   formatAiUsageDetail,
   formatAiUsageMessage,
+  getAiUsagePeriodLabel,
   isPremiumUsage,
 } from "../../services/aiUsageService";
 import { trackEvent } from "../../services/analytics";
@@ -26,6 +27,7 @@ export default function AiUsageCard({
   const title = formatAiUsageMessage(type, usage, profile);
   const detail = formatAiUsageDetail(type, usage, profile);
   const counter = formatAiUsageCounter(type, usage, profile);
+  const periodLabel = getAiUsagePeriodLabel(type, usage, profile);
 
   return (
     <SurfaceCard
@@ -56,7 +58,7 @@ export default function AiUsageCard({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Uso diario IA
+              Uso IA {periodLabel}
             </span>
             <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
               {counter}
@@ -82,7 +84,7 @@ export default function AiUsageCard({
             >
               <span className="min-w-0">
                 <span className="block text-[11px] font-semibold leading-4 text-[var(--app-text)]">
-                  Hazte Premium para ampliar tus límites diarios.
+                  Hazte Premium y sube a 20 análisis IA/día.
                 </span>
                 <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--app-muted)]">
                   Hazte Premium

@@ -3,16 +3,25 @@ import { supabase } from "../config/supabase.js";
 const rateLimitByUserAndType = new Map();
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
 
-export const AI_USAGE_LIMITS = {
-  food_analysis: 4,
-  diet_generation: 1,
-  checkin_analysis: 1,
-};
-
-export const PREMIUM_AI_USAGE_LIMITS = {
-  food_analysis: 100,
-  diet_generation: 10,
-  checkin_analysis: 7,
+export const AI_USAGE_RULES = {
+  food_analysis: {
+    freeLimit: 3,
+    premiumLimit: 20,
+    freePeriod: "day",
+    premiumPeriod: "day",
+  },
+  diet_generation: {
+    freeLimit: 1,
+    premiumLimit: 5,
+    freePeriod: "week",
+    premiumPeriod: "day",
+  },
+  checkin_analysis: {
+    freeLimit: 1,
+    premiumLimit: 1,
+    freePeriod: "week",
+    premiumPeriod: "day",
+  },
 };
 
 export class AiUsageError extends Error {
@@ -69,6 +78,8 @@ export async function getDailyAiUsage({ userId, type, limit, profile }) {
   const resolvedLimit = await resolveUsageLimit({ userId, type, limit, profile });
   const limitValue = resolvedLimit.limit;
   const resolvedProfile = resolvedLimit.profile;
+  const resolvedPlan = getAiUsagePlan(resolvedProfile);
+  const usageWindow = getUsageWindow(type, resolvedPlan);
 
   if (!userId) {
     return buildUsageState({
@@ -76,24 +87,30 @@ export async function getDailyAiUsage({ userId, type, limit, profile }) {
       usedToday: 0,
       limit: limitValue,
       plan: "free",
+      period: usageWindow.period,
     });
   }
 
-  const usedToday = await countDailyUsage({ userId, type });
+  const usedToday = await countPeriodUsage({
+    userId,
+    type,
+    profile: resolvedProfile,
+  });
 
   return buildUsageState({
     type,
     usedToday,
     limit: limitValue,
-    plan: getAiUsagePlan(resolvedProfile),
+    plan: resolvedPlan,
+    period: usageWindow.period,
   });
 }
 
 export async function getAllDailyAiUsage(userId) {
   const entries = await Promise.all(
-    Object.entries(AI_USAGE_LIMITS).map(async ([type, limit]) => [
+    Object.entries(AI_USAGE_RULES).map(async ([type, rule]) => [
       type,
-      await getDailyAiUsage({ userId, type, limit }),
+      await getDailyAiUsage({ userId, type, limit: rule.freeLimit }),
     ])
   );
 
@@ -102,9 +119,9 @@ export async function getAllDailyAiUsage(userId) {
 
 export async function getAllDailyAiUsageWithProfile(userId, profile) {
   const entries = await Promise.all(
-    Object.entries(AI_USAGE_LIMITS).map(async ([type, limit]) => [
+    Object.entries(AI_USAGE_RULES).map(async ([type, rule]) => [
       type,
-      await getDailyAiUsage({ userId, type, limit, profile }),
+      await getDailyAiUsage({ userId, type, limit: rule.freeLimit, profile }),
     ])
   );
 
@@ -131,40 +148,51 @@ export function getAiUsagePlan(profileOrPlan) {
 }
 
 export function getAiUsageLimit(type, profileOrPlan) {
-  const baseLimit = AI_USAGE_LIMITS[type] || 0;
-  if (!isPremiumProfile(profileOrPlan)) return baseLimit;
+  const rule = AI_USAGE_RULES[type];
+  if (!rule) return 0;
+  if (!isPremiumProfile(profileOrPlan)) return rule.freeLimit;
 
-  return PREMIUM_AI_USAGE_LIMITS[type] || baseLimit;
+  return rule.premiumLimit;
 }
 
 export function getAiUsageLimits(profileOrPlan) {
   return Object.fromEntries(
-    Object.entries(AI_USAGE_LIMITS).map(([type]) => [
+    Object.entries(AI_USAGE_RULES).map(([type]) => [
       type,
       {
         limit: getAiUsageLimit(type, profileOrPlan),
         plan: getAiUsagePlan(profileOrPlan),
+        period: getAiUsagePeriod(type, profileOrPlan),
       },
     ])
   );
 }
 
-async function countDailyUsage({ userId, type }) {
+export function getAiUsagePeriod(type, profileOrPlan) {
+  return getUsageWindow(type, getAiUsagePlan(profileOrPlan)).period;
+}
+
+async function countPeriodUsage({ userId, type, profile }) {
+  const plan = getAiUsagePlan(profile);
+  const usageWindow = getUsageWindow(type, plan);
+
   if (type === "food_analysis") {
     return countDailyFoodAnalysis(userId);
   }
 
   if (type === "checkin_analysis") {
-    return countRowsToday({
+    return countRowsInRange({
       table: "checkins",
       userId,
+      period: usageWindow.period,
     });
   }
 
   if (type === "diet_generation") {
-    return countRowsToday({
+    return countRowsInRange({
       table: "diet_plans",
       userId,
+      period: usageWindow.period,
     });
   }
 
@@ -197,7 +225,7 @@ async function resolveUsageLimit({ userId, type, limit, profile }) {
   }
 
   return {
-    limit: AI_USAGE_LIMITS[type] || 0,
+    limit: AI_USAGE_RULES[type]?.freeLimit || 0,
     profile: null,
   };
 }
@@ -239,7 +267,7 @@ async function countDailyFoodAnalysis(userId) {
 
   if (todayError) {
     console.error("Error contando análisis diarios:", todayError);
-    throw new Error("No se pudo comprobar el límite diario de análisis");
+    throw new Error("No se pudo comprobar el límite de análisis IA");
   }
 
   const imageHashes = [
@@ -279,8 +307,8 @@ async function countDailyFoodAnalysis(userId) {
   return textOnlyCount + newImageAnalysisCount;
 }
 
-async function countRowsToday({ table, userId }) {
-  const { start, end } = getTodayRange();
+async function countRowsInRange({ table, userId, period }) {
+  const { start, end } = getUsageRange(period);
   const { count, error } = await supabase
     .from(table)
     .select("id", { count: "exact", head: true })
@@ -290,10 +318,18 @@ async function countRowsToday({ table, userId }) {
 
   if (error) {
     console.error(`Error contando uso IA en ${table}:`, error);
-    throw new Error("No se pudo comprobar el límite diario de IA");
+    throw new Error("No se pudo comprobar el límite de uso IA");
   }
 
   return count || 0;
+}
+
+function getUsageRange(period = "day") {
+  if (period === "week") {
+    return getWeekRange();
+  }
+
+  return getTodayRange();
 }
 
 function getTodayRange() {
@@ -309,12 +345,30 @@ function getTodayRange() {
   };
 }
 
-function getNextResetAt() {
-  const { end } = getTodayRange();
+function getWeekRange() {
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setHours(0, 0, 0, 0);
+
+  const day = startDate.getDay();
+  const diffToMonday = (day + 6) % 7;
+  startDate.setDate(startDate.getDate() - diffToMonday);
+
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 7);
+
+  return {
+    start: startDate.toISOString(),
+    end: endDate.toISOString(),
+  };
+}
+
+function getNextResetAt(period = "day") {
+  const { end } = getUsageRange(period);
   return end;
 }
 
-function buildUsageState({ type, usedToday, limit, plan }) {
+function buildUsageState({ type, usedToday, limit, plan, period = "day" }) {
   const safeLimit = Number(limit) > 0 ? Number(limit) : 0;
   const safeUsed = Number(usedToday) > 0 ? Number(usedToday) : 0;
   const remaining = Math.max(safeLimit - safeUsed, 0);
@@ -327,7 +381,8 @@ function buildUsageState({ type, usedToday, limit, plan }) {
     plan: resolvedPlan,
     upgradeAvailable: resolvedPlan === "free",
     remaining,
-    resetAt: getNextResetAt(),
+    period,
+    resetAt: getNextResetAt(period),
     isLimitReached: safeLimit > 0 ? safeUsed >= safeLimit : false,
   };
 }
@@ -342,4 +397,21 @@ function parsePremiumDate(value) {
 
 function getUsageKey({ userId, type }) {
   return `${userId}:${type}`;
+}
+
+function getUsageWindow(type, plan) {
+  const rule = AI_USAGE_RULES[type];
+  if (!rule) {
+    return { period: "day" };
+  }
+
+  if (plan === "premium") {
+    return {
+      period: rule.premiumPeriod,
+    };
+  }
+
+  return {
+    period: rule.freePeriod,
+  };
 }

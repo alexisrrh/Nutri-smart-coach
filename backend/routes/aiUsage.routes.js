@@ -39,7 +39,7 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
 
     if (profileError) {
       return res.status(500).json({
-        error: "No se pudo consultar el uso diario de IA",
+        error: "No se pudo consultar el uso de IA",
         detail: profileError.message,
       });
     }
@@ -53,7 +53,7 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      error: "No se pudo consultar el uso diario de IA",
+      error: "No se pudo consultar el uso de IA",
       detail: error.message,
     });
   }

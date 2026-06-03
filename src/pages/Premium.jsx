@@ -1,6 +1,5 @@
 import {
   ArrowLeft,
-  ArrowRight,
   ArrowLeftRight,
   BarChart3,
   Bolt,
@@ -28,9 +27,9 @@ import { trackEvent } from "../services/analytics";
 import { getRuntimePlatform } from "../services/platform";
 
 const comparisonRows = [
-  { label: "Análisis IA", free: "4/día", premium: "100/día" },
-  { label: "Dietas IA", free: "1/día", premium: "10/día" },
-  { label: "Check-ins IA", free: "1/día", premium: "7/día" },
+  { label: "Análisis IA", free: "3/día", premium: "20/día" },
+  { label: "Dietas IA", free: "1/semana", premium: "5/día" },
+  { label: "Check-ins IA", free: "1/semana", premium: "1/día" },
   { label: "Cambiar comidas", free: "❌", premium: "✅" },
   { label: "Personalización", free: "Básica", premium: "Avanzada" },
   { label: "Seguimiento", free: "Básico", premium: "Avanzado" },
@@ -51,6 +50,7 @@ export function Premium() {
   const checkoutState = searchParams.get("checkout");
   const runtimePlatform = getRuntimePlatform();
   const isWebPlatform = runtimePlatform === "web";
+  const isNativePlatform = runtimePlatform === "ios" || runtimePlatform === "android";
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
   const premiumSourceLabel = useMemo(() => {
@@ -63,20 +63,20 @@ export function Premium() {
 
   const heroTitle = isPremium ? "Premium activo" : "Consigue resultados más rápido";
   const heroSubtitle = isPremium
-    ? "Tus límites ampliados y herramientas avanzadas están activos."
-    : "Todo lo que necesitas para mantener la constancia y alcanzar tus objetivos antes.";
+    ? "Tus nuevos límites oficiales y herramientas avanzadas ya están activos."
+    : "Más capacidad diaria para analizar, ajustar y seguir tu progreso sin quedarte corto.";
   const heroChips = isPremium
     ? [
-        { icon: Bolt, label: "100 análisis IA" },
-        { icon: BarChart3, label: "10 dietas IA" },
-        { icon: TimerReset, label: "7 check-ins IA" },
+        { icon: Bolt, label: "20 análisis IA al día" },
+        { icon: BarChart3, label: "5 dietas IA al día" },
+        { icon: TimerReset, label: "1 check-in IA al día" },
         { icon: Layers3, label: "Seguimiento avanzado" },
       ]
     : [
-        { icon: Sparkles, label: "Dietas personalizadas" },
-        { icon: BarChart3, label: "Seguimiento inteligente" },
+        { icon: Sparkles, label: "3 análisis IA al día" },
+        { icon: BarChart3, label: "1 dieta IA por semana" },
+        { icon: TimerReset, label: "1 check-in IA por semana" },
         { icon: ArrowLeftRight, label: "Cambios ilimitados" },
-        { icon: Layers3, label: "Progreso avanzado" },
       ];
   const billingBadge = "PAGO SEGURO";
 
@@ -240,7 +240,7 @@ export function Premium() {
                     Premium activo
                   </h2>
                   <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                    Tus límites ampliados y herramientas avanzadas están activos.
+                    Tus nuevos límites oficiales y herramientas avanzadas están activos.
                   </p>
                 </div>
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
@@ -250,9 +250,9 @@ export function Premium() {
 
               <div className="mt-3 grid grid-cols-2 gap-1.5">
                 {[
-                  { icon: Bolt, title: "100 análisis IA diarios" },
-                  { icon: BarChart3, title: "10 dietas IA diarias" },
-                  { icon: TimerReset, title: "7 check-ins IA diarios" },
+                  { icon: Bolt, title: "20 análisis IA diarios" },
+                  { icon: BarChart3, title: "5 dietas IA diarias" },
+                  { icon: TimerReset, title: "1 check-in IA diario" },
                   { icon: Layers3, title: "Seguimiento avanzado" },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -295,17 +295,16 @@ export function Premium() {
                   <div className="min-w-0">
                     <MetaBadge variant="neutral">Suscripción</MetaBadge>
                     <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                      {isWebPlatform ? "Activa Premium" : "Compra dentro de la app"}
+                      {isNativePlatform ? "Premium llegará pronto" : "Activa Premium"}
                     </h2>
                     <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                      {isWebPlatform
-                        ? "Elige el plan que mejor encaja contigo."
+                      {isNativePlatform
+                        ? "Estamos preparando la suscripción para App Store y Google Play."
+                        : isWebPlatform
+                        ? "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach."
                         : "La suscripción Premium estará disponible mediante la tienda de tu dispositivo."}
                     </p>
                   </div>
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
-                    <ArrowRight size={15} />
-                  </span>
                 </div>
 
                 {checkoutState === "success" ? (
@@ -381,7 +380,7 @@ export function Premium() {
                 ) : (
                   <div className="mt-3 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
                     <p className="text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                      La suscripción Premium estará disponible mediante la tienda de tu dispositivo.
+                      Estamos preparando la suscripción para App Store y Google Play.
                     </p>
                     <button
                       type="button"
@@ -404,12 +403,9 @@ export function Premium() {
                           Gratis vs Premium
                         </h2>
                         <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                          Descubre todo lo que desbloqueas al actualizar tu plan.
+                          Compara los límites reales del plan Free frente al nuevo Premium oficial.
                         </p>
                       </div>
-                      <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                        Vista previa
-                      </span>
                     </div>
 
                     <div className="mt-2.5 grid gap-1.5">
