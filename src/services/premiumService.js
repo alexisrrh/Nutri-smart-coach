@@ -38,3 +38,19 @@ export async function createCustomerPortalSession() {
 
   return data?.url || "";
 }
+
+export async function verifyMobilePremiumReceipt(payload) {
+  const data = await request(
+    "/premium/mobile/verify-receipt",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+    },
+    {
+      operation: "verificar la compra móvil",
+    }
+  );
+
+  return data?.premium || null;
+}

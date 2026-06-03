@@ -50,16 +50,39 @@ export function Premium() {
   const checkoutState = searchParams.get("checkout");
   const runtimePlatform = getRuntimePlatform();
   const isWebPlatform = runtimePlatform === "web";
-  const isNativePlatform = runtimePlatform === "ios" || runtimePlatform === "android";
+  const isIosPlatform = runtimePlatform === "ios";
+  const isAndroidPlatform = runtimePlatform === "android";
+  const isNativePlatform = isIosPlatform || isAndroidPlatform;
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
+  const acquisitionSource = premiumStatus?.acquisition_source || "normal";
+  const nativeStoreLabel = isIosPlatform
+    ? "App Store"
+    : isAndroidPlatform
+    ? "Google Play"
+    : "tu tienda";
   const premiumSourceLabel = useMemo(() => {
     if (premiumSource === "stripe") return "Gestionado por Stripe";
     if (premiumSource === "apple") return "Gestionado por App Store";
     if (premiumSource === "google") return "Gestionado por Google Play";
+    if (premiumSource === "manual") return "Activado por el equipo";
 
     return "";
   }, [premiumSource]);
+  const subscriptionTitle = isNativePlatform
+    ? `Compra en ${nativeStoreLabel}`
+    : "Activa Premium";
+  const subscriptionDescription = isNativePlatform
+    ? `En esta app, Premium se activa desde ${nativeStoreLabel}. No necesitas salir de NutriSmart Coach para completar la compra cuando esté disponible.`
+    : "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach.";
+  const trialHeadline = acquisitionSource === "influencer"
+    ? "Con código de influencer: 15 días gratis"
+    : "Prueba Premium gratis 7 días";
+  const trialDisclaimer =
+    "Se requiere método de pago. Cancela cuando quieras antes de que termine la prueba.";
+  const nativeAvailabilityMessage = isNativePlatform
+    ? `Estamos terminando la compra desde ${nativeStoreLabel}. Cuando esté lista podrás activar Premium desde esta misma pantalla.`
+    : "";
 
   const heroTitle = isPremium ? "Premium activo" : "Consigue resultados más rápido";
   const heroSubtitle = isPremium
@@ -274,17 +297,28 @@ export function Premium() {
               </div>
 
               <div className="mt-3 grid gap-2">
-                <PrimaryButton
-                  disabled={Boolean(actionLoading) || premiumSource !== "stripe"}
-                  icon={<Sparkles size={14} />}
-                  onClick={handleCustomerPortal}
-                >
-                  {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
-                </PrimaryButton>
-                {premiumSourceLabel ? (
+                {premiumSource === "stripe" ? (
+                  <PrimaryButton
+                    disabled={Boolean(actionLoading)}
+                    icon={<Sparkles size={14} />}
+                    onClick={handleCustomerPortal}
+                  >
+                    {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
+                  </PrimaryButton>
+                ) : null}
+                {premiumSource === "stripe" && premiumSourceLabel ? (
                   <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--app-muted)]">
                     {premiumSourceLabel}
                   </p>
+                ) : null}
+                {premiumSource === "apple" ? (
+                  <StatusNotice>Gestiona tu suscripción desde App Store.</StatusNotice>
+                ) : null}
+                {premiumSource === "google" ? (
+                  <StatusNotice>Gestiona tu suscripción desde Google Play.</StatusNotice>
+                ) : null}
+                {premiumSource === "manual" ? (
+                  <StatusNotice>Tu acceso Premium está activado por el equipo de NutriSmart Coach.</StatusNotice>
                 ) : null}
               </div>
             </SurfaceCard>
@@ -295,23 +329,19 @@ export function Premium() {
                   <div className="min-w-0">
                     <MetaBadge variant="neutral">Suscripción</MetaBadge>
                     <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                      {isNativePlatform ? "Premium llegará pronto" : "Activa Premium"}
+                      {subscriptionTitle}
                     </h2>
                     <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                      {isNativePlatform
-                        ? "Estamos preparando la suscripción para App Store y Google Play."
-                        : isWebPlatform
-                        ? "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach."
-                        : "La suscripción Premium estará disponible mediante la tienda de tu dispositivo."}
+                      {subscriptionDescription}
                     </p>
                   </div>
                 </div>
 
-                {checkoutState === "success" ? (
+                {isWebPlatform && checkoutState === "success" ? (
                   <StatusNotice>Pago recibido. Confirmamos la suscripción con Stripe.</StatusNotice>
                 ) : null}
 
-                {checkoutState === "cancelled" ? (
+                {isWebPlatform && checkoutState === "cancelled" ? (
                   <StatusNotice>Pago cancelado. Puedes retomarlo cuando quieras.</StatusNotice>
                 ) : null}
 
@@ -320,7 +350,10 @@ export function Premium() {
                 {isWebPlatform ? (
                   <div className="mt-3 grid gap-2">
                     <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--app-muted)]">
-                      ⭐ Precio especial para usuarios beta
+                      {trialHeadline}
+                    </p>
+                    <p className="text-[11px] font-medium leading-5 text-[var(--app-muted)]">
+                      {trialDisclaimer}
                     </p>
 
                     <button
@@ -380,14 +413,18 @@ export function Premium() {
                 ) : (
                   <div className="mt-3 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2">
                     <p className="text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                      Estamos preparando la suscripción para App Store y Google Play.
+                      {nativeAvailabilityMessage}
                     </p>
                     <button
                       type="button"
                       disabled
                       className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--app-muted)] opacity-70"
                     >
-                      Disponible próximamente
+                      {isIosPlatform
+                        ? "Compra en App Store próximamente"
+                        : isAndroidPlatform
+                        ? "Compra en Google Play próximamente"
+                        : "Disponible próximamente"}
                     </button>
                   </div>
                 )}

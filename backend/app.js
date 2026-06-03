@@ -7,6 +7,7 @@ import aiUsageRoutes from "./routes/aiUsage.routes.js";
 import dietsRoutes from "./routes/diets.routes.js";
 import mealsRoutes from "./routes/meals.routes.js";
 import paymentsRoutes from "./routes/payments.routes.js";
+import referralsRoutes from "./routes/referrals.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import {
   analyzeFoodRateLimiter,
@@ -26,6 +27,7 @@ app.options(/.*/, cors(corsOptions));
 app.use(globalRateLimiter);
 app.use("/", paymentsRoutes);
 app.use(express.json({ limit: "10mb" }));
+app.use("/", referralsRoutes);
 app.use(["/auth", "/login", "/register", "/reset-password"], authRateLimiter);
 app.use("/analyze-food", analyzeFoodRateLimiter);
 app.use("/generate-diet", generateDietRateLimiter);

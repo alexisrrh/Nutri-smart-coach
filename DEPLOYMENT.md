@@ -105,9 +105,26 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY` in Vercel frontend variables.
 
 Apply all SQL files in `supabase/migrations` before production traffic. The backend expects tables and policies for profiles, diet plans, meal analyses, check-ins, workout data, and `meal_logs` diet progress.
 
+## Premium Billing Architecture
+
+Premium billing is channel-specific and the backend is the only source of truth.
+
+- Web and PWA: `premium_source=stripe`
+- iOS: `premium_source=apple`
+- Android: `premium_source=google`
+- Manual or beta activations: `premium_source=manual`
+
+The frontend must never decide whether a user is Premium. Every client must read:
+
+```bash
+GET /premium/status
+```
+
+The backend can return Premium state coming from Stripe, App Store, Google Play, or manual activation. `subscription_acquisitions` stores the acquisition source and referral or influencer metadata used to grant access.
+
 ## Stripe
 
-Premium subscriptions use Stripe Checkout, Stripe Billing Portal, and a signed webhook.
+Web and PWA subscriptions use Stripe Checkout, Stripe Billing Portal, and a signed webhook.
 
 Backend variables:
 
@@ -128,11 +145,74 @@ POST https://api.nutrismartcoach.com/stripe/webhook
 Subscribe this endpoint to at least:
 
 - `checkout.session.completed`
+- `invoice.payment_succeeded`
+- `charge.refunded`
 - `customer.subscription.created`
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
 
-Premium state is stored in `profiles` and must only be changed by the backend webhook flow. The frontend can request Checkout or the Billing Portal, but it must not mark a user as premium.
+Premium state is stored in `profiles` and must only be changed by the backend webhook flow. The frontend can request Checkout or the Billing Portal, but it must not mark a user as Premium.
+
+Stripe must not be shown inside the iOS or Android app purchase flow.
+
+## Apple And Google Play
+
+Mobile apps must use the native store flow:
+
+- iOS purchases go through Apple In-App Purchase.
+- Android purchases go through Google Play Billing.
+- Do not show Stripe Checkout inside the native app.
+
+Required backend environment variables for mobile verification:
+
+```bash
+APPLE_BUNDLE_ID=com.yourcompany.nutrismartcoach
+APPLE_SHARED_SECRET=app_store_shared_secret
+GOOGLE_PLAY_PACKAGE_NAME=com.yourcompany.nutrismartcoach
+GOOGLE_PLAY_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+```
+
+Prepared mobile verification endpoint:
+
+```bash
+POST /premium/mobile/verify-receipt
+```
+
+Expected payload:
+
+```json
+{
+  "platform": "apple",
+  "productId": "premium_monthly",
+  "transactionId": "1000001234567890",
+  "receiptData": "base64_receipt"
+}
+```
+
+or:
+
+```json
+{
+  "platform": "google",
+  "productId": "premium_monthly",
+  "transactionId": "GPA.1234-5678-9012-34567",
+  "purchaseToken": "purchase_token_from_google"
+}
+```
+
+The backend must verify the receipt or token server-side, update `profiles`, update `subscription_acquisitions`, apply referral or influencer effects if they exist, and return the latest `GET /premium/status` shape.
+
+The current implementation keeps this flow safe by refusing unverifiable mobile purchases. It does not grant Premium access from frontend data alone.
+
+## Influencer Trial Compatibility
+
+Influencer trials must also respect the billing channel:
+
+- Web: can use Stripe trial days when the acquisition source is an influencer code.
+- iOS and Android: must use native store free trial or introductory offer support when available.
+- Until native store trials are fully integrated, do not unlock Premium only from frontend state.
+
+The current backend stores the influencer trial metadata and leaves a server-side TODO for the native store activation flow.
 
 ## Health Checks
 
@@ -195,3 +275,20 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 - Supabase storage buckets used by food photos and check-ins exist.
 - `/health` returns HTTP 200 after deployment.
 - `SUPABASE_SERVICE_ROLE_KEY` exists only in backend hosting.
+- `GET /premium/status` returns the expected source for web, iOS, Android, and manual activations.
+- Stripe is only exposed on web and PWA.
+- Apple In-App Purchase product IDs are configured.
+- Google Play Billing product IDs are configured.
+- Mobile receipt verification secrets exist in backend hosting only.
+
+## Pending Mobile Work
+
+- Capacitor purchase integration in the native shell.
+- Apple IAP product setup and restore purchases.
+- Google Play Billing product setup and restore purchases.
+- Apple receipt verification implementation.
+- Google Play purchase token verification implementation.
+- App Store and Google Play renewal or cancellation server notifications.
+- Native free trial or introductory offer mapping for influencer trials.
+
+Do not submit the mobile app with purchasable Premium enabled until these items are complete. Without native IAP or Billing, restore purchases, server-side verification, and renewal or cancellation sync, the Premium flow is not compliant for App Store or Google Play publication.

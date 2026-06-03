@@ -13,6 +13,19 @@ import {
   retrieveSubscription,
   serializePremiumProfile,
 } from "../services/stripe.service.js";
+import {
+  buildCommissionSubscriptionRef,
+  createAffiliateCommissionForPaidInvoice,
+  getTrialConfigForAcquisition,
+  markAffiliateCommissionRefunded,
+  markReferralPremiumActive,
+  normalizeSubscriptionAcquisitionRecord,
+  registerSubscriptionAcquisition,
+  updateSubscriptionAcquisitionStatus,
+} from "../services/acquisition.service.js";
+import {
+  syncMobilePremiumVerification,
+} from "../services/mobilePremium.service.js";
 
 const router = Router();
 
@@ -56,12 +69,14 @@ router.post(
       }
 
       const profile = await getProfileByUserId(userId);
+      const acquisition = await getLatestAcquisitionByUserId(userId);
       const customerId =
         profile?.stripe_customer_id ||
         (await createAndStoreCustomer({
           userId,
           email: req.authUser.email || profile?.email || "",
         }));
+      const trialDays = getEligibleStripeTrialDays(acquisition);
 
       const session = await createCheckoutSession({
         customerId,
@@ -69,9 +84,37 @@ router.post(
         priceId,
         userId,
         plan,
+        trialDays,
       });
 
       return res.json({ url: session.url });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+router.post(
+  "/premium/mobile/verify-receipt",
+  express.json({ limit: "2mb" }),
+  verifySupabaseUser,
+  async (req, res, next) => {
+    try {
+      const userId = requireAuthenticatedUser(req, res);
+      if (!userId) return;
+
+      const result = await syncMobilePremiumVerification(
+        {
+          userId,
+          payload: req.body || {},
+        },
+        {
+          getProfileByUserIdFn: getProfileByUserId,
+          upsertProfileSubscriptionFn: upsertProfileSubscription,
+        }
+      );
+
+      return res.json(result);
     } catch (error) {
       return next(error);
     }
@@ -114,9 +157,22 @@ router.get("/premium/status", verifySupabaseUser, async (req, res, next) => {
     if (!userId) return;
 
     const profile = await getProfileByUserId(userId);
+    const acquisition = await getLatestAcquisitionByUserId(userId);
 
     return res.json({
-      premium: serializePremiumProfile(profile),
+      premium: {
+        ...serializePremiumProfile(profile),
+        acquisition_source: acquisition?.acquisition_source || null,
+        referral_code_id: acquisition?.referral_code_id || null,
+        referrer_user_id: acquisition?.referrer_user_id || null,
+        influencer_user_id: acquisition?.influencer_user_id || null,
+        trial_source: acquisition?.trial_source || "none",
+        trial_ends_at: acquisition?.trial_ends_at || null,
+        commission_percent: acquisition?.commission_percent || 0,
+        commission_months_limit: acquisition?.commission_months_limit || 0,
+        commission_started_at: acquisition?.commission_started_at || null,
+        commission_ends_at: acquisition?.commission_ends_at || null,
+      },
     });
   } catch (error) {
     return next(error);
@@ -153,6 +209,16 @@ async function handleStripeEvent(event) {
     return;
   }
 
+  if (event.type === "invoice.payment_succeeded") {
+    await handleInvoicePaymentSucceeded(event.data?.object);
+    return;
+  }
+
+  if (event.type === "charge.refunded") {
+    await handleChargeRefunded(event.data?.object);
+    return;
+  }
+
   if (event.type?.startsWith("customer.subscription.")) {
     await handleSubscriptionChanged(event.data?.object);
   }
@@ -162,6 +228,7 @@ async function handleCheckoutCompleted(session) {
   const userId = session?.client_reference_id || session?.metadata?.user_id;
 
   if (!userId) return;
+  const currentProfile = await getProfileByUserId(userId);
 
   const update = {
     id: userId,
@@ -171,9 +238,24 @@ async function handleCheckoutCompleted(session) {
   };
 
   const subscription = await retrieveSubscription(update.stripe_subscription_id);
+  const existingAcquisition = await getLatestAcquisitionByUserId(userId);
+  const trialWindow = getStripeSubscriptionTrialWindow(subscription);
+  const trialConfig = getTrialConfigForAcquisition(existingAcquisition);
   const subscriptionUpdate = subscription
-    ? buildSubscriptionProfileUpdate(subscription, userId)
+    ? buildSubscriptionProfileUpdate(subscription, userId, currentProfile)
     : update;
+
+  await registerSubscriptionAcquisition({
+    userId,
+    premiumSource: "stripe",
+    acquisitionSource: trialConfig.acquisitionSource,
+    trialSource:
+      subscription?.status === "trialing" ? trialConfig.trialSource : existingAcquisition?.trial_source || "none",
+    trialStartedAt: trialWindow.startedAt,
+    trialEndsAt: trialWindow.endsAt,
+    platformSubscriptionId: update.stripe_subscription_id,
+    status: subscription?.status || "active",
+  });
 
   await upsertProfileSubscription({
     ...subscriptionUpdate,
@@ -187,10 +269,76 @@ async function handleSubscriptionChanged(subscription) {
     (await findUserIdByStripeCustomerId(getStripeId(subscription?.customer)));
 
   if (!userId) return;
+  const currentProfile = await getProfileByUserId(userId);
+  const trialWindow = getStripeSubscriptionTrialWindow(subscription);
+
+  await updateSubscriptionAcquisitionStatus({
+    userId,
+    platformSubscriptionId: getStripeId(subscription?.id),
+    status: subscription?.status || "inactive",
+    trialStartedAt: trialWindow.startedAt,
+    trialEndsAt: trialWindow.endsAt,
+  });
 
   await upsertProfileSubscription(
-    buildSubscriptionProfileUpdate(subscription, userId)
+    buildSubscriptionProfileUpdate(subscription, userId, currentProfile)
   );
+}
+
+async function handleInvoicePaymentSucceeded(invoice) {
+  const subscriptionId = getStripeId(invoice?.subscription);
+  const userId =
+    invoice?.parent?.subscription_details?.metadata?.user_id ||
+    invoice?.subscription_details?.metadata?.user_id ||
+    (subscriptionId ? await findUserIdByStripeSubscriptionId(subscriptionId) : null) ||
+    (await findUserIdByStripeCustomerId(getStripeId(invoice?.customer)));
+
+  if (!userId || !subscriptionId) return;
+
+  const amountPaid = Number(invoice?.amount_paid || 0) / 100;
+  if (!(amountPaid > 0) || invoice?.paid !== true) return;
+
+  const paidAt = toInvoicePaidAt(invoice);
+  const referralActivation = await markReferralPremiumActive({
+    userId,
+    premiumSource: "stripe",
+    platformSubscriptionId: subscriptionId,
+    paidAt,
+    status: "active",
+  });
+
+  if (referralActivation?.referral?.type !== "influencer") {
+    return;
+  }
+
+  await createAffiliateCommissionForPaidInvoice({
+    influencerUserId: referralActivation.referral.referrer_user_id,
+    referredUserId: userId,
+    referralId: referralActivation.referral.id,
+    subscriptionId: buildCommissionSubscriptionRef({
+      platformSubscriptionId: subscriptionId,
+      invoiceId: getStripeId(invoice?.id),
+    }),
+    amount: amountPaid,
+    currency: String(invoice?.currency || "eur").toLowerCase(),
+    commissionPercent:
+      Number(referralActivation.acquisition?.commission_percent || 30) || 30,
+    commissionMonthsLimit:
+      Number(referralActivation.acquisition?.commission_months_limit || 12) || 12,
+    paidAt,
+    trialEndsAt: referralActivation.referral.trial_ends_at || null,
+    premiumSource: "stripe",
+  });
+}
+
+async function handleChargeRefunded(charge) {
+  const subscriptionId = getStripeId(charge?.invoice);
+  if (!subscriptionId) return;
+
+  await markAffiliateCommissionRefunded({
+    subscriptionId,
+    status: charge?.amount_refunded ? "refunded" : "cancelled",
+  });
 }
 
 async function upsertProfileSubscription(payload) {
@@ -253,11 +401,91 @@ async function findUserIdByStripeCustomerId(customerId) {
   return data?.id || null;
 }
 
+async function getLatestAcquisitionByUserId(userId) {
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from("subscription_acquisitions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) return null;
+
+  return normalizeSubscriptionAcquisitionRecord(data?.[0] || null);
+}
+
+async function findUserIdByStripeSubscriptionId(subscriptionId) {
+  if (!subscriptionId) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("stripe_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  if (error) return null;
+
+  return data?.id || null;
+}
+
 function getStripeId(value) {
   if (!value) return null;
   if (typeof value === "string") return value;
 
   return value.id || null;
+}
+
+function toInvoicePaidAt(invoice) {
+  const paidAt = invoice?.status_transitions?.paid_at || invoice?.created;
+  if (!paidAt) return new Date().toISOString();
+
+  return new Date(Number(paidAt) * 1000).toISOString();
+}
+
+function getEligibleStripeTrialDays(acquisition) {
+  if (!acquisition) {
+    return getTrialConfigForAcquisition(null).trialDays;
+  }
+
+  if (acquisition.platform_subscription_id) {
+    if (!acquisition.trial_ends_at) return 0;
+
+    const diffMs = new Date(acquisition.trial_ends_at).getTime() - Date.now();
+    if (Number.isNaN(diffMs) || diffMs <= 0) return 0;
+
+    return Math.max(Math.ceil(diffMs / (24 * 60 * 60 * 1000)), 0);
+  }
+
+  return getTrialConfigForAcquisition(acquisition).trialDays;
+}
+
+function getStripeSubscriptionTrialWindow(subscription) {
+  if (!subscription || subscription.status !== "trialing") {
+    return {
+      startedAt: null,
+      endsAt: null,
+    };
+  }
+
+  const startedAt = toStripeTimestampIso(
+    subscription.trial_start || subscription.current_period_start || subscription.start_date
+  );
+  const endsAt = toStripeTimestampIso(
+    subscription.trial_end || subscription.current_period_end
+  );
+
+  return {
+    startedAt,
+    endsAt,
+  };
+}
+
+function toStripeTimestampIso(value) {
+  if (!value) return null;
+
+  return new Date(Number(value) * 1000).toISOString();
 }
 
 export default router;
