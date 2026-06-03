@@ -4,6 +4,8 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { initAnalytics } from "./services/analytics";
+
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
@@ -11,7 +13,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
     });
   });
 }
-
+initAnalytics();
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>

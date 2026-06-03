@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  createFallbackAiUsageState,
   extractAiUsageFromError,
   fetchDailyAiUsage,
   getAiUsageForType,
+  purgeLegacyAiUsageCache,
 } from "../services/aiUsageService";
 
 export function useAiUsageStatus(type, userId) {
@@ -11,6 +13,8 @@ export function useAiUsageStatus(type, userId) {
 
   const refreshUsage = useCallback(
     async (nextUserId = userId) => {
+      purgeLegacyAiUsageCache();
+
       if (!nextUserId) {
         setUsage(null);
         return null;
@@ -30,7 +34,17 @@ export function useAiUsageStatus(type, userId) {
           return nextUsage;
         }
 
-        return null;
+        const fallbackUsage = createFallbackAiUsageState(type);
+        setUsage(fallbackUsage);
+        console.warn("No se pudo sincronizar el uso de IA:", {
+          type,
+          userId: nextUserId || null,
+          status: error?.status || null,
+          code: error?.code || null,
+          message: error?.message || "",
+        });
+
+        return fallbackUsage;
       } finally {
         setLoading(false);
       }

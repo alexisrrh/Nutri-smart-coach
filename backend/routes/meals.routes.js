@@ -5,6 +5,7 @@ import { uploadSingleImage } from "../config/multer.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
+  requireAuthenticatedUser,
   verifySupabaseUser,
 } from "../middleware/auth.js";
 import { normalizeFoodAnalysis } from "../normalizers/foodAnalysis.normalizer.js";
@@ -15,6 +16,7 @@ import {
 } from "../services/storage.service.js";
 import { createImageHash } from "../utils/files.js";
 import {
+  AI_USAGE_RULES,
   checkDailyAiLimit,
   enforceRateLimit,
   registerAiUsage,
@@ -23,7 +25,7 @@ import { cleanGeminiJson } from "../utils/json.js";
 import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
-const DAILY_FOOD_ANALYSIS_LIMIT = 6;
+const DAILY_FOOD_ANALYSIS_LIMIT = AI_USAGE_RULES.food_analysis.freeLimit;
 const FOOD_ANALYSIS_COOLDOWN_MS = 8 * 1000;
 
 function normalizeFoodGoal(goal) {
@@ -100,7 +102,9 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     const profileContext = parseFoodContext(req.body.profile_context);
     const goal = normalizeFoodGoal(profileContext?.goal || req.body.goal || "fitness_general");
     const requestedUserId = req.body.user_id || null;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -163,10 +167,12 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
     if (!limitState.allowed) {
       return res.status(429).json({
-        error: "Has alcanzado el límite diario de 6 análisis. Vuelve mañana.",
+        error: `Has alcanzado tu límite de ${limitState.limit} análisis IA en este periodo. Se reinicia pronto.`,
         usage: {
           food_analysis: serializeUsageState("food_analysis", limitState),
         },
+        plan: limitState.plan,
+        upgradeAvailable: limitState.upgradeAvailable,
       });
     }
 
@@ -182,6 +188,8 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
         usage: {
           food_analysis: serializeUsageState("food_analysis", limitState),
         },
+        plan: limitState.plan,
+        upgradeAvailable: false,
       });
     }
 
@@ -297,7 +305,9 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 router.get("/meal-analyses/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -328,7 +338,9 @@ router.get("/meal-analyses/:userId", verifySupabaseUser, async (req, res) => {
 router.delete("/meal-analyses/user/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!requestedUserId) {
       return res.status(400).json({ error: "Falta userId" });
@@ -396,7 +408,9 @@ router.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => 
   try {
     const { mealId } = req.params;
     const requestedUserId = req.query.user_id;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!mealId) {
       return res.status(400).json({ error: "Falta mealId" });
@@ -535,6 +549,8 @@ function serializeUsageState(type, usageState) {
     type,
     usedToday: usageState.count || 0,
     limit: usageState.limit || 0,
+    plan: usageState.plan || "free",
+    upgradeAvailable: Boolean(usageState.upgradeAvailable),
     remaining:
       typeof usageState.remaining === "number"
         ? usageState.remaining

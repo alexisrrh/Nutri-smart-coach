@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "../services/analytics";
 import {
   Download,
   RefreshCcw,
   Share2,
   ShoppingCart,
   Sparkles,
+  Utensils,
   Timer,
    Loader2,
    ScanLine,
@@ -24,10 +26,14 @@ import {
   getDietGenerationState,
   getDietPlanWeek,
   getDietProgress,
+  listDietProgress,
   listDietPlans,
+  rewriteDietMeal,
   setDietGenerationState,
+  syncDietMealProgress,
 } from "../services/dietService";
 import { getCachedProfile } from "../services/profileService";
+import { getPremiumStatus } from "../services/premiumService";
 import {
   AiErrorNotice,
   AppShell,
@@ -88,18 +94,32 @@ export function MealPlan() {
     isLoadingStateRecent(getDietGenerationState())
   );
   const [plan, setPlan] = useState(() => getDietPlanWeek(getCachedDietPlan()));
+  const [dietPlanId, setDietPlanId] = useState(
+    () => getCachedDietPlan()?.id || null
+  );
   const [activeDay, setActiveDay] = useState(0);
   const [progress, setProgress] = useState(getDietProgress);
   const [showShopping, setShowShopping] = useState(false);
   const [profile] = useState(getCachedProfile);
+  const [premiumStatus, setPremiumStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
+  const [rewriteTarget, setRewriteTarget] = useState(null);
+  const [rewriteReason, setRewriteReason] = useState("");
+  const [rewriteMealState, setRewriteMealState] = useState({});
+  const currentGenerationRequestIdRef = useRef(null);
   const { applyUsageError, refreshUsage, usage } = useAiUsageStatus(
     "diet_generation",
     profile?.id || profile?.user_id || ""
   );
 
   const profileComplete = useMemo(() => isProfileComplete(profile), [profile]);
+  const userId = profile?.id || profile?.user_id || "";
+  const isPremium = Boolean(
+    premiumStatus?.plan === "premium" &&
+      premiumStatus?.is_premium === true &&
+      ["active", "trialing"].includes(premiumStatus?.subscription_status)
+  );
   const hasPlan = plan.length > 0;
   const safeActiveDay = hasPlan
     ? Math.max(0, Math.min(activeDay, plan.length - 1))
@@ -176,8 +196,27 @@ export function MealPlan() {
         return;
       }
 
-      if (generationState.status === "error" && generationState.error) {
-        setErrorMessage(generationState.error);
+      if (generationState.status === "error") {
+        if (
+          generationState.requestId &&
+          generationState.requestId === currentGenerationRequestIdRef.current
+        ) {
+          return;
+        }
+
+        const idleState = {
+          status: "idle",
+          startedAt: null,
+          updatedAt: null,
+          requestId: null,
+          result: null,
+          error: "",
+        };
+
+        persistGenerationState(idleState);
+        setGenerationState(idleState);
+        setErrorMessage("");
+        setNotice("");
         setLoading(false);
         return;
       }
@@ -196,6 +235,7 @@ export function MealPlan() {
             : "Dieta generada correctamente."
         );
         setLoading(false);
+        setErrorMessage("");
       }
     });
 
@@ -205,7 +245,6 @@ export function MealPlan() {
   }, [generationState, hasPlan]);
 
   useEffect(() => {
-    const userId = profile?.id || profile?.user_id;
     if (!userId) return;
 
     Promise.resolve().then(async () => {
@@ -215,13 +254,48 @@ export function MealPlan() {
 
         if (activePlan) {
           setPlan(getDietPlanWeek(activePlan));
+          setDietPlanId(activePlan.id || null);
           setActiveDay(0);
+
+          const remoteProgress = await listDietProgress(userId, {
+            dietPlanId: activePlan.id || null,
+          });
+
+          if (isMountedRef.current) {
+            setProgress(remoteProgress);
+          }
+        }
+
+        if (isMountedRef.current) {
+          setErrorMessage("");
         }
       } catch (error) {
-        console.error("Error cargando dietas:", error);
+        logMealPlanIssue({
+          endpoint: `/diet-plans/${userId}`,
+          operation: "cargar dietas guardadas",
+          error,
+        });
       }
     });
-  }, [profile]);
+  }, [profile, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    Promise.resolve().then(async () => {
+      try {
+        const status = await getPremiumStatus();
+        if (isMountedRef.current) setPremiumStatus(status);
+      } catch (error) {
+        logMealPlanIssue({
+          endpoint: "/premium/status",
+          operation: "consultar el estado premium",
+          error,
+          level: "warn",
+        });
+      }
+    });
+  }, [userId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -259,6 +333,7 @@ export function MealPlan() {
       };
 
       requestId = createGenerationRequestId();
+      currentGenerationRequestIdRef.current = requestId;
       startedAt = new Date().toISOString();
       const loadingState = {
         status: "loading",
@@ -292,6 +367,13 @@ export function MealPlan() {
       }
 
       setPlan(cleanPlan);
+      setDietPlanId(data.diet_plan_id || data.dietPlan?.id || null);
+      trackEvent("generate_diet", {
+  diet_type: formData.dietType,
+  goal: formData.goal,
+  days: formData.planDays,
+  meals_per_day: formData.mealsPerDay,
+});
       setProgress({});
       setActiveDay(0);
       cacheDietProgress({});
@@ -317,7 +399,11 @@ export function MealPlan() {
       );
       await refreshUsage(profile?.id || profile?.user_id || "");
     } catch (err) {
-      console.error(err);
+      logMealPlanIssue({
+        endpoint: "/generate-diet",
+        operation: "generar dieta",
+        error: err,
+      });
       if (!requestId || !startedAt) {
         setErrorMessage(
           err.message || "La generación tardó demasiado. Inténtalo de nuevo."
@@ -356,11 +442,13 @@ export function MealPlan() {
 
   function handleResetPlan() {
     setPlan([]);
+    setDietPlanId(null);
     setProgress({});
     setActiveDay(0);
     setShowShopping(false);
     setNotice("");
     setErrorMessage("");
+    currentGenerationRequestIdRef.current = null;
     clearDietPlanCache();
     clearDietProgress();
     clearDietGenerationState();
@@ -382,8 +470,78 @@ export function MealPlan() {
     setProgress((prev) => {
       const updated = { ...prev, [mealId]: !prev[mealId] };
       cacheDietProgress(updated);
+
+      if (userId) {
+        void syncDietMealProgress({
+          userId,
+          mealId,
+          completed: updated[mealId],
+          dietPlanId,
+        }).catch((error) => {
+          console.warn("No se pudo sincronizar el progreso de dieta:", error);
+        });
+      }
+
       return updated;
     });
+  }
+
+  function openRewriteMeal(target) {
+    setRewriteTarget(target);
+    setRewriteReason("");
+    setErrorMessage("");
+  }
+
+  async function submitRewriteMeal() {
+    if (!rewriteTarget) return;
+
+    if (!isPremium) {
+      trackEvent("premium_feature_clicked", {
+  feature: "rewrite_meal",
+});
+      navigate("/premium");
+      return;
+    }
+
+    try {
+      setErrorMessage("");
+      setNotice("");
+      setRewriteMealState({ mealId: rewriteTarget.mealId });
+
+      const data = await rewriteDietMeal({
+        dietPlanId,
+        userId,
+        dayIndex: rewriteTarget.dayIndex,
+        mealId: rewriteTarget.mealId,
+        meal: rewriteTarget.meal,
+        reason: rewriteReason,
+      });
+
+      if (!Array.isArray(data.week) || data.week.length === 0) {
+        throw new Error("La IA no devolvió una dieta actualizada.");
+      }
+
+      setPlan(data.week);
+      setRewriteTarget(null);
+      setRewriteReason("");
+      setNotice("Comida cambiada correctamente.");
+    } catch (error) {
+      if (error?.status === 403 && error?.data?.upgradeAvailable) {
+        setErrorMessage("Esta función requiere Premium.");
+        navigate("/premium");
+        return;
+      }
+
+      logMealPlanIssue({
+        endpoint: `/diet-plans/${dietPlanId}/rewrite-meal`,
+        operation: "cambiar la comida",
+        error,
+      });
+
+      setErrorMessage(error.message || "No se pudo cambiar la comida.");
+    } finally {
+      setRewriteMealState({});
+    }
   }
 
   async function handleShare() {
@@ -408,12 +566,12 @@ export function MealPlan() {
     <>
       <PrintablePlan plan={plan} />
 
-      <AppShell
-        className="overflow-hidden pb-20"
-        contentClassName="px-2 pt-2"
-       
-      >
-        <div className="flex h-full min-h-0 flex-col gap-1">
+     <AppShell
+  className="overflow-hidden pb-18"
+  contentClassName="overflow-x-hidden px-2 pt-2"
+  scrollClassName="overflow-x-hidden overscroll-x-none touch-pan-y"
+>
+        <div className="flex h-full min-h-0 flex-col gap-3">
           <DietHeroCard
             hasPlan={hasPlan}
             completionPercent={completionPercent}
@@ -444,12 +602,11 @@ export function MealPlan() {
           {!hasPlan && !loading ? (
 <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-[calc(var(--bottom-nav-space)+28px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <PremiumEmptyState
-                icon={Sparkles}
+                icon={Utensils}
                 title="Tu plan semanal empieza aquí"
                 description="Configura objetivo, días y comidas para generar una dieta adaptada a tu rutina."
                 actionLabel="Generar dieta"
-                onAction={() => document.getElementById("meal-plan-builder-submit")?.click()}
-                className="mb-2 py-4"
+               
               />
               <MealPlanForm
                 formData={formData}
@@ -572,6 +729,9 @@ export function MealPlan() {
                         activeDay={safeActiveDay}
                         setActiveDay={setActiveDay}
                         progress={progress}
+                        isPremium={isPremium}
+                        onRewriteMeal={openRewriteMeal}
+                        rewriteMealState={rewriteMealState}
                         toggleMeal={toggleMeal}
                       />
                     </>
@@ -585,6 +745,18 @@ export function MealPlan() {
           )}
         </div>
       </AppShell>
+
+      {rewriteTarget && (
+        <RewriteMealDialog
+          isPremium={isPremium}
+          reason={rewriteReason}
+          setReason={setRewriteReason}
+          loading={Boolean(rewriteMealState.mealId)}
+          onClose={() => setRewriteTarget(null)}
+          onConfirm={submitRewriteMeal}
+          onUpgrade={() => navigate("/premium")}
+        />
+      )}
     </>
   );
 }
@@ -702,6 +874,84 @@ function DietMotivationCard({ message }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function RewriteMealDialog({
+  isPremium,
+  reason,
+  setReason,
+  loading,
+  onClose,
+  onConfirm,
+  onUpgrade,
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/75 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-sm rounded-[24px] border border-[var(--app-primary)]/20 bg-[var(--app-card)] p-3 shadow-[0_24px_80px_var(--app-glow)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+              Edición inteligente
+            </p>
+            <h3 className="mt-1 text-[16px] font-black text-[var(--app-text)]">
+              Cambiar comida
+            </h3>
+            <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
+              {isPremium
+                ? "Escribe qué quieres cambiar y la IA mantendrá macros y objetivo similares."
+                : "Esta función requiere Premium para editar una comida sin regenerar toda la dieta."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={onClose}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
+          >
+            ×
+          </button>
+        </div>
+
+        {isPremium ? (
+          <textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Ej: sin arroz, algo más barato, no me gusta el atún..."
+            className="mt-3 min-h-24 w-full resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[12px] font-medium text-[var(--app-text)] outline-none focus:border-[var(--app-primary)]"
+          />
+        ) : null}
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            onClick={isPremium ? onConfirm : onUpgrade}
+            disabled={loading}
+            className="rounded-2xl bg-[var(--app-primary)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] disabled:opacity-50"
+          >
+            {loading ? "Cambiando..." : isPremium ? "Cambiar" : "Ver Premium"}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -954,6 +1204,18 @@ function isLoadingStateRecent(state, maxAgeMs = 3 * 60 * 1000) {
 
 function persistGenerationState(state) {
   setDietGenerationState(state);
+}
+
+function logMealPlanIssue({ endpoint, operation, error, level = "error" }) {
+  const logger = level === "warn" ? console.warn : console.error;
+
+  logger("MealPlan request failed:", {
+    endpoint,
+    operation,
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    message: error?.message || "",
+  });
 }
 
 async function generateDietPlanWithRetry(args) {

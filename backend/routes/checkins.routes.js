@@ -4,6 +4,7 @@ import { uploadSingleImage } from "../config/multer.js";
 import { supabase } from "../config/supabase.js";
 import {
   assertSameUser,
+  requireAuthenticatedUser,
   verifySupabaseUser,
 } from "../middleware/auth.js";
 import { normalizeCheckinAnalysis } from "../normalizers/checkin.normalizer.js";
@@ -13,6 +14,7 @@ import {
   uploadImageToSupabase,
 } from "../services/storage.service.js";
 import {
+  AI_USAGE_RULES,
   checkDailyAiLimit,
   enforceRateLimit,
   registerAiUsage,
@@ -21,13 +23,15 @@ import { cleanGeminiJson } from "../utils/json.js";
 import { toNumberOrNull } from "../utils/numbers.js";
 
 const router = Router();
-const DAILY_CHECKIN_ANALYSIS_LIMIT = 1;
+const DAILY_CHECKIN_ANALYSIS_LIMIT = AI_USAGE_RULES.checkin_analysis.freeLimit;
 const CHECKIN_ANALYSIS_COOLDOWN_SECONDS = 8;
 
 router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
   try {
     const requestedUserId = req.body.user_id || null;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -50,10 +54,12 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
 
       if (!limitState.allowed) {
         return res.status(429).json({
-          error: "Has alcanzado el límite diario de check-in IA.",
+          error: "Has alcanzado tu límite de check-in IA en este periodo. Se reinicia pronto.",
           usage: {
             checkin_analysis: serializeUsageState("checkin_analysis", limitState),
           },
+          plan: limitState.plan,
+          upgradeAvailable: limitState.upgradeAvailable,
         });
       }
 
@@ -69,6 +75,8 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
           usage: {
             checkin_analysis: serializeUsageState("checkin_analysis", limitState),
           },
+          plan: limitState.plan,
+          upgradeAvailable: false,
         });
       }
     }
@@ -137,7 +145,9 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
 router.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
   try {
     const requestedUserId = req.params.userId;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!assertSameUser(userId, requestedUserId)) {
       return res.status(403).json({ error: "No autorizado para este usuario" });
@@ -169,7 +179,9 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
   try {
     const { checkinId } = req.params;
     const requestedUserId = req.query.user_id;
-    const userId = req.authUser.id;
+    const userId = requireAuthenticatedUser(req, res);
+
+    if (!userId) return;
 
     if (!checkinId) {
       return res.status(400).json({ error: "Falta checkinId" });
@@ -319,6 +331,8 @@ function serializeUsageState(type, usageState) {
     type,
     usedToday: usageState.count || 0,
     limit: usageState.limit || 0,
+    plan: usageState.plan || "free",
+    upgradeAvailable: Boolean(usageState.upgradeAvailable),
     remaining:
       typeof usageState.remaining === "number"
         ? usageState.remaining

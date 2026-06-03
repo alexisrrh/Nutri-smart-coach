@@ -4,8 +4,8 @@ const NOTICE_TYPES = {
   limit: {
     icon: Sparkles,
     label: "Límite IA",
-    title: "Has alcanzado tu límite diario",
-    description: "Vuelve mañana o mejora tu plan cuando Premium esté disponible.",
+    title: "Has alcanzado tu límite de IA",
+    description: "Tu cupo se reactivará al iniciar el siguiente periodo o puedes ampliar límites con Premium.",
     tone: "from-amber-300/18 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-amber-200",
   },
@@ -86,7 +86,11 @@ function getAiErrorNotice(message) {
 
   if (
     normalized.includes("límite diario") ||
+    normalized.includes("límite semanal") ||
     normalized.includes("limite diario") ||
+    normalized.includes("limite semanal") ||
+    normalized.includes("límite de") ||
+    normalized.includes("limite de") ||
     normalized.includes("has alcanzado")
   ) {
     return {

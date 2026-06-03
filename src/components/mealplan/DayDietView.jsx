@@ -4,6 +4,8 @@ import {
   ChevronRight,
   Clock,
   Flame,
+  Loader2,
+  Sparkles,
   Utensils,
   X,
 } from "lucide-react";
@@ -13,6 +15,9 @@ export function DayDietView({
   activeDay = 0,
   setActiveDay,
   progress = {},
+  isPremium = false,
+  onRewriteMeal,
+  rewriteMealState = {},
   toggleMeal,
 }) {
   const [selectedMealDetail, setSelectedMealDetail] = useState(null);
@@ -117,6 +122,7 @@ export function DayDietView({
           const foodName = meal.food || meal.title || "Comida";
           const mealTime = meal.time || defaultMealTime(index, total);
           const calories = Math.round(Number(meal.calories || meal.kcal || 0));
+          const rewriteLoading = rewriteMealState.mealId === mealId;
 
           return (
             <article
@@ -168,6 +174,28 @@ export function DayDietView({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label="Cambiar comida"
+                    title={isPremium ? "Cambiar comida" : "Premium"}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onRewriteMeal?.({
+                        dayIndex: safeActiveDay,
+                        mealId,
+                        meal,
+                      });
+                    }}
+                    disabled={rewriteLoading}
+                    className="grid min-h-9 min-w-9 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] transition active:scale-95 disabled:opacity-60 hover:border-[var(--app-primary)]/30"
+                  >
+                    {rewriteLoading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={14} strokeWidth={2.4} />
+                    )}
+                  </button>
+
                   <ChevronRight
                     size={14}
                     strokeWidth={2.2}

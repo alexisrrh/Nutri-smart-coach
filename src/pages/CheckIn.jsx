@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { trackEvent } from "../services/analytics";
 import {
   Activity,
   Camera,
@@ -70,6 +71,15 @@ export function CheckIn() {
   useEffect(() => {
     clearMessageRef.current = clearMessage;
   }, [clearMessage]);
+
+useEffect(() => {
+  if (!message) return;
+
+  trackEvent("checkin_created", {
+    goal: profile?.goal || profile?.objetivo || "unknown",
+  });
+}, [message, profile]);
+
 
   const lastCheckin = history[0];
   const previousCheckin = history[1];

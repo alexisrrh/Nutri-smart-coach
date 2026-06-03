@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
+import { trackEvent } from "../services/analytics";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
 import FoodScannerLoader from "../components/food/FoodScannerLoader";
@@ -138,6 +138,18 @@ export default function FoodPhoto() {
     setLoading(false);
   }
 
+  useEffect(() => {
+  if (!result) return;
+
+  trackEvent("analyze_food", {
+    food: result.food || "unknown",
+    calories: Number(result.calories || 0),
+    protein: Number(result.protein || 0),
+    score: Number(result.score || 0),
+  });
+}, [result]);
+
+
   return (
     <AppShell
       className="overflow-hidden"
@@ -153,6 +165,10 @@ export default function FoodPhoto() {
           usage={foodUsage}
           className="shrink-0"
         />
+
+        <p className="px-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+          Plan Free: 3 análisis IA/día. Premium: 20 análisis IA/día.
+        </p>
 
         {!result && !loading && (
           <FoodUploadCard

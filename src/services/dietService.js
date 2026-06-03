@@ -61,6 +61,71 @@ export function clearDietProgress() {
   removeCache(DIET_PROGRESS_KEY);
 }
 
+export async function listDietProgress(
+  userId,
+  { dietPlanId = null, fallbackToCache = true } = {}
+) {
+  const cachedProgress = getDietProgress();
+
+  if (!userId) return cachedProgress;
+
+  const query = dietPlanId
+    ? `?diet_plan_id=${encodeURIComponent(dietPlanId)}`
+    : "";
+
+  try {
+    const data = await request(`/diet-progress/${userId}${query}`, {}, {
+      operation: "cargar el progreso de la dieta",
+    });
+    const remoteProgress =
+      data?.progress && typeof data.progress === "object"
+        ? data.progress
+        : {};
+    const mergedProgress = {
+      ...cachedProgress,
+      ...remoteProgress,
+    };
+
+    cacheDietProgress(mergedProgress);
+    return mergedProgress;
+  } catch (error) {
+    logDietServiceIssue({
+      endpoint: `/diet-progress/${userId}${query}`,
+      operation: "cargar el progreso de la dieta",
+      error,
+      fallbackUsed: Boolean(fallbackToCache),
+    });
+
+    if (fallbackToCache) return cachedProgress;
+    throw error;
+  }
+}
+
+export async function syncDietMealProgress({
+  userId,
+  mealId,
+  completed,
+  dietPlanId = null,
+}) {
+  if (!userId || !mealId) return null;
+
+  return request(
+    `/diet-progress/${userId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        meal_id: mealId,
+        completed,
+        diet_plan_id: dietPlanId,
+      }),
+    },
+    {
+      operation: "guardar el progreso de la dieta",
+    }
+  );
+}
+
 export function getDietGenerationState() {
   const state = getCache(DIET_GENERATION_KEY, DEFAULT_GENERATION_STATE);
 
@@ -99,6 +164,13 @@ export async function listDietPlans(userId, { fallbackToCache = true } = {}) {
     cacheDietPlans(remotePlans);
     return remotePlans;
   } catch (error) {
+    logDietServiceIssue({
+      endpoint: `/diet-plans/${userId}`,
+      operation: "cargar dietas guardadas",
+      error,
+      fallbackUsed: Boolean(fallbackToCache),
+    });
+
     if (fallbackToCache) return cachedPlans;
     throw error;
   }
@@ -132,6 +204,64 @@ export async function generateDietPlan({ profile, preferences, userId }) {
     dietPlan: generatedPlan,
     week: generatedPlan?.week || [],
   };
+}
+
+export async function rewriteDietMeal({
+  dietPlanId,
+  userId,
+  dayIndex,
+  mealId,
+  meal,
+  reason = "",
+}) {
+  if (!dietPlanId) {
+    throw new Error("No hay una dieta guardada para editar.");
+  }
+
+  const data = await request(
+    `/diet-plans/${dietPlanId}/rewrite-meal`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        day_index: dayIndex,
+        meal_id: mealId,
+        meal,
+        reason,
+      }),
+    },
+    {
+      timeoutMs: 60000,
+      operation: "cambiar la comida",
+    }
+  );
+  const updatedWeek = normalizeDietWeek(data?.week || []);
+
+  if (updatedWeek.length) {
+    cacheDietPlan({
+      id: data?.diet_plan_id || dietPlanId,
+      user_id: userId,
+      week: updatedWeek,
+    });
+  }
+
+  return {
+    ...data,
+    meal: data?.meal || null,
+    week: updatedWeek,
+  };
+}
+
+function logDietServiceIssue({ endpoint, operation, error, fallbackUsed = false }) {
+  console.warn("Diet service request failed:", {
+    endpoint,
+    operation,
+    fallbackUsed,
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    message: error?.message || "",
+  });
 }
 
 function normalizeDietGenerationState(state) {

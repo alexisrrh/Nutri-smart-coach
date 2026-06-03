@@ -1,9 +1,10 @@
 import { supabase } from "../config/supabase.js";
 
 export async function verifySupabaseUser(req, res, next) {
+  const authHeader = req.get("Authorization") || "";
+
   try {
-    const authorization = req.get("Authorization") || "";
-    const [scheme, token] = authorization.split(" ");
+    const [scheme, token] = authHeader.split(" ");
 
     if (scheme !== "Bearer" || !token) {
       return res.status(401).json({ error: "No autorizado" });
@@ -18,13 +19,26 @@ export async function verifySupabaseUser(req, res, next) {
     req.authUser = data.user;
 
     return next();
-  } catch (error) {
-    console.error("Error verificando usuario Supabase:", error);
-
+  } catch {
     return res.status(401).json({ error: "No autorizado" });
   }
 }
 
 export function assertSameUser(authUserId, requestedUserId) {
   return Boolean(authUserId && requestedUserId && authUserId === requestedUserId);
+}
+
+export function getAuthenticatedUserId(req) {
+  return req?.authUser?.id || null;
+}
+
+export function requireAuthenticatedUser(req, res) {
+  const userId = getAuthenticatedUserId(req);
+
+  if (!userId) {
+    res.status(401).json({ error: "No autorizado" });
+    return null;
+  }
+
+  return userId;
 }
