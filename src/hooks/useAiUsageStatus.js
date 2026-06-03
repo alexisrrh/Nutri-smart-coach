@@ -4,6 +4,7 @@ import {
   extractAiUsageFromError,
   fetchDailyAiUsage,
   getAiUsageForType,
+  purgeLegacyAiUsageCache,
 } from "../services/aiUsageService";
 
 export function useAiUsageStatus(type, userId) {
@@ -12,6 +13,8 @@ export function useAiUsageStatus(type, userId) {
 
   const refreshUsage = useCallback(
     async (nextUserId = userId) => {
+      purgeLegacyAiUsageCache();
+
       if (!nextUserId) {
         setUsage(null);
         return null;
@@ -33,7 +36,7 @@ export function useAiUsageStatus(type, userId) {
 
         const fallbackUsage = createFallbackAiUsageState(type);
         setUsage(fallbackUsage);
-        console.warn("No se pudo sincronizar el uso diario de IA:", {
+        console.warn("No se pudo sincronizar el uso de IA:", {
           type,
           userId: nextUserId || null,
           status: error?.status || null,

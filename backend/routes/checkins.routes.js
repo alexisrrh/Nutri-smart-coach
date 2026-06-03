@@ -14,6 +14,7 @@ import {
   uploadImageToSupabase,
 } from "../services/storage.service.js";
 import {
+  AI_USAGE_RULES,
   checkDailyAiLimit,
   enforceRateLimit,
   registerAiUsage,
@@ -22,7 +23,7 @@ import { cleanGeminiJson } from "../utils/json.js";
 import { toNumberOrNull } from "../utils/numbers.js";
 
 const router = Router();
-const DAILY_CHECKIN_ANALYSIS_LIMIT = 1;
+const DAILY_CHECKIN_ANALYSIS_LIMIT = AI_USAGE_RULES.checkin_analysis.freeLimit;
 const CHECKIN_ANALYSIS_COOLDOWN_SECONDS = 8;
 
 router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
@@ -53,7 +54,7 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
 
       if (!limitState.allowed) {
         return res.status(429).json({
-          error: "Has alcanzado el límite diario de check-in IA.",
+          error: "Has alcanzado tu límite de check-in IA en este periodo. Se reinicia pronto.",
           usage: {
             checkin_analysis: serializeUsageState("checkin_analysis", limitState),
           },

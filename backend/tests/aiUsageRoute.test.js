@@ -71,9 +71,30 @@ describe("GET /ai-usage/:userId", () => {
     expect(response.body).toMatchObject({
       plan: "free",
     });
-    expect(response.body.usage.food_analysis.limit).toBe(4);
+    expect(response.body.usage.food_analysis.limit).toBe(3);
+    expect(response.body.usage.food_analysis.period).toBe("day");
     expect(response.body.usage.diet_generation.limit).toBe(1);
+    expect(response.body.usage.diet_generation.period).toBe("week");
     expect(response.body.usage.checkin_analysis.limit).toBe(1);
+    expect(response.body.usage.checkin_analysis.period).toBe("week");
+  });
+
+  it("returns premium food analysis limit 20 for premium users", async () => {
+    mockState.profile = {
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+    };
+
+    const response = await request(app)
+      .get("/ai-usage/user-1")
+      .set("Authorization", "Bearer test-token");
+
+    expect(response.status).toBe(200);
+    expect(response.body.plan).toBe("premium");
+    expect(response.body.usage.food_analysis.limit).toBe(20);
+    expect(response.body.usage.food_analysis.period).toBe("day");
+    expect(response.body.limits.food_analysis.limit).toBe(20);
   });
 });
 

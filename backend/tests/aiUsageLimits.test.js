@@ -38,6 +38,7 @@ describe("AI usage premium limits", () => {
       usedToday: 1,
       limit: 1,
       plan: "free",
+      period: "week",
       upgradeAvailable: true,
       isLimitReached: true,
     });
@@ -49,7 +50,7 @@ describe("AI usage premium limits", () => {
       is_premium: true,
       subscription_status: "active",
     };
-    mockState.count = 9;
+    mockState.count = 4;
 
     const usage = await getDailyAiUsage({
       userId: "user-premium",
@@ -57,9 +58,10 @@ describe("AI usage premium limits", () => {
     });
 
     expect(usage).toMatchObject({
-      usedToday: 9,
-      limit: 10,
+      usedToday: 4,
+      limit: 5,
       plan: "premium",
+      period: "day",
       upgradeAvailable: false,
       isLimitReached: false,
     });
@@ -81,6 +83,7 @@ describe("AI usage premium limits", () => {
     expect(usage).toMatchObject({
       limit: 1,
       plan: "free",
+      period: "week",
       upgradeAvailable: true,
       isLimitReached: true,
     });
@@ -102,8 +105,9 @@ describe("AI usage premium limits", () => {
     });
 
     expect(usage).toMatchObject({
-      limit: 10,
+      limit: 5,
       plan: "premium",
+      period: "day",
       upgradeAvailable: false,
       isLimitReached: false,
     });
@@ -124,6 +128,7 @@ describe("AI usage premium limits", () => {
     expect(usage).toMatchObject({
       limit: 1,
       plan: "free",
+      period: "week",
       upgradeAvailable: true,
       isLimitReached: true,
     });
@@ -135,7 +140,7 @@ describe("AI usage premium limits", () => {
       is_premium: false,
       subscription_status: "inactive",
     };
-    mockState.count = 4;
+    mockState.count = 3;
 
     const limitState = await checkDailyAiLimit({
       userId: "user-free",
@@ -144,11 +149,34 @@ describe("AI usage premium limits", () => {
 
     expect(limitState).toMatchObject({
       allowed: false,
-      count: 4,
-      limit: 4,
+      count: 3,
+      limit: 3,
       plan: "free",
       upgradeAvailable: true,
       isLimitReached: true,
+    });
+  });
+
+  it("returns premium food analysis limit 20 per day", async () => {
+    mockState.profile = {
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+    };
+    mockState.count = 0;
+
+    const usage = await getDailyAiUsage({
+      userId: "user-premium-food",
+      type: "food_analysis",
+    });
+
+    expect(usage).toMatchObject({
+      limit: 20,
+      plan: "premium",
+      period: "day",
+      remaining: 20,
+      usedToday: 0,
+      upgradeAvailable: false,
     });
   });
 });

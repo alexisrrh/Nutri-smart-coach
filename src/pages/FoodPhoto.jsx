@@ -166,6 +166,10 @@ export default function FoodPhoto() {
           className="shrink-0"
         />
 
+        <p className="px-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+          Plan Free: 3 análisis IA/día. Premium: 20 análisis IA/día.
+        </p>
+
         {!result && !loading && (
           <FoodUploadCard
             preview={preview}
