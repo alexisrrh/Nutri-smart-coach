@@ -120,6 +120,19 @@ export async function applyReferralCode(
     );
   }
 
+  if (
+    !isWithinOnboardingWindow({
+      authUserCreatedAt: options.currentUserCreatedAt || null,
+      profileCreatedAt: profile?.created_at || null,
+      now: options.now || new Date(),
+    })
+  ) {
+    throw createPublicError(
+      "El código solo puede aplicarse durante los primeros 30 minutos del registro.",
+      409
+    );
+  }
+
   const type = referralCode.type;
   const trialDays = Number(
     referralCode.trial_days || (type === "influencer" ? INFLUENCER_TRIAL_DAYS : STANDARD_TRIAL_DAYS)
@@ -185,6 +198,39 @@ export async function applyReferralCode(
       type === "influencer"
         ? "TODO: usar trial nativo oficial del checkout antes de activar Premium."
         : null,
+  };
+}
+
+export async function validateReferralCode(code, options = {}) {
+  const normalizedCode = normalizeReferralCode(code);
+  if (!normalizedCode) {
+    return {
+      valid: false,
+      type: null,
+      trialDays: 0,
+    };
+  }
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const referralCode = await repo.getCodeByCode(normalizedCode);
+
+  if (!referralCode || referralCode.is_active === false) {
+    return {
+      valid: false,
+      type: null,
+      trialDays: 0,
+    };
+  }
+
+  return {
+    valid: true,
+    type: referralCode.type,
+    trialDays: Number(
+      referralCode.trial_days ||
+        (referralCode.type === "influencer"
+          ? INFLUENCER_TRIAL_DAYS
+          : STANDARD_TRIAL_DAYS)
+    ),
   };
 }
 
@@ -317,6 +363,7 @@ export function createReferralRepository(supabaseClient) {
             "premium_platform_transaction_id",
             "premium_started_at",
             "premium_expires_at",
+            "created_at",
             "stripe_customer_id",
             "stripe_subscription_id",
           ].join(", ")
@@ -464,6 +511,30 @@ function hasExistingPremiumHistory(profile) {
       profile.stripe_subscription_id ||
       (status && status !== "inactive")
   );
+}
+
+function isWithinOnboardingWindow({
+  authUserCreatedAt,
+  profileCreatedAt,
+  now = new Date(),
+}) {
+  const onboardingStartedAt =
+    parseIsoDate(authUserCreatedAt) || parseIsoDate(profileCreatedAt);
+
+  if (!onboardingStartedAt) return false;
+
+  const currentTime = now instanceof Date ? now : new Date(now);
+  if (Number.isNaN(currentTime.getTime())) return false;
+
+  const elapsedMs = currentTime.getTime() - onboardingStartedAt.getTime();
+  return elapsedMs >= 0 && elapsedMs <= 30 * 60 * 1000;
+}
+
+function parseIsoDate(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function parseAllowlist(value) {

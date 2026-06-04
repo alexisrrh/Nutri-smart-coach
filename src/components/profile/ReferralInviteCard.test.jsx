@@ -1,0 +1,147 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
+import { ToastProvider } from "../ui";
+import ReferralInviteCard, { ReferralInviteCardView } from "./ReferralInviteCard";
+import { getReferralInviteCardViewModel } from "./referralInviteCardViewModel";
+
+vi.mock("../../services/analytics", () => ({
+  trackEvent: vi.fn(),
+}));
+
+vi.mock("../../services/referralService", () => ({
+  createReferralCode: vi.fn(),
+  getMyReferralStats: vi.fn(),
+}));
+
+describe("ReferralInviteCard", () => {
+  it("renders the create-code state when the user has no referral code", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <ReferralInviteCardView
+            viewModel={getReferralInviteCardViewModel({
+              stats: {
+                codes: [],
+                summary: {
+                  premiumActiveReferrals: 0,
+                  rewardAvailableCount: 0,
+                },
+              },
+            })}
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("RECOMPENSA PREMIUM");
+    expect(html).toContain("Gana 1 mes Premium gratis");
+    expect(html).toContain("3 amigos Premium = 1 mes gratis");
+    expect(html).toContain("3 pagos Premium confirmados = 1 mes gratis");
+    expect(html).toContain("Crear mi código");
+    expect(html).not.toContain("0 / 3 pagos confirmados");
+    expect(html).not.toContain("NSC1234");
+  });
+
+  it("renders the collapsed invite state when a code already exists", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <ReferralInviteCardView
+            viewModel={getReferralInviteCardViewModel({
+              stats: {
+                codes: [{ code: "NSC1234" }],
+                summary: {
+                  premiumActiveReferrals: 0,
+                  rewardAvailableCount: 0,
+                },
+              },
+            })}
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Gana 1 mes Premium gratis");
+    expect(html).toContain("3 amigos Premium = 1 mes gratis");
+    expect(html).toContain("0 / 3 pagos confirmados");
+    expect(html).toContain("Ver código");
+    expect(html).not.toContain("Compartir");
+    expect(html).not.toContain("NSC1234");
+    expect(html).not.toContain("Copiar");
+  });
+
+  it("exposes the expanded view when requested", () => {
+    const viewModel = getReferralInviteCardViewModel({
+      stats: {
+        codes: [{ code: "NSC1234" }],
+        summary: {
+          premiumActiveReferrals: 3,
+          rewardAvailableCount: 1,
+        },
+      },
+      expanded: true,
+    });
+
+    expect(viewModel.expanded).toBe(true);
+    expect(viewModel.referralCode).toBe("NSC1234");
+    expect(viewModel.rewardAvailable).toBe(true);
+  });
+
+  it("renders the expanded invite state with the code visible", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <ReferralInviteCardView
+            viewModel={getReferralInviteCardViewModel({
+              stats: {
+                codes: [{ code: "NSC1234" }],
+                summary: {
+                  premiumActiveReferrals: 0,
+                  rewardAvailableCount: 0,
+                },
+              },
+              expanded: true,
+            })}
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("NSC1234");
+    expect(html).toContain("Copiar");
+    expect(html).toContain("Compartir");
+    expect(html).toContain("Ocultar código");
+    expect(html).not.toContain("Ver código");
+  });
+
+  it("does not render referral card content outside /perfil", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <ToastProvider>
+          <Routes>
+            <Route
+              path="/perfil"
+              element={
+                <ReferralInviteCard
+                  initialStats={{
+                    codes: [{ code: "NSC1234" }],
+                    summary: {
+                      premiumActiveReferrals: 3,
+                      rewardAvailableCount: 1,
+                    },
+                  }}
+                />
+              }
+            />
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
+          </Routes>
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Dashboard");
+    expect(html).not.toContain("Gana 1 mes Premium gratis");
+    expect(html).not.toContain("RECOMPENSA PREMIUM");
+  });
+});

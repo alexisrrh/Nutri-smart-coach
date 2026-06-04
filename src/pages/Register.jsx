@@ -3,6 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { saveProfile } from "../services/profileService";
 import {
+  clearStoredReferralCode,
+  clearOAuthReferralFlowPending,
+  validateAndStoreReferralCode,
+  finalizeReferralCodeApplication,
+  getStoredReferralCode,
+  prepareOAuthReferralCode,
+} from "../services/referralOnboardingService";
+import {
   buildAcceptedLegalConsent,
   setPendingLegalConsent,
 } from "../services/legalConsentService";
@@ -11,17 +19,12 @@ import {
   Mail,
   Lock,
   User,
-  Sparkles,
-  ArrowLeft,
+  Gift,
   ArrowRight,
-  Target,
-  ScanLine,
-  Activity,
 } from "lucide-react";
 import {
   AppShell,
   FormField,
-  MetaBadge,
   PrimaryButton,
   SecondaryButton,
   StatusBox,
@@ -40,7 +43,13 @@ export function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+  const [referralCode, setReferralCode] = useState(() => getStoredReferralCode());
+  const [referralNote, setReferralNote] = useState("");
+  const [referralError, setReferralError] = useState("");
+  const [referralSaving, setReferralSaving] = useState(false);
+  const [referralValidating, setReferralValidating] = useState(false);
 
   async function handleSocialLogin(provider) {
     if (!acceptedPolicies) {
@@ -49,6 +58,7 @@ export function Register() {
     }
 
     setPendingLegalConsent(buildAcceptedLegalConsent());
+    prepareOAuthReferralCode(getStoredReferralCode());
 
       // Evento Analytics
  trackEvent("oauth_started", {
@@ -64,6 +74,10 @@ export function Register() {
     });
 
     if (socialError) setError("Error al conectar: " + socialError.message);
+    if (socialError) {
+      clearStoredReferralCode();
+      clearOAuthReferralFlowPending();
+    }
   }
 
   function handleChange(e) {
@@ -73,9 +87,56 @@ export function Register() {
     });
   }
 
+  function handleReferralCodeChange(event) {
+    const nextValue = event.target.value;
+    setReferralCode(nextValue);
+    setReferralNote("");
+    setReferralError("");
+    clearStoredReferralCode();
+    clearOAuthReferralFlowPending();
+  }
+
+  async function handleSaveReferralCode() {
+    const normalized = String(referralCode || "").trim();
+
+    if (!normalized) {
+      clearStoredReferralCode();
+      setReferralNote("");
+      setReferralError("");
+      return;
+    }
+
+    setReferralValidating(true);
+    setReferralError("");
+    setReferralNote("Validando código...");
+
+    try {
+      const validation = await validateAndStoreReferralCode(normalized);
+
+      if (!validation.valid) {
+        setReferralNote("");
+        setReferralError(validation.message || "Código no válido o expirado.");
+        clearStoredReferralCode();
+        return;
+      }
+
+      setReferralNote(validation.message || "Código aplicado al crear tu cuenta.");
+      setReferralError("");
+    } catch (validationError) {
+      clearStoredReferralCode();
+      setReferralNote("");
+      setReferralError(
+        validationError?.message || "Código no válido o expirado."
+      );
+    } finally {
+      setReferralValidating(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     if (!form.nombre.trim() || !form.email.trim() || !form.password) {
@@ -141,44 +202,69 @@ export function Register() {
           
         });
         trackEvent("sign_up", {
-  method: "email",
-});
-
+          method: "email",
+        });
       } catch (profileError) {
+        if (profileError?.message) {
+          setError(profileError.message);
+        } else {
+          setError("Error creando el perfil.");
+        }
         console.error("Error creando perfil:", profileError);
+        setLoading(false);
+        setReferralSaving(false);
+        return;
+      } finally {
+        setReferralSaving(false);
       }
+
+      const validatedReferralCode = getStoredReferralCode();
+
+      if (validatedReferralCode.trim()) {
+        try {
+          setReferralSaving(true);
+          const referralResult = await finalizeReferralCodeApplication(
+            validatedReferralCode
+          );
+          const referralMessage = referralResult.message || "";
+          setReferralNote(referralMessage);
+          setError("");
+          if (referralMessage) {
+            setSuccess(referralMessage);
+          }
+        } catch (referralError) {
+          const referralMessage =
+            referralError?.message ||
+            "El código de invitación no es válido o ya no está disponible.";
+          setReferralError(referralMessage);
+          setSuccess("");
+          setError(referralMessage);
+        } finally {
+          setReferralSaving(false);
+        }
+      }
+
+      clearStoredReferralCode();
+      setReferralCode("");
     }
 
     setLoading(false);
+    await new Promise((resolve) => setTimeout(resolve, 900));
     navigate("/perfil");
   }
 
   return (
-    <AppShell withBottomNav={false} contentClassName="!px-3 !pb-6 !pt-2">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <SecondaryButton
-            onClick={() => navigate("/")}
-            icon={<ArrowLeft size={14} />}
-            className="w-auto px-3 py-1.5 text-[10px]"
-          >
-            Inicio
-          </SecondaryButton>
-
-          <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
-            Registro IA
-          </MetaBadge>
-        </div>
-
-    
-
-        
-
+    <AppShell
+      withBottomNav={false}
+      contentClassName="!px-3 !pb-4 !pt-1.5"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="flex flex-col gap-3">
         <SurfaceCard className="relative overflow-hidden p-2">
           <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
-          <div className="relative z-10 pt-2">
-            <div className="ml-10 mb-3 flex items-center gap-5 justify-center">
+          <div className="relative z-10 pt-1">
+            <div className="mb-2 flex items-center gap-4 justify-center">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
                 <img
                   src="/favicon.png"
@@ -188,10 +274,7 @@ export function Register() {
               </div>
 
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)] ml-5">
-                  Nutri Smart Coach
-                </p>
-                <h1 className="mt-1 flex items-center gap-2 text-2xl font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
+                <h1 className="flex items-center gap-2 text-2xl font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
                   Crea tu plan inteligente
                   <UserPlus size={21} className="shrink-0 text-[var(--app-primary)]" />
                 </h1>
@@ -205,6 +288,11 @@ export function Register() {
             {error && (
               <StatusBox type="error" className="mb-4 p-3 text-xs leading-5">
                 {error}
+              </StatusBox>
+            )}
+            {success && (
+              <StatusBox type="success" className="mb-4 p-3 text-xs leading-5">
+                {success}
               </StatusBox>
             )}
 
@@ -238,18 +326,70 @@ export function Register() {
                 icon={<Lock size={16} />}
               />
 
+              <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,transparent),var(--app-surface))] p-3 shadow-[0_0_0_1px_color-mix(in_srgb,var(--app-primary)_8%,transparent)]">
+                <div className="mb-2.5 flex items-start gap-2.5">
+                  <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[color-mix(in_srgb,#D4AF37_50%,transparent)] bg-[linear-gradient(180deg,#D4AF3720,#D4AF370d)] text-[#D4AF37]">
+                    <Gift size={14} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#D4AF37]">
+                      Código de invitación
+                    </p>
+                    <h2 className="mt-0.5 text-[12px] font-bold leading-4 text-[var(--app-text)]">
+                      Desbloquea pruebas Premium y recompensas.
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <input
+                      type="text"
+                      value={referralCode}
+                      onChange={handleReferralCodeChange}
+                      placeholder="Introduce tu código"
+                      className="h-11 w-full min-w-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--app-text)] outline-none transition placeholder:normal-case placeholder:tracking-normal focus:border-[#D4AF37] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.12)]"
+                      autoComplete="off"
+                      spellCheck="false"
+                    />
+                    <SecondaryButton
+                      type="button"
+                      onClick={handleSaveReferralCode}
+                      disabled={referralSaving || referralValidating}
+                      className="h-11 w-full shrink-0 px-4 text-[10px] sm:w-auto sm:px-4"
+                    >
+                      {referralValidating ? "Validando..." : "Aplicar código"}
+                    </SecondaryButton>
+                  </div>
+
+                  {referralNote ? (
+                    <StatusBox type="success" className="p-2.5 text-[11px] leading-4">
+                      {referralNote}
+                    </StatusBox>
+                  ) : null}
+                  {referralError ? (
+                    <StatusBox type="error" className="p-2.5 text-[11px] leading-4">
+                      {referralError}
+                    </StatusBox>
+                  ) : null}
+                </div>
+              </div>
+
               <LegalConsentCard
                 checked={acceptedPolicies}
                 onChange={setAcceptedPolicies}
               />
 
               <PrimaryButton
-                disabled={loading}
-                icon={!loading && <ArrowRight size={16} />}
+                disabled={loading || referralSaving}
+                icon={!loading && !referralSaving && <ArrowRight size={16} />}
                 type="submit"
                 className="mt-1 py-3"
               >
-                {loading ? "Creando cuenta..." : "Crear cuenta"}
+                {loading || referralSaving
+                  ? "Creando cuenta..."
+                  : "Crear cuenta"}
               </PrimaryButton>
             </form>
 
@@ -298,14 +438,7 @@ export function Register() {
             </div>
           </div>
         </SurfaceCard>
-        <div className="pt-2">
-          <ActiveCore />
-        </div>
-        <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
-          Privacidad segura · Datos protegidos · IA nutricional
-        </p>
       </div>
-   
     </AppShell>
   );
 }
@@ -367,55 +500,3 @@ function Input({ label, icon, ...props }) {
   );
 }
 
-function ActiveCore() {
-  return (
-    <SurfaceCard className="relative overflow-hidden p-2.5">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,#22d3ee22,transparent_32%),radial-gradient(circle_at_82%_20%,var(--app-primary)24,transparent_36%)]" />
-      <div className="absolute left-0 top-1/2 h-px w-full bg-gradient-to-r from-transparent via-[var(--app-primary)]/25 to-transparent" />
-
-      <div className="relative z-10 flex items-center gap-3">
-        <div className="relative grid h-16 w-16 shrink-0 place-items-center">
-          <div className="absolute inset-0 rounded-full bg-[var(--app-primary-soft)] blur-xl" />
-          <div className="absolute inset-0 animate-[spin_3.6s_linear_infinite] rounded-full border border-[var(--app-border)] border-t-[var(--app-primary)]" />
-          <div className="absolute inset-[8px] animate-[spin_5s_linear_infinite_reverse] rounded-full border border-cyan-300/10 border-b-cyan-300/45" />
-          <div className="absolute inset-[18px] rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur-xl" />
-          <div className="relative h-5 w-5 rounded-full bg-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow)]" />
-          <span className="absolute left-3 top-4 h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_12px_#67e8f9]" />
-          <span className="absolute bottom-4 right-3 h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-primary)]" />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-primary)]" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
-              AI ACTIVE
-            </p>
-          </div>
-
-          <p className="text-sm font-black uppercase italic leading-5 text-[var(--app-text)]">
-            Tu nutrición empieza en modo inteligente
-          </p>
-
-          <div className="mt-2 grid grid-cols-3 gap-1.5">
-            <CoreHighlight icon={<Target size={12} />} label="objetivos claros" />
-            <CoreHighlight icon={<ScanLine size={12} />} label="análisis visual" />
-            <CoreHighlight icon={<Activity size={12} />} label="progreso guiado" />
-          </div>
-        </div>
-      </div>
-    </SurfaceCard>
-  );
-}
-
-function CoreHighlight({ icon, label }) {
-  return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-center">
-      <div className="mx-auto mb-1 flex justify-center text-[var(--app-primary)]">
-        {icon}
-      </div>
-      <p className="text-[10px] font-black uppercase leading-3 text-[var(--app-muted)]">
-        {label}
-      </p>
-    </div>
-  );
-}

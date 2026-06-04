@@ -212,7 +212,7 @@ function AppRoutes({ splashVisible }) {
 
   return (
     <Suspense fallback={<AppLoader />}>
-      <Routes>
+      <Routes key={location.pathname}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />

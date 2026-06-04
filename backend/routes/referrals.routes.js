@@ -5,6 +5,7 @@ import {
   createInfluencerCode,
   createUserReferralCode,
   getMyReferralStats,
+  validateReferralCode,
 } from "../services/referral.service.js";
 
 const router = Router();
@@ -40,6 +41,15 @@ router.post("/referrals/create-code", verifySupabaseUser, async (req, res, next)
   }
 });
 
+router.post("/referrals/validate-code", async (req, res, next) => {
+  try {
+    const result = await validateReferralCode(req.body?.code || "");
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post("/referrals/apply-code", verifySupabaseUser, async (req, res, next) => {
   try {
     const userId = requireAuthenticatedUser(req, res);
@@ -48,6 +58,8 @@ router.post("/referrals/apply-code", verifySupabaseUser, async (req, res, next) 
     const result = await applyReferralCode({
       userId,
       code: req.body?.code || "",
+    }, {
+      currentUserCreatedAt: req.authUser?.created_at || null,
     });
 
     return res.status(201).json(result);

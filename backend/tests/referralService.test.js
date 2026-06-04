@@ -7,6 +7,7 @@ const {
   canCreateInfluencerCode,
   createInfluencerCode,
   createUserReferralCode,
+  validateReferralCode,
 } = await import("../services/referral.service.js");
 
 describe("referral service", () => {
@@ -41,7 +42,12 @@ describe("referral service", () => {
 
     const result = await applyReferralCode(
       { userId: "user-2", code: "friend1" },
-      { repo, registerSubscriptionAcquisitionFn }
+      {
+        repo,
+        registerSubscriptionAcquisitionFn,
+        currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+        now: new Date("2026-06-04T10:10:00.000Z"),
+      }
     );
 
     expect(result.referral.type).toBe("user");
@@ -50,6 +56,118 @@ describe("referral service", () => {
     expect(result.trial).toMatchObject({
       source: "standard_trial",
       trialDays: 7,
+    });
+  });
+
+  it("validates a user referral code without applying it", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "owner-1",
+          code: "FRIEND1",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    const result = await validateReferralCode("friend1", { repo });
+
+    expect(result).toEqual({
+      valid: true,
+      type: "user",
+      trialDays: 7,
+    });
+  });
+
+  it("rejects invalid referral codes in validation", async () => {
+    const state = createReferralState();
+    const repo = createReferralRepo(state);
+
+    const result = await validateReferralCode("5555", { repo });
+
+    expect(result).toEqual({
+      valid: false,
+      type: null,
+      trialDays: 0,
+    });
+  });
+
+  it("allows a freshly created user to apply a referral code during onboarding", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "owner-1",
+          code: "FRIEND1",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+      ],
+      profile: {
+        id: "user-2",
+        created_at: new Date("2026-06-04T10:00:00.000Z").toISOString(),
+      },
+    });
+    const repo = createReferralRepo(state);
+    const registerSubscriptionAcquisitionFn = vi.fn(async (payload) => payload);
+
+    const result = await applyReferralCode(
+      { userId: "user-2", code: "FRIEND1" },
+      {
+        repo,
+        registerSubscriptionAcquisitionFn,
+        currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+        now: new Date("2026-06-04T10:20:00.000Z"),
+      }
+    );
+
+    expect(result.referral.type).toBe("user");
+    expect(result.acquisition.acquisitionSource).toBe("referral");
+  });
+
+  it("blocks referral code application after the 30 minute onboarding window", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "owner-1",
+          code: "FRIEND1",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+      ],
+      profile: {
+        id: "user-2",
+        created_at: "2026-06-04T10:00:00.000Z",
+      },
+    });
+    const repo = createReferralRepo(state);
+
+    await expect(
+      applyReferralCode(
+        { userId: "user-2", code: "FRIEND1" },
+        {
+          repo,
+          registerSubscriptionAcquisitionFn: vi.fn(),
+          currentUserCreatedAt: "2026-06-04T10:00:00.000Z",
+          now: new Date("2026-06-04T10:31:00.000Z"),
+        }
+      )
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: "El código solo puede aplicarse durante los primeros 30 minutos del registro.",
     });
   });
 
@@ -93,7 +211,12 @@ describe("referral service", () => {
 
     const result = await applyReferralCode(
       { userId: "user-9", code: "creator30" },
-      { repo, registerSubscriptionAcquisitionFn }
+      {
+        repo,
+        registerSubscriptionAcquisitionFn,
+        currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+        now: new Date("2026-06-04T10:10:00.000Z"),
+      }
     );
 
     expect(result.referral.type).toBe("influencer");
@@ -160,7 +283,12 @@ describe("referral service", () => {
     await expect(
       applyReferralCode(
         { userId: "user-2", code: "FRIEND1" },
-        { repo, registerSubscriptionAcquisitionFn: vi.fn() }
+        {
+          repo,
+          registerSubscriptionAcquisitionFn: vi.fn(),
+          currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+          now: new Date("2026-06-04T10:10:00.000Z"),
+        }
       )
     ).rejects.toMatchObject({
       statusCode: 409,
@@ -200,6 +328,49 @@ describe("referral service", () => {
     ).rejects.toMatchObject({
       statusCode: 409,
       message: "El código solo puede aplicarse durante el registro inicial.",
+    });
+  });
+
+  it("blocks referral code application when the user already has a referral", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "owner-1",
+          code: "FRIEND1",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+      ],
+      referrals: [
+        {
+          id: "ref-1",
+          referral_code_id: "code-9",
+          referrer_user_id: "owner-9",
+          referred_user_id: "user-2",
+          type: "user",
+          status: "pending",
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    await expect(
+      applyReferralCode(
+        { userId: "user-2", code: "FRIEND1" },
+        {
+          repo,
+          registerSubscriptionAcquisitionFn: vi.fn(),
+          currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+          now: new Date("2026-06-04T10:10:00.000Z"),
+        }
+      )
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: "Ya tienes un código aplicado.",
     });
   });
 

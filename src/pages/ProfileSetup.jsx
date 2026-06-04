@@ -17,6 +17,7 @@ import { useAuth } from "../context/useAuth";
 import { useProgressSummary } from "../hooks/progress/useProgressSummary";
 import { getProfile } from "../services/profileService";
 import { AppShell, MetaBadge } from "../components/ui";
+import ReferralInviteCard from "../components/profile/ReferralInviteCard";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -127,6 +128,8 @@ export function ProfileSetup() {
             progress={progressSummary}
             loading={loadingProgress}
           />
+
+          <ReferralInviteCard />
 
           <div className="space-y-2">
             <NavCard
