@@ -4,9 +4,11 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
 
 const {
   applyReferralCode,
+  claimReferralReward,
   canCreateInfluencerCode,
   createInfluencerCode,
   createUserReferralCode,
+  getMyReferralStats,
   validateReferralCode,
 } = await import("../services/referral.service.js");
 
@@ -384,6 +386,150 @@ describe("referral service", () => {
       })
     ).toBe(true);
   });
+
+  it("returns claimable reward stats when a reward is available", async () => {
+    const state = createReferralState({
+      referrals: [
+        {
+          id: "ref-1",
+          referral_code_id: "code-1",
+          referrer_user_id: "owner-1",
+          referred_user_id: "friend-1",
+          type: "user",
+          status: "premium_active",
+        },
+        {
+          id: "ref-2",
+          referral_code_id: "code-1",
+          referrer_user_id: "owner-1",
+          referred_user_id: "friend-2",
+          type: "user",
+          status: "premium_active",
+        },
+        {
+          id: "ref-3",
+          referral_code_id: "code-1",
+          referrer_user_id: "owner-1",
+          referred_user_id: "friend-3",
+          type: "user",
+          status: "premium_active",
+        },
+      ],
+      rewards: [
+        {
+          id: "reward-1",
+          referrer_user_id: "owner-1",
+          milestone_number: 1,
+          status: "available",
+          created_at: "2026-06-04T11:00:00.000Z",
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    const stats = await getMyReferralStats("owner-1", { repo });
+
+    expect(stats.premiumReferralsCount).toBe(3);
+    expect(stats.nextMilestone).toBe(3);
+    expect(stats.rewardsAvailable).toBe(1);
+    expect(stats.rewardsClaimed).toBe(0);
+    expect(stats.canClaimReward).toBe(true);
+    expect(stats.latestReward).toMatchObject({
+      id: "reward-1",
+      status: "available",
+    });
+  });
+
+  it("claims a referral reward and extends premium for one month", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "owner-1",
+        plan: "premium",
+        is_premium: true,
+        subscription_status: "active",
+        premium_expires_at: "2026-06-20T10:00:00.000Z",
+        premium_started_at: "2026-05-20T10:00:00.000Z",
+      },
+      rewards: [
+        {
+          id: "reward-1",
+          referrer_user_id: "owner-1",
+          milestone_number: 1,
+          source_referral_id: "ref-3",
+          status: "available",
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+    const profileState = {
+      id: "owner-1",
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+      premium_expires_at: "2026-06-20T10:00:00.000Z",
+      premium_started_at: "2026-05-20T10:00:00.000Z",
+    };
+    const upsertProfileSubscriptionFn = vi.fn(async (payload) => {
+      Object.assign(profileState, payload);
+      return profileState;
+    });
+
+    const result = await claimReferralReward(
+      { userId: "owner-1" },
+      {
+        repo,
+        getProfileByUserIdFn: async () => profileState,
+        upsertProfileSubscriptionFn,
+        registerSubscriptionAcquisitionFn: vi.fn(async (payload) => payload),
+        now: new Date("2026-06-04T10:00:00.000Z"),
+      }
+    );
+
+    expect(result.reward.status).toBe("claimed");
+    expect(result.reward.claimed_at).toBe("2026-06-04T10:00:00.000Z");
+    expect(profileState.premium_expires_at).toBe("2026-07-20T10:00:00.000Z");
+    expect(profileState.plan).toBe("premium");
+    expect(profileState.is_premium).toBe(true);
+    expect(profileState.subscription_status).toBe("active");
+    expect(result.acquisition.acquisitionSource).toBe("referral");
+    expect(result.acquisition.premiumSource).toBe("manual");
+  });
+
+  it("does not double claim a reward twice", async () => {
+    const state = createReferralState({
+      rewards: [
+        {
+          id: "reward-1",
+          referrer_user_id: "owner-1",
+          milestone_number: 1,
+          status: "claimed",
+          claimed_at: "2026-06-04T10:00:00.000Z",
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    await expect(
+      claimReferralReward(
+        { userId: "owner-1" },
+        {
+          repo,
+          getProfileByUserIdFn: async () => ({
+            id: "owner-1",
+            plan: "premium",
+            is_premium: true,
+            subscription_status: "active",
+            premium_expires_at: "2026-06-20T10:00:00.000Z",
+          }),
+          upsertProfileSubscriptionFn: vi.fn(),
+          registerSubscriptionAcquisitionFn: vi.fn(),
+        }
+      )
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      message: "No tienes una recompensa disponible para reclamar.",
+    });
+  });
 });
 
 function createReferralState(initial = {}) {
@@ -487,7 +633,24 @@ function createReferralRepo(state) {
       );
     },
     async listReferralRewardsByReferrerUserId(userId) {
-      return state.rewards.filter((reward) => reward.referrer_user_id === userId);
+      return state.rewards
+        .filter((reward) => reward.referrer_user_id === userId)
+        .sort((a, b) => Number(a.milestone_number) - Number(b.milestone_number));
+    },
+    async getAvailableReferralRewardByReferrerUserId(userId) {
+      return (
+        state.rewards.find(
+          (reward) =>
+            reward.referrer_user_id === userId && reward.status === "available"
+        ) || null
+      );
+    },
+    async updateReferralReward(id, payload) {
+      const row = state.rewards.find((reward) => reward.id === id);
+      if (!row) return null;
+      if (payload.status !== undefined) row.status = payload.status;
+      if (payload.claimedAt !== undefined) row.claimed_at = payload.claimedAt;
+      return row;
     },
   };
 }

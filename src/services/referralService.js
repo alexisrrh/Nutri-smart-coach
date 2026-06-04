@@ -32,6 +32,19 @@ export async function applyReferralCode(code) {
   );
 }
 
+export async function claimReferralReward() {
+  return request(
+    "/referrals/claim-reward",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+    { operation: "reclamar tu recompensa de referido" }
+  );
+}
+
 export async function validateReferralCode(code) {
   return request(
     "/referrals/validate-code",

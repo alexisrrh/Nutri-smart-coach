@@ -1,4 +1,5 @@
 const MAX_REFERRAL_REWARDS = 3;
+const REFERRAL_INVITE_TRIAL_DAYS = 7;
 
 export function getReferralInviteCardViewModel({
   stats = null,
@@ -6,8 +7,16 @@ export function getReferralInviteCardViewModel({
   expanded = false,
 } = {}) {
   const referralCode = stats?.codes?.[0]?.code || "";
-  const premiumReferrals = Number(stats?.summary?.premiumActiveReferrals || 0);
-  const rewardAvailable = Number(stats?.summary?.rewardAvailableCount || 0) > 0;
+  const premiumReferrals = Number(
+    (stats?.premiumReferralsCount ?? stats?.summary?.premiumActiveReferrals ?? 0)
+  );
+  const rewardsAvailable = Number(
+    (stats?.rewardsAvailable ?? stats?.summary?.rewardAvailableCount ?? 0)
+  );
+  const rewardsClaimed = Number(
+    (stats?.rewardsClaimed ?? stats?.summary?.rewardClaimedCount ?? 0)
+  );
+  const canClaimReward = Boolean(stats?.canClaimReward ?? rewardsAvailable > 0);
   const progressValue = Math.min(premiumReferrals, MAX_REFERRAL_REWARDS);
   const progressPercent = Math.min(
     100,
@@ -20,7 +29,12 @@ export function getReferralInviteCardViewModel({
     expanded: Boolean(expanded && hasCode),
     hasCode,
     referralCode,
-    rewardAvailable,
+    inviteeTrialDays: REFERRAL_INVITE_TRIAL_DAYS,
+    rewardAvailable: canClaimReward,
+    canClaimReward,
+    rewardsAvailable,
+    rewardsClaimed,
+    latestReward: stats?.latestReward || null,
     progressValue,
     progressPercent,
     title: "Gana 1 mes Premium gratis",
@@ -29,5 +43,16 @@ export function getReferralInviteCardViewModel({
     noCodeRule: "3 pagos Premium confirmados = 1 mes gratis",
     confirmedPaymentsText: "Solo cuentan los pagos Premium confirmados.",
     maxReferralRewards: MAX_REFERRAL_REWARDS,
+    nextMilestone: Number(stats?.nextMilestone ?? MAX_REFERRAL_REWARDS),
   };
 }
+
+export function buildReferralInviteShareText(referralCode, inviteeTrialDays) {
+  const safeCode = String(referralCode || "").trim();
+  const safeTrialDays = Number(inviteeTrialDays || 0) || REFERRAL_INVITE_TRIAL_DAYS;
+
+  return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
+}
+
+// TODO: los códigos influencer, sus 15 días gratis, comisiones y métricas deben
+// mostrarse en un panel separado de influencers, no en esta tarjeta de referidos normales.

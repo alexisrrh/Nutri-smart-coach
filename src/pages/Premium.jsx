@@ -16,6 +16,7 @@ import {
   PrimaryButton,
   SurfaceCard,
 } from "../components/ui";
+import { PremiumReferralBanner } from "./premiumReferralBanner";
 import { useAuth } from "../context/useAuth";
 import { getFriendlyErrorMessage } from "../services/apiClient";
 import {
@@ -56,6 +57,11 @@ export function Premium() {
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
   const acquisitionSource = premiumStatus?.acquisition_source || "normal";
+  const showReferralBanner = Boolean(
+    !isPremium &&
+      premiumStatus?.referral_code_id &&
+      Number(premiumStatus?.trial_days || 0) > 0
+  );
   const nativeStoreLabel = isIosPlatform
     ? "App Store"
     : isAndroidPlatform
@@ -429,6 +435,10 @@ export function Premium() {
                   </div>
                 )}
               </SurfaceCard>
+
+              {showReferralBanner ? (
+                <PremiumReferralBanner premiumStatus={premiumStatus} />
+              ) : null}
 
               {!isPremium ? (
                 <>

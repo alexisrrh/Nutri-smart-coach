@@ -7,6 +7,7 @@ vi.mock("./apiClient", () => ({
 }));
 
 const {
+  claimReferralReward,
   applyReferralCode,
   createReferralCode,
   getMyReferralStats,
@@ -61,5 +62,21 @@ describe("referralService", () => {
       }),
       { operation: "aplicar código de referido" }
     );
+  });
+
+  it("claims a referral reward", async () => {
+    requestMock.mockResolvedValueOnce({ reward: { id: "reward-1" } });
+
+    const result = await claimReferralReward();
+
+    expect(requestMock).toHaveBeenCalledWith(
+      "/referrals/claim-reward",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }),
+      { operation: "reclamar tu recompensa de referido" }
+    );
+    expect(result).toEqual({ reward: { id: "reward-1" } });
   });
 });

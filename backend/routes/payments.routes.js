@@ -17,6 +17,7 @@ import {
   buildCommissionSubscriptionRef,
   createAffiliateCommissionForPaidInvoice,
   getTrialConfigForAcquisition,
+  getPremiumStatusAcquisitionSnapshot,
   markAffiliateCommissionRefunded,
   markReferralPremiumActive,
   normalizeSubscriptionAcquisitionRecord,
@@ -158,20 +159,12 @@ router.get("/premium/status", verifySupabaseUser, async (req, res, next) => {
 
     const profile = await getProfileByUserId(userId);
     const acquisition = await getLatestAcquisitionByUserId(userId);
+    const acquisitionSnapshot = getPremiumStatusAcquisitionSnapshot(acquisition);
 
     return res.json({
       premium: {
         ...serializePremiumProfile(profile),
-        acquisition_source: acquisition?.acquisition_source || null,
-        referral_code_id: acquisition?.referral_code_id || null,
-        referrer_user_id: acquisition?.referrer_user_id || null,
-        influencer_user_id: acquisition?.influencer_user_id || null,
-        trial_source: acquisition?.trial_source || "none",
-        trial_ends_at: acquisition?.trial_ends_at || null,
-        commission_percent: acquisition?.commission_percent || 0,
-        commission_months_limit: acquisition?.commission_months_limit || 0,
-        commission_started_at: acquisition?.commission_started_at || null,
-        commission_ends_at: acquisition?.commission_ends_at || null,
+        ...acquisitionSnapshot,
       },
     });
   } catch (error) {

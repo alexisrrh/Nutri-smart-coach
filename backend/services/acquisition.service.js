@@ -284,6 +284,53 @@ export function getTrialConfigForAcquisition(acquisition) {
   };
 }
 
+export function getPremiumStatusAcquisitionSnapshot(acquisition) {
+  const normalizedAcquisition = normalizeSubscriptionAcquisitionRecord(acquisition);
+
+  if (!normalizedAcquisition) {
+    return {
+      acquisition_source: null,
+      referral_code_id: null,
+      referrer_user_id: null,
+      influencer_user_id: null,
+      trial_source: "none",
+      trial_days: 0,
+      trial_ends_at: null,
+      trial_started_at: null,
+      commission_percent: 0,
+      commission_months_limit: 0,
+      commission_started_at: null,
+      commission_ends_at: null,
+      has_trial_banner: false,
+    };
+  }
+
+  const trialConfig = getTrialConfigForAcquisition(normalizedAcquisition);
+  const referralCodeId = normalizedAcquisition.referral_code_id || null;
+  const acquisitionSource = trialConfig.acquisitionSource || "normal";
+  const hasTrialBanner = Boolean(
+    referralCodeId &&
+      !["manual", "none"].includes(acquisitionSource) &&
+      trialConfig.trialDays > 0
+  );
+
+  return {
+    acquisition_source: acquisitionSource,
+    referral_code_id: referralCodeId,
+    referrer_user_id: normalizedAcquisition.referrer_user_id || null,
+    influencer_user_id: normalizedAcquisition.influencer_user_id || null,
+    trial_source: trialConfig.trialSource || "none",
+    trial_days: trialConfig.trialDays || 0,
+    trial_ends_at: normalizedAcquisition.trial_ends_at || null,
+    trial_started_at: normalizedAcquisition.trial_started_at || null,
+    commission_percent: Number(normalizedAcquisition.commission_percent || 0),
+    commission_months_limit: Number(normalizedAcquisition.commission_months_limit || 0),
+    commission_started_at: normalizedAcquisition.commission_started_at || null,
+    commission_ends_at: normalizedAcquisition.commission_ends_at || null,
+    has_trial_banner: hasTrialBanner,
+  };
+}
+
 export function createAcquisitionRepository(supabaseClient) {
   return {
     async getAcquisitionByPlatformSubscriptionId(platformSubscriptionId) {

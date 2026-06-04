@@ -246,17 +246,35 @@ export async function getMyReferralStats(userId, options = {}) {
   const premiumActiveReferrals = referrals.filter((referral) =>
     ["premium_active", "rewarded"].includes(referral.status)
   ).length;
-  const rewardAvailableCount = rewards.filter((reward) => reward.status === "available").length;
+  const normalizedRewards = rewards.map(normalizeReferralRewardRecord).filter(Boolean);
+  const rewardAvailableCount = normalizedRewards.filter(
+    (reward) => reward.status === "available"
+  ).length;
+  const rewardClaimedCount = normalizedRewards.filter(
+    (reward) => reward.status === "claimed"
+  ).length;
   const payableCommissionTotal = commissions
     .filter((commission) => commission.status === "payable")
     .reduce((total, commission) => total + Number(commission.amount || 0), 0);
+  const latestReward = normalizedRewards[normalizedRewards.length - 1] || null;
+  const canClaimReward = rewardAvailableCount > 0;
 
   return {
     codes,
+    premiumReferralsCount: premiumActiveReferrals,
+    nextMilestone: 3,
+    rewardsAvailable: rewardAvailableCount,
+    rewardsClaimed: rewardClaimedCount,
+    canClaimReward,
+    latestReward,
     summary: {
       totalReferrals: referrals.length,
       premiumActiveReferrals,
       rewardAvailableCount,
+      rewardClaimedCount,
+      canClaimReward,
+      premiumReferralsCount: premiumActiveReferrals,
+      nextMilestone: 3,
       pendingReferrals: referrals.filter((referral) => referral.status === "pending").length,
       trialingReferrals: referrals.filter((referral) => referral.status === "trialing").length,
       influencerCommissionsCount: commissions.length,
@@ -264,6 +282,61 @@ export async function getMyReferralStats(userId, options = {}) {
     },
     referrals,
     commissions,
+    rewards: normalizedRewards,
+  };
+}
+
+export async function claimReferralReward({ userId }, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const getProfileByUserIdFn =
+    options.getProfileByUserIdFn || ((value) => getProfileByUserId(value, options.supabaseClient || supabase));
+  const upsertProfileSubscriptionFn =
+    options.upsertProfileSubscriptionFn || ((payload) =>
+      upsertProfileSubscription(payload, options.supabaseClient || supabase)
+    );
+  const registerSubscriptionAcquisitionFn =
+    options.registerSubscriptionAcquisitionFn || registerSubscriptionAcquisition;
+  const now = options.now ? new Date(options.now) : new Date();
+  const claimedAt = now.toISOString();
+
+  const reward = await repo.getAvailableReferralRewardByReferrerUserId(userId);
+  if (!reward) {
+    throw createPublicError("No tienes una recompensa disponible para reclamar.", 404);
+  }
+
+  const claimedReward = await repo.updateReferralReward(reward.id, {
+    status: "claimed",
+    claimedAt,
+  });
+
+  const profile = await getProfileByUserIdFn(userId);
+  const premiumExpiresAt = computeRewardExpiration(profile?.premium_expires_at, now);
+  const premiumUpdate = buildRewardPremiumProfileUpdate(profile, {
+    userId,
+    claimedAt,
+    premiumExpiresAt,
+  });
+
+  await upsertProfileSubscriptionFn(premiumUpdate);
+
+  const acquisition = await registerSubscriptionAcquisitionFn(
+    {
+      userId,
+      premiumSource: "manual",
+      acquisitionSource: "referral",
+      trialSource: "none",
+      status: "reward_claimed",
+    },
+    options
+  );
+
+  return {
+    reward: claimedReward,
+    premium: premiumUpdate,
+    acquisition,
+    premiumExpiresAt,
   };
 }
 
@@ -429,6 +502,30 @@ export function createReferralRepository(supabaseClient) {
       if (error) throw wrapDbError("No se pudieron listar las recompensas.", error);
       return data || [];
     },
+
+    async getAvailableReferralRewardByReferrerUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("referral_rewards")
+        .select("*")
+        .eq("referrer_user_id", userId)
+        .eq("status", "available")
+        .order("milestone_number", { ascending: true });
+
+      if (error) throw wrapDbError("No se pudo consultar la recompensa.", error);
+      return (data || [])[0] || null;
+    },
+
+    async updateReferralReward(id, payload) {
+      const { data, error } = await supabaseClient
+        .from("referral_rewards")
+        .update(toDbReferralRewardPayload(payload))
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo actualizar la recompensa.", error);
+      return data;
+    },
   };
 }
 
@@ -479,11 +576,61 @@ function toDbReferralPayload(payload = {}) {
   };
 }
 
+function toDbReferralRewardPayload(payload = {}) {
+  const next = {};
+  if (payload.status !== undefined) next.status = payload.status;
+  if (payload.claimedAt !== undefined) next.claimed_at = payload.claimedAt;
+  return next;
+}
+
 function normalizeReferralCode(code) {
   return String(code || "")
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9_-]/g, "");
+}
+
+function normalizeReferralRewardRecord(reward) {
+  if (!reward) return null;
+
+  return {
+    ...reward,
+    status: normalizeReferralRewardStatus(reward.status),
+  };
+}
+
+function normalizeReferralRewardStatus(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  if (normalized === "granted") return "claimed";
+  if (normalized === "claimed") return "claimed";
+  if (normalized === "expired") return "expired";
+  if (normalized === "cancelled" || normalized === "canceled") return "cancelled";
+  return "available";
+}
+
+function computeRewardExpiration(existingExpiresAt, now) {
+  const parsed = parseIsoDate(existingExpiresAt);
+  const start = parsed && parsed.getTime() > now.getTime() ? parsed : now;
+  return addMonths(start.toISOString(), 1);
+}
+
+function buildRewardPremiumProfileUpdate(profile, { userId, claimedAt, premiumExpiresAt }) {
+  return {
+    id: userId,
+    plan: "premium",
+    is_premium: true,
+    subscription_status: "active",
+    premium_source: "manual",
+    premium_product_id: profile?.premium_product_id || null,
+    premium_platform_transaction_id: profile?.premium_platform_transaction_id || null,
+    premium_last_verified_at: claimedAt,
+    premium_started_at: profile?.premium_started_at || claimedAt,
+    premium_expires_at: premiumExpiresAt,
+    updated_at: claimedAt,
+  };
 }
 
 function assertInfluencerCodeAccess({ userId, authUser }) {
@@ -537,6 +684,14 @@ function parseIsoDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function addMonths(value, months) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  date.setMonth(date.getMonth() + months);
+  return date.toISOString();
+}
+
 function parseAllowlist(value) {
   return new Set(
     String(value || "")
@@ -560,6 +715,46 @@ function wrapDbError(message, error) {
 function assertUserId(userId) {
   if (!userId) {
     throw createPublicError("Usuario no válido.", 400);
+  }
+}
+
+async function getProfileByUserId(userId, supabaseClient) {
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select(
+      [
+        "id",
+        "email",
+        "plan",
+        "is_premium",
+        "subscription_status",
+        "premium_source",
+        "premium_product_id",
+        "premium_platform_transaction_id",
+        "premium_expires_at",
+        "premium_last_verified_at",
+        "premium_started_at",
+        "stripe_customer_id",
+        "stripe_subscription_id",
+      ].join(", ")
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw wrapDbError("No se pudo consultar el estado premium.", error);
+  }
+
+  return data || null;
+}
+
+async function upsertProfileSubscription(payload, supabaseClient) {
+  const { error } = await supabaseClient
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" });
+
+  if (error) {
+    throw wrapDbError("No se pudo actualizar la suscripción.", error);
   }
 }
 

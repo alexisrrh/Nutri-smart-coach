@@ -1,12 +1,15 @@
 import { Router } from "express";
+import { supabase } from "../config/supabase.js";
 import { requireAuthenticatedUser, verifySupabaseUser } from "../middleware/auth.js";
 import {
   applyReferralCode,
   createInfluencerCode,
   createUserReferralCode,
+  claimReferralReward,
   getMyReferralStats,
   validateReferralCode,
 } from "../services/referral.service.js";
+import { serializePremiumProfile } from "../services/stripe.service.js";
 
 const router = Router();
 
@@ -68,4 +71,54 @@ router.post("/referrals/apply-code", verifySupabaseUser, async (req, res, next) 
   }
 });
 
+router.post("/referrals/claim-reward", verifySupabaseUser, async (req, res, next) => {
+  try {
+    const userId = requireAuthenticatedUser(req, res);
+    if (!userId) return;
+
+    const result = await claimReferralReward({ userId });
+    const stats = await getMyReferralStats(userId);
+    const premium = await getPremiumStatusSnapshot(userId);
+
+    return res.status(201).json({
+      reward: result.reward,
+      premium,
+      stats,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;
+
+async function getPremiumStatusSnapshot(userId) {
+  const { data, error } = await getProfileQuery(userId);
+  if (error) return null;
+  return serializePremiumProfile(data);
+}
+
+async function getProfileQuery(userId) {
+  return supabase
+    .from("profiles")
+    .select(
+      [
+        "id",
+        "plan",
+        "is_premium",
+        "subscription_status",
+        "premium_source",
+        "premium_product_id",
+        "premium_platform_transaction_id",
+        "premium_expires_at",
+        "premium_last_verified_at",
+        "premium_started_at",
+        "stripe_customer_id",
+        "stripe_subscription_id",
+        "stripe_current_period_end",
+        "stripe_cancel_at_period_end",
+      ].join(", ")
+    )
+    .eq("id", userId)
+    .maybeSingle();
+}
