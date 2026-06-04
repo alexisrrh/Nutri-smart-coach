@@ -5,6 +5,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
 const {
   buildCommissionSubscriptionRef,
   createAffiliateCommissionForPaidInvoice,
+  getPremiumStatusAcquisitionSnapshot,
   markReferralPremiumActive,
   registerSubscriptionAcquisition,
   normalizeSubscriptionAcquisitionRecord,
@@ -27,6 +28,34 @@ describe("acquisition service", () => {
 
     expect(result.referral).toBeNull();
     expect(result.acquisition.acquisition_source).toBe("normal");
+  });
+
+  it("returns a 7 day premium status snapshot for referral acquisitions", () => {
+    const snapshot = getPremiumStatusAcquisitionSnapshot({
+      acquisition_source: "referral",
+      referral_code_id: "code-1",
+      trial_source: "standard_trial",
+      trial_ends_at: "2026-01-08T00:00:00.000Z",
+      commission_percent: 0,
+      commission_months_limit: 0,
+    });
+
+    expect(snapshot.trial_days).toBe(7);
+    expect(snapshot.has_trial_banner).toBe(true);
+    expect(snapshot.referral_code_id).toBe("code-1");
+  });
+
+  it("returns a 15 day premium status snapshot for influencer acquisitions", () => {
+    const snapshot = getPremiumStatusAcquisitionSnapshot({
+      acquisition_source: "influencer",
+      referral_code_id: "code-2",
+      trial_source: "influencer_trial",
+      trial_days: 15,
+    });
+
+    expect(snapshot.trial_days).toBe(15);
+    expect(snapshot.has_trial_banner).toBe(true);
+    expect(snapshot.trial_source).toBe("influencer_trial");
   });
 
   it("creates affiliate commission 30 percent on first paid invoice", async () => {

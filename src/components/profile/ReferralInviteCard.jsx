@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Copy, Eye, Gift, LoaderCircle, Share2, Sparkles } from "lucide-react";
 import { trackEvent } from "../../services/analytics";
-import { createReferralCode, getMyReferralStats } from "../../services/referralService";
+import {
+  claimReferralReward,
+  createReferralCode,
+  getMyReferralStats,
+} from "../../services/referralService";
+import { getPremiumStatus } from "../../services/premiumService";
 import {
   PrimaryButton,
   SecondaryButton,
@@ -9,7 +14,10 @@ import {
   SurfaceCard,
   useToast,
 } from "../ui";
-import { getReferralInviteCardViewModel } from "./referralInviteCardViewModel";
+import {
+  buildReferralInviteShareText,
+  getReferralInviteCardViewModel,
+} from "./referralInviteCardViewModel";
 
 export function ReferralInviteCardView({
   viewModel = getReferralInviteCardViewModel(),
@@ -17,12 +25,18 @@ export function ReferralInviteCardView({
   error = "",
   loading = false,
   actionLoading = false,
+  actionMode = null,
   onCreateCode,
+  onClaimReward,
   onCopyCode,
   onShareCode,
   onExpand,
   onCollapse,
 }) {
+  const isLoading = Boolean(loading || viewModel.loading);
+  const isCreateLoading = Boolean(actionLoading && actionMode === "create");
+  const isClaimLoading = Boolean(actionLoading && actionMode === "claim");
+
   return (
     <SurfaceCard
       className={`relative overflow-hidden p-2.5 ${className}`}
@@ -60,7 +74,27 @@ export function ReferralInviteCardView({
           </StatusBox>
         ) : null}
 
-        {!viewModel.hasCode ? (
+        {isLoading ? (
+          <div className="px-0.5 py-0.25">
+            <div className="flex items-center justify-center gap-1 text-[10px] font-semibold text-[var(--app-muted)]">
+              <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
+              <span>Cargando código...</span>
+            </div>
+
+            <div className="mt-1 h-3 rounded-full bg-[color-mix(in_srgb,var(--app-border)_30%,transparent)]" />
+
+            <div className="mt-1.25 flex justify-center">
+              <button
+                type="button"
+                disabled
+                className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_78%,black)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--app-muted)] opacity-70"
+              >
+                <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
+                <span>Generando...</span>
+              </button>
+            </div>
+          </div>
+        ) : !viewModel.hasCode ? (
           <div className="px-0.5 py-0.25">
             <p className="text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
               {viewModel.noCodeRule}
@@ -70,24 +104,28 @@ export function ReferralInviteCardView({
               <PrimaryButton
                 onClick={onCreateCode}
                 icon={
-                  actionLoading ? (
+                  isCreateLoading ? (
                     <LoaderCircle size={14} className="animate-spin" />
-                ) : (
+                  ) : (
                     <Sparkles size={14} />
                   )
                 }
                 className="w-full py-1.25 text-[10px]"
                 disabled={loading || actionLoading}
-                >
-                  Crear mi código
-                </PrimaryButton>
-              </div>
+              >
+                {isCreateLoading ? "Generando..." : "Crear mi código"}
+              </PrimaryButton>
             </div>
+          </div>
         ) : viewModel.expanded ? (
           <div className="flex flex-col items-center px-0.5 py-0.25 text-center">
             <div className="inline-flex max-w-full items-center rounded-2xl border border-[color-mix(in_srgb,#D4AF37_36%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_20%,transparent),var(--app-surface))] px-3 py-1.25 text-[12px] font-black tracking-[0.2em] text-[var(--app-text)] shadow-[0_0_14px_color-mix(in_srgb,#D4AF37_16%,transparent)]">
-                {viewModel.referralCode}
-              </div>
+              {viewModel.referralCode}
+            </div>
+
+            <p className="mt-1 text-[9px] font-semibold leading-4 text-[#D4AF37]">
+              Invitado: 7 días Premium gratis.
+            </p>
 
             <div className="mt-1.25 grid w-full grid-cols-2 gap-1.25">
               <SecondaryButton
@@ -120,15 +158,45 @@ export function ReferralInviteCardView({
         ) : (
           <div className="px-0.5 py-0.25">
             <p className="text-[10px] font-semibold leading-4 text-[var(--app-text)]">
-              {viewModel.progressValue} / {viewModel.maxReferralRewards} pagos confirmados
+              {viewModel.progressValue} de {viewModel.maxReferralRewards} amigos Premium
+            </p>
+            <p className="mt-0.25 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
+              Cuentan tras su primer pago confirmado.
             </p>
 
-            <div className="mt-0.75 h-0.5 rounded-full bg-[color-mix(in_srgb,var(--app-border)_65%,transparent)]">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#D4AF37,color-mix(in_srgb,#D4AF37_66%,white))] shadow-[0_0_8px_color-mix(in_srgb,#D4AF37_20%,transparent)] transition-all"
-                style={{ width: `${viewModel.progressPercent}%` }}
-              />
-            </div>
+            {viewModel.canClaimReward ? (
+              <div className="mt-1 rounded-2xl border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_16%,transparent),color-mix(in_srgb,var(--app-surface)_96%,black))] px-2.5 py-1 text-center shadow-[0_0_16px_color-mix(in_srgb,#D4AF37_10%,transparent)]">
+                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[#D4AF37]">
+                  Recompensa desbloqueada
+                </p>
+                <p className="mt-0.25 text-[10px] font-semibold leading-4 text-[var(--app-text)]">
+                  Has conseguido 1 mes Premium gratis.
+                </p>
+                <div className="mt-0.75">
+                  <PrimaryButton
+                    onClick={onClaimReward}
+                    icon={
+                      isClaimLoading ? (
+                        <LoaderCircle size={14} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={14} />
+                      )
+                    }
+                    className="w-full py-1.5 text-[10px]"
+                    disabled={loading || actionLoading || !onClaimReward}
+                  >
+                    {isClaimLoading ? "Reclamando..." : "Reclamar recompensa"}
+                  </PrimaryButton>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-0.75 h-0.5 rounded-full bg-[color-mix(in_srgb,var(--app-border)_65%,transparent)]">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#D4AF37,color-mix(in_srgb,#D4AF37_66%,white))] shadow-[0_0_8px_color-mix(in_srgb,#D4AF37_20%,transparent)] transition-all"
+                  style={{ width: `${viewModel.progressPercent}%` }}
+                />
+              </div>
+            )}
 
             <div className="mt-1.25 flex justify-center">
               <button
@@ -154,6 +222,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
   const [stats, setStats] = useState(() => initialStats);
   const [loading, setLoading] = useState(() => !initialStats);
   const [actionLoading, setActionLoading] = useState(false);
+  const [actionMode, setActionMode] = useState(null);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
 
@@ -197,16 +266,16 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       typeof window !== "undefined" && window.location?.origin
         ? window.location.origin
         : "/perfil";
-
     return {
       title: "NutriSmart Coach",
-      text: `Usa mi código ${viewModel.referralCode} en NutriSmart Coach. Invita a 3 amigos Premium y consigue 1 mes gratis.`,
+      text: buildReferralInviteShareText(viewModel.referralCode, 7),
       url: shareUrl,
     };
   }, [viewModel.referralCode]);
 
-  async function handleCreateCode() {
+  async function handleCreateCode({ expandAfterCreate = false } = {}) {
     setActionLoading(true);
+    setActionMode("create");
     setError("");
 
     try {
@@ -230,11 +299,61 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       });
 
       toast.success("Tu código de referido ya está listo.");
+
+      if (expandAfterCreate) {
+        setExpanded(true);
+      }
+
+      return nextCode;
     } catch (createError) {
       setError(createError.message || "No se pudo crear tu código.");
       toast.error("No se pudo crear tu código de referido.");
+      return null;
     } finally {
       setActionLoading(false);
+      setActionMode(null);
+    }
+  }
+
+  async function handleClaimReward() {
+    setActionLoading(true);
+    setActionMode("claim");
+    setError("");
+    trackEvent("referral_reward_claim_clicked", {
+      rewardId: viewModel.latestReward?.id || null,
+    });
+
+    try {
+      const result = await claimReferralReward();
+
+      if (result?.stats) {
+        setStats(result.stats);
+      } else {
+        const nextStats = await getMyReferralStats();
+        setStats(nextStats);
+      }
+
+      if (typeof result?.premium === "object") {
+        void getPremiumStatus().catch(() => null);
+      }
+
+      trackEvent("referral_reward_claimed", {
+        rewardId: result?.reward?.id || null,
+      });
+
+      toast.success("1 mes Premium añadido a tu cuenta.");
+
+      return result;
+    } catch (claimError) {
+      trackEvent("referral_reward_claim_failed", {
+        message: claimError?.message || "No se pudo reclamar la recompensa.",
+      });
+      setError(claimError.message || "No se pudo reclamar la recompensa.");
+      toast.error(claimError.message || "No se pudo reclamar la recompensa.");
+      return null;
+    } finally {
+      setActionLoading(false);
+      setActionMode(null);
     }
   }
 
@@ -283,10 +402,19 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       error={error}
       loading={loading}
       actionLoading={actionLoading}
-      onCreateCode={handleCreateCode}
+      actionMode={actionMode}
+      onCreateCode={() => handleCreateCode()}
+      onClaimReward={() => handleClaimReward()}
       onCopyCode={handleCopyCode}
       onShareCode={handleShareCode}
-      onExpand={() => setExpanded(true)}
+      onExpand={() => {
+        if (viewModel.hasCode) {
+          setExpanded(true);
+          return;
+        }
+
+        void handleCreateCode({ expandAfterCreate: true });
+      }}
       onCollapse={() => setExpanded(false)}
     />
   );
