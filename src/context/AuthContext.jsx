@@ -4,6 +4,10 @@ import {
   consumePendingLegalConsent,
   setPendingLegalConsent,
 } from "../services/legalConsentService";
+import {
+  applyPendingOAuthReferralCode,
+  isOAuthReferralFlowPending,
+} from "../services/referralOnboardingService";
 import { getProfile, saveProfile } from "../services/profileService";
 import { AuthContext } from "./authContext";
 
@@ -35,7 +39,7 @@ export function AuthProvider({ children }) {
         if (isMounted) {
           setUser(data.user);
           scheduleDashboardWarmup(data.user?.id);
-          void syncPendingLegalConsent(data.user);
+          void syncPendingOnboardingArtifacts(data.user);
         }
       } catch (error) {
         if (isInvalidRefreshTokenError(error)) {
@@ -58,7 +62,7 @@ export function AuthProvider({ children }) {
 
         setUser(session?.user ?? null);
         scheduleDashboardWarmup(session?.user?.id);
-        void syncPendingLegalConsent(session?.user);
+        void syncPendingOnboardingArtifacts(session?.user);
         setLoadingAuth(false);
       }
     );
@@ -116,7 +120,7 @@ function scheduleDashboardWarmup(userId) {
   }, 250);
 }
 
-async function syncPendingLegalConsent(user) {
+async function syncPendingOnboardingArtifacts(user) {
   const consent = consumePendingLegalConsent();
   if (!user?.id || !consent) return;
 
@@ -157,6 +161,15 @@ async function syncPendingLegalConsent(user) {
   } catch (error) {
     console.error("No se pudo guardar el consentimiento legal:", error);
     setPendingLegalConsent(consent);
+    return;
+  }
+
+  if (!isOAuthReferralFlowPending()) return;
+
+  try {
+    await applyPendingOAuthReferralCode();
+  } catch (error) {
+    console.error("No se pudo aplicar el código de invitación pendiente:", error);
   }
 }
 

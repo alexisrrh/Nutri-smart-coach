@@ -30,9 +30,7 @@ export default function AppShell({
         <AppBackground />
 
         <div
-          className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain 
-           
-          } [-webkit-overflow-scrolling:touch] ${scrollClassName}`}
+          className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] ${scrollClassName}`}
         >
           {children}
         </div>
