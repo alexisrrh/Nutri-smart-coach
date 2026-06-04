@@ -23,6 +23,8 @@ export function ReferralInviteCardView({
   onExpand,
   onCollapse,
 }) {
+  const isLoading = Boolean(loading || viewModel.loading);
+
   return (
     <SurfaceCard
       className={`relative overflow-hidden p-2.5 ${className}`}
@@ -60,7 +62,27 @@ export function ReferralInviteCardView({
           </StatusBox>
         ) : null}
 
-        {!viewModel.hasCode ? (
+        {isLoading ? (
+          <div className="px-0.5 py-0.25">
+            <div className="flex items-center justify-center gap-1 text-[10px] font-semibold text-[var(--app-muted)]">
+              <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
+              <span>Cargando código...</span>
+            </div>
+
+            <div className="mt-1 h-3 rounded-full bg-[color-mix(in_srgb,var(--app-border)_30%,transparent)]" />
+
+            <div className="mt-1.25 flex justify-center">
+              <button
+                type="button"
+                disabled
+                className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_78%,black)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--app-muted)] opacity-70"
+              >
+                <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
+                <span>Generando...</span>
+              </button>
+            </div>
+          </div>
+        ) : !viewModel.hasCode ? (
           <div className="px-0.5 py-0.25">
             <p className="text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
               {viewModel.noCodeRule}
@@ -72,17 +94,17 @@ export function ReferralInviteCardView({
                 icon={
                   actionLoading ? (
                     <LoaderCircle size={14} className="animate-spin" />
-                ) : (
+                  ) : (
                     <Sparkles size={14} />
                   )
                 }
                 className="w-full py-1.25 text-[10px]"
                 disabled={loading || actionLoading}
-                >
-                  Crear mi código
-                </PrimaryButton>
-              </div>
+              >
+                {actionLoading ? "Generando..." : "Crear mi código"}
+              </PrimaryButton>
             </div>
+          </div>
         ) : viewModel.expanded ? (
           <div className="flex flex-col items-center px-0.5 py-0.25 text-center">
             <div className="inline-flex max-w-full items-center rounded-2xl border border-[color-mix(in_srgb,#D4AF37_36%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_20%,transparent),var(--app-surface))] px-3 py-1.25 text-[12px] font-black tracking-[0.2em] text-[var(--app-text)] shadow-[0_0_14px_color-mix(in_srgb,#D4AF37_16%,transparent)]">
@@ -120,7 +142,10 @@ export function ReferralInviteCardView({
         ) : (
           <div className="px-0.5 py-0.25">
             <p className="text-[10px] font-semibold leading-4 text-[var(--app-text)]">
-              {viewModel.progressValue} / {viewModel.maxReferralRewards} pagos confirmados
+              {viewModel.progressValue} de {viewModel.maxReferralRewards} amigos Premium
+            </p>
+            <p className="mt-0.25 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
+              Cuentan tras su primer pago confirmado.
             </p>
 
             <div className="mt-0.75 h-0.5 rounded-full bg-[color-mix(in_srgb,var(--app-border)_65%,transparent)]">
@@ -205,7 +230,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
     };
   }, [viewModel.referralCode]);
 
-  async function handleCreateCode() {
+  async function handleCreateCode({ expandAfterCreate = false } = {}) {
     setActionLoading(true);
     setError("");
 
@@ -230,9 +255,16 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       });
 
       toast.success("Tu código de referido ya está listo.");
+
+      if (expandAfterCreate) {
+        setExpanded(true);
+      }
+
+      return nextCode;
     } catch (createError) {
       setError(createError.message || "No se pudo crear tu código.");
       toast.error("No se pudo crear tu código de referido.");
+      return null;
     } finally {
       setActionLoading(false);
     }
@@ -283,10 +315,17 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       error={error}
       loading={loading}
       actionLoading={actionLoading}
-      onCreateCode={handleCreateCode}
+      onCreateCode={() => handleCreateCode()}
       onCopyCode={handleCopyCode}
       onShareCode={handleShareCode}
-      onExpand={() => setExpanded(true)}
+      onExpand={() => {
+        if (viewModel.hasCode) {
+          setExpanded(true);
+          return;
+        }
+
+        void handleCreateCode({ expandAfterCreate: true });
+      }}
       onCollapse={() => setExpanded(false)}
     />
   );

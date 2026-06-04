@@ -15,6 +15,26 @@ vi.mock("../../services/referralService", () => ({
 }));
 
 describe("ReferralInviteCard", () => {
+  it("shows a loading state before referral data resolves", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <ReferralInviteCardView
+            loading
+            viewModel={getReferralInviteCardViewModel({
+              loading: true,
+            })}
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Cargando código...");
+    expect(html).toContain("Generando...");
+    expect(html).not.toContain("Crear mi código");
+    expect(html).not.toContain("Ver código");
+  });
+
   it("renders the create-code state when the user has no referral code", () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
@@ -64,7 +84,8 @@ describe("ReferralInviteCard", () => {
 
     expect(html).toContain("Gana 1 mes Premium gratis");
     expect(html).toContain("3 amigos Premium = 1 mes gratis");
-    expect(html).toContain("0 / 3 pagos confirmados");
+    expect(html).toContain("0 de 3 amigos Premium");
+    expect(html).toContain("Cuentan tras su primer pago confirmado.");
     expect(html).toContain("Ver código");
     expect(html).not.toContain("Compartir");
     expect(html).not.toContain("NSC1234");
