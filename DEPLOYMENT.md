@@ -1,4 +1,4 @@
-# NutriSmart Coach Deployment
+# Nutri Smart Coach Deployment
 
 This repo deploys as two separate services:
 

@@ -71,7 +71,7 @@ function getInsight({ smartTip, nutritionScore, mealCount, hasDiet }) {
       badgeClass: "border-yellow-400/20 bg-yellow-400/10 text-yellow-300",
       title: "Primero crea tu plan base",
       text:
-        "Aún no tienes una dieta activa. Cuando crees tu plan semanal, NutriSmart podrá comparar tus comidas contra una meta real.",
+        "Aún no tienes una dieta activa. Cuando crees tu plan semanal, Nutri Smart podrá comparar tus comidas contra una meta real.",
       action:
         "Crea una dieta IA desde la sección Plan para recibir recomendaciones más precisas.",
     };

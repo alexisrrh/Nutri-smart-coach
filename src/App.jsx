@@ -41,6 +41,12 @@ const TermsOfService = lazy(() =>
   }))
 );
 
+const CreatorTerms = lazy(() =>
+  import("./pages/legal/CreatorTerms").then((module) => ({
+    default: module.CreatorTerms,
+  }))
+);
+
 const DeleteAccount = lazy(() =>
   import("./pages/legal/DeleteAccount").then((module) => ({
     default: module.DeleteAccount,
@@ -88,6 +94,12 @@ const Dashboard = lazy(() =>
 const ProfileSetup = lazy(() =>
   import("./pages/ProfileSetup").then((module) => ({
     default: module.ProfileSetup,
+  }))
+);
+
+const CreatorPanel = lazy(() =>
+  import("./pages/CreatorPanel").then((module) => ({
+    default: module.CreatorPanel,
   }))
 );
 
@@ -219,6 +231,7 @@ function AppRoutes({ splashVisible }) {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/creator-terms" element={<CreatorTerms />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
         <Route
           path="/premium"
@@ -270,6 +283,22 @@ function AppRoutes({ splashVisible }) {
           element={
             <ProtectedRoute>
               <ProfileSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creator-panel"
+          element={
+            <ProtectedRoute>
+              <CreatorPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/creadores"
+          element={
+            <ProtectedRoute>
+              <CreatorPanel />
             </ProtectedRoute>
           }
         />

@@ -268,7 +268,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
         : "/perfil";
     return {
       title: "NutriSmart Coach",
-      text: buildReferralInviteShareText(viewModel.referralCode, 7),
+      text: buildReferralInviteShareText(viewModel.referralCode),
       url: shareUrl,
     };
   }, [viewModel.referralCode]);
