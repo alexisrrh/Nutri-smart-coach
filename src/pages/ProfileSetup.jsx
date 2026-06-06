@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera,
@@ -14,47 +13,14 @@ import {
   UserRound,
   BrainCircuit,
 } from "lucide-react";
-import { useAuth } from "../context/useAuth";
 import { useProgressSummary } from "../hooks/progress/useProgressSummary";
-import { getProfile } from "../services/profileService";
 import { AppShell, MetaBadge } from "../components/ui";
 import ReferralInviteCard from "../components/profile/ReferralInviteCard";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
   const { summary: progressSummary, loading: loadingProgress } =
     useProgressSummary();
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadProfile() {
-      setLoading(true);
-
-      try {
-        if (!user?.id) return;
-
-        const nextProfile = await getProfile(user.id);
-        if (active) setProfile(nextProfile);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    void loadProfile();
-
-    return () => {
-      active = false;
-    };
-  }, [user]);
-
-  const displayName = profile?.name || user?.email?.split("@")[0] || "Tu perfil";
-  const goalLabel = getGoalLabel(profile?.goal);
-  const statusLabel =
-    loading || loadingProgress ? "Sincronizando..." : "Sincronizado";
 
   return (
     <AppShell
@@ -73,57 +39,6 @@ export function ProfileSetup() {
         <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
 
         <div className="relative z-10 flex w-full flex-col gap-2.5">
-          <header className="relative overflow-hidden rounded-[1.35rem] border border-[var(--app-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_92%,#06110e),var(--app-card))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--app-primary) 8%, transparent), transparent 28%)",
-              }}
-            />
-
-            <div className="relative z-10 flex items-start gap-2.5">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow)]">
-                <BrainCircuit size={20} />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
-                  AI Settings Hub
-                </MetaBadge>
-
-                <h1 className="mt-1.5 truncate text-[18px] font-black leading-none tracking-tight text-[var(--app-text)]">
-                  {displayName}
-                </h1>
-
-                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                  <MetaBadge variant="neutral">{goalLabel}</MetaBadge>
-
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
-                    {statusLabel}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <section className="grid grid-cols-2 gap-1">
-            <SettingMetric
-              label="Peso"
-              value={profile?.weight ? `${profile.weight} kg` : "—"}
-            />
-            <SettingMetric
-              label="Altura"
-              value={profile?.height ? `${profile.height} cm` : "—"}
-            />
-            <SettingMetric
-              label="Actividad"
-              value={activityLabel(profile?.activity_level)}
-            />
-            <SettingMetric label="Comidas" value={profile?.meals_per_day || "4"} />
-          </section>
-
           <ProgressAndAchievementsCard
             onOpenProgress={() => navigate("/progress")}
             progress={progressSummary}
@@ -139,23 +54,32 @@ export function ProfileSetup() {
               description="Datos personales, objetivo, nivel y macros."
               onClick={() => navigate("/settings/profile")}
             />
-            <NavCard
+                <NavCard
               icon={<Megaphone size={16} />}
-              title="Panel de creadores"
-              description="Gana comisiones con tu comunidad."
+              title="Panel de Creadores"
+              description="Gana dinero con tu comunidad."
               onClick={() => navigate("/creator-panel")}
+              animatedIcon
+              titleClassName="bg-[linear-gradient(90deg,#F5D76E,#D4AF37,#F5D76E)] bg-clip-text text-transparent"
+            />
+            <NavCard
+              icon={<BrainCircuit size={16} />}
+              title="IA y Nutrición"
+              description="Asistente nutricional y recomendaciones."
+              onClick={() => navigate("/settings/ai")}
+            />
+        
+            <NavCard
+              icon={<Sparkles size={16} />}
+              title="Premium"
+              description="Gestión de tu plan y beneficios."
+              onClick={() => navigate("/premium")}
             />
             <NavCard
               icon={<Palette size={16} />}
               title="Personalización"
-              description="Themes, apariencia y preview visual."
+              description="Apariencia, temas y accesos."
               onClick={() => navigate("/settings/theme")}
-            />
-            <NavCard
-              icon={<BrainCircuit size={16} />}
-              title="IA y nutrición"
-              description="Límites, estado y expansión del sistema AI."
-              onClick={() => navigate("/settings/ai")}
             />
             <NavCard
               icon={<ShieldCheck size={16} />}
@@ -177,7 +101,14 @@ export function ProfileSetup() {
 }
 
 
-function NavCard({ description, icon, onClick, title }) {
+function NavCard({
+  animatedIcon = false,
+  description,
+  icon,
+  onClick,
+  title,
+  titleClassName = "",
+}) {
   return (
     <button
       type="button"
@@ -185,12 +116,18 @@ function NavCard({ description, icon, onClick, title }) {
       className="group flex w-full items-center justify-between gap-2.5 rounded-[1.2rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),var(--app-card))] px-2.5 py-3.5 text-left shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition duration-200 active:scale-[0.985]"
     >
       <span className="flex min-w-0 items-center gap-2.5">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)] transition group-active:scale-[0.98]">
+        <span
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)] transition group-active:scale-[0.98] ${
+            animatedIcon ? "creator-icon-wrapper" : ""
+          }`}
+        >
           {icon}
         </span>
 
         <span className="min-w-0">
-          <span className="block text-[15px] font-black leading-tight text-[var(--app-text)]">
+          <span
+            className={`block text-[15px] font-black leading-tight text-[var(--app-text)] ${titleClassName}`}
+          >
             {title}
           </span>
           <span className="mt-0.5 block text-[11px] font-medium leading-4 text-[var(--app-muted)]">
@@ -332,19 +269,6 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
   );
 }
 
-function SettingMetric({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]">
-      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-        {label}
-      </p>
-      <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
-        {value || "—"}
-      </p>
-    </div>
-  );
-}
-
 function ProgressStatChip({ icon: Icon, label }) {
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
@@ -354,16 +278,4 @@ function ProgressStatChip({ icon: Icon, label }) {
       </span>
     </div>
   );
-}
-
-function getGoalLabel(goal) {
-  if (goal === "ganar_musculo") return "Ganar músculo";
-  if (goal === "mantener_peso") return "Mantener peso";
-  return "Perder grasa";
-}
-
-function activityLabel(activity) {
-  if (activity === "low") return "Sedentario";
-  if (activity === "high") return "Alta";
-  return "Moderada";
 }

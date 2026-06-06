@@ -668,6 +668,38 @@ select {
   }
 }
 
+@keyframes creatorOrbit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.creator-icon-wrapper {
+  position: relative;
+}
+
+.creator-icon-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  border-top-color: rgba(236, 72, 153, 0.9);
+  filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.8));
+  animation: creatorOrbit 5s linear infinite;
+  pointer-events: none;
+}
+
+.creator-icon-wrapper:hover::before,
+.creator-icon-wrapper:active::before,
+.creator-icon-wrapper:focus-visible::before {
+  animation-duration: 3s;
+}
+
 .scrollbar-hidden {
   -ms-overflow-style: none;
   scrollbar-width: none;
