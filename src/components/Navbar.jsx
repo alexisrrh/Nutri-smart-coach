@@ -31,7 +31,7 @@ export function Navbar() {
         <Link to="/" className="flex items-center gap-3">
           <img
             src="/favicon.png"
-            alt="NutriSmart Coach"
+            alt="Nutri Smart Coach"
             className="h-11 w-11 rounded-2xl object-cover shadow-[0_0_25px_var(--app-glow)]"
           />
 

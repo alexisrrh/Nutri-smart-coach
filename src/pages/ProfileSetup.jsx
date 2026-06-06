@@ -4,6 +4,7 @@ import {
   Camera,
   Dumbbell,
   ChevronDown,
+  Megaphone,
   Flame,
   KeyRound,
   Palette,
@@ -137,6 +138,12 @@ export function ProfileSetup() {
               title="Mi perfil"
               description="Datos personales, objetivo, nivel y macros."
               onClick={() => navigate("/settings/profile")}
+            />
+            <NavCard
+              icon={<Megaphone size={16} />}
+              title="Panel de creadores"
+              description="Gana comisiones con tu comunidad."
+              onClick={() => navigate("/creator-panel")}
             />
             <NavCard
               icon={<Palette size={16} />}

@@ -144,8 +144,8 @@ describe("ReferralInviteCard", () => {
   });
 
   it("builds a 7 day share message for normal referral codes", () => {
-    expect(buildReferralInviteShareText("NSC1234", 7)).toBe(
-      "Únete a NutriSmart Coach con mi código NSC1234 y consigue 7 días Premium gratis."
+    expect(buildReferralInviteShareText("NSC1234", 15)).toBe(
+      "Únete a Nutri Smart Coach con mi código NSC1234 y consigue 7 días Premium gratis."
     );
   });
 
@@ -175,6 +175,8 @@ describe("ReferralInviteCard", () => {
     expect(html).toContain("Compartir");
     expect(html).toContain("Ocultar código");
     expect(html).not.toContain("Ver código");
+    expect(html).not.toContain("15 días");
+    expect(html).not.toContain("influencer");
   });
 
   it("does not render referral card content outside /perfil", () => {

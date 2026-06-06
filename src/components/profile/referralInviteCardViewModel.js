@@ -1,5 +1,5 @@
 const MAX_REFERRAL_REWARDS = 3;
-const REFERRAL_INVITE_TRIAL_DAYS = 7;
+const REFERRAL_NORMAL_TRIAL_DAYS = 7;
 
 export function getReferralInviteCardViewModel({
   stats = null,
@@ -29,7 +29,7 @@ export function getReferralInviteCardViewModel({
     expanded: Boolean(expanded && hasCode),
     hasCode,
     referralCode,
-    inviteeTrialDays: REFERRAL_INVITE_TRIAL_DAYS,
+    inviteeTrialDays: REFERRAL_NORMAL_TRIAL_DAYS,
     rewardAvailable: canClaimReward,
     canClaimReward,
     rewardsAvailable,
@@ -47,12 +47,13 @@ export function getReferralInviteCardViewModel({
   };
 }
 
-export function buildReferralInviteShareText(referralCode, inviteeTrialDays) {
+export function buildReferralInviteShareText(referralCode) {
   const safeCode = String(referralCode || "").trim();
-  const safeTrialDays = Number(inviteeTrialDays || 0) || REFERRAL_INVITE_TRIAL_DAYS;
+  const safeTrialDays = REFERRAL_NORMAL_TRIAL_DAYS;
 
-  return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
+  return `Únete a Nutri Smart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
 }
 
-// TODO: los códigos influencer, sus 15 días gratis, comisiones y métricas deben
-// mostrarse en un panel separado de influencers, no en esta tarjeta de referidos normales.
+// TODO: los códigos de creador, sus 15 días gratis, comisiones y métricas
+// deben mostrarse en un panel separado de creadores de contenido, no en esta
+// tarjeta de referidos normales.
