@@ -43,8 +43,13 @@ describe("creator service", () => {
       getMyReferralStatsFn: async () => ({
         codes: [
           {
+            code: "USER1234",
+            type: "user",
+            is_active: true,
+          },
+          {
             code: "CREATOR30",
-            type: "influencer",
+            type: "creator",
             is_active: true,
           },
         ],
@@ -70,6 +75,42 @@ describe("creator service", () => {
       totalCommissions: 3,
       pendingCommissions: 2,
       paidCommissions: 1,
+    });
+  });
+
+  it("auto-creates a creator code when the application is approved but no code exists", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo();
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toMatch(/^NSC/);
+    expect(referralRepo.insertCodeCalls).toHaveLength(1);
+    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
+      userId: "user-1",
+      type: "creator",
+      trialDays: 15,
+      commissionPercent: 30,
+      commissionMonthsLimit: 12,
+      isActive: true,
     });
   });
 
@@ -141,14 +182,26 @@ describe("creator service", () => {
         to: "info@nutrismartcoach.com",
         subject: "Nueva solicitud - Programa de Creadores",
         text: expect.stringContaining("Nombre: Creator Test"),
+        html: expect.stringContaining("Nueva solicitud - Programa de Creadores"),
       })
     );
-    expect(emailClient.mock.calls[0][0].text).toContain("Email: creator@example.com");
+    expect(emailClient.mock.calls[0][0].text).toContain("Estado: Pendiente de revisión");
     expect(emailClient.mock.calls[0][0].text).toContain("User ID: user-1");
+    expect(emailClient.mock.calls[0][0].text).toContain("Nombre: Creator Test");
+    expect(emailClient.mock.calls[0][0].text).toContain("Email: creator@example.com");
     expect(emailClient.mock.calls[0][0].text).toContain("Plataforma: Instagram");
-    expect(emailClient.mock.calls[0][0].text).toContain("Perfil: @creator");
-    expect(emailClient.mock.calls[0][0].text).toContain("Seguidores: 6200");
-    expect(emailClient.mock.calls[0][0].text).toContain("Estado: pending");
+    expect(emailClient.mock.calls[0][0].text).toContain("Usuario o enlace del perfil: @creator");
+    expect(emailClient.mock.calls[0][0].text).toContain("Seguidores declarados: 6200");
+    expect(emailClient.mock.calls[0][0].text).toContain("Cumple mínimo de 5.000 seguidores: Sí");
+    expect(emailClient.mock.calls[0][0].text).toContain("Prueba o media kit: https://example.com/creator");
+    expect(emailClient.mock.calls[0][0].text).toContain("ID de solicitud: app-1");
+    expect(emailClient.mock.calls[0][0].text).toContain("Fecha de solicitud:");
+    expect(emailClient.mock.calls[0][0].text).toContain("Estado Premium:");
+    expect(emailClient.mock.calls[0][0].text).toContain("Fecha de creación de cuenta:");
+    expect(emailClient.mock.calls[0][0].html).toContain("Pendiente de revisión");
+    expect(emailClient.mock.calls[0][0].html).toContain("Revisar perfil social");
+    expect(emailClient.mock.calls[0][0].html).toContain("Validar seguidores");
+    expect(emailClient.mock.calls[0][0].html).toContain("Aprobar o rechazar manualmente en Supabase");
 
     expect(emailClient).toHaveBeenNthCalledWith(
       2,
@@ -170,6 +223,36 @@ describe("creator service", () => {
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("user_email_sent")
     );
+  });
+
+  it("renders profile handles and proof links as HTML anchors when they look like URLs", async () => {
+    const repo = createCreatorRepo();
+    const emailClient = vi.fn().mockResolvedValue({ id: "email-1" });
+
+    await submitCreatorApplication(
+      "user-1",
+      {
+        socialPlatform: "youtube",
+        socialHandle: "https://youtube.com/@creator",
+        followersCount: 8000,
+        proofUrl: "https://example.com/media-kit",
+      },
+      {
+        repo,
+        emailClient,
+        authUser: {
+          id: "user-1",
+          email: "creator@example.com",
+          user_metadata: {
+            name: "Creator Test",
+          },
+        },
+      }
+    );
+
+    const adminEmail = emailClient.mock.calls[0][0];
+    expect(adminEmail.html).toContain('href="https://youtube.com/@creator"');
+    expect(adminEmail.html).toContain('href="https://example.com/media-kit"');
   });
 
   it("keeps the application saved when notification emails fail", async () => {
@@ -278,6 +361,63 @@ function createCreatorRepo(initial = {}) {
     },
     async updateApplication() {
       return application;
+    },
+  };
+}
+
+function createCreatorReferralRepo(initial = {}) {
+  const insertCodeCalls = [];
+  const state = {
+    codes: initial.codes ? [...initial.codes] : [],
+  };
+
+  return {
+    insertCodeCalls,
+    async getActiveCodeByUserAndType(userId, type) {
+      return (
+        state.codes.find(
+          (code) =>
+            code.user_id === userId &&
+            code.type === type &&
+            code.is_active === true
+        ) || null
+      );
+    },
+    async getCodeByCode(code) {
+      return state.codes.find((item) => item.code === code) || null;
+    },
+    async getCodeByUserAndType(userId, type) {
+      return (
+        state.codes.find((code) => code.user_id === userId && code.type === type) || null
+      );
+    },
+    async insertCode(payload) {
+      insertCodeCalls.push(payload);
+      const row = {
+        id: `code-${state.codes.length + 1}`,
+        user_id: payload.userId,
+        code: payload.code,
+        type: payload.type,
+        trial_days: payload.trialDays,
+        commission_percent: payload.commissionPercent,
+        commission_months_limit: payload.commissionMonthsLimit,
+        is_active: payload.isActive,
+      };
+      state.codes.push(row);
+      return row;
+    },
+    async updateCode(id, payload) {
+      const row = state.codes.find((code) => code.id === id);
+      Object.assign(row, {
+        user_id: payload.userId,
+        code: payload.code,
+        type: payload.type,
+        trial_days: payload.trialDays,
+        commission_percent: payload.commissionPercent,
+        commission_months_limit: payload.commissionMonthsLimit,
+        is_active: payload.isActive,
+      });
+      return row;
     },
   };
 }

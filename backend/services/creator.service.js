@@ -1,7 +1,7 @@
 import { supabase } from "../config/supabase.js";
 import {
+  createCreatorCode,
   canCreateInfluencerCode,
-  createInfluencerCode,
   getMyReferralStats,
 } from "./referral.service.js";
 import { sendEmail } from "./email.service.js";
@@ -22,8 +22,11 @@ export async function getCreatorStatus(userId, options = {}) {
   assertUserId(userId);
 
   const repo = options.repo || createCreatorRepository(options.supabaseClient || supabase);
+  const logger = options.logger || console;
   const referralStatsOptions = {
     ...(options.referralStatsOptions || {}),
+    codeType: "creator",
+    referralType: "creator",
   };
 
   if (options.referralRepo) {
@@ -41,9 +44,70 @@ export async function getCreatorStatus(userId, options = {}) {
   const application = normalizeCreatorApplicationRecord(
     await repo.getLatestApplicationByUserId(userId)
   );
-  const referralStats = await getMyReferralStatsFn(userId);
+  let referralStats = await getMyReferralStatsFn(userId);
   const creatorCodeRecord = findCreatorCode(referralStats?.codes || []);
-  const creatorCode = creatorCodeRecord?.code || null;
+  let creatorCode = creatorCodeRecord?.code || null;
+
+  auditLog(logger, {
+    event: "creator_status.lookup",
+    userId,
+    applicationStatus: application?.status || null,
+    creatorCodeFound: creatorCodeRecord?.code || null,
+    creatorCodeType: creatorCodeRecord?.type || null,
+    creatorCodeActive: creatorCodeRecord?.is_active !== false,
+    referralCodesCount: Array.isArray(referralStats?.codes) ? referralStats.codes.length : 0,
+  });
+
+  if (application?.status === "approved" && !creatorCode) {
+    auditLog(logger, {
+      event: "creator_status.auto_create_attempt",
+      userId,
+      applicationStatus: application?.status || null,
+      creatorCodeFound: creatorCodeRecord?.code || null,
+    });
+
+    let createdCode;
+    try {
+      createdCode = await createCreatorCode(userId, "", {
+        repo: options.referralRepo,
+        logger,
+      });
+    } catch (error) {
+      auditLog(logger, {
+        event: "creator_status.auto_create_failed",
+        userId,
+        applicationStatus: application?.status || null,
+        creatorCodeFound: creatorCodeRecord?.code || null,
+        error: error?.message || String(error),
+      });
+      throw error;
+    }
+    creatorCode = createdCode?.code || null;
+
+    auditLog(logger, {
+      event: "creator_status.auto_create_result",
+      userId,
+      applicationStatus: application?.status || null,
+      createdCode: createdCode?.code || null,
+      createdType: createdCode?.type || null,
+      createdId: createdCode?.id || null,
+    });
+
+    if (creatorCode) {
+      referralStats = {
+        ...referralStats,
+        codes: [createdCode, ...(referralStats?.codes || [])],
+      };
+
+      auditLog(logger, {
+        event: "creator_status.auto_create_applied",
+        userId,
+        applicationStatus: application?.status || null,
+        creatorCode,
+      });
+    }
+  }
+
   const status = creatorCode ? "approved" : application?.status || "none";
 
   return {
@@ -209,7 +273,7 @@ export async function approveCreatorApplication(
   );
 
   if (creatorCode) {
-    await createInfluencerCode(userId, creatorCode, {
+    await createCreatorCode(userId, creatorCode, {
       authUser,
       repo: options.referralRepo,
     });
@@ -355,15 +419,23 @@ function findCreatorCode(codes = []) {
   return (
     codes.find(
       (code) =>
-        String(code?.type || "").toLowerCase() === "influencer" &&
+        String(code?.type || "").toLowerCase() === "creator" &&
         code?.is_active !== false
-    ) || codes.find((code) => String(code?.type || "").toLowerCase() === "influencer") || null
+    ) || codes.find((code) => String(code?.type || "").toLowerCase() === "creator") || null
   );
 }
 
 function buildCreatorApplicant(authUser = {}) {
   const metadata = authUser?.user_metadata || {};
   const email = String(authUser?.email || "").trim();
+  const createdAt = authUser?.created_at || authUser?.createdAt || null;
+  const premiumStatus =
+    authUser?.premium_status ||
+    metadata.premium_status ||
+    metadata.premiumStatus ||
+    authUser?.app_metadata?.premium_status ||
+    authUser?.app_metadata?.premiumStatus ||
+    null;
   const name = String(
     metadata.full_name ||
       metadata.name ||
@@ -376,28 +448,92 @@ function buildCreatorApplicant(authUser = {}) {
   return {
     name,
     email,
+    createdAt,
+    premiumStatus,
   };
 }
 
 function buildCreatorAdminEmail({ application, applicant }) {
   const submittedAt = formatAuditDate(application.createdAt);
+  const minimumFollowersMet = Number(application.followersCount || 0) >= MINIMUM_CREATOR_FOLLOWERS;
+  const socialHandleLooksLikeUrl = looksLikeUrl(application.socialHandle);
+  const proofLooksLikeUrl = looksLikeUrl(application.proofUrl);
+  const socialHandle = socialHandleLooksLikeUrl
+    ? buildHtmlLink(application.socialHandle, application.socialHandle)
+    : escapeHtml(application.socialHandle || "No disponible");
+  const proofUrl = proofLooksLikeUrl
+    ? buildHtmlLink(application.proofUrl, application.proofUrl)
+    : escapeHtml(application.proofUrl || "No disponible");
   const lines = [
-    "Nueva solicitud del Programa de Creadores.",
+    "Nueva solicitud - Programa de Creadores",
     "",
-    `Nombre: ${applicant.name || "No disponible"}`,
-    `Email: ${applicant.email || "No disponible"}`,
-    `User ID: ${application.userId}`,
-    `Plataforma: ${platformLabel(application.socialPlatform)}`,
-    `Perfil: ${application.socialHandle}`,
-    `Seguidores: ${formatCount(application.followersCount)}`,
-    `Fecha: ${submittedAt}`,
-    `Estado: ${application.status || "pending"}`,
+    "Estado: Pendiente de revisión",
+    "",
+    "Datos del usuario:",
+    `- Nombre: ${applicant.name || "No disponible"}`,
+    `- Email: ${applicant.email || "No disponible"}`,
+    `- User ID: ${application.userId}`,
+    `- Fecha de solicitud: ${submittedAt}`,
+    `- Estado Premium: ${formatPremiumStatus(application, applicant)}`,
+    `- Fecha de creación de cuenta: ${formatAccountCreatedAt(application, applicant)}`,
+    "",
+    "Datos de la solicitud:",
+    `- Plataforma: ${platformLabel(application.socialPlatform)}`,
+    `- Usuario o enlace del perfil: ${stripHtml(socialHandleLooksLikeUrl ? application.socialHandle : application.socialHandle)}`,
+    `- Seguidores declarados: ${formatCount(application.followersCount)}`,
+    `- Cumple mínimo de 5.000 seguidores: ${minimumFollowersMet ? "Sí" : "No"}`,
+    `- Prueba o media kit: ${stripHtml(application.proofUrl || "No disponible")}`,
+    `- ID de solicitud: ${application.id}`,
+    "",
+    "Acciones sugeridas:",
+    "- Revisar perfil social",
+    "- Validar seguidores",
+    "- Aprobar o rechazar manualmente en Supabase",
   ];
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;background:#0f1115;color:#f5f7fa;padding:24px">
+      <div style="max-width:640px;margin:0 auto;border:1px solid #2a2f39;border-radius:20px;overflow:hidden;background:#141821">
+        <div style="padding:20px 22px;border-bottom:1px solid #2a2f39;background:linear-gradient(135deg,#1b2030,#141821)">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#d4af37">Nueva solicitud - Programa de Creadores</div>
+          <h1 style="margin:10px 0 4px;font-size:26px;line-height:1.1;color:#ffffff">Pendiente de revisión</h1>
+          <p style="margin:0;color:#a8b0c0;font-size:14px">Revisar ahora para decidir si se aprueba o rechaza manualmente.</p>
+        </div>
+        <div style="padding:20px 22px">
+          ${renderEmailSection("Datos del usuario", [
+            ["Nombre", applicant.name || "No disponible"],
+            ["Email", applicant.email || "No disponible"],
+            ["User ID", application.userId],
+            ["Fecha de solicitud", submittedAt],
+            ["Estado Premium", formatPremiumStatus(application, applicant)],
+            ["Fecha de creación de cuenta", formatAccountCreatedAt(application, applicant)],
+          ])}
+          ${renderEmailSection("Datos de la solicitud", [
+            ["Plataforma", platformLabel(application.socialPlatform)],
+            ["Usuario o enlace del perfil", socialHandle],
+            ["Seguidores declarados", formatCount(application.followersCount)],
+            ["Cumple mínimo de 5.000 seguidores", minimumFollowersMet ? "Sí" : "No"],
+            ["Prueba o media kit", proofUrl],
+            ["ID de solicitud", application.id],
+          ])}
+          <div style="margin-top:18px;padding:16px;border:1px solid #2a2f39;border-radius:16px;background:#10141d">
+            <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d4af37;margin-bottom:10px">Acciones sugeridas</div>
+            <ul style="margin:0;padding-left:18px;color:#d8deea;font-size:14px;line-height:1.5">
+              <li>Revisar perfil social</li>
+              <li>Validar seguidores</li>
+              <li>Aprobar o rechazar manualmente en Supabase</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `.trim();
 
   return {
     to: CREATOR_APPLICATION_ADMIN_EMAIL,
     subject: "Nueva solicitud - Programa de Creadores",
     text: lines.join("\n"),
+    html,
   };
 }
 
@@ -417,6 +553,70 @@ function buildCreatorApplicantEmail({ applicant }) {
       "NutriSmart Coach",
     ].join("\n"),
   };
+}
+
+function renderEmailSection(title, rows) {
+  const body = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:6px 0;color:#a8b0c0;font-size:13px;vertical-align:top">${escapeHtml(label)}</td>
+          <td style="padding:6px 0 6px 12px;color:#f5f7fa;font-size:13px;vertical-align:top">${value}</td>
+        </tr>
+      `.trim()
+    )
+    .join("");
+
+  return `
+    <div style="margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d4af37;margin-bottom:8px">${escapeHtml(title)}</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${body}</table>
+    </div>
+  `.trim();
+}
+
+function formatPremiumStatus(application = {}, applicant = {}) {
+  const value =
+    application.premiumStatus ||
+    application.premium_status ||
+    application.premiumState ||
+    applicant.premiumStatus ||
+    applicant.premium_status ||
+    applicant.premiumState;
+  if (!value) return "No disponible";
+  return String(value);
+}
+
+function formatAccountCreatedAt(application = {}, applicant = {}) {
+  const value = application.accountCreatedAt || application.account_created_at || applicant.createdAt || applicant.created_at || applicant.userCreatedAt || applicant.user_created_at;
+  if (!value) return "No disponible";
+  return formatAuditDate(value);
+}
+
+function stripHtml(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, "")
+    .trim() || "No disponible";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildHtmlLink(text, href) {
+  const safeHref = escapeHtml(String(href || "").trim());
+  const safeText = escapeHtml(String(text || "").trim());
+  return `<a href="${safeHref}" target="_blank" rel="noreferrer" style="color:#8ab4ff;text-decoration:underline">${safeText}</a>`;
+}
+
+function looksLikeUrl(value) {
+  const safeValue = String(value || "").trim();
+  return /^https?:\/\//i.test(safeValue) || /^www\./i.test(safeValue);
 }
 
 function auditLog(logger, payload) {

@@ -60,7 +60,10 @@ export async function syncMobilePremiumVerification(
       )
     : null;
 
-  if (verification.isPaid && activation?.referral?.type === "influencer") {
+  if (
+    verification.isPaid &&
+    ["influencer", "creator"].includes(String(activation?.referral?.type || ""))
+  ) {
     await createAffiliateCommissionForPaidInvoice(
       {
         influencerUserId: activation.referral.referrer_user_id,
@@ -95,7 +98,9 @@ export async function syncMobilePremiumVerification(
         referrerUserId: attribution.referrerUserId,
         influencerUserId: attribution.influencerUserId,
         trialSource:
-          verification.isTrial && attribution.trialSource === "influencer_trial"
+          verification.isTrial && attribution.trialSource === "creator_trial"
+            ? "creator_trial"
+            : verification.isTrial && attribution.trialSource === "influencer_trial"
             ? "influencer_trial"
             : verification.isTrial && attribution.trialSource === "standard_trial"
             ? "standard_trial"
@@ -247,13 +252,27 @@ async function resolveMobileAttribution({ repo, userId }) {
   const referral = await repo.getReferralByReferredUserId(userId);
   if (referral) {
     return {
-      acquisitionSource: referral.type === "influencer" ? "influencer" : "referral",
+      acquisitionSource:
+        referral.type === "creator"
+          ? "creator"
+          : referral.type === "influencer"
+            ? "influencer"
+            : "referral",
       referralCodeId: referral.referral_code_id || null,
       referrerUserId: referral.referrer_user_id || null,
-      influencerUserId: referral.type === "influencer" ? referral.referrer_user_id : null,
-      trialSource: referral.type === "influencer" ? "influencer_trial" : "standard_trial",
-      commissionPercent: referral.type === "influencer" ? 30 : 0,
-      commissionMonthsLimit: referral.type === "influencer" ? 12 : 0,
+      influencerUserId:
+        referral.type === "creator" || referral.type === "influencer"
+          ? referral.referrer_user_id
+          : null,
+      trialSource:
+        referral.type === "creator"
+          ? "creator_trial"
+          : referral.type === "influencer"
+            ? "influencer_trial"
+            : "standard_trial",
+      commissionPercent: referral.type === "creator" || referral.type === "influencer" ? 30 : 0,
+      commissionMonthsLimit:
+        referral.type === "creator" || referral.type === "influencer" ? 12 : 0,
     };
   }
 

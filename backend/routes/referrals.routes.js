@@ -3,7 +3,6 @@ import { supabase } from "../config/supabase.js";
 import { requireAuthenticatedUser, verifySupabaseUser } from "../middleware/auth.js";
 import {
   applyReferralCode,
-  createInfluencerCode,
   createUserReferralCode,
   claimReferralReward,
   getMyReferralStats,
@@ -18,7 +17,10 @@ router.get("/referrals/me", verifySupabaseUser, async (req, res, next) => {
     const userId = requireAuthenticatedUser(req, res);
     if (!userId) return;
 
-    const stats = await getMyReferralStats(userId);
+    const stats = await getMyReferralStats(userId, {
+      codeType: "user",
+      referralType: "user",
+    });
     return res.json(stats);
   } catch (error) {
     return next(error);
@@ -30,13 +32,7 @@ router.post("/referrals/create-code", verifySupabaseUser, async (req, res, next)
     const userId = requireAuthenticatedUser(req, res);
     if (!userId) return;
 
-    const type = req.body?.type === "influencer" ? "influencer" : "user";
-    const code =
-      type === "influencer"
-        ? await createInfluencerCode(userId, req.body?.code || "", {
-            authUser: req.authUser,
-          })
-        : await createUserReferralCode(userId);
+    const code = await createUserReferralCode(userId);
 
     return res.status(201).json({ code });
   } catch (error) {
@@ -77,7 +73,10 @@ router.post("/referrals/claim-reward", verifySupabaseUser, async (req, res, next
     if (!userId) return;
 
     const result = await claimReferralReward({ userId });
-    const stats = await getMyReferralStats(userId);
+    const stats = await getMyReferralStats(userId, {
+      codeType: "user",
+      referralType: "user",
+    });
     const premium = await getPremiumStatusSnapshot(userId);
 
     return res.status(201).json({

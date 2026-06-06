@@ -5,6 +5,10 @@ const migrationSql = readFileSync(
   new URL("../../supabase/migrations/010_normalize_trial_source.sql", import.meta.url),
   "utf8"
 );
+const creatorMigrationSql = readFileSync(
+  new URL("../../supabase/migrations/013_separate_creator_codes.sql", import.meta.url),
+  "utf8"
+);
 
 describe("trial source migration", () => {
   it("uses to_regclass as the table existence guard", () => {
@@ -16,6 +20,18 @@ describe("trial source migration", () => {
     expect(migrationSql).toContain("where trial_source = 'influencer_code'");
     expect(migrationSql).toContain(
       "check (trial_source in ('none', 'standard_trial', 'influencer_trial'))"
+    );
+  });
+
+  it("allows creator codes and creator trial sources", () => {
+    expect(creatorMigrationSql).toContain(
+      "check (type in ('user', 'influencer', 'creator'))"
+    );
+    expect(creatorMigrationSql).toContain(
+      "check (acquisition_source in ('normal', 'referral', 'influencer', 'creator', 'manual'))"
+    );
+    expect(creatorMigrationSql).toContain(
+      "check (trial_source in ('none', 'standard_trial', 'influencer_trial', 'creator_trial'))"
     );
   });
 });

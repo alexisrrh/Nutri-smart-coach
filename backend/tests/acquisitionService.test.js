@@ -58,6 +58,19 @@ describe("acquisition service", () => {
     expect(snapshot.trial_source).toBe("influencer_trial");
   });
 
+  it("returns a 15 day premium status snapshot for creator acquisitions", () => {
+    const snapshot = getPremiumStatusAcquisitionSnapshot({
+      acquisition_source: "creator",
+      referral_code_id: "code-3",
+      trial_source: "creator_trial",
+      trial_days: 15,
+    });
+
+    expect(snapshot.trial_days).toBe(15);
+    expect(snapshot.has_trial_banner).toBe(true);
+    expect(snapshot.trial_source).toBe("creator_trial");
+  });
+
   it("creates affiliate commission 30 percent on first paid invoice", async () => {
     const state = createAcquisitionState({
       referrals: [
@@ -285,7 +298,7 @@ describe("acquisition service", () => {
     expect(acquisition.status).toBe("pending");
   });
 
-  it("stores standard_trial and influencer_trial as valid acquisition trial sources", async () => {
+  it("stores standard_trial, creator_trial and influencer_trial as valid acquisition trial sources", async () => {
     const state = createAcquisitionState();
     const repo = createAcquisitionRepo(state);
 
@@ -295,6 +308,16 @@ describe("acquisition service", () => {
         premiumSource: "stripe",
         acquisitionSource: "normal",
         trialSource: "standard_trial",
+        status: "pending",
+      },
+      { repo }
+    );
+    const creator = await registerSubscriptionAcquisition(
+      {
+        userId: "user-creator",
+        premiumSource: "stripe",
+        acquisitionSource: "creator",
+        trialSource: "creator_trial",
         status: "pending",
       },
       { repo }
@@ -311,6 +334,7 @@ describe("acquisition service", () => {
     );
 
     expect(standard.trial_source).toBe("standard_trial");
+    expect(creator.trial_source).toBe("creator_trial");
     expect(influencer.trial_source).toBe("influencer_trial");
   });
 

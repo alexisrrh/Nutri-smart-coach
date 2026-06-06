@@ -52,6 +52,8 @@ const INITIAL_FORM = {
   proofUrl: "",
 };
 
+const CREATOR_CODE_RETRY_DELAY_MS = 500;
+
 export function CreatorProgramCardView({
   loading = false,
   status = "none",
@@ -311,7 +313,7 @@ export function CreatorProgramCardView({
                   Código de creador
                 </p>
                 <div className="mt-1 inline-flex max-w-full items-center rounded-2xl border border-[color-mix(in_srgb,#D4AF37_30%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] px-3 py-1.5 text-[12px] font-black tracking-[0.18em] text-[var(--app-text)] shadow-[0_0_14px_color-mix(in_srgb,#D4AF37_16%,transparent)]">
-                  {creatorCode || "ACTIVANDO..."}
+                  {creatorCode || "Generando..."}
                 </div>
               </div>
 
@@ -383,14 +385,38 @@ export default function CreatorProgramCard() {
 
   useEffect(() => {
     let active = true;
+    let retryTimer = null;
 
     async function loadCreatorStatus() {
       setLoading(true);
       setError("");
+      let shouldKeepLoading = false;
 
       try {
         const nextStatus = await getCreatorStatus();
         if (!active) return;
+
+        if (nextStatus.status === "approved" && !nextStatus.creatorCode) {
+          shouldKeepLoading = true;
+          setStatusData(nextStatus);
+          retryTimer = window.setTimeout(() => {
+            if (!active) return;
+
+            void (async () => {
+              try {
+                const refreshedStatus = await getCreatorStatus();
+                if (!active) return;
+                setStatusData(refreshedStatus);
+              } catch (refreshError) {
+                if (!active) return;
+                setError(refreshError.message || "No se pudo cargar el panel de creadores.");
+              } finally {
+                if (active) setLoading(false);
+              }
+            })();
+          }, CREATOR_CODE_RETRY_DELAY_MS);
+          return;
+        }
 
         setStatusData(nextStatus);
         if (nextStatus.status === "rejected" && nextStatus.application) {
@@ -405,7 +431,7 @@ export default function CreatorProgramCard() {
         if (!active) return;
         setError(loadError.message || "No se pudo cargar el panel de creadores.");
       } finally {
-        if (active) setLoading(false);
+        if (active && !shouldKeepLoading) setLoading(false);
       }
     }
 
@@ -413,6 +439,9 @@ export default function CreatorProgramCard() {
 
     return () => {
       active = false;
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
     };
   }, []);
 
