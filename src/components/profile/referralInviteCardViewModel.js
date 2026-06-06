@@ -6,7 +6,8 @@ export function getReferralInviteCardViewModel({
   loading = false,
   expanded = false,
 } = {}) {
-  const referralCode = stats?.codes?.[0]?.code || "";
+  const referralCode = (stats?.codes || [])
+    .find((code) => String(code?.type || "").toLowerCase() === "user")?.code || "";
   const premiumReferrals = Number(
     (stats?.premiumReferralsCount ?? stats?.summary?.premiumActiveReferrals ?? 0)
   );
@@ -51,7 +52,7 @@ export function buildReferralInviteShareText(referralCode) {
   const safeCode = String(referralCode || "").trim();
   const safeTrialDays = REFERRAL_NORMAL_TRIAL_DAYS;
 
-  return `Únete a Nutri Smart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
+  return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
 }
 
 // TODO: los códigos de creador, sus 15 días gratis, comisiones y métricas

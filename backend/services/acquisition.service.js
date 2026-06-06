@@ -127,18 +127,33 @@ export async function markReferralPremiumActive(
     {
       userId,
       premiumSource,
-      acquisitionSource: referral.type === "influencer" ? "influencer" : "referral",
+      acquisitionSource:
+        referral.type === "creator"
+          ? "creator"
+          : referral.type === "influencer"
+            ? "influencer"
+            : "referral",
       referralCodeId: referral.referral_code_id,
       referrerUserId: referral.referrer_user_id,
-      influencerUserId: referral.type === "influencer" ? referral.referrer_user_id : null,
+      influencerUserId:
+        referral.type === "creator" || referral.type === "influencer"
+          ? referral.referrer_user_id
+          : null,
       trialSource:
-        referral.type === "influencer" ? "influencer_trial" : "standard_trial",
+        referral.type === "creator"
+          ? "creator_trial"
+          : referral.type === "influencer"
+            ? "influencer_trial"
+            : "standard_trial",
       trialStartedAt: referral.trial_started_at || null,
       trialEndsAt: referral.trial_ends_at,
-      commissionPercent: referral.type === "influencer" ? 30 : 0,
-      commissionMonthsLimit: referral.type === "influencer" ? 12 : 0,
-      commissionStartedAt: referral.type === "influencer" ? paidAt : null,
-      commissionEndsAt: referral.type === "influencer" ? addMonths(paidAt, 12) : null,
+      commissionPercent: referral.type === "creator" || referral.type === "influencer" ? 30 : 0,
+      commissionMonthsLimit:
+        referral.type === "creator" || referral.type === "influencer" ? 12 : 0,
+      commissionStartedAt:
+        referral.type === "creator" || referral.type === "influencer" ? paidAt : null,
+      commissionEndsAt:
+        referral.type === "creator" || referral.type === "influencer" ? addMonths(paidAt, 12) : null,
       platformSubscriptionId,
       status,
     },
@@ -269,6 +284,14 @@ export function getTrialConfigForAcquisition(acquisition) {
   }
 
   const acquisitionSource = normalizedAcquisition.acquisition_source || "normal";
+  if (acquisitionSource === "creator") {
+    return {
+      acquisitionSource,
+      trialSource: "creator_trial",
+      trialDays: INFLUENCER_TRIAL_DAYS,
+    };
+  }
+
   if (acquisitionSource === "influencer") {
     return {
       acquisitionSource,
@@ -535,7 +558,9 @@ function mergeAcquisitionPayload(existing, payload) {
   const existingSource = existing?.acquisition_source || "normal";
   const preserveAttributedSource =
     !existing?.platform_subscription_id &&
-    (existingSource === "referral" || existingSource === "influencer");
+    (existingSource === "referral" ||
+      existingSource === "influencer" ||
+      existingSource === "creator");
 
   if (!preserveAttributedSource) {
     return normalized;
@@ -643,6 +668,7 @@ function wrapDbError(message, error) {
 function normalizeTrialSourceValue(value) {
   if (value === "influencer_code") return "influencer_trial";
   if (value === "standard_trial") return "standard_trial";
+  if (value === "creator_trial") return "creator_trial";
   if (value === "influencer_trial") return "influencer_trial";
   return "none";
 }

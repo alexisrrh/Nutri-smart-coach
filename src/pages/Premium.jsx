@@ -26,6 +26,7 @@ import {
 } from "../services/premiumService";
 import { trackEvent } from "../services/analytics";
 import { getRuntimePlatform } from "../services/platform";
+import { getPremiumReferralBannerCopy } from "./premiumReferralBannerCopy";
 
 const comparisonRows = [
   { label: "Análisis IA", free: "3/día", premium: "20/día" },
@@ -57,11 +58,8 @@ export function Premium() {
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
   const acquisitionSource = premiumStatus?.acquisition_source || "normal";
-  const showReferralBanner = Boolean(
-    !isPremium &&
-      premiumStatus?.referral_code_id &&
-      Number(premiumStatus?.trial_days || 0) > 0
-  );
+  const referralBannerCopy = getPremiumReferralBannerCopy(premiumStatus);
+  const showReferralBanner = Boolean(referralBannerCopy);
   const nativeStoreLabel = isIosPlatform
     ? "App Store"
     : isAndroidPlatform
@@ -81,8 +79,14 @@ export function Premium() {
   const subscriptionDescription = isNativePlatform
     ? `En esta app, Premium se activa desde ${nativeStoreLabel}. No necesitas salir de NutriSmart Coach para completar la compra cuando esté disponible.`
     : "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach.";
-  const trialHeadline = acquisitionSource === "influencer"
-    ? "Con código de influencer: 15 días gratis"
+  const hasCreatorReferral = Boolean(
+    acquisitionSource === "creator" ||
+      acquisitionSource === "influencer" ||
+      premiumStatus?.trial_source === "creator_trial" ||
+      premiumStatus?.trial_source === "influencer_trial"
+  );
+  const trialHeadline = hasCreatorReferral
+    ? "Con código de creador: 15 días gratis"
     : "Prueba Premium gratis 7 días";
   const trialDisclaimer =
     "Se requiere método de pago. Cancela cuando quieras antes de que termine la prueba.";

@@ -74,7 +74,7 @@ describe("ReferralInviteCard", () => {
           <ReferralInviteCardView
             viewModel={getReferralInviteCardViewModel({
               stats: {
-                codes: [{ code: "NSC1234" }],
+                codes: [{ code: "NSC1234", type: "user" }],
                 summary: {
                   premiumActiveReferrals: 0,
                   rewardAvailableCount: 0,
@@ -103,7 +103,7 @@ describe("ReferralInviteCard", () => {
           <ReferralInviteCardView
             viewModel={getReferralInviteCardViewModel({
               stats: {
-                codes: [{ code: "NSC1234" }],
+                codes: [{ code: "NSC1234", type: "user" }],
                 premiumReferralsCount: 3,
                 rewardsAvailable: 1,
                 rewardsClaimed: 0,
@@ -128,7 +128,7 @@ describe("ReferralInviteCard", () => {
   it("exposes the expanded view when requested", () => {
     const viewModel = getReferralInviteCardViewModel({
       stats: {
-        codes: [{ code: "NSC1234" }],
+        codes: [{ code: "NSC1234", type: "user" }],
         summary: {
           premiumActiveReferrals: 3,
           rewardAvailableCount: 1,
@@ -145,8 +145,21 @@ describe("ReferralInviteCard", () => {
 
   it("builds a 7 day share message for normal referral codes", () => {
     expect(buildReferralInviteShareText("NSC1234", 15)).toBe(
-      "Únete a Nutri Smart Coach con mi código NSC1234 y consigue 7 días Premium gratis."
+      "Únete a NutriSmart Coach con mi código NSC1234 y consigue 7 días Premium gratis."
     );
+  });
+
+  it("uses the user referral code and ignores creator codes", () => {
+    const viewModel = getReferralInviteCardViewModel({
+      stats: {
+        codes: [
+          { code: "CREATOR30", type: "creator" },
+          { code: "NSC1234", type: "user" },
+        ],
+      },
+    });
+
+    expect(viewModel.referralCode).toBe("NSC1234");
   });
 
   it("renders the expanded invite state with the code visible", () => {
@@ -156,7 +169,7 @@ describe("ReferralInviteCard", () => {
           <ReferralInviteCardView
             viewModel={getReferralInviteCardViewModel({
               stats: {
-                codes: [{ code: "NSC1234" }],
+                codes: [{ code: "NSC1234", type: "user" }],
                 summary: {
                   premiumActiveReferrals: 0,
                   rewardAvailableCount: 0,
@@ -189,7 +202,7 @@ describe("ReferralInviteCard", () => {
               element={
                 <ReferralInviteCard
                   initialStats={{
-                    codes: [{ code: "NSC1234" }],
+                    codes: [{ code: "NSC1234", type: "user" }],
                     summary: {
                       premiumActiveReferrals: 3,
                       rewardAvailableCount: 1,

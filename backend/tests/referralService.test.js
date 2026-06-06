@@ -6,6 +6,7 @@ const {
   applyReferralCode,
   claimReferralReward,
   canCreateInfluencerCode,
+  createCreatorCode,
   createInfluencerCode,
   createUserReferralCode,
   getMyReferralStats,
@@ -228,6 +229,58 @@ describe("referral service", () => {
     expect(result.acquisition.commissionPercent).toBe(30);
     expect(result.acquisition.commissionMonthsLimit).toBe(12);
     expect(result.acquisition.trialSource).toBe("influencer_trial");
+    expect(result.trial.trialDays).toBe(15);
+  });
+
+  it("creates a creator code with 15 days and 30% commission", async () => {
+    const state = createReferralState();
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.trial_days).toBe(15);
+    expect(code.commission_percent).toBe(30);
+    expect(code.commission_months_limit).toBe(12);
+  });
+
+  it("applies a creator code with creator trial attribution", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "CREATOR30",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+    const registerSubscriptionAcquisitionFn = vi.fn(async (payload) => payload);
+
+    const result = await applyReferralCode(
+      { userId: "user-9", code: "creator30" },
+      {
+        repo,
+        registerSubscriptionAcquisitionFn,
+        currentUserCreatedAt: "2026-06-04T10:05:00.000Z",
+        now: new Date("2026-06-04T10:10:00.000Z"),
+      }
+    );
+
+    expect(result.referral.type).toBe("creator");
+    expect(result.referral.status).toBe("pending");
+    expect(result.trial.source).toBe("creator_trial");
+    expect(result.referral.trial_ends_at).toBeNull();
+    expect(result.acquisition.commissionPercent).toBe(30);
+    expect(result.acquisition.commissionMonthsLimit).toBe(12);
+    expect(result.acquisition.trialSource).toBe("creator_trial");
     expect(result.trial.trialDays).toBe(15);
   });
 
@@ -493,6 +546,63 @@ describe("referral service", () => {
     expect(profileState.subscription_status).toBe("active");
     expect(result.acquisition.acquisitionSource).toBe("referral");
     expect(result.acquisition.premiumSource).toBe("manual");
+  });
+
+  it("filters user referral stats to user codes when requested", async () => {
+    const state = createReferralState({
+      codes: [
+        {
+          id: "code-user",
+          user_id: "owner-1",
+          code: "USER123",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+        {
+          id: "code-creator",
+          user_id: "owner-1",
+          code: "CREATOR30",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+        },
+      ],
+      referrals: [
+        {
+          id: "ref-user",
+          referral_code_id: "code-user",
+          referrer_user_id: "owner-1",
+          referred_user_id: "friend-user",
+          type: "user",
+          status: "premium_active",
+        },
+        {
+          id: "ref-creator",
+          referral_code_id: "code-creator",
+          referrer_user_id: "owner-1",
+          referred_user_id: "friend-creator",
+          type: "creator",
+          status: "premium_active",
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    const stats = await getMyReferralStats("owner-1", {
+      repo,
+      codeType: "user",
+      referralType: "user",
+    });
+
+    expect(stats.codes).toHaveLength(1);
+    expect(stats.codes[0].type).toBe("user");
+    expect(stats.summary.totalReferrals).toBe(1);
+    expect(stats.summary.premiumActiveReferrals).toBe(1);
   });
 
   it("does not double claim a reward twice", async () => {

@@ -8,6 +8,9 @@ import {
 
 const DEFAULT_INFLUENCER_COMMISSION_PERCENT = 30;
 const DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT = 12;
+const DEFAULT_CREATOR_TRIAL_DAYS = 15;
+const DEFAULT_CREATOR_COMMISSION_PERCENT = 30;
+const DEFAULT_CREATOR_COMMISSION_MONTHS_LIMIT = 12;
 
 export async function createUserReferralCode(userId, options = {}) {
   assertUserId(userId);
@@ -40,6 +43,80 @@ export async function createUserReferralCode(userId, options = {}) {
     commissionMonthsLimit: 0,
     isActive: true,
   });
+}
+
+export async function createCreatorCode(userId, code = "", options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const logger = options.logger || console;
+  const existing = await repo.getActiveCodeByUserAndType(userId, "creator");
+  if (existing) return existing;
+
+  const normalizedCode = normalizeReferralCode(code);
+  let resolvedCode = normalizedCode;
+
+  auditLog(logger, {
+    event: "creator_code.create_attempt",
+    userId,
+    providedCode: normalizedCode || null,
+    existingActiveCode: Boolean(existing),
+  });
+
+  if (resolvedCode) {
+    const existingByCode = await repo.getCodeByCode(resolvedCode);
+    if (existingByCode && String(existingByCode.user_id) !== String(userId)) {
+      throw createPublicError("Ese código ya está en uso.", 409);
+    }
+
+    if (existingByCode && String(existingByCode.user_id) === String(userId)) {
+      if (existingByCode.type === "creator") {
+        return existingByCode;
+      }
+
+      throw createPublicError("Ese código ya está en uso.", 409);
+    }
+  } else {
+    resolvedCode = await generateUniqueReferralCode(repo);
+  }
+
+  const existingByUser = await repo.getCodeByUserAndType(userId, "creator");
+  const payload = {
+    userId,
+    code: resolvedCode,
+    type: "creator",
+    trialDays: DEFAULT_CREATOR_TRIAL_DAYS,
+    commissionPercent: DEFAULT_CREATOR_COMMISSION_PERCENT,
+    commissionMonthsLimit: DEFAULT_CREATOR_COMMISSION_MONTHS_LIMIT,
+    isActive: true,
+  };
+
+  if (existingByUser) {
+    const updated = await repo.updateCode(existingByUser.id, payload);
+    auditLog(logger, {
+      event: "creator_code.update_result",
+      userId,
+      code: updated?.code || null,
+      type: updated?.type || null,
+      id: updated?.id || null,
+    });
+    return updated;
+  }
+
+  const inserted = await repo.insertCode(payload);
+  auditLog(logger, {
+    event: "creator_code.insert_result",
+    userId,
+    code: inserted?.code || null,
+    type: inserted?.type || null,
+    id: inserted?.id || null,
+    trialDays: Number(inserted?.trial_days || payload.trialDays || 0),
+    commissionPercent: Number(inserted?.commission_percent || payload.commissionPercent || 0),
+    commissionMonthsLimit: Number(
+      inserted?.commission_months_limit || payload.commissionMonthsLimit || 0
+    ),
+  });
+  return inserted;
 }
 
 export async function createInfluencerCode(userId, code, options = {}) {
@@ -135,9 +212,21 @@ export async function applyReferralCode(
 
   const type = referralCode.type;
   const trialDays = Number(
-    referralCode.trial_days || (type === "influencer" ? INFLUENCER_TRIAL_DAYS : STANDARD_TRIAL_DAYS)
+    referralCode.trial_days ||
+      (type === "creator"
+        ? DEFAULT_CREATOR_TRIAL_DAYS
+        : type === "influencer"
+          ? INFLUENCER_TRIAL_DAYS
+          : STANDARD_TRIAL_DAYS)
   );
   const status = "pending";
+  const isCreatorCode = type === "creator";
+  const acquisitionSource = isCreatorCode ? "creator" : type === "influencer" ? "influencer" : "referral";
+  const trialSource = isCreatorCode
+    ? "creator_trial"
+    : type === "influencer"
+      ? "influencer_trial"
+      : "standard_trial";
 
   const referral = await repo.insertReferral({
     referralCodeId: referralCode.id,
@@ -155,16 +244,18 @@ export async function applyReferralCode(
     {
       userId,
       premiumSource: "manual",
-      acquisitionSource: type === "influencer" ? "influencer" : "referral",
+      acquisitionSource,
       referralCodeId: referralCode.id,
       referrerUserId: referralCode.user_id,
-      influencerUserId: type === "influencer" ? referralCode.user_id : null,
-      trialSource: type === "influencer" ? "influencer_trial" : "standard_trial",
+      influencerUserId: type === "influencer" || isCreatorCode ? referralCode.user_id : null,
+      trialSource,
       trialStartedAt: null,
       trialEndsAt: null,
       commissionPercent:
         type === "influencer"
           ? Number(referralCode.commission_percent || DEFAULT_INFLUENCER_COMMISSION_PERCENT)
+          : isCreatorCode
+            ? Number(referralCode.commission_percent || DEFAULT_CREATOR_COMMISSION_PERCENT)
           : 0,
       commissionMonthsLimit:
         type === "influencer"
@@ -172,6 +263,11 @@ export async function applyReferralCode(
               referralCode.commission_months_limit ||
                 DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT
             )
+          : isCreatorCode
+            ? Number(
+                referralCode.commission_months_limit ||
+                  DEFAULT_CREATOR_COMMISSION_MONTHS_LIMIT
+              )
           : 0,
       status,
     },
@@ -181,7 +277,14 @@ export async function applyReferralCode(
   return {
     referral,
     acquisition,
-    trial: type === "influencer"
+    trial: isCreatorCode
+      ? {
+          source: "creator_trial",
+          startsAt: null,
+          endsAt: null,
+          trialDays,
+        }
+      : type === "influencer"
       ? {
           source: "influencer_trial",
           startsAt: null,
@@ -227,7 +330,9 @@ export async function validateReferralCode(code, options = {}) {
     type: referralCode.type,
     trialDays: Number(
       referralCode.trial_days ||
-        (referralCode.type === "influencer"
+        (referralCode.type === "creator"
+          ? DEFAULT_CREATOR_TRIAL_DAYS
+          : referralCode.type === "influencer"
           ? INFLUENCER_TRIAL_DAYS
           : STANDARD_TRIAL_DAYS)
     ),
@@ -238,12 +343,18 @@ export async function getMyReferralStats(userId, options = {}) {
   assertUserId(userId);
 
   const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const codeType = normalizeUserCodeType(options.codeType);
+  const referralType = normalizeReferralTypeValue(options.referralType);
   const codes = await repo.listCodesByUserId(userId);
   const referrals = await repo.listReferralsByReferrerUserId(userId);
   const commissions = await repo.listAffiliateCommissionsByInfluencerUserId(userId);
   const rewards = await repo.listReferralRewardsByReferrerUserId(userId);
+  const filteredCodes = codeType ? codes.filter((code) => normalizeUserCodeType(code.type) === codeType) : codes;
+  const filteredReferrals = referralType
+    ? referrals.filter((referral) => normalizeReferralTypeValue(referral.type) === referralType)
+    : referrals;
 
-  const premiumActiveReferrals = referrals.filter((referral) =>
+  const premiumActiveReferrals = filteredReferrals.filter((referral) =>
     ["premium_active", "rewarded"].includes(referral.status)
   ).length;
   const normalizedRewards = rewards.map(normalizeReferralRewardRecord).filter(Boolean);
@@ -260,7 +371,7 @@ export async function getMyReferralStats(userId, options = {}) {
   const canClaimReward = rewardAvailableCount > 0;
 
   return {
-    codes,
+    codes: filteredCodes,
     premiumReferralsCount: premiumActiveReferrals,
     nextMilestone: 3,
     rewardsAvailable: rewardAvailableCount,
@@ -268,19 +379,19 @@ export async function getMyReferralStats(userId, options = {}) {
     canClaimReward,
     latestReward,
     summary: {
-      totalReferrals: referrals.length,
+      totalReferrals: filteredReferrals.length,
       premiumActiveReferrals,
       rewardAvailableCount,
       rewardClaimedCount,
       canClaimReward,
       premiumReferralsCount: premiumActiveReferrals,
       nextMilestone: 3,
-      pendingReferrals: referrals.filter((referral) => referral.status === "pending").length,
-      trialingReferrals: referrals.filter((referral) => referral.status === "trialing").length,
+      pendingReferrals: filteredReferrals.filter((referral) => referral.status === "pending").length,
+      trialingReferrals: filteredReferrals.filter((referral) => referral.status === "trialing").length,
       influencerCommissionsCount: commissions.length,
       payableCommissionTotal: Number(payableCommissionTotal.toFixed(2)),
     },
-    referrals,
+    referrals: filteredReferrals,
     commissions,
     rewards: normalizedRewards,
   };
@@ -590,6 +701,22 @@ function normalizeReferralCode(code) {
     .replace(/[^A-Z0-9_-]/g, "");
 }
 
+function normalizeUserCodeType(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "user") return "user";
+  if (normalized === "creator") return "creator";
+  if (normalized === "influencer") return "influencer";
+  return null;
+}
+
+function normalizeReferralTypeValue(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "user") return "user";
+  if (normalized === "creator") return "creator";
+  if (normalized === "influencer") return "influencer";
+  return null;
+}
+
 function normalizeReferralRewardRecord(reward) {
   if (!reward) return null;
 
@@ -609,6 +736,15 @@ function normalizeReferralRewardStatus(value) {
   if (normalized === "expired") return "expired";
   if (normalized === "cancelled" || normalized === "canceled") return "cancelled";
   return "available";
+}
+
+function auditLog(logger, payload) {
+  const entry = {
+    ...payload,
+    timestamp: new Date().toISOString(),
+  };
+
+  logger?.info?.(JSON.stringify(entry));
 }
 
 function computeRewardExpiration(existingExpiresAt, now) {
@@ -746,6 +882,17 @@ async function getProfileByUserId(userId, supabaseClient) {
   }
 
   return data || null;
+}
+
+async function generateUniqueReferralCode(repo) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const candidate = buildUserReferralCode();
+    const inUse = await repo.getCodeByCode(candidate);
+    if (!inUse) return candidate;
+  }
+
+  const error = createPublicError("No se pudo generar un código único.", 500);
+  throw error;
 }
 
 async function upsertProfileSubscription(payload, supabaseClient) {

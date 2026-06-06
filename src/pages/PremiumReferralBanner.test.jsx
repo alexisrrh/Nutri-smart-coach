@@ -16,12 +16,12 @@ describe("PremiumReferralBanner", () => {
     expect(copy?.headline).toContain("7 días Premium gratis");
   });
 
-  it("builds the influencer copy with 15 days", () => {
+  it("builds the creator copy with 15 days", () => {
     const copy = getPremiumReferralBannerCopy({
       is_premium: false,
-      acquisition_source: "influencer",
+      acquisition_source: "creator",
       referral_code_id: "code-2",
-      trial_source: "influencer_trial",
+      trial_source: "creator_trial",
       trial_days: 15,
     });
 

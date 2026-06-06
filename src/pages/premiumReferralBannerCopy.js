@@ -10,11 +10,9 @@ export function getPremiumReferralBannerCopy(premiumStatus = null) {
   const trialSource = String(premiumStatus.trial_source || "none")
     .trim()
     .toLowerCase();
-  const isInfluencer = acquisitionSource === "influencer" || trialSource === "influencer_trial";
-  const trialDays = resolveTrialDays(premiumStatus, isInfluencer);
-  const title = isInfluencer
-    ? "Código influencer aplicado"
-    : "Código aplicado";
+  const isCreator = isCreatorReferral(acquisitionSource, trialSource);
+  const trialDays = resolveTrialDays(premiumStatus, isCreator);
+  const title = isCreator ? "Código de creador aplicado" : "Código aplicado";
 
   return {
     visible: true,
@@ -25,8 +23,17 @@ export function getPremiumReferralBannerCopy(premiumStatus = null) {
   };
 }
 
-function resolveTrialDays(premiumStatus, isInfluencer) {
+function resolveTrialDays(premiumStatus, isCreator) {
   const rawTrialDays = Number(premiumStatus?.trial_days || 0);
   if (rawTrialDays > 0) return rawTrialDays;
-  return isInfluencer ? 15 : 7;
+  return isCreator ? 15 : 7;
+}
+
+function isCreatorReferral(acquisitionSource, trialSource) {
+  return (
+    acquisitionSource === "creator" ||
+    acquisitionSource === "influencer" ||
+    trialSource === "creator_trial" ||
+    trialSource === "influencer_trial"
+  );
 }
