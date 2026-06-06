@@ -79,6 +79,40 @@ export function CreatorProgramCardView({
   const isPending = status === "pending";
   const isRejected = status === "rejected";
   const isEmpty = status === "none";
+  const hasCreatorCode = Boolean(creatorCode);
+  const linkClicks = stats?.linkClicks ?? stats?.linkClicksCount ?? stats?.clicks ?? null;
+  const registeredUsers = Number(stats?.registeredUsers ?? 0);
+  const premiumUsers = Number(stats?.premiumUsers ?? 0);
+  const pendingCommissionAmount = Number(
+    stats?.pendingCommissionAmount ??
+      stats?.pendingCommissionsAmount ??
+      stats?.pendingAmount ??
+      0
+  );
+  const availableCommissionAmount = Number(
+    stats?.availableCommissionAmount ??
+      stats?.withdrawableCommissionAmount ??
+      stats?.commissionBalance ??
+      stats?.availableAmount ??
+      0
+  );
+  const totalCommissionAmount = Number(
+    stats?.totalCommissionAmount ??
+      stats?.commissionAccumulated ??
+      stats?.totalEarnings ??
+      stats?.totalCommission ??
+      0
+  );
+  const paymentHistory = Array.isArray(stats?.paymentHistory)
+    ? stats.paymentHistory
+    : Array.isArray(stats?.recentPayments)
+      ? stats.recentPayments
+      : Array.isArray(stats?.history)
+        ? stats.history
+        : [];
+  const nextWithdrawalThreshold = 25;
+  const canRequestWithdrawal = availableCommissionAmount >= nextWithdrawalThreshold;
+  const creatorJoinLinkPreview = buildCreatorJoinLinkPreview(creatorCode);
   const minimumFollowersMet = Number(formState.followersCount || 0) >= 5000;
   const requiresTerms = (isEmpty || isRejected || formVisible) && !isApproved && !isPending;
   const visibleFormError =
@@ -304,62 +338,255 @@ export function CreatorProgramCardView({
 
         {isApproved ? (
           <div className="grid gap-2 rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_82%,transparent),color-mix(in_srgb,var(--app-card)_97%,transparent))] p-2.5">
-            <div className="grid gap-1.5 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div>
-                <h2 className="mb-2 text-[15px] font-black leading-tight text-[var(--app-text)]">
-                  Ya formas parte del Programa de Partners
-                </h2>
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#D4AF37]">
-                  Código de creador
+            {hasCreatorCode ? (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <h2 className="min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
+                      Partner activo
+                    </h2>
+                    <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      Tu código está listo para compartir y generar ingresos.
+                    </p>
+                  </div>
+                  <MetaBadge
+                    variant="neutral"
+                    className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                  >
+                    ACTIVO
+                  </MetaBadge>
+                </div>
+
+                <section className="grid gap-1.5 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_8%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">
+                      Ganancias acumuladas
+                    </h3>
+                    <IconCapsule icon={Coins} tone="gold" size="xs" />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <div className="flex items-end justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
+                          Total
+                        </p>
+                        <p className="mt-0.5 text-[28px] font-black leading-none tracking-[-0.02em] text-[#D4AF37] sm:text-[30px]">
+                          {formatCurrency(totalCommissionAmount)}
+                        </p>
+                      </div>
+                      <div className="min-w-0 text-right">
+                        <p className="text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
+                          Disponible
+                        </p>
+                        <p className="mt-0.5 text-[15px] font-black leading-none tracking-[-0.01em] text-[#22c55e]">
+                          {formatCurrency(availableCommissionAmount)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-surface)_85%,transparent)]">
+                      <div
+                        className="h-full rounded-full bg-[linear-gradient(90deg,#D4AF37,#22c55e)]"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.max(0, (availableCommissionAmount / nextWithdrawalThreshold) * 100)
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
+                      <span>{formatCurrency(availableCommissionAmount)} / {formatCurrency(nextWithdrawalThreshold)}</span>
+                      <span>Necesitas {formatCurrency(nextWithdrawalThreshold)} para solicitar retiro.</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="grid gap-2 rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_84%,black),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-3 shadow-[0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]">
+                  <div className="grid gap-2">
+                    <div className="text-center">
+                      <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#D4AF37]">
+                        Código de creador
+                      </p>
+                      <div className="mt-1 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <p className="min-w-0 truncate whitespace-nowrap text-[18px] font-black leading-tight tracking-[0.22em] text-[var(--app-text)] text-ellipsis sm:text-[19px]">
+                          {creatorCode}
+                        </p>
+                      </div>
+                      <p
+                        className="mt-1 block min-w-0 truncate whitespace-nowrap text-[10px] font-medium leading-4 text-[var(--app-muted)] text-ellipsis"
+                        title={creatorJoinLinkPreview}
+                      >
+                        {creatorJoinLinkPreview}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      <MetaBadge variant="neutral" className="px-2 py-1 text-[8px]">
+                        15 días
+                      </MetaBadge>
+                      <MetaBadge
+                        variant="neutral"
+                        className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                      >
+                        30%
+                      </MetaBadge>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-1.5 min-[380px]:grid-cols-2">
+                    <SecondaryButton
+                      type="button"
+                      onClick={onCopyCode}
+                      icon={<IconCapsule icon={Copy} tone="blue" size="xs" />}
+                      className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+                    >
+                      Copiar
+                    </SecondaryButton>
+
+                    <PrimaryButton
+                      type="button"
+                      onClick={onShareCode}
+                      icon={<IconCapsule icon={Share2} tone="purple" size="xs" />}
+                      className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_18%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]"
+                    >
+                      Compartir
+                    </PrimaryButton>
+                  </div>
+                </section>
+
+                <div className="grid gap-1.25 sm:grid-cols-2">
+                  <CreatorStat icon={Users} tone="blue" label="Usuarios con código" value={registeredUsers} />
+                  <CreatorStat icon={LineChart} tone="blue" label="Premium activos" value={premiumUsers} />
+                  <CreatorStat icon={Coins} tone="gold" label="Comisión acumulada" value={formatCurrency(totalCommissionAmount)} raw />
+                  <CreatorStat icon={Wallet} tone="green" label="Disponible para retirar" value={formatCurrency(availableCommissionAmount)} raw />
+                </div>
+
+                <section className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#22c55e_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#22c55e_7%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Pagos</h3>
+                      <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
+                        Estado: Esperando mínimo
+                      </p>
+                    </div>
+                    <MetaBadge
+                      variant="neutral"
+                      className="border-[color-mix(in_srgb,#22c55e_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#22c55e]"
+                    >
+                      {canRequestWithdrawal ? "DISPONIBLE" : "ESPERANDO"}
+                    </MetaBadge>
+                  </div>
+
+                  <div className="grid gap-1.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Pendiente de confirmar</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCurrency(pendingCommissionAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Disponible</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCurrency(availableCommissionAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Mínimo de retiro</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCurrency(nextWithdrawalThreshold)}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-surface)_85%,transparent)]">
+                      <div
+                        className="h-full rounded-full bg-[linear-gradient(90deg,#D4AF37,#22c55e)]"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.max(0, (availableCommissionAmount / nextWithdrawalThreshold) * 100)
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <PrimaryButton
+                      type="button"
+                      disabled={!canRequestWithdrawal}
+                      className="mt-1 h-10 py-0 text-[10px] opacity-70 disabled:opacity-60"
+                    >
+                      Solicitar retiro
+                    </PrimaryButton>
+                  </div>
+                </section>
+
+                {paymentHistory.length > 0 ? (
+                  <section className="grid gap-1.5 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Historial de pagos</h3>
+                      <IconCapsule icon={Clock3} tone="purple" size="xs" />
+                    </div>
+                    <div className="grid gap-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      {paymentHistory.map((payment) => (
+                        <div
+                          key={payment?.id || `${payment?.date || "payment"}-${payment?.amount || ""}`}
+                          className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5"
+                        >
+                          <span className="min-w-0 truncate text-[var(--app-text)]">
+                            {payment?.label || payment?.status || "Pago"}
+                          </span>
+                          <span className="shrink-0 font-black text-[var(--app-text)]">
+                            {formatCurrency(Number(payment?.amount ?? 0))}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                <section className="grid gap-1.5 rounded-[1rem] border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#38bdf8_7%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Rendimiento</h3>
+                    <IconCapsule icon={TrendingUp} tone="blue" size="xs" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                    <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
+                      <span>Clicks del enlace</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCount(linkClicks ?? 0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
+                      <span>Registros</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCount(registeredUsers)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
+                      <span>Premium</span>
+                      <span className="font-black text-[var(--app-text)]">{formatCount(premiumUsers)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
+                      <span>Conversión</span>
+                      <span className="font-black text-[var(--app-text)]">
+                        {registeredUsers > 0 ? `${Math.min(100, Math.round((premiumUsers / registeredUsers) * 100))}%` : "0%"}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+
+                <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                  Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.
                 </p>
-                <div className="mt-1 inline-flex max-w-full items-center rounded-2xl border border-[color-mix(in_srgb,#D4AF37_30%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] px-3 py-1.5 text-[12px] font-black tracking-[0.18em] text-[var(--app-text)] shadow-[0_0_14px_color-mix(in_srgb,#D4AF37_16%,transparent)]">
-                  {creatorCode || "Generando..."}
+              </>
+            ) : (
+              <div className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_20%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-3 py-3">
+                <div className="flex items-center gap-2">
+                  <IconCapsule icon={Megaphone} tone="gold" size="md" />
+                  <div className="min-w-0">
+                    <h2 className="min-w-0 break-words text-[16px] font-black leading-tight text-[var(--app-text)]">
+                      Partner activo
+                    </h2>
+                    <p className="mt-0.5 min-w-0 break-words text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      Generando código de creador...
+                    </p>
+                  </div>
+                  <MetaBadge
+                    variant="neutral"
+                    className="ml-auto border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                  >
+                    ACTIVO
+                  </MetaBadge>
                 </div>
               </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                <MetaBadge variant="neutral" className="px-2 py-1 text-[8px]">
-                  15 días gratis
-                </MetaBadge>
-                <MetaBadge
-                  variant="neutral"
-                  className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
-                >
-                  30% comisión
-                </MetaBadge>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5">
-              <CreatorStat icon={Megaphone} tone="purple" label="Código creador" value={creatorCode || "0"} raw />
-              <CreatorStat icon={Users} tone="blue" label="Usuarios registrados" value={stats?.registeredUsers ?? 0} />
-              <CreatorStat icon={LineChart} tone="blue" label="Premium generados" value={stats?.premiumUsers ?? 0} />
-              <CreatorStat icon={Coins} tone="gold" label="Comisiones" value={stats?.totalCommissions ?? 0} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              <SecondaryButton
-                type="button"
-                onClick={onCopyCode}
-                icon={<IconCapsule icon={Copy} tone="blue" size="xs" />}
-                className="py-2 text-[10px]"
-              >
-                Copiar código
-              </SecondaryButton>
-
-              <PrimaryButton
-                type="button"
-                onClick={onShareCode}
-                icon={<IconCapsule icon={Share2} tone="purple" size="xs" />}
-                className="py-2 text-[10px]"
-              >
-                Compartir enlace
-              </PrimaryButton>
-            </div>
-
-            <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-              Tus seguidores reciben 15 días Premium gratis. La comisión es del 30% por suscripción Premium y se limita a 12 pagos por usuario referido.
-            </p>
+            )}
           </div>
         ) : null}
       </div>
@@ -868,13 +1095,13 @@ function CompactList({ items }) {
 
 function CreatorStat({ icon: Icon, label, raw = false, tone = "blue", value }) {
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-2">
+    <div className="flex min-w-0 items-center gap-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2 py-1.5">
       <IconCapsule icon={Icon} tone={tone} size="sm" />
       <div className="min-w-0">
-        <span className="block text-[8px] font-black uppercase leading-tight tracking-[0.12em] text-[var(--app-muted)]">
+        <span className="block text-[7px] font-black uppercase leading-tight tracking-[0.08em] text-[var(--app-muted)]">
           {label}
         </span>
-        <span className="mt-0.5 block break-words text-[13px] font-black leading-tight text-[var(--app-text)]">
+        <span className="mt-0.5 block text-[12px] font-black leading-tight text-[var(--app-text)]">
           {raw ? value : formatCount(value)}
         </span>
       </div>
@@ -922,7 +1149,32 @@ function formatCount(value) {
   return new Intl.NumberFormat("es-ES").format(numeric);
 }
 
+function formatCurrency(value) {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric)) return "0,00 €";
+  return `${new Intl.NumberFormat("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numeric)} €`;
+}
+
 function formatCompactNumber(value) {
   if (value >= 1000) return `${Math.round(value / 1000)}k`;
   return String(value);
+}
+
+function buildCreatorJoinLinkPreview(code) {
+  const safeCode = String(code || "").trim();
+  const baseUrl = String(
+    import.meta.env.VITE_CREATOR_JOIN_BASE_URL ||
+      import.meta.env.VITE_APP_URL ||
+      import.meta.env.VITE_SITE_URL ||
+      "https://nutrismartcoach.com"
+  )
+    .replace(/^https?:\/\//, "")
+    .replace(/\/+$/, "");
+
+  if (!safeCode) return `${baseUrl}/join`;
+
+  return `${baseUrl}/join?creator=...`;
 }

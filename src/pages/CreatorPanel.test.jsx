@@ -9,15 +9,17 @@ vi.mock("../components/profile/CreatorProgramCard", () => ({
 import { CreatorPanel } from "./CreatorPanel";
 
 describe("CreatorPanel", () => {
-  it("renders the creator panel wrapper and the dedicated content area", () => {
+  it("renders the creator panel wrapper and the loading state before status is known", () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <CreatorPanel />
       </MemoryRouter>
     );
 
-    expect(html).toContain("PROGRAMA DE PARTNERS");
-    expect(html).toContain("Gana dinero recomendando NutriSmart Coach");
+    expect(html).toContain("Cargando panel de creadores");
+    expect(html).toContain("Estamos comprobando tu acceso");
+    expect(html).not.toContain("PROGRAMA DE PARTNERS");
+    expect(html).not.toContain("Gana dinero recomendando NutriSmart Coach");
     expect(html).toContain("CreatorPanelBody");
   });
 });

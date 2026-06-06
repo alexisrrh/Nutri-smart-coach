@@ -140,26 +140,42 @@ describe("CreatorProgramCard", () => {
             status="approved"
             creatorCode="CREATOR30"
             stats={{
-              registeredUsers: 8,
-              trialUsers: 2,
-              premiumUsers: 4,
-              totalCommissions: 3,
-              pendingCommissions: 2,
-              paidCommissions: 1,
+              registeredUsers: 0,
+              premiumUsers: 0,
+              totalCommissionAmount: 0,
+              availableCommissionAmount: 0,
+              pendingCommissionAmount: 0,
+              linkClicks: 0,
             }}
           />
         </ToastProvider>
       </MemoryRouter>
     );
 
-    expect(html).toContain("Ya formas parte del Programa de Partners");
+    expect(html).toContain("Partner activo");
+    expect(html).toContain("Tu código está listo para compartir y generar ingresos.");
+    expect(html).toContain("ACTIVO");
+    expect(html).toContain("Ganancias acumuladas");
+    expect(html).toContain("0,00 €");
+    expect(html).toContain("0,00 € / 25,00 €");
+    expect(html).toContain("Necesitas 25,00 € para solicitar retiro.");
     expect(html).toContain("CREATOR30");
-    expect(html).toContain("15 días gratis");
-    expect(html).toContain("30% comisión");
-    expect(html).toContain("Usuarios registrados");
-    expect(html).toContain("Premium generados");
-    expect(html).toContain("Comisiones");
-    expect(html).toContain("Compartir enlace");
+    expect(html).toContain("nutrismartcoach.com/join?creator=...");
+    expect(html).toContain("whitespace-nowrap");
+    expect(html).toContain("truncate");
+    expect(html).toContain("30%");
+    expect(html).toContain("Usuarios con código");
+    expect(html).toContain("Premium activos");
+    expect(html).toContain("Comisión acumulada");
+    expect(html).toContain("Disponible para retirar");
+    expect(html).toContain("Pagos");
+    expect(html).toContain("Clicks del enlace");
+    expect(html).toContain("Registros");
+    expect(html).toContain("Conversión");
+    expect(html).toContain("Copiar");
+    expect(html).toContain("Compartir");
+    expect(html).not.toContain("Enlace</button>");
+    expect(html).toContain("Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.");
   });
 
   it("shows the rejected state with the rejection reason", () => {
@@ -205,5 +221,47 @@ describe("CreatorProgramCard", () => {
 
     expect(html).not.toContain("influencer");
     expect(html).not.toContain("15 días Premium gratis para tus seguidores");
+  });
+
+  it("shows the generating state when the creator code is still missing", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <CreatorProgramCardView status="approved" creatorCode="" />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Partner activo");
+    expect(html).toContain("Generando código de creador...");
+    expect(html).toContain("ACTIVO");
+    expect(html).not.toContain("Compartir");
+    expect(html).not.toContain("Copiar");
+  });
+
+  it("shows the withdrawal notice when the available amount is below the minimum", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <CreatorProgramCardView
+            status="approved"
+            creatorCode="CREATOR30"
+            stats={{
+              registeredUsers: 0,
+              premiumUsers: 0,
+              totalCommissionAmount: 0,
+              availableCommissionAmount: 0,
+              pendingCommissionAmount: 0,
+              linkClicks: 0,
+            }}
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Necesitas 25,00 € para solicitar retiro.");
+    expect(html).toContain("ESPERANDO");
+    expect(html).toContain("Solicitar retiro");
+    expect(html).toContain("disabled");
   });
 });
