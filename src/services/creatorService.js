@@ -39,19 +39,33 @@ export async function copyCreatorCode(code) {
   throw new Error("No se pudo copiar el código.");
 }
 
+export async function copyCreatorLink(code) {
+  const safeCode = normalizeCreatorCode(code);
+  if (!safeCode) {
+    throw new Error("No existe un enlace de creador para copiar.");
+  }
+
+  const creatorLink = buildCreatorJoinLink(safeCode);
+
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(creatorLink);
+    return creatorLink;
+  }
+
+  throw new Error("No se pudo copiar el enlace.");
+}
+
 export async function shareCreatorCode(code) {
   const safeCode = normalizeCreatorCode(code);
   if (!safeCode) {
     throw new Error("No existe un código de creador para compartir.");
   }
 
+  const creatorLink = buildCreatorJoinLink(safeCode);
   const payload = {
     title: "NutriSmart Coach",
     text: buildCreatorShareText(safeCode),
-    url:
-      typeof window !== "undefined" && window.location?.origin
-        ? window.location.origin
-        : "/perfil",
+    url: creatorLink,
   };
 
   if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
@@ -70,6 +84,20 @@ export async function shareCreatorCode(code) {
 export function buildCreatorShareText(code) {
   const safeCode = normalizeCreatorCode(code);
   return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${CREATOR_SHARE_TRIAL_DAYS} días Premium gratis.`;
+}
+
+export function buildCreatorJoinLink(code) {
+  const safeCode = normalizeCreatorCode(code);
+  if (!safeCode) return "https://nutrismartcoach.com/join";
+
+  const baseUrl = String(
+    import.meta.env.VITE_CREATOR_JOIN_BASE_URL ||
+      import.meta.env.VITE_APP_URL ||
+      import.meta.env.VITE_SITE_URL ||
+      "https://nutrismartcoach.com"
+  ).replace(/\/+$/, "");
+
+  return `${baseUrl}/join?creator=${encodeURIComponent(safeCode)}`;
 }
 
 function normalizeCreatorCode(code) {
