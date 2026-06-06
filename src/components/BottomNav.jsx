@@ -45,7 +45,7 @@ export default function BottomNav() {
             {({ isActive }) => (
               <>
                 <div
-                  className={`theme-icon-tile-muted grid h-11 w-15 place-items-center rounded-lg transition ${
+                  className={`theme-icon-tile-muted grid h-8 w-9 place-items-center rounded-lg transition ${
                     isActive
                       ? "bg-[var(--app-primary-soft)]"
                       : "bg-[var(--app-primary-soft)] text-[var(--app-muted)] group-hover:bg-[var(--app-primary-soft)] group-hover:text-[var(--app-text)]"
