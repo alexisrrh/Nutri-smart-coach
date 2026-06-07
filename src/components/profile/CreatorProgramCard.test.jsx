@@ -160,10 +160,10 @@ describe("CreatorProgramCard", () => {
     expect(html).toContain("0,00 € / 25,00 €");
     expect(html).toContain("Necesitas 25,00 € para solicitar retiro.");
     expect(html).toContain("CREATOR30");
-    expect(html).toContain("nutrismartcoach.com/join?creator=...");
     expect(html).toContain("whitespace-nowrap");
     expect(html).toContain("truncate");
     expect(html).toContain("30%");
+    expect(html).toContain("Comparte tu código con tu comunidad.");
     expect(html).toContain("Usuarios con código");
     expect(html).toContain("Premium activos");
     expect(html).toContain("Comisión acumulada");
@@ -172,9 +172,9 @@ describe("CreatorProgramCard", () => {
     expect(html).toContain("Clicks del enlace");
     expect(html).toContain("Registros");
     expect(html).toContain("Conversión");
-    expect(html).toContain("Copiar");
-    expect(html).toContain("Compartir");
-    expect(html).not.toContain("Enlace</button>");
+    expect(html).toContain("Copiar código");
+    expect(html).toContain("Compartir enlace");
+    expect(html).not.toContain("nutrismartcoach.com/join?creator=");
     expect(html).toContain("Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.");
   });
 

@@ -115,7 +115,6 @@ export function CreatorProgramCardView({
         : [];
   const nextWithdrawalThreshold = 25;
   const canRequestWithdrawal = availableCommissionAmount >= nextWithdrawalThreshold;
-  const creatorJoinLinkPreview = buildCreatorJoinLinkPreview(creatorCode);
   const minimumFollowersMet = Number(formState.followersCount || 0) >= 5000;
   const requiresTerms = (isEmpty || isRejected || formVisible) && !isApproved && !isPending;
   const visibleFormError =
@@ -444,11 +443,8 @@ export function CreatorProgramCardView({
                           {creatorCode}
                         </p>
                       </div>
-                      <p
-                        className="mt-1 block min-w-0 truncate whitespace-nowrap text-[10px] font-medium leading-4 text-[var(--app-muted)] text-ellipsis"
-                        title={creatorJoinLinkPreview}
-                      >
-                        {creatorJoinLinkPreview}
+                      <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                        Comparte tu código con tu comunidad.
                       </p>
                     </div>
 
@@ -472,7 +468,7 @@ export function CreatorProgramCardView({
                       icon={<IconCapsule icon={Copy} tone="blue" size="xs" />}
                       className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
                     >
-                      Copiar
+                      Copiar código
                     </SecondaryButton>
 
                     <PrimaryButton
@@ -481,7 +477,7 @@ export function CreatorProgramCardView({
                       icon={<IconCapsule icon={Share2} tone="purple" size="xs" />}
                       className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_18%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]"
                     >
-                      Compartir
+                      Compartir enlace
                     </PrimaryButton>
                   </div>
                 </section>
@@ -1253,20 +1249,4 @@ function formatCurrency(value) {
 function formatCompactNumber(value) {
   if (value >= 1000) return `${Math.round(value / 1000)}k`;
   return String(value);
-}
-
-function buildCreatorJoinLinkPreview(code) {
-  const safeCode = String(code || "").trim();
-  const baseUrl = String(
-    import.meta.env.VITE_CREATOR_JOIN_BASE_URL ||
-      import.meta.env.VITE_APP_URL ||
-      import.meta.env.VITE_SITE_URL ||
-      "https://nutrismartcoach.com"
-  )
-    .replace(/^https?:\/\//, "")
-    .replace(/\/+$/, "");
-
-  if (!safeCode) return `${baseUrl}/join`;
-
-  return `${baseUrl}/join?creator=...`;
 }
