@@ -1,6 +1,8 @@
+import { createHash } from "node:crypto";
 import { supabase } from "../config/supabase.js";
 import {
   createCreatorCode,
+  createReferralRepository,
   canCreateInfluencerCode,
   getMyReferralStats,
   updateCreatorCode as updateCreatorCodeRecord,
@@ -9,6 +11,7 @@ import { sendEmail } from "./email.service.js";
 
 const MINIMUM_CREATOR_FOLLOWERS = 5000;
 const CREATOR_SHARING_TRIAL_DAYS = 15;
+const CREATOR_PAYOUT_MINIMUM = 25;
 const CREATOR_APPLICATION_ADMIN_EMAIL =
   process.env.CREATOR_APPLICATION_ADMIN_EMAIL || "info@nutrismartcoach.com";
 const VALID_SOCIAL_PLATFORMS = new Set(["instagram", "tiktok", "youtube", "other"]);
@@ -66,6 +69,32 @@ export async function getCreatorStatus(userId, options = {}) {
     });
   }
 
+  let creatorLinkClicks = 0;
+  try {
+    creatorLinkClicks = Number(
+      (await repo.countCreatorLinkClicksByCreatorUserId?.(userId)) || 0
+    );
+  } catch (error) {
+    auditLog(logger, {
+      event: "creator_status.metrics_failed",
+      userId,
+      metric: "clicks",
+      error: error?.message || String(error),
+    });
+  }
+
+  let payoutRequests = [];
+  try {
+    payoutRequests = await repo.listCreatorPayoutRequestsByCreatorUserId?.(userId);
+  } catch (error) {
+    auditLog(logger, {
+      event: "creator_status.metrics_failed",
+      userId,
+      metric: "payoutRequests",
+      error: error?.message || String(error),
+    });
+  }
+
   const creatorCodeRecord = findCreatorCode(referralStats?.codes || []);
   let creatorCode = creatorCodeRecord?.code || null;
   let profileRequired = false;
@@ -119,7 +148,9 @@ export async function getCreatorStatus(userId, options = {}) {
 
       try {
         if (!isProfileRequired) {
-          createdCode = await repo.getCodeByUserAndType(userId, "creator");
+          if (typeof repo.getCodeByUserAndType === "function") {
+            createdCode = await repo.getCodeByUserAndType(userId, "creator");
+          }
           if (createdCode) {
             auditLog(logger, {
               event: "creator_status.auto_create_result",
@@ -173,6 +204,10 @@ export async function getCreatorStatus(userId, options = {}) {
   }
 
   const status = creatorCode ? "approved" : application?.status || "none";
+  const dashboardMetrics = buildCreatorDashboardMetrics(referralStats, {
+    clicks: creatorLinkClicks,
+    payoutRequests,
+  });
 
   return {
     application,
@@ -184,7 +219,20 @@ export async function getCreatorStatus(userId, options = {}) {
       profileRequired && application?.status === "approved"
         ? "Completa tu perfil para activar tu código de creador."
         : null,
-    stats: status === "approved" ? buildCreatorStats(referralStats) : null,
+    stats: status === "approved" ? buildCreatorStats(referralStats, dashboardMetrics) : null,
+    metrics: status === "approved" ? dashboardMetrics : null,
+    payouts: status === "approved" ? buildCreatorPayoutSummary(dashboardMetrics, payoutRequests) : null,
+    history:
+      status === "approved"
+        ? buildCreatorHistory(
+            referralStats?.referrals || [],
+            referralStats?.commissions || [],
+            payoutRequests
+          )
+        : null,
+    commissionHistory:
+      status === "approved" ? normalizeCreatorCommissions(referralStats.commissions) : null,
+    payoutRequests: status === "approved" ? normalizeCreatorPayoutRequests(payoutRequests) : null,
   };
 }
 
@@ -382,6 +430,113 @@ export async function updateCreatorPanelCode(userId, code, options = {}) {
   };
 }
 
+export async function trackCreatorLinkClick(
+  { code, visitorId = null, userAgent = null, ipHash = null } = {},
+  options = {}
+) {
+  const referralRepo =
+    options.referralRepo || createReferralRepository(options.supabaseClient || supabase);
+  const creatorRepo = options.repo || createCreatorRepository(options.supabaseClient || supabase);
+  const logger = options.logger || console;
+  const normalizedCode = normalizeTrackingCreatorCode(code);
+  const safeIpHash = hashTrackingIp(ipHash);
+
+  if (!normalizedCode) {
+    return { tracked: false };
+  }
+
+  try {
+    const referralCode = await referralRepo.getCodeByCode(normalizedCode);
+    if (
+      !referralCode ||
+      referralCode.is_active === false ||
+      String(referralCode.type || "").toLowerCase() !== "creator"
+    ) {
+      return { tracked: false };
+    }
+
+    const trackedClick = await creatorRepo.insertCreatorLinkClick({
+      creatorCode: referralCode.code,
+      creatorUserId: referralCode.user_id,
+      visitorId,
+      ipHash: safeIpHash,
+      userAgent,
+    });
+
+    auditLog(logger, {
+      event: "creator_link_click.tracked",
+      code: referralCode.code,
+      creatorUserId: referralCode.user_id,
+      clickId: trackedClick?.id || null,
+    });
+
+    return {
+      tracked: true,
+      click: trackedClick,
+    };
+  } catch (error) {
+    auditLog(logger, {
+      event: "creator_link_click.failed",
+      code: normalizedCode,
+      error: error?.message || String(error),
+    });
+    return { tracked: false };
+  }
+}
+
+export async function requestCreatorPayout(userId, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createCreatorRepository(options.supabaseClient || supabase);
+  const status = await getCreatorStatus(userId, options);
+
+  if (status.status !== "approved") {
+    throw createPublicError("Tu panel de creadores aún no está aprobado.", 403);
+  }
+
+  const metrics = status.metrics || {};
+  const availableAmount = Number(
+    metrics.availableToWithdraw ?? metrics.availableCommissionAmount ?? 0
+  );
+  if (availableAmount < CREATOR_PAYOUT_MINIMUM) {
+    throw createPublicError(
+      `Necesitas al menos ${formatCurrency(CREATOR_PAYOUT_MINIMUM)} para solicitar retiro.`,
+      409
+    );
+  }
+
+  const pendingRequest = await repo.getPendingCreatorPayoutRequestByCreatorUserId(userId);
+  if (pendingRequest) {
+    throw createPublicError("Ya tienes una solicitud de retiro pendiente.", 409);
+  }
+
+  const requestedAt = new Date().toISOString();
+  const requestedAmount = Number(availableAmount.toFixed(2));
+  const payoutRequest = normalizeCreatorPayoutRequestRecord(
+    await repo.insertCreatorPayoutRequest({
+      creatorUserId: userId,
+      amount: requestedAmount,
+      currency: "eur",
+      status: "pending",
+      requestedAt,
+      notes: null,
+    })
+  );
+
+  auditLog(options.logger || console, {
+    event: "creator_payout.requested",
+    userId,
+    amount: requestedAmount,
+    requestId: payoutRequest?.id || null,
+  });
+
+  return {
+    ...status,
+    payoutRequest,
+    message: "Solicitud de retiro enviada.",
+  };
+}
+
 export function buildCreatorShareText(code) {
   const safeCode = normalizeCreatorCode(code);
   return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${CREATOR_SHARING_TRIAL_DAYS} días Premium gratis.`;
@@ -489,10 +644,66 @@ export function createCreatorRepository(supabaseClient) {
       if (error) throw wrapDbError("No se pudo actualizar la solicitud.", error);
       return data;
     },
+
+    async countCreatorLinkClicksByCreatorUserId(userId) {
+      const { count, error } = await supabaseClient
+        .from("creator_link_clicks")
+        .select("id", { count: "exact", head: true })
+        .eq("creator_user_id", userId);
+
+      if (error) throw wrapDbError("No se pudieron contar los clics.", error);
+      return count || 0;
+    },
+
+    async insertCreatorLinkClick(payload) {
+      const { data, error } = await supabaseClient
+        .from("creator_link_clicks")
+        .insert(toDbCreatorLinkClickPayload(payload))
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo registrar el clic.", error);
+      return data;
+    },
+
+    async listCreatorPayoutRequestsByCreatorUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("creator_payout_requests")
+        .select("*")
+        .eq("creator_user_id", userId)
+        .order("requested_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar los retiros.", error);
+      return data || [];
+    },
+
+    async getPendingCreatorPayoutRequestByCreatorUserId(userId) {
+      const { data, error } = await supabaseClient
+        .from("creator_payout_requests")
+        .select("*")
+        .eq("creator_user_id", userId)
+        .eq("status", "pending")
+        .order("requested_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw wrapDbError("No se pudo consultar el retiro.", error);
+      return (data || [])[0] || null;
+    },
+
+    async insertCreatorPayoutRequest(payload) {
+      const { data, error } = await supabaseClient
+        .from("creator_payout_requests")
+        .insert(toDbCreatorPayoutRequestPayload(payload))
+        .select("*")
+        .single();
+
+      if (error) throw wrapDbError("No se pudo crear el retiro.", error);
+      return data;
+    },
   };
 }
 
-function buildCreatorStats(referralStats = {}) {
+function buildCreatorStats(referralStats = {}, metrics = {}) {
   const summary = referralStats.summary || {};
   const commissions = Array.isArray(referralStats.commissions)
     ? referralStats.commissions
@@ -509,7 +720,171 @@ function buildCreatorStats(referralStats = {}) {
     paidCommissions: commissions.filter(
       (commission) => String(commission.status || "").toLowerCase() === "paid"
     ).length,
+    clicks: Number(metrics.clicks || 0),
+    usersWithCode: Number(metrics.usersWithCode || 0),
+    premiumActive: Number(metrics.premiumActive || 0),
+    conversionRate: Number(metrics.conversionRate || 0),
+    commissionAccumulated: Number(metrics.commissionAccumulated || 0),
+    pendingAmount: Number(metrics.pendingAmount || 0),
+    availableToWithdraw: Number(metrics.availableToWithdraw || 0),
+    paidAmount: Number(metrics.paidAmount || 0),
+    pendingPayoutRequestsCount: Number(metrics.pendingPayoutRequestsCount || 0),
+    hasPendingPayoutRequest: Boolean(metrics.hasPendingPayoutRequest),
+    withdrawalThreshold: Number(metrics.withdrawalThreshold || CREATOR_PAYOUT_MINIMUM),
   };
+}
+
+function buildCreatorDashboardMetrics(referralStats = {}, { clicks = 0, payoutRequests = [] } = {}) {
+  const referrals = Array.isArray(referralStats.referrals) ? referralStats.referrals : [];
+  const commissions = Array.isArray(referralStats.commissions) ? referralStats.commissions : [];
+  const requestedPayouts = Array.isArray(payoutRequests) ? payoutRequests : [];
+
+  const usersWithCode = referrals.length;
+  const premiumActive = referrals.filter((referral) =>
+    ["premium_active", "rewarded"].includes(String(referral.status || "").toLowerCase())
+  ).length;
+  const commissionAccumulated = sumCommissionAmounts(commissions);
+  const pendingAmount = sumCommissionAmounts(commissions, ["pending"]);
+  const availableToWithdraw = sumCommissionAmounts(commissions, ["payable"]);
+  const paidAmount = sumCommissionAmounts(commissions, ["paid"]);
+  const conversionRate =
+    usersWithCode > 0 ? Number(((premiumActive / usersWithCode) * 100).toFixed(2)) : 0;
+  const pendingPayoutRequestsCount = requestedPayouts.filter(
+    (request) => String(request.status || "").toLowerCase() === "pending"
+  ).length;
+  const hasPendingPayoutRequest = pendingPayoutRequestsCount > 0;
+  const history = buildCreatorHistory(referrals, commissions, requestedPayouts);
+
+  return {
+    clicks: Number(clicks || 0),
+    usersWithCode,
+    premiumActive,
+    conversionRate,
+    commissionAccumulated,
+    pendingAmount,
+    availableToWithdraw,
+    paidAmount,
+    pendingPayoutRequestsCount,
+    hasPendingPayoutRequest,
+    withdrawalThreshold: CREATOR_PAYOUT_MINIMUM,
+    commissionHistory: commissions.map(normalizeCreatorCommissionRecord),
+    payoutRequests: requestedPayouts.map(normalizeCreatorPayoutRequestRecord),
+    history,
+  };
+}
+
+function buildCreatorPayoutSummary(metrics = {}, payoutRequests = []) {
+  const payoutRows = Array.isArray(payoutRequests) ? payoutRequests : [];
+  return {
+    availableCommissionAmount: Number(metrics.availableToWithdraw || 0),
+    pendingCommissionAmount: Number(metrics.pendingAmount || 0),
+    withdrawalThreshold: Number(metrics.withdrawalThreshold || CREATOR_PAYOUT_MINIMUM),
+    canRequestWithdrawal:
+      Number(metrics.availableToWithdraw || 0) >= Number(metrics.withdrawalThreshold || CREATOR_PAYOUT_MINIMUM) &&
+      !(metrics.hasPendingPayoutRequest || payoutRows.some((request) => String(request.status || "").toLowerCase() === "pending")),
+    pendingPayoutRequestsCount: Number(metrics.pendingPayoutRequestsCount || 0),
+    hasPendingPayoutRequest: Boolean(metrics.hasPendingPayoutRequest),
+  };
+}
+
+function buildCreatorHistory(referrals = [], commissions = [], payoutRequests = []) {
+  const referralHistory = referrals.map((referral) => ({
+    id: referral.id,
+    type: "referral",
+    label:
+      String(referral.status || "").toLowerCase() === "premium_active"
+        ? "Usuario Premium"
+        : String(referral.status || "").toLowerCase() === "rewarded"
+          ? "Recompensa aplicada"
+          : "Usuario registrado",
+    amount: 0,
+    status: referral.status || "pending",
+    date: referral.premium_started_at || referral.created_at || null,
+    createdAt: referral.created_at || null,
+    sourceCode: null,
+  }));
+
+  const commissionHistory = commissions.map((commission) =>
+    normalizeCreatorCommissionRecord(commission)
+  );
+  const payoutHistory = payoutRequests.map((request) =>
+    normalizeCreatorPayoutRequestRecord(request)
+  );
+
+  return [...commissionHistory, ...payoutHistory, ...referralHistory].sort((left, right) => {
+    const leftTime = new Date(left.date || left.createdAt || 0).getTime();
+    const rightTime = new Date(right.date || right.createdAt || 0).getTime();
+    return rightTime - leftTime;
+  });
+}
+
+function normalizeCreatorCommissionRecord(commission) {
+  if (!commission) return null;
+
+  return {
+    id: commission.id,
+    type: "commission",
+    label:
+      String(commission.status || "").toLowerCase() === "paid"
+        ? "Comisión pagada"
+        : String(commission.status || "").toLowerCase() === "pending"
+          ? "Comisión pendiente"
+          : "Comisión disponible",
+    amount: Number(commission.amount || 0),
+    currency: commission.currency || "eur",
+    status: commission.status || "pending",
+    date: commission.created_at || null,
+    createdAt: commission.created_at || null,
+    sourceCode: commission.source_code || null,
+    paymentReference: commission.payment_reference || commission.subscription_id || null,
+  };
+}
+
+function normalizeCreatorCommissions(commissions = []) {
+  if (!Array.isArray(commissions)) return [];
+
+  return commissions.map(normalizeCreatorCommissionRecord).filter(Boolean);
+}
+
+function normalizeCreatorPayoutRequestRecord(request) {
+  if (!request) return null;
+
+  return {
+    id: request.id,
+    type: "payout",
+    label:
+      String(request.status || "").toLowerCase() === "paid"
+        ? "Retiro pagado"
+        : String(request.status || "").toLowerCase() === "rejected"
+          ? "Retiro rechazado"
+          : "Retiro solicitado",
+    amount: Number(request.amount || 0),
+    currency: request.currency || "eur",
+    status: request.status || "pending",
+    date: request.requested_at || request.created_at || null,
+    createdAt: request.requested_at || request.created_at || null,
+    notes: request.notes || null,
+  };
+}
+
+function normalizeCreatorPayoutRequests(payoutRequests = []) {
+  if (!Array.isArray(payoutRequests)) return [];
+
+  return payoutRequests.map(normalizeCreatorPayoutRequestRecord).filter(Boolean);
+}
+
+function sumCommissionAmounts(commissions = [], statuses = []) {
+  const normalizedStatuses = statuses.map((status) => String(status || "").toLowerCase());
+  return Number(
+    commissions
+      .filter((commission) =>
+        normalizedStatuses.length === 0
+          ? true
+          : normalizedStatuses.includes(String(commission.status || "").toLowerCase())
+      )
+      .reduce((total, commission) => total + Number(commission.amount || 0), 0)
+      .toFixed(2)
+  );
 }
 
 function getEmptyCreatorReferralStats() {
@@ -815,6 +1190,52 @@ function normalizeCreatorCode(value) {
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9_-]/g, "");
+}
+
+function normalizeTrackingCreatorCode(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function hashTrackingIp(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  return createHash("sha256").update(raw).digest("hex");
+}
+
+function toDbCreatorLinkClickPayload(payload = {}) {
+  return {
+    creator_code: payload.creatorCode,
+    creator_user_id: payload.creatorUserId,
+    visitor_id: payload.visitorId || null,
+    ip_hash: payload.ipHash || null,
+    user_agent: payload.userAgent || null,
+  };
+}
+
+function toDbCreatorPayoutRequestPayload(payload = {}) {
+  return {
+    creator_user_id: payload.creatorUserId,
+    amount: Number(payload.amount || 0),
+    currency: payload.currency || "eur",
+    status: payload.status || "pending",
+    requested_at: payload.requestedAt || new Date().toISOString(),
+    paid_at: payload.paidAt || null,
+    notes: payload.notes || null,
+  };
+}
+
+function formatCurrency(value) {
+  const numeric = Number(value || 0);
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numeric);
 }
 
 function toDbApplicationPayload(payload = {}, { includeCreatedAt = false } = {}) {

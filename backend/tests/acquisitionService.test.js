@@ -468,6 +468,7 @@ function createAcquisitionState(initial = {}) {
   return {
     acquisitions: initial.acquisitions ? [...initial.acquisitions] : [],
     referrals: initial.referrals ? [...initial.referrals] : [],
+    referralCodes: initial.referralCodes ? [...initial.referralCodes] : [],
     commissions: initial.commissions ? [...initial.commissions] : [],
     rewards: initial.rewards ? [...initial.rewards] : [],
   };
@@ -548,6 +549,11 @@ function createAcquisitionRepo(state) {
         state.referrals.find(
           (item) => item.referred_user_id === referredUserId
         ) || null
+      );
+    },
+    async getReferralCodeById(referralCodeId) {
+      return (
+        state.referralCodes.find((item) => item.id === referralCodeId) || null
       );
     },
     async updateReferral(id, payload) {

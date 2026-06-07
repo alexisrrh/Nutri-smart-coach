@@ -5,6 +5,8 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
 
 const {
   getCreatorStatus,
+  requestCreatorPayout,
+  trackCreatorLinkClick,
   submitCreatorApplication,
   updateCreatorPanelCode,
 } = await import("../services/creator.service.js");
@@ -69,13 +71,114 @@ describe("creator service", () => {
 
     expect(result.status).toBe("approved");
     expect(result.creatorCode).toBe("CREATOR30");
-    expect(result.stats).toEqual({
+    expect(result.stats).toMatchObject({
       registeredUsers: 8,
       trialUsers: 2,
       premiumUsers: 4,
       totalCommissions: 3,
       pendingCommissions: 2,
       paidCommissions: 1,
+    });
+    expect(result.metrics).toMatchObject({
+      clicks: 0,
+      usersWithCode: 0,
+      premiumActive: 0,
+      conversionRate: 0,
+      commissionAccumulated: 0,
+      pendingAmount: 0,
+      availableToWithdraw: 0,
+      paidAmount: 0,
+    });
+  });
+
+  it("returns real click and payout metrics when the repository provides them", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+      clicks: 19,
+      payoutRequests: [
+        {
+          id: "payout-1",
+          creator_user_id: "user-1",
+          amount: 25,
+          currency: "eur",
+          status: "pending",
+          requested_at: "2026-06-05T08:00:00.000Z",
+        },
+      ],
+    });
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      getMyReferralStatsFn: async () => ({
+        codes: [
+          {
+            code: "CREATOR30",
+            type: "creator",
+            is_active: true,
+          },
+        ],
+        summary: {
+          totalReferrals: 4,
+          trialingReferrals: 1,
+          premiumActiveReferrals: 2,
+        },
+        referrals: [
+          { id: "ref-1", status: "premium_active" },
+          { id: "ref-2", status: "premium_active" },
+          { id: "ref-3", status: "trialing" },
+          { id: "ref-4", status: "pending" },
+        ],
+        commissions: [
+          {
+            id: "com-1",
+            amount: 10,
+            status: "payable",
+          },
+          {
+            id: "com-2",
+            amount: 15,
+            status: "pending",
+          },
+          {
+            id: "com-3",
+            amount: 20,
+            status: "paid",
+          },
+        ],
+      }),
+    });
+
+    expect(result.metrics).toMatchObject({
+      clicks: 19,
+      usersWithCode: 4,
+      premiumActive: 2,
+      conversionRate: 50,
+      commissionAccumulated: 45,
+      pendingAmount: 15,
+      availableToWithdraw: 10,
+      paidAmount: 20,
+      pendingPayoutRequestsCount: 1,
+      hasPendingPayoutRequest: true,
+      withdrawalThreshold: 25,
+    });
+    expect(result.payouts).toMatchObject({
+      availableCommissionAmount: 10,
+      pendingCommissionAmount: 15,
+      withdrawalThreshold: 25,
+      canRequestWithdrawal: false,
+      pendingPayoutRequestsCount: 1,
+      hasPendingPayoutRequest: true,
+    });
+    expect(result.history[0]).toMatchObject({
+      type: "payout",
+      amount: 25,
     });
   });
 
@@ -111,7 +214,7 @@ describe("creator service", () => {
 
     expect(result.status).toBe("approved");
     expect(result.creatorCode).toBeNull();
-    expect(result.stats).toEqual({
+    expect(result.stats).toMatchObject({
       registeredUsers: 0,
       trialUsers: 0,
       premiumUsers: 0,
@@ -150,7 +253,7 @@ describe("creator service", () => {
     expect(result.creatorCode).toBeNull();
     expect(result.profileRequired).toBe(true);
     expect(result.message).toBe("Completa tu perfil para activar tu código de creador.");
-    expect(result.stats).toEqual({
+    expect(result.stats).toMatchObject({
       registeredUsers: 0,
       trialUsers: 0,
       premiumUsers: 0,
@@ -236,6 +339,109 @@ describe("creator service", () => {
       commissionMonthsLimit: 12,
       isActive: true,
     });
+  });
+
+  it("tracks creator link clicks and stores the click record", async () => {
+    const repo = createCreatorRepo();
+    const referralRepo = createCreatorReferralRepo({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          is_active: true,
+        },
+      ],
+    });
+
+    const result = await trackCreatorLinkClick(
+      { code: "nutrialexis", visitorId: "visitor-1", ipHash: "1.2.3.4", userAgent: "UA" },
+      { repo, referralRepo }
+    );
+
+    expect(result.tracked).toBe(true);
+    expect(repo.insertClickCalls).toHaveLength(1);
+    expect(repo.insertClickCalls[0]).toMatchObject({
+      creatorCode: "NUTRIALEXIS",
+      creatorUserId: "creator-1",
+      visitorId: "visitor-1",
+      userAgent: "UA",
+    });
+    expect(repo.insertClickCalls[0].ipHash).not.toBe("1.2.3.4");
+  });
+
+  it("requests a payout only when the available balance reaches the minimum", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          is_active: true,
+        },
+      ],
+    });
+
+    repo.countCreatorLinkClicksByCreatorUserId = async () => 12;
+    repo.listCreatorPayoutRequestsByCreatorUserId = async () => [];
+    repo.getPendingCreatorPayoutRequestByCreatorUserId = async () => null;
+    repo.insertCreatorPayoutRequest = async (payload) => ({
+      id: "payout-1",
+      creator_user_id: payload.creatorUserId,
+      amount: payload.amount,
+      currency: payload.currency,
+      status: payload.status,
+      requested_at: payload.requestedAt,
+      paid_at: payload.paidAt,
+      notes: payload.notes,
+    });
+
+    const result = await requestCreatorPayout("creator-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [
+          {
+            code: "NUTRIALEXIS",
+            type: "creator",
+            is_active: true,
+          },
+        ],
+        summary: {},
+        commissions: [
+          {
+            id: "com-1",
+            amount: 25,
+            status: "payable",
+          },
+        ],
+        referrals: [],
+      }),
+    });
+
+    expect(result.payoutRequest).toMatchObject({
+      id: "payout-1",
+      amount: 25,
+      status: "pending",
+    });
+    expect(result.metrics.availableToWithdraw).toBe(25);
   });
 
   it("uses the profile name when the creator application has no social handle", async () => {
@@ -898,11 +1104,13 @@ describe("creator service", () => {
 
 function createCreatorRepo(initial = {}) {
   const insertCalls = [];
+  const insertClickCalls = [];
   const application = initial.application || null;
   const activeApplication = initial.activeApplication || null;
 
   return {
     insertCalls,
+    insertClickCalls,
     async getLatestApplicationByUserId() {
       return application;
     },
@@ -924,6 +1132,39 @@ function createCreatorRepo(initial = {}) {
     },
     async updateApplication() {
       return application;
+    },
+    async countCreatorLinkClicksByCreatorUserId() {
+      return initial.clicks || 0;
+    },
+    async listCreatorPayoutRequestsByCreatorUserId() {
+      return initial.payoutRequests || [];
+    },
+    async getPendingCreatorPayoutRequestByCreatorUserId() {
+      return initial.pendingPayoutRequest || null;
+    },
+    async insertCreatorLinkClick(payload) {
+      insertClickCalls.push(payload);
+      return {
+        id: `click-${insertClickCalls.length}`,
+        creator_code: payload.creatorCode,
+        creator_user_id: payload.creatorUserId,
+        visitor_id: payload.visitorId || null,
+        ip_hash: payload.ipHash || null,
+        user_agent: payload.userAgent || null,
+        created_at: new Date("2026-06-05T08:00:00.000Z").toISOString(),
+      };
+    },
+    async insertCreatorPayoutRequest(payload) {
+      return {
+        id: `payout-${insertCalls.length + 1}`,
+        creator_user_id: payload.creatorUserId,
+        amount: payload.amount,
+        currency: payload.currency,
+        status: payload.status,
+        requested_at: payload.requestedAt,
+        paid_at: payload.paidAt,
+        notes: payload.notes,
+      };
     },
   };
 }

@@ -11,6 +11,11 @@ import {
   prepareOAuthReferralCode,
 } from "../services/referralOnboardingService";
 import {
+  applyPendingCreatorCode,
+  clearStoredCreatorCode,
+  getStoredCreatorCode,
+} from "../services/creatorTrackingService";
+import {
   buildAcceptedLegalConsent,
   setPendingLegalConsent,
 } from "../services/legalConsentService";
@@ -219,8 +224,33 @@ export function Register() {
       }
 
       const validatedReferralCode = getStoredReferralCode();
+      const pendingCreatorCode = getStoredCreatorCode();
+      let creatorApplied = false;
 
-      if (validatedReferralCode.trim()) {
+      if (pendingCreatorCode.trim()) {
+        try {
+          setReferralSaving(true);
+          const creatorResult = await applyPendingCreatorCode();
+          creatorApplied = Boolean(creatorResult?.applied);
+          const creatorMessage = creatorResult?.message || "";
+          if (creatorMessage) {
+            setReferralNote(creatorMessage);
+            setSuccess(creatorMessage);
+          }
+          setError("");
+        } catch (referralError) {
+          const referralMessage =
+            referralError?.message ||
+            "El código de invitación no es válido o ya no está disponible.";
+          setReferralError(referralMessage);
+          setSuccess("");
+          setError(referralMessage);
+        } finally {
+          setReferralSaving(false);
+        }
+      }
+
+      if (!creatorApplied && validatedReferralCode.trim()) {
         try {
           setReferralSaving(true);
           const referralResult = await finalizeReferralCodeApplication(
@@ -246,6 +276,7 @@ export function Register() {
 
       clearStoredReferralCode();
       setReferralCode("");
+      clearStoredCreatorCode();
     }
 
     setLoading(false);

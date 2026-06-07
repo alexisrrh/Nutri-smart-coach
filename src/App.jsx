@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -10,6 +10,10 @@ import {
 import { useAuth } from "./context/useAuth";
 import SplashScreen from "./components/SplashScreen";
 import { ToastProvider } from "./components/ui";
+import {
+  setStoredCreatorCode,
+  trackCreatorLinkClick,
+} from "./services/creatorTrackingService";
 
 const Home = lazy(() =>
   import("./pages/Home").then((module) => ({ default: module.Home }))
@@ -209,6 +213,7 @@ function AppRoutes({ splashVisible }) {
   const { user, loadingAuth } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const trackedCreatorLinkRef = useRef("");
 
   useEffect(() => {
     if (splashVisible || loadingAuth) return;
@@ -221,6 +226,20 @@ function AppRoutes({ splashVisible }) {
       navigate("/dashboard", { replace: true });
     }
   }, [location.pathname, loadingAuth, navigate, splashVisible, user]);
+
+  useEffect(() => {
+    if (loadingAuth) return;
+
+    const params = new URLSearchParams(location.search);
+    const creatorCode = setStoredCreatorCode(params.get("creator"));
+    if (!creatorCode) return;
+
+    const trackingSignature = `${location.pathname}?creator=${creatorCode}`;
+    if (trackedCreatorLinkRef.current === trackingSignature) return;
+    trackedCreatorLinkRef.current = trackingSignature;
+
+    void trackCreatorLinkClick(creatorCode);
+  }, [loadingAuth, location.pathname, location.search]);
 
   return (
     <Suspense fallback={<AppLoader />}>

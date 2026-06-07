@@ -123,6 +123,10 @@ export async function markReferralPremiumActive(
     premiumStartedAt: referral.premium_started_at || paidAt,
   });
 
+  const referralCode = referral.referral_code_id
+    ? await repo.getReferralCodeById(referral.referral_code_id)
+    : null;
+
   const acquisition = await registerSubscriptionAcquisition(
     {
       userId,
@@ -139,6 +143,7 @@ export async function markReferralPremiumActive(
         referral.type === "creator" || referral.type === "influencer"
           ? referral.referrer_user_id
           : null,
+      sourceCode: referralCode?.code || null,
       trialSource:
         referral.type === "creator"
           ? "creator_trial"
@@ -199,6 +204,8 @@ export async function createAffiliateCommissionForPaidInvoice(
     referredUserId,
     referralId,
     subscriptionId,
+    sourceCode = null,
+    paymentReference = null,
     amount,
     currency = "eur",
     commissionPercent = 30,
@@ -245,6 +252,8 @@ export async function createAffiliateCommissionForPaidInvoice(
     referredUserId,
     referralId,
     subscriptionId,
+    sourceCode,
+    paymentReference: paymentReference || subscriptionId || null,
     amount: commissionAmount,
     currency,
     commissionPercent,
@@ -496,6 +505,17 @@ export function createAcquisitionRepository(supabaseClient) {
       return data || null;
     },
 
+    async getReferralCodeById(codeId) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("id", codeId)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el código.", error);
+      return data || null;
+    },
+
     async listAffiliateCommissions({ influencerUserId, referredUserId }) {
       const { data, error } = await supabaseClient
         .from("affiliate_commissions")
@@ -647,6 +667,8 @@ function toDbCommissionPayload(payload = {}) {
   if (payload.referredUserId !== undefined) next.referred_user_id = payload.referredUserId;
   if (payload.referralId !== undefined) next.referral_id = payload.referralId;
   if (payload.subscriptionId !== undefined) next.subscription_id = payload.subscriptionId;
+  if (payload.sourceCode !== undefined) next.source_code = payload.sourceCode;
+  if (payload.paymentReference !== undefined) next.payment_reference = payload.paymentReference;
   if (payload.amount !== undefined) next.amount = payload.amount;
   if (payload.currency !== undefined) next.currency = payload.currency;
   if (payload.commissionPercent !== undefined) next.commission_percent = payload.commissionPercent;

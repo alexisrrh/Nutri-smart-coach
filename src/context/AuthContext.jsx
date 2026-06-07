@@ -5,7 +5,12 @@ import {
   setPendingLegalConsent,
 } from "../services/legalConsentService";
 import {
+  applyPendingCreatorCode,
+  getStoredCreatorCode,
+} from "../services/creatorTrackingService";
+import {
   applyPendingOAuthReferralCode,
+  clearOAuthReferralFlowPending,
   isOAuthReferralFlowPending,
 } from "../services/referralOnboardingService";
 import { clearCreatorPanelCache } from "../services/creatorService";
@@ -171,7 +176,20 @@ async function syncPendingOnboardingArtifacts(user) {
     return;
   }
 
-  if (!isOAuthReferralFlowPending()) return;
+  let creatorCodeApplied = false;
+  if (getStoredCreatorCode()) {
+    try {
+      const creatorResult = await applyPendingCreatorCode();
+      creatorCodeApplied = Boolean(creatorResult?.applied);
+      if (creatorCodeApplied) {
+        clearOAuthReferralFlowPending();
+      }
+    } catch (error) {
+      console.error("No se pudo aplicar el código de creador pendiente:", error);
+    }
+  }
+
+  if (creatorCodeApplied || !isOAuthReferralFlowPending()) return;
 
   try {
     await applyPendingOAuthReferralCode();
