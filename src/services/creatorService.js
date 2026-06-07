@@ -91,6 +91,27 @@ export async function submitCreatorApplication(payload) {
   );
 }
 
+export async function updateCreatorCode(code) {
+  const safeCode = normalizeCreatorCode(code);
+  if (!safeCode) {
+    throw new Error("No existe un código de creador para actualizar.");
+  }
+
+  return request(
+    "/creators/code",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: safeCode,
+      }),
+    },
+    { operation: "actualizar tu código de creador" }
+  );
+}
+
 export async function copyCreatorCode(code) {
   const safeCode = normalizeCreatorCode(code);
   if (!safeCode) {
@@ -178,6 +199,12 @@ export function normalizeCreatorPanelCache(creatorStatus, userId = null) {
   return {
     application: source.application ?? null,
     creatorCode,
+    creatorCodeCustomized: Boolean(
+      source.creatorCodeCustomized ||
+        source.creator_code_customized ||
+        source.customizedAt ||
+        source.customized_at
+    ),
     joinUrl,
     message: source.message || source.creatorMessage || source.creator_message || null,
     payouts,

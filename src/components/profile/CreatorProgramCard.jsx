@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   AlertCircle,
   BadgeCheck,
@@ -23,11 +24,14 @@ import { Link } from "react-router-dom";
 import { trackEvent } from "../../services/analytics";
 import {
   buildCreatorShareText,
+  buildCreatorJoinLink,
   copyCreatorCode,
   getCreatorStatus,
   loadCreatorStatus,
   shareCreatorCode,
   submitCreatorApplication,
+  setCreatorPanelCache,
+  updateCreatorCode,
 } from "../../services/creatorService";
 import {
   fieldControlClass,
@@ -38,6 +42,7 @@ import {
   SurfaceCard,
   useToast,
 } from "../ui";
+import { validateCreatorCodeEditInput } from "./creatorCodeEditValidation";
 
 const PLATFORM_OPTIONS = [
   { value: "instagram", label: "Instagram" },
@@ -60,6 +65,7 @@ export function CreatorProgramCardView({
   status = "none",
   application = null,
   creatorCode = "",
+  creatorCodeCustomized = false,
   stats = null,
   profileRequired = false,
   formVisible = false,
@@ -77,6 +83,14 @@ export function CreatorProgramCardView({
   onRetryCodeActivation,
   onChangeFormState,
   onToggleTermsAccepted,
+  codeEditorOpen = false,
+  codeEditorValue = "",
+  codeEditorError = "",
+  codeEditorSaving = false,
+  onEditCode,
+  onChangeCodeEditor,
+  onCancelCodeEditor,
+  onSaveCodeEditor,
 }) {
   const isApproved = status === "approved";
   const isPending = status === "pending";
@@ -121,7 +135,8 @@ export function CreatorProgramCardView({
     formError && formError !== "No se pudo completar la solicitud." ? formError : "";
 
   return (
-    <SurfaceCard
+    <>
+      <SurfaceCard
       className="relative overflow-hidden p-3"
       radius="lg"
       variant="soft"
@@ -434,10 +449,28 @@ export function CreatorProgramCardView({
 
                 <section className="grid gap-2 rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_84%,black),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-3 shadow-[0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]">
                   <div className="grid gap-2">
-                    <div className="text-center">
-                      <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#D4AF37]">
-                        Código de creador
-                      </p>
+                  <div className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#D4AF37] mb-3">
+                          Código de creador
+                        </p>
+                        {creatorCodeCustomized ? (
+                          <MetaBadge
+                            variant="neutral"
+                            className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                          >
+                            Personalizado
+                          </MetaBadge>
+                        ) : onEditCode ? (
+                          <SecondaryButton
+                            type="button"
+                            onClick={onEditCode}
+                            className="h-7 px-2 py-0 text-[8px] normal-case tracking-normal mb-3"
+                          >
+                            Editar código
+                          </SecondaryButton>
+                        ) : null}
+                      </div>
                       <div className="mt-1 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                         <p className="min-w-0 truncate whitespace-nowrap text-[18px] font-black leading-tight tracking-[0.22em] text-[var(--app-text)] text-ellipsis sm:text-[19px]">
                           {creatorCode}
@@ -466,18 +499,18 @@ export function CreatorProgramCardView({
                       type="button"
                       onClick={onCopyCode}
                       icon={<IconCapsule icon={Copy} tone="blue" size="xs" />}
-                      className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+                      className="min-w-0 rounded-full px-2.5 py-1 text-[8px] normal-case tracking-normal min-h-[32px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
                     >
-                      Copiar código
+                      Copiar
                     </SecondaryButton>
 
                     <PrimaryButton
                       type="button"
                       onClick={onShareCode}
-                      icon={<IconCapsule icon={Share2} tone="purple" size="xs" />}
-                      className="min-w-0 rounded-full px-2.5 py-1 text-[10px] normal-case tracking-normal min-h-[38px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_18%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]"
+                      icon={<IconCapsule icon={Share2} tone="green" size="xs" />}
+                      className="min-w-0 rounded-full px-2.5 py-1 text-[8px] normal-case tracking-normal min-h-[40px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_10%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]"
                     >
-                      Compartir enlace
+                      Compartir
                     </PrimaryButton>
                   </div>
                 </section>
@@ -625,7 +658,20 @@ export function CreatorProgramCardView({
           </div>
         ) : null}
       </div>
-    </SurfaceCard>
+      </SurfaceCard>
+      {codeEditorOpen ? (
+        <CreatorCodeEditorModal
+          open={codeEditorOpen}
+          code={creatorCode}
+          value={codeEditorValue}
+          error={codeEditorError}
+          saving={codeEditorSaving}
+          onClose={onCancelCodeEditor}
+          onChange={onChangeCodeEditor}
+          onSave={onSaveCodeEditor}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -666,6 +712,10 @@ export default function CreatorProgramCard({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [codeEditorOpen, setCodeEditorOpen] = useState(false);
+  const [codeEditorValue, setCodeEditorValue] = useState("");
+  const [codeEditorError, setCodeEditorError] = useState("");
+  const [codeEditorSaving, setCodeEditorSaving] = useState(false);
 
   useEffect(() => {
     if (skipAutoLoad || initialStatusData) return;
@@ -823,6 +873,68 @@ export default function CreatorProgramCard({
     }
   }
 
+  function handleOpenCodeEditor() {
+    if (!statusData.creatorCode || statusData.creatorCodeCustomized) return;
+
+    setCodeEditorValue(statusData.creatorCode || "");
+    setCodeEditorError("");
+    setCodeEditorOpen(true);
+  }
+
+  function handleCloseCodeEditor() {
+    if (codeEditorSaving) return;
+
+    setCodeEditorOpen(false);
+    setCodeEditorError("");
+    setCodeEditorValue("");
+  }
+
+  function handleChangeCodeEditor(nextValue) {
+    setCodeEditorValue(String(nextValue || "").toUpperCase().replace(/\s+/g, ""));
+    if (codeEditorError) setCodeEditorError("");
+  }
+
+  async function handleSaveCodeEditor() {
+    if (!statusData.creatorCode || codeEditorSaving) return;
+
+    const validationError = validateCreatorCodeEditInput(codeEditorValue);
+    if (validationError) {
+      setCodeEditorError(validationError);
+      return;
+    }
+
+    setCodeEditorSaving(true);
+    setCodeEditorError("");
+
+    try {
+      const updatedStatus = await updateCreatorCode(codeEditorValue);
+      const nextStatus = {
+        ...statusData,
+        ...updatedStatus,
+        userId: statusData.userId || updatedStatus?.userId || null,
+        joinUrl: buildCreatorJoinLink(updatedStatus?.creatorCode || statusData.creatorCode),
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (nextStatus.userId) {
+        setCreatorPanelCache(nextStatus.userId, nextStatus);
+      }
+
+      setStatusData((current) => ({
+        ...current,
+        ...nextStatus,
+      }));
+      setCodeEditorOpen(false);
+      setCodeEditorValue("");
+      toast.success("Código actualizado.");
+    } catch (saveError) {
+      setCodeEditorError(saveError.message || "No se pudo actualizar el código.");
+      toast.error(saveError.message || "No se pudo actualizar el código.");
+    } finally {
+      setCodeEditorSaving(false);
+    }
+  }
+
   async function handleRetryCodeActivation() {
     const retryUserId = statusData.userId || initialStatusData?.userId || null;
     if (!retryUserId) return;
@@ -858,6 +970,7 @@ export default function CreatorProgramCard({
       status={viewState.status}
       application={viewState.application}
       creatorCode={viewState.creatorCode}
+      creatorCodeCustomized={viewState.creatorCodeCustomized}
       stats={viewState.stats}
       profileRequired={viewState.profileRequired}
       formVisible={viewState.formVisible}
@@ -866,10 +979,18 @@ export default function CreatorProgramCard({
       submitting={viewState.submitting}
       notice={viewState.notice}
       termsAccepted={viewState.termsAccepted}
+      codeEditorOpen={codeEditorOpen}
+      codeEditorValue={codeEditorValue}
+      codeEditorError={codeEditorError}
+      codeEditorSaving={codeEditorSaving}
       onStartRequest={handleStartRequest}
       onCancelRequest={() => setFormVisible(false)}
       onSubmitApplication={handleSubmitApplication}
       onCopyCode={handleCopyCode}
+      onEditCode={handleOpenCodeEditor}
+      onChangeCodeEditor={handleChangeCodeEditor}
+      onCancelCodeEditor={handleCloseCodeEditor}
+      onSaveCodeEditor={handleSaveCodeEditor}
       onShareCode={handleShareCode}
       onRetryRequest={handleRetryRequest}
       onRetryCodeActivation={handleRetryCodeActivation}
@@ -877,6 +998,109 @@ export default function CreatorProgramCard({
       onToggleTermsAccepted={setTermsAccepted}
     />
   );
+}
+
+export function CreatorCodeEditorModal({
+  open = false,
+  value = "",
+  error = "",
+  saving = false,
+  onClose,
+  onChange,
+  onSave,
+}) {
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-[92%] max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),color-mix(in_srgb,var(--app-card)_98%,transparent))] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.45)] transition duration-150 ease-out scale-100 opacity-100"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="grid gap-1.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#D4AF37]">
+            Personalizar código
+          </p>
+          <h2 className="text-[15px] font-black leading-tight text-[var(--app-text)]">
+            Personalizar código
+          </h2>
+          <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            Puedes cambiar tu código una sola vez. Elige uno fácil de recordar.
+          </p>
+        </div>
+
+        <div className="mt-3 grid gap-2">
+          <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
+            Nuevo código
+            <input
+              value={value}
+              onChange={(event) => onChange?.(event.target.value)}
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              maxLength={20}
+              placeholder="ALEXISFIT"
+              className={fieldControlClass(
+                "h-11 py-0 text-[12px] font-black tracking-[0.14em] placeholder:text-[var(--app-muted)]"
+              )}
+            />
+          </label>
+
+          {error ? (
+            <StatusBox type="error" className="px-2.5 py-1.5 text-[11px] leading-4 break-words">
+              {error}
+            </StatusBox>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <SecondaryButton
+              type="button"
+              onClick={onClose}
+              className="h-10 px-3 py-0 text-[10px] normal-case tracking-normal"
+              disabled={saving}
+            >
+              Cancelar
+            </SecondaryButton>
+            <PrimaryButton
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              icon={
+                saving ? (
+                  <LoaderCircle size={14} className="animate-spin" />
+                ) : (
+                  <IconCapsule icon={CheckCircle2} tone="gold" size="xs" />
+                )
+              }
+              className="h-10 px-2 py-0 text-[8px] normal-case tracking-normal whitespace-nowrap"
+            >
+              {saving ? "Guardando..." : "Guardar"}
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (typeof document === "undefined" || !document.body) {
+    return modalContent;
+  }
+
+  return createPortal(modalContent, document.body);
 }
 
 function ReviewStatus() {

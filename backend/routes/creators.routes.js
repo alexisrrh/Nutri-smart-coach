@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireAuthenticatedUser, verifySupabaseUser } from "../middleware/auth.js";
 import {
   getCreatorStatus,
+  updateCreatorPanelCode,
   submitCreatorApplication,
 } from "../services/creator.service.js";
 
@@ -39,6 +40,25 @@ router.post("/creators/apply", verifySupabaseUser, async (req, res, next) => {
     );
 
     return res.status(201).json(creator);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/creators/code", verifySupabaseUser, async (req, res, next) => {
+  try {
+    const userId = requireAuthenticatedUser(req, res);
+    if (!userId) return;
+
+    const creator = await updateCreatorPanelCode(
+      userId,
+      req.body?.code,
+      {
+        authUser: req.authUser,
+      }
+    );
+
+    return res.json(creator);
   } catch (error) {
     return next(error);
   }

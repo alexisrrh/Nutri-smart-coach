@@ -253,6 +253,28 @@ describe("referral service", () => {
     expect(code.commission_months_limit).toBe(12);
   });
 
+  it("uses profiles.nombre before profiles.name when generating a creator code", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        nombre: "Alexis Rodríguez",
+        name: "No Debe Ganar",
+        email: "alexis@example.com",
+      },
+    });
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+      creatorApplication: {
+        socialHandle: "ultraxcode",
+      },
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIALEXIS");
+  });
+
   it("uses the profile name before the social handle when generating a creator code", async () => {
     const state = createReferralState({
       profile: {
@@ -290,6 +312,27 @@ describe("referral service", () => {
       repo,
       creatorApplication: {
         socialHandle: "ultraxcode",
+      },
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIALEXIS");
+  });
+
+  it("ignores email-like social handles when generating a creator code", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+    });
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+      creatorApplication: {
+        socialHandle: "alexisrrh@gmail.com",
       },
     });
 
