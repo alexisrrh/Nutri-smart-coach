@@ -11,6 +11,8 @@ const DEFAULT_INFLUENCER_COMMISSION_MONTHS_LIMIT = 12;
 const DEFAULT_CREATOR_TRIAL_DAYS = 15;
 const DEFAULT_CREATOR_COMMISSION_PERCENT = 30;
 const DEFAULT_CREATOR_COMMISSION_MONTHS_LIMIT = 12;
+const CREATOR_CODE_PREFIX = "NUTRI";
+const CREATOR_CODE_MAX_LENGTH = 20;
 
 export async function createUserReferralCode(userId, options = {}) {
   assertUserId(userId);
@@ -55,30 +57,36 @@ export async function createCreatorCode(userId, code = "", options = {}) {
 
   const normalizedCode = normalizeReferralCode(code);
   let resolvedCode = normalizedCode;
-  let profile = null;
+  const creatorApplication = options.creatorApplication || null;
+  const creatorSocialHandle = normalizeCreatorCodeSeed(
+    creatorApplication?.socialHandle || options.socialHandle || ""
+  );
+  let profile = options.profile || null;
 
-  auditLog(logger, {
-    event: "profile_lookup_start",
-    userId,
-  });
+  if (!creatorSocialHandle || !profile?.username) {
+    auditLog(logger, {
+      event: "profile_lookup_start",
+      userId,
+    });
 
-  try {
-    profile = await repo.getProfileByUserId(userId);
-    auditLog(logger, {
-      event: "profile_lookup_result",
-      userId,
-      profileFound: Boolean(profile),
-      profileId: profile?.id || null,
-      profileUsername: profile?.username || null,
-      profileName: profile?.name || null,
-      profileEmail: profile?.email || null,
-    });
-  } catch (error) {
-    auditLog(logger, {
-      event: "profile_lookup_failed",
-      userId,
-      error: error?.message || String(error),
-    });
+    try {
+      profile = await repo.getProfileByUserId(userId);
+      auditLog(logger, {
+        event: "profile_lookup_result",
+        userId,
+        profileFound: Boolean(profile),
+        profileId: profile?.id || null,
+        profileUsername: profile?.username || null,
+        profileName: profile?.name || null,
+        profileEmail: profile?.email || null,
+      });
+    } catch (error) {
+      auditLog(logger, {
+        event: "profile_lookup_failed",
+        userId,
+        error: error?.message || String(error),
+      });
+    }
   }
 
   auditLog(logger, {
@@ -102,10 +110,19 @@ export async function createCreatorCode(userId, code = "", options = {}) {
       throw createPublicError("Ese código ya está en uso.", 409);
     }
   } else {
-    resolvedCode = await generateUniqueCreatorCode(repo, {
+    const generatedCode = await generateUniqueCreatorCode(repo, {
       profile,
+      creatorApplication,
+      socialHandle: creatorSocialHandle,
       userId,
     });
+    if (!generatedCode) {
+      throw createPublicError(
+        "Completa tu perfil para activar tu código de creador.",
+        422
+      );
+    }
+    resolvedCode = generatedCode;
   }
 
   const existingByUser = await repo.getCodeByUserAndType(userId, "creator");
@@ -134,6 +151,8 @@ export async function createCreatorCode(userId, code = "", options = {}) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const attemptCode = attempt === 0 ? resolvedCode : await generateUniqueCreatorCode(repo, {
       profile,
+      creatorApplication,
+      socialHandle: creatorSocialHandle,
       userId,
     });
 
@@ -969,16 +988,22 @@ async function getProfileByUserId(userId, supabaseClient) {
   return data || null;
 }
 
-async function generateUniqueCreatorCode(repo, { profile = null, userId } = {}) {
-  const baseSeed =
-    profile?.username ||
-    profile?.name ||
-    profile?.email?.split("@")?.[0] ||
-    buildCreatorFallbackSeed(userId);
-  const base = `NUTRI${normalizeCreatorCodeSeed(baseSeed) || "USER"}`;
+async function generateUniqueCreatorCode(
+  repo,
+  { profile = null, creatorApplication = null, socialHandle = null } = {}
+) {
+  const baseSeed = resolveCreatorCodeSeed({
+    profile,
+    creatorApplication,
+    socialHandle,
+  });
+  if (!baseSeed) {
+    return null;
+  }
+  const base = buildCreatorCodeCandidate(baseSeed);
 
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    const candidate = attempt === 0 ? base : `${base}${attempt + 1}`;
+    const candidate = attempt === 0 ? base : buildCreatorCodeCandidate(baseSeed, attempt + 1);
     const inUse = await repo.getCodeByCode(candidate);
     if (!inUse) return candidate;
   }
@@ -987,13 +1012,37 @@ async function generateUniqueCreatorCode(repo, { profile = null, userId } = {}) 
   throw error;
 }
 
-function buildCreatorFallbackSeed(userId) {
-  const compactUserId = String(userId || "")
-    .trim()
-    .replace(/[^A-Za-z0-9]/g, "")
-    .slice(0, 6);
+function resolveCreatorCodeSeed({
+  profile = null,
+  creatorApplication = null,
+  socialHandle = null,
+} = {}) {
+  const applicationSeed = normalizeCreatorCodeSeed(socialHandle || creatorApplication?.socialHandle);
+  if (applicationSeed) return applicationSeed;
 
-  return compactUserId || "creator";
+  const profileNameSeed = extractProfileNameSeed(profile?.name);
+  if (profileNameSeed) return normalizeCreatorCodeSeed(profileNameSeed);
+
+  return null;
+}
+
+function buildCreatorCodeCandidate(seed, suffix = "") {
+  const normalizedSeed = normalizeCreatorCodeSeed(seed) || "USER";
+  const suffixValue = String(suffix || "").replace(/[^0-9]/g, "");
+  const availableLength = Math.max(
+    1,
+    CREATOR_CODE_MAX_LENGTH - CREATOR_CODE_PREFIX.length - suffixValue.length
+  );
+  const compactSeed = normalizedSeed.slice(0, availableLength) || "USER";
+  return `${CREATOR_CODE_PREFIX}${compactSeed}${suffixValue}`;
+}
+
+function extractProfileNameSeed(name) {
+  const firstToken = String(name || "")
+    .trim()
+    .split(/\s+/)[0];
+
+  return firstToken || "";
 }
 
 async function upsertProfileSubscription(payload, supabaseClient) {

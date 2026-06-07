@@ -253,23 +253,64 @@ describe("referral service", () => {
     expect(code.commission_months_limit).toBe(12);
   });
 
-  it("falls back to a userId-based creator code when the profile lookup fails", async () => {
-    const state = createReferralState();
+  it("prefers the creator social handle over the profile name when generating a creator code", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Nombre Que No Debe Usarse",
+        username: "user-not-used",
+        email: "alexis@example.com",
+      },
+    });
     const repo = createReferralRepo(state);
-    repo.getProfileByUserId = async () => {
-      throw new Error("No se pudo consultar el perfil.");
-    };
 
-    const code = await createCreatorCode("A1B2C3D4E5F6", "", {
+    const code = await createCreatorCode("creator-1", "", {
       repo,
-      logger: { info: vi.fn() },
+      creatorApplication: {
+        socialHandle: "Alexisrrh",
+      },
     });
 
     expect(code.type).toBe("creator");
-    expect(code.code).toBe("NUTRIA1B2C3");
-    expect(code.trial_days).toBe(15);
-    expect(code.commission_percent).toBe(30);
-    expect(code.commission_months_limit).toBe(12);
+    expect(code.code).toBe("NUTRIALEXISRRH");
+    expect(code.code).toHaveLength(14);
+  });
+
+  it("limits generated creator codes to 20 characters", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+    });
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+      creatorApplication: {
+        socialHandle: "Ultraxcode1234567890ABCD",
+      },
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIULTRAXCODE12345");
+    expect(code.code).toHaveLength(20);
+  });
+
+  it("rejects creator code creation when profile data is missing", async () => {
+    const state = createReferralState();
+    const repo = createReferralRepo(state);
+
+    await expect(
+      createCreatorCode("A1B2C3D4E5F6", "", {
+        repo,
+        logger: { info: vi.fn() },
+      })
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      message: "Completa tu perfil para activar tu código de creador.",
+    });
   });
 
   it("adds a suffix to a creator code when the preferred code is already used", async () => {

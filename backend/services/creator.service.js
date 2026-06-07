@@ -67,6 +67,7 @@ export async function getCreatorStatus(userId, options = {}) {
 
   const creatorCodeRecord = findCreatorCode(referralStats?.codes || []);
   let creatorCode = creatorCodeRecord?.code || null;
+  let profileRequired = false;
 
   auditLog(logger, {
     event: "creator_status.lookup",
@@ -91,27 +92,43 @@ export async function getCreatorStatus(userId, options = {}) {
       createdCode = await createCreatorCode(userId, "", {
         repo: options.referralRepo,
         logger,
+        creatorApplication: application,
       });
     } catch (error) {
+      const isProfileRequired = Number(error?.statusCode || 0) === 422;
       auditLog(logger, {
         event: "creator_status.auto_create_failed",
         userId,
         applicationStatus: application?.status || null,
         creatorCodeFound: creatorCodeRecord?.code || null,
         error: error?.message || String(error),
+        profileRequired: isProfileRequired,
       });
+
+      if (isProfileRequired) {
+        profileRequired = true;
+        auditLog(logger, {
+          event: "creator_status.profile_required",
+          userId,
+          applicationStatus: application?.status || null,
+          message: error?.message || null,
+        });
+      }
+
       try {
-        createdCode = await repo.getCodeByUserAndType(userId, "creator");
-        if (createdCode) {
-          auditLog(logger, {
-            event: "creator_status.auto_create_result",
-            userId,
-            applicationStatus: application?.status || null,
-            createdCode: createdCode?.code || null,
-            createdType: createdCode?.type || null,
-            createdId: createdCode?.id || null,
-            recovered: true,
-          });
+        if (!isProfileRequired) {
+          createdCode = await repo.getCodeByUserAndType(userId, "creator");
+          if (createdCode) {
+            auditLog(logger, {
+              event: "creator_status.auto_create_result",
+              userId,
+              applicationStatus: application?.status || null,
+              createdCode: createdCode?.code || null,
+              createdType: createdCode?.type || null,
+              createdId: createdCode?.id || null,
+              recovered: true,
+            });
+          }
         }
       } catch (recoveryError) {
         auditLog(logger, {
@@ -159,6 +176,11 @@ export async function getCreatorStatus(userId, options = {}) {
     application,
     status,
     creatorCode,
+    profileRequired,
+    message:
+      profileRequired && application?.status === "approved"
+        ? "Completa tu perfil para activar tu código de creador."
+        : null,
     stats: status === "approved" ? buildCreatorStats(referralStats) : null,
   };
 }
