@@ -232,9 +232,10 @@ describe("CreatorProgramCard", () => {
       </MemoryRouter>
     );
 
-    expect(html).toContain("Partner activo");
-    expect(html).toContain("Generando código de creador...");
+    expect(html).toContain("Estamos activando tu código de creador");
+    expect(html).toContain("Si ya está listo, pulsa reintentar para refrescar el panel.");
     expect(html).toContain("ACTIVO");
+    expect(html).toContain("Reintentar");
     expect(html).not.toContain("Compartir");
     expect(html).not.toContain("Copiar");
   });

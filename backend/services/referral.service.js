@@ -55,7 +55,31 @@ export async function createCreatorCode(userId, code = "", options = {}) {
 
   const normalizedCode = normalizeReferralCode(code);
   let resolvedCode = normalizedCode;
-  const profile = await repo.getProfileByUserId(userId);
+  let profile = null;
+
+  auditLog(logger, {
+    event: "profile_lookup_start",
+    userId,
+  });
+
+  try {
+    profile = await repo.getProfileByUserId(userId);
+    auditLog(logger, {
+      event: "profile_lookup_result",
+      userId,
+      profileFound: Boolean(profile),
+      profileId: profile?.id || null,
+      profileUsername: profile?.username || null,
+      profileName: profile?.name || null,
+      profileEmail: profile?.email || null,
+    });
+  } catch (error) {
+    auditLog(logger, {
+      event: "profile_lookup_failed",
+      userId,
+      error: error?.message || String(error),
+    });
+  }
 
   auditLog(logger, {
     event: "creator_code.create_attempt",
@@ -107,20 +131,52 @@ export async function createCreatorCode(userId, code = "", options = {}) {
     return updated;
   }
 
-  const inserted = await repo.insertCode(payload);
-  auditLog(logger, {
-    event: "creator_code.insert_result",
-    userId,
-    code: inserted?.code || null,
-    type: inserted?.type || null,
-    id: inserted?.id || null,
-    trialDays: Number(inserted?.trial_days || payload.trialDays || 0),
-    commissionPercent: Number(inserted?.commission_percent || payload.commissionPercent || 0),
-    commissionMonthsLimit: Number(
-      inserted?.commission_months_limit || payload.commissionMonthsLimit || 0
-    ),
-  });
-  return inserted;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const attemptCode = attempt === 0 ? resolvedCode : await generateUniqueCreatorCode(repo, {
+      profile,
+      userId,
+    });
+
+    try {
+      const inserted = await repo.insertCode({
+        ...payload,
+        code: attemptCode,
+      });
+      auditLog(logger, {
+        event: "creator_code.insert_result",
+        userId,
+        code: inserted?.code || null,
+        type: inserted?.type || null,
+        id: inserted?.id || null,
+        trialDays: Number(inserted?.trial_days || payload.trialDays || 0),
+        commissionPercent: Number(inserted?.commission_percent || payload.commissionPercent || 0),
+        commissionMonthsLimit: Number(
+          inserted?.commission_months_limit || payload.commissionMonthsLimit || 0
+        ),
+      });
+      return inserted;
+    } catch (error) {
+      if (!isDuplicateCodeError(error)) {
+        throw error;
+      }
+
+      const existingForUser = await repo.getCodeByUserAndType(userId, "creator");
+      if (existingForUser) {
+        auditLog(logger, {
+          event: "creator_code.insert_result",
+          userId,
+          code: existingForUser?.code || null,
+          type: existingForUser?.type || null,
+          id: existingForUser?.id || null,
+          recovered: true,
+        });
+        return existingForUser;
+      }
+    }
+  }
+
+  const error = createPublicError("No se pudo generar un código de creador único.", 500);
+  throw error;
 }
 
 export async function createInfluencerCode(userId, code, options = {}) {
@@ -857,6 +913,19 @@ function buildUserReferralCode() {
   return `NSC${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
+function isDuplicateCodeError(error) {
+  const message = String(error?.message || error?.cause?.message || "")
+    .toLowerCase();
+
+  return (
+    message.includes("duplicate") ||
+    message.includes("unique") ||
+    message.includes("ya está en uso") ||
+    message.includes("already exists") ||
+    message.includes("conflict")
+  );
+}
+
 function wrapDbError(message, error) {
   const wrapped = new Error(message);
   wrapped.statusCode = 500;
@@ -905,7 +974,7 @@ async function generateUniqueCreatorCode(repo, { profile = null, userId } = {}) 
     profile?.username ||
     profile?.name ||
     profile?.email?.split("@")?.[0] ||
-    userId;
+    buildCreatorFallbackSeed(userId);
   const base = `NUTRI${normalizeCreatorCodeSeed(baseSeed) || "USER"}`;
 
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -916,6 +985,15 @@ async function generateUniqueCreatorCode(repo, { profile = null, userId } = {}) 
 
   const error = createPublicError("No se pudo generar un código de creador único.", 500);
   throw error;
+}
+
+function buildCreatorFallbackSeed(userId) {
+  const compactUserId = String(userId || "")
+    .trim()
+    .replace(/[^A-Za-z0-9]/g, "")
+    .slice(0, 6);
+
+  return compactUserId || "creator";
 }
 
 async function upsertProfileSubscription(payload, supabaseClient) {

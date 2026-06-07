@@ -7,13 +7,17 @@ vi.mock("./apiClient", () => ({
 }));
 
 const {
+  clearCreatorPanelCache,
   buildCreatorJoinLink,
   buildCreatorShareText,
   copyCreatorCode,
   copyCreatorLink,
+  getCreatorPanelCache,
   getCreatorStatus,
+  loadCreatorStatus,
   shareCreatorCode,
   submitCreatorApplication,
+  setCreatorPanelCache,
 } = await import("./creatorService");
 
 describe("creatorService", () => {
@@ -24,6 +28,66 @@ describe("creatorService", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+  });
+
+  it("stores and reads creator panel cache per user", () => {
+    vi.stubGlobal("localStorage", createLocalStorageMock());
+
+    const cached = setCreatorPanelCache("user-1", {
+      status: "approved",
+      creatorCode: "NUTRIALEXIS",
+      stats: {
+        registeredUsers: 12,
+      },
+      payouts: {
+        availableCommissionAmount: 8.5,
+      },
+    });
+
+    expect(cached.status).toBe("approved");
+    expect(cached.creatorCode).toBe("NUTRIALEXIS");
+    expect(cached.joinUrl).toContain("NUTRIALEXIS");
+    expect(cached.payouts.availableCommissionAmount).toBe(8.5);
+    expect(getCreatorPanelCache("user-1")).toMatchObject({
+      status: "approved",
+      creatorCode: "NUTRIALEXIS",
+    });
+  });
+
+  it("loads creator status once and caches the normalized response", async () => {
+    vi.stubGlobal("localStorage", createLocalStorageMock());
+    requestMock.mockResolvedValueOnce({
+      application: null,
+      status: "approved",
+      creatorCode: "NUTRIALEXIS",
+      stats: { registeredUsers: 1 },
+    });
+
+    const [first, second] = await Promise.all([
+      loadCreatorStatus("user-1", { forceRefresh: true }),
+      loadCreatorStatus("user-1", { forceRefresh: true }),
+    ]);
+
+    expect(requestMock).toHaveBeenCalledTimes(1);
+    expect(first.status).toBe("approved");
+    expect(second.creatorCode).toBe("NUTRIALEXIS");
+    expect(getCreatorPanelCache("user-1")).toMatchObject({
+      status: "approved",
+      creatorCode: "NUTRIALEXIS",
+    });
+  });
+
+  it("clears creator panel cache for a specific user", () => {
+    vi.stubGlobal("localStorage", createLocalStorageMock());
+
+    setCreatorPanelCache("user-1", {
+      status: "approved",
+      creatorCode: "NUTRIALEXIS",
+    });
+
+    clearCreatorPanelCache("user-1");
+
+    expect(getCreatorPanelCache("user-1")).toBeNull();
   });
 
   it("loads creator status from the backend", async () => {
@@ -131,3 +195,28 @@ describe("creatorService", () => {
     });
   });
 });
+
+function createLocalStorageMock() {
+  const store = new Map();
+
+  return {
+    getItem(key) {
+      return store.has(key) ? store.get(key) : null;
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    clear() {
+      store.clear();
+    },
+    key(index) {
+      return Array.from(store.keys())[index] || null;
+    },
+    get length() {
+      return store.size;
+    },
+  };
+}

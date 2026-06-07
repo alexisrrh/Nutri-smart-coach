@@ -8,6 +8,7 @@ import {
   applyPendingOAuthReferralCode,
   isOAuthReferralFlowPending,
 } from "../services/referralOnboardingService";
+import { clearCreatorPanelCache } from "../services/creatorService";
 import { getProfile, saveProfile } from "../services/profileService";
 import { AuthContext } from "./authContext";
 
@@ -38,6 +39,9 @@ export function AuthProvider({ children }) {
 
         if (isMounted) {
           setUser(data.user);
+          if (!data.user) {
+            clearCreatorPanelCache();
+          }
           scheduleDashboardWarmup(data.user?.id);
           void syncPendingOnboardingArtifacts(data.user);
         }
@@ -56,14 +60,17 @@ export function AuthProvider({ children }) {
 
     Promise.resolve().then(loadSession);
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!isMounted) return;
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      if (!isMounted) return;
 
-        setUser(session?.user ?? null);
-        scheduleDashboardWarmup(session?.user?.id);
-        void syncPendingOnboardingArtifacts(session?.user);
-        setLoadingAuth(false);
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        clearCreatorPanelCache();
+      }
+      scheduleDashboardWarmup(session?.user?.id);
+      void syncPendingOnboardingArtifacts(session?.user);
+      setLoadingAuth(false);
       }
     );
 
@@ -193,6 +200,7 @@ async function resetCorruptSupabaseSession() {
     }
   } finally {
     removeSupabaseAuthStorage();
+    clearCreatorPanelCache();
   }
 }
 

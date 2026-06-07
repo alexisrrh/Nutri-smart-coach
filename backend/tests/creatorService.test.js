@@ -78,6 +78,103 @@ describe("creator service", () => {
     });
   });
 
+  it("returns approved status with empty metric fallbacks when referral stats fail", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "user-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+    });
+    referralRepo.insertCode = async () => {
+      throw new Error("duplicate key value violates unique constraint");
+    };
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => {
+        throw new Error("Metrics unavailable");
+      },
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBeNull();
+    expect(result.stats).toEqual({
+      registeredUsers: 0,
+      trialUsers: 0,
+      premiumUsers: 0,
+      totalCommissions: 0,
+      pendingCommissions: 0,
+      paidCommissions: 0,
+    });
+  });
+
+  it("returns approved status and a fallback creator code when the profile lookup fails", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "A1B2C3D4E5F6",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo();
+    referralRepo.getProfileByUserId = async () => {
+      throw new Error("No se pudo consultar el perfil.");
+    };
+    const logger = { info: vi.fn() };
+
+    const result = await getCreatorStatus("A1B2C3D4E5F6", {
+      repo,
+      referralRepo,
+      logger,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("NUTRIA1B2C3");
+    expect(result.stats).toEqual({
+      registeredUsers: 0,
+      trialUsers: 0,
+      premiumUsers: 0,
+      totalCommissions: 0,
+      pendingCommissions: 0,
+      paidCommissions: 0,
+    });
+    expect(referralRepo.insertCodeCalls).toHaveLength(1);
+    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
+      userId: "A1B2C3D4E5F6",
+      code: "NUTRIA1B2C3",
+      type: "creator",
+      trialDays: 15,
+      commissionPercent: 30,
+      commissionMonthsLimit: 12,
+      isActive: true,
+    });
+    expect(
+      logger.info.mock.calls.some(([entry]) =>
+        String(entry).includes("profile_lookup_failed")
+      )
+    ).toBe(true);
+  });
+
   it("auto-creates a creator code when the application is approved but no code exists", async () => {
     const repo = createCreatorRepo({
       application: {
@@ -118,6 +215,54 @@ describe("creator service", () => {
       commissionMonthsLimit: 12,
       isActive: true,
     });
+  });
+
+  it("falls back to an existing creator code if the automatic insert fails", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "user-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "user-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          is_active: true,
+        },
+      ],
+    });
+    const failingReferralRepo = {
+      ...referralRepo,
+      async insertCode() {
+        throw new Error("duplicate key value violates unique constraint");
+      },
+    };
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo: failingReferralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("NUTRIALEXIS");
   });
 
   it("adds a numeric suffix when the preferred creator code is already in use", async () => {

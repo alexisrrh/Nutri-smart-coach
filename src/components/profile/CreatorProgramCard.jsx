@@ -25,6 +25,7 @@ import {
   buildCreatorShareText,
   copyCreatorCode,
   getCreatorStatus,
+  loadCreatorStatus,
   shareCreatorCode,
   submitCreatorApplication,
 } from "../../services/creatorService";
@@ -72,6 +73,7 @@ export function CreatorProgramCardView({
   onCopyCode,
   onShareCode,
   onRetryRequest,
+  onRetryCodeActivation,
   onChangeFormState,
   onToggleTermsAccepted,
 }) {
@@ -568,23 +570,30 @@ export function CreatorProgramCardView({
               </>
             ) : (
               <div className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_20%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-3 py-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-2">
                   <IconCapsule icon={Megaphone} tone="gold" size="md" />
-                  <div className="min-w-0">
-                    <h2 className="min-w-0 break-words text-[16px] font-black leading-tight text-[var(--app-text)]">
-                      Partner activo
+                  <div className="min-w-0 flex-1">
+                    <MetaBadge
+                      variant="neutral"
+                      className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                    >
+                      ACTIVO
+                    </MetaBadge>
+                    <h2 className="mt-1.5 min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
+                      Estamos activando tu código de creador
                     </h2>
-                    <p className="mt-0.5 min-w-0 break-words text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                      Generando código de creador...
+                    <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      Si ya está listo, pulsa reintentar para refrescar el panel.
                     </p>
                   </div>
-                  <MetaBadge
-                    variant="neutral"
-                    className="ml-auto border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
-                  >
-                    ACTIVO
-                  </MetaBadge>
                 </div>
+                <SecondaryButton
+                  type="button"
+                  onClick={onRetryCodeActivation}
+                  className="h-10 px-3 py-0 text-[10px] normal-case tracking-normal"
+                >
+                  Reintentar
+                </SecondaryButton>
               </div>
             )}
           </div>
@@ -594,23 +603,47 @@ export function CreatorProgramCardView({
   );
 }
 
-export default function CreatorProgramCard() {
+const DEFAULT_STATUS_DATA = {
+  application: null,
+  status: "none",
+  creatorCode: "",
+  stats: null,
+  joinUrl: "",
+  payouts: null,
+  updatedAt: null,
+  userId: null,
+};
+
+export default function CreatorProgramCard({
+  initialStatusData = null,
+  skipAutoLoad = false,
+} = {}) {
   const toast = useToast();
-  const [loading, setLoading] = useState(true);
+  const hasInitialStatusData = Boolean(initialStatusData);
+  const [loading, setLoading] = useState(!hasInitialStatusData && !skipAutoLoad);
   const [statusData, setStatusData] = useState({
-    application: null,
-    status: "none",
-    creatorCode: "",
-    stats: null,
+    ...DEFAULT_STATUS_DATA,
+    ...(initialStatusData || {}),
   });
   const [formVisible, setFormVisible] = useState(false);
-  const [formState, setFormState] = useState(INITIAL_FORM);
+  const [formState, setFormState] = useState(() =>
+    initialStatusData?.status === "rejected" && initialStatusData?.application
+      ? {
+          socialPlatform: initialStatusData.application.socialPlatform || "instagram",
+          socialHandle: initialStatusData.application.socialHandle || "",
+          followersCount: String(initialStatusData.application.followersCount || ""),
+          proofUrl: initialStatusData.application.proofUrl || "",
+        }
+      : INITIAL_FORM
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
+    if (skipAutoLoad || initialStatusData) return;
+
     let active = true;
     let retryTimer = null;
 
@@ -670,7 +703,7 @@ export default function CreatorProgramCard() {
         window.clearTimeout(retryTimer);
       }
     };
-  }, []);
+  }, [initialStatusData, skipAutoLoad]);
 
   const viewState = useMemo(
     () => ({
@@ -760,6 +793,29 @@ export default function CreatorProgramCard() {
     }
   }
 
+  async function handleRetryCodeActivation() {
+    const retryUserId = statusData.userId || initialStatusData?.userId || null;
+    if (!retryUserId) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const refreshedStatus = await loadCreatorStatus(retryUserId, {
+        forceRefresh: true,
+      });
+      setStatusData((current) => ({
+        ...current,
+        ...refreshedStatus,
+      }));
+    } catch (refreshError) {
+      setError(refreshError.message || "No se pudo cargar el panel de creadores.");
+      toast.error(refreshError.message || "No se pudo cargar el panel de creadores.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleRetryRequest() {
     setNotice("");
     setFormVisible(true);
@@ -785,6 +841,7 @@ export default function CreatorProgramCard() {
       onCopyCode={handleCopyCode}
       onShareCode={handleShareCode}
       onRetryRequest={handleRetryRequest}
+      onRetryCodeActivation={handleRetryCodeActivation}
       onChangeFormState={setFormState}
       onToggleTermsAccepted={setTermsAccepted}
     />

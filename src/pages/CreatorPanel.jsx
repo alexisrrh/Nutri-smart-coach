@@ -1,38 +1,71 @@
-import { useEffect, useState } from "react";
-import { Clock3, Megaphone } from "lucide-react";
-import { AppShell, MetaBadge } from "../components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { Clock3, LoaderCircle, Megaphone } from "lucide-react";
+import { AppShell, MetaBadge, StatusBox } from "../components/ui";
 import CreatorProgramCard from "../components/profile/CreatorProgramCard";
-import { getCreatorStatus } from "../services/creatorService";
+import { useAuth } from "../context/useAuth";
+import {
+  getCreatorPanelCache,
+  loadCreatorStatus,
+} from "../services/creatorService";
 
 export function CreatorPanel() {
-  const [panelStatus, setPanelStatus] = useState(null);
-  const [loadingStatus, setLoadingStatus] = useState(true);
+  const { user, loadingAuth } = useAuth();
+  const userId = user?.id || null;
+
+  return (
+    <CreatorPanelContent
+      key={userId || "anonymous"}
+      userId={userId}
+      loadingAuth={loadingAuth}
+    />
+  );
+}
+
+function CreatorPanelContent({ userId, loadingAuth }) {
+  const initialCachedStatus = useMemo(
+    () => (userId ? getCreatorPanelCache(userId) : null),
+    [userId]
+  );
+  const [panelData, setPanelData] = useState(initialCachedStatus);
+  const [loadingStatus, setLoadingStatus] = useState(
+    Boolean(userId) && !initialCachedStatus
+  );
+  const [refreshing, setRefreshing] = useState(Boolean(initialCachedStatus));
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    let active = true;
-    let shouldKeepLoading = false;
+    if (!userId) return undefined;
 
-    async function loadStatus() {
+    let active = true;
+
+    void (async () => {
       try {
-        const status = await getCreatorStatus();
+        const nextStatus = await loadCreatorStatus(userId, {
+          forceRefresh: true,
+        });
         if (!active) return;
-        setPanelStatus(status?.status || "none");
-      } catch {
+
+        setPanelData(nextStatus);
+      } catch (error) {
         if (!active) return;
-        setPanelStatus("none");
+        if (!initialCachedStatus) {
+          setLoadError(error.message || "No se pudo cargar el panel de creadores.");
+        }
       } finally {
-        if (active && !shouldKeepLoading) {
+        if (active) {
           setLoadingStatus(false);
+          setRefreshing(false);
         }
       }
-    }
-
-    void loadStatus();
+    })();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialCachedStatus, userId]);
+
+  const isApproved = panelData?.status === "approved";
+  const showInitialSkeleton = (loadingAuth || loadingStatus) && !panelData;
 
   return (
     <AppShell
@@ -50,105 +83,155 @@ export function CreatorPanel() {
         <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,transparent_28%,rgba(0,0,0,0.12)_100%)]" />
 
         <div className="relative z-10 flex w-full flex-col gap-2.5">
-          {loadingStatus ? (
-            <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
-                }}
-              />
-              <div className="relative z-10 flex items-center gap-2">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
-                  <Clock3 size={18} className="animate-pulse" />
-                </div>
-                <div className="min-w-0">
-                  <MetaBadge variant="neutral">CARGANDO</MetaBadge>
-                  <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-                    Cargando panel de creadores
-                  </h1>
-                  <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                    Estamos comprobando tu acceso...
-                  </p>
-                </div>
-              </div>
-            </header>
-          ) : panelStatus === "approved" ? (
-            <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
-                }}
-              />
-
-              <div className="relative z-10 flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <MetaBadge variant="neutral">ACTIVO</MetaBadge>
-                  <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-                    Panel de Partner
-                  </h1>
-                  <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                    Gestiona tu código, ganancias y pagos.
-                  </p>
-                </div>
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
-                  <Clock3 size={18} />
-                </div>
-              </div>
-            </header>
+          {showInitialSkeleton ? (
+            <CreatorPanelSkeleton />
           ) : (
-            <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
-                }}
-              />
+            <>
+              {loadError && !panelData ? (
+                <StatusBox type="error" className="px-2.5 py-1.5 text-[11px] leading-4">
+                  {loadError}
+                </StatusBox>
+              ) : null}
 
-              <div className="relative z-10 flex flex-col gap-2.5">
-                <div className="flex items-start gap-2.5">
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
-                    <Megaphone size={18} />
-                  </div>
-                  <div className="min-w-0">
-                    <MetaBadge variant="neutral">PROGRAMA DE PARTNERS</MetaBadge>
-                    <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-                      Gana dinero recomendando NutriSmart Coach
-                    </h1>
-                  </div>
-                </div>
+              {isApproved ? (
+                <ApprovedHeader refreshing={refreshing} />
+              ) : (
+                <MarketingHeader />
+              )}
 
-                <div className="w-full rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_26%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,#D4AF37_13%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_94%,transparent))] px-2.5 py-2 shadow-[0_0_28px_color-mix(in_srgb,#D4AF37_15%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)]">
-                  <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                    <div className="min-w-0">
-                      <span className="block text-[46px] font-black leading-none tracking-tight text-[#D4AF37] sm:text-[52px]">
-                        30%
-                      </span>
-                    </div>
-                    <p className="min-w-0 break-words text-left text-[11px] font-black leading-4 text-[var(--app-text)] sm:text-[12px]">
-                      Comisión por cada suscripción Premium válida
-                    </p>
-                  </div>
-                </div>
-
-                <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[color-mix(in_srgb,#38bdf8_8%,var(--app-surface))] px-2 py-1 text-[9px] font-black uppercase tracking-[0.04em] text-[var(--app-muted)]">
-                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,#38bdf8_14%,transparent)] text-[#38bdf8]">
-                    <Clock3 size={10} />
-                  </span>
-                  Solicitudes revisadas en 24-72 horas.
-                </div>
-              </div>
-            </header>
+              {panelData ? (
+                <CreatorProgramCard
+                  key={`${panelData.status}-${panelData.creatorCode || "empty"}-${panelData.updatedAt || "cached"}`}
+                  initialStatusData={panelData}
+                  skipAutoLoad
+                />
+              ) : null}
+            </>
           )}
-
-          <CreatorProgramCard />
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function MarketingHeader() {
+  return (
+    <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
+        }}
+      />
+
+      <div className="relative z-10 flex flex-col gap-2.5">
+        <div className="flex items-start gap-2.5">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
+            <Megaphone size={18} />
+          </div>
+          <div className="min-w-0">
+            <MetaBadge variant="neutral">PROGRAMA DE PARTNERS</MetaBadge>
+            <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
+              Gana dinero recomendando NutriSmart Coach
+            </h1>
+          </div>
+        </div>
+
+        <div className="w-full rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_26%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,#D4AF37_13%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_94%,transparent))] px-2.5 py-2 shadow-[0_0_28px_color-mix(in_srgb,#D4AF37_15%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+            <div className="min-w-0">
+              <span className="block text-[46px] font-black leading-none tracking-tight text-[#D4AF37] sm:text-[52px]">
+                30%
+              </span>
+            </div>
+            <p className="min-w-0 text-left text-[11px] font-black leading-4 text-[var(--app-text)] sm:text-[12px]">
+              Comisión por cada suscripción Premium válida
+            </p>
+          </div>
+        </div>
+
+        <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[color-mix(in_srgb,#38bdf8_8%,var(--app-surface))] px-2 py-1 text-[9px] font-black uppercase tracking-[0.04em] text-[var(--app-muted)]">
+          <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,#38bdf8_14%,transparent)] text-[#38bdf8]">
+            <Clock3 size={10} />
+          </span>
+          Solicitudes revisadas en 24-72 horas.
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function ApprovedHeader({ refreshing = false }) {
+  return (
+    <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
+        }}
+      />
+
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <MetaBadge variant="neutral">ACTIVO</MetaBadge>
+          <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
+            Panel de Partner
+          </h1>
+          <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+            Gestiona tu código, ganancias y pagos.
+          </p>
+          {refreshing ? (
+            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[color-mix(in_srgb,#38bdf8_8%,var(--app-surface))] px-2 py-1 text-[9px] font-black uppercase tracking-[0.04em] text-[var(--app-muted)]">
+              <LoaderCircle size={10} className="animate-spin text-[#38bdf8]" />
+              Actualizando
+            </div>
+          ) : null}
+        </div>
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
+          <Clock3 size={18} />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function CreatorPanelSkeleton() {
+  return (
+    <>
+      <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 30%), radial-gradient(circle at 92% 18%, color-mix(in srgb, #D4AF37 10%, transparent), transparent 28%)",
+          }}
+        />
+        <div className="relative z-10 flex items-center gap-2">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
+            <Clock3 size={18} className="animate-pulse" />
+          </div>
+          <div className="min-w-0">
+            <MetaBadge variant="neutral">CARGANDO</MetaBadge>
+            <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
+              Preparando panel...
+            </h1>
+            <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+              Estamos comprobando tu acceso.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid gap-2">
+        <div className="h-[168px] rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)]/80 animate-pulse" />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="h-[84px] rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)]/80 animate-pulse" />
+          <div className="h-[84px] rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)]/80 animate-pulse" />
+        </div>
+      </div>
+    </>
   );
 }
 
