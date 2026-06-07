@@ -72,6 +72,13 @@ export function normalizeReferralCode(code) {
 }
 
 export function getReferralApplyOutcome(result) {
+  if (result?.referral?.type === "creator") {
+    return {
+      eventName: "creator_code_applied",
+      message: "Código de creador aplicado. 15 días Premium gratis.",
+    };
+  }
+
   if (result?.referral?.type === "influencer") {
     return {
       eventName: "influencer_code_applied",
@@ -167,7 +174,9 @@ export async function validateAndStoreReferralCode(code, options = {}) {
     trialDays: Number(result.trialDays || 0),
     code: normalizedCode,
     message:
-      result.type === "influencer"
+      result.type === "creator"
+        ? `Código aplicado al crear tu cuenta. ${Number(result.trialDays || 15)} días Premium gratis.`
+        : result.type === "influencer"
         ? `Código aplicado al crear tu cuenta. ${Number(result.trialDays || 15)} días Premium gratis.`
         : "Código aplicado al crear tu cuenta.",
   };

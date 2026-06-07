@@ -44,6 +44,15 @@ vi.mock("../services/creator.service.js", () => ({
       linkClicks: 0,
     },
   })),
+  trackCreatorLinkClick: vi.fn(async () => ({ tracked: true })),
+  requestCreatorPayout: vi.fn(async () => ({
+    status: "approved",
+    payoutRequest: {
+      id: "payout-1",
+      amount: 25,
+      status: "pending",
+    },
+  })),
   submitCreatorApplication: vi.fn(),
   updateCreatorPanelCode: vi.fn(async (_userId, code) => ({
     status: "approved",
@@ -142,6 +151,28 @@ describe("creator routes", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body.creatorCode).toBe("ALEXISFIT");
     expect(response.body.creatorCodeCustomized).toBe(true);
+  });
+
+  it("returns 200 for POST /creators/track-click even when unauthenticated", async () => {
+    const response = await invokeRouter("POST", "/track-click", {
+      body: { code: "NUTRIALEXIS" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+  });
+
+  it("returns 201 for POST /creators/payouts/request when authenticated", async () => {
+    const response = await invokeRouter("POST", "/payouts/request", {
+      headers: { authorization: "Bearer test-token" },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.payoutRequest).toMatchObject({
+      id: "payout-1",
+      amount: 25,
+      status: "pending",
+    });
   });
 
   it("returns 401 for PATCH /creators/code without auth", async () => {

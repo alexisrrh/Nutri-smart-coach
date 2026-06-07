@@ -507,12 +507,17 @@ export async function getMyReferralStats(userId, options = {}) {
   const referralType = normalizeReferralTypeValue(options.referralType);
   const codes = await repo.listCodesByUserId(userId);
   const referrals = await repo.listReferralsByReferrerUserId(userId);
-  const commissions = await repo.listAffiliateCommissionsByInfluencerUserId(userId);
   const rewards = await repo.listReferralRewardsByReferrerUserId(userId);
   const filteredCodes = codeType ? codes.filter((code) => normalizeUserCodeType(code.type) === codeType) : codes;
   const filteredReferrals = referralType
     ? referrals.filter((referral) => normalizeReferralTypeValue(referral.type) === referralType)
     : referrals;
+  const referralIdSet = new Set(filteredReferrals.map((referral) => String(referral.id)));
+  const allCommissions = await repo.listAffiliateCommissionsByInfluencerUserId(userId);
+  const commissions =
+    referralType && referralIdSet.size > 0
+      ? allCommissions.filter((commission) => referralIdSet.has(String(commission.referral_id)))
+      : allCommissions;
 
   const premiumActiveReferrals = filteredReferrals.filter((referral) =>
     ["premium_active", "rewarded"].includes(referral.status)
@@ -649,6 +654,17 @@ export function createReferralRepository(supabaseClient) {
       return data || null;
     },
 
+    async getCodeById(id) {
+      const { data, error } = await supabaseClient
+        .from("referral_codes")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error) throw wrapDbError("No se pudo consultar el código.", error);
+      return data || null;
+    },
+
     async insertCode(payload) {
       const { data, error } = await supabaseClient
         .from("referral_codes")
@@ -696,25 +712,7 @@ export function createReferralRepository(supabaseClient) {
     async getProfileByUserId(userId) {
       const { data, error } = await supabaseClient
         .from("profiles")
-        .select(
-          [
-            "id",
-            "name",
-            "username",
-            "email",
-            "plan",
-            "is_premium",
-            "subscription_status",
-            "premium_source",
-            "premium_product_id",
-            "premium_platform_transaction_id",
-            "premium_started_at",
-            "premium_expires_at",
-            "created_at",
-            "stripe_customer_id",
-            "stripe_subscription_id",
-          ].join(", ")
-        )
+        .select("*")
         .eq("id", userId)
         .maybeSingle();
 
@@ -755,12 +753,38 @@ export function createReferralRepository(supabaseClient) {
       return data || [];
     },
 
+    async listReferralsByReferrerUserIdAndType(userId, type) {
+      const { data, error } = await supabaseClient
+        .from("referrals")
+        .select("*")
+        .eq("referrer_user_id", userId)
+        .eq("type", type)
+        .order("created_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar los referidos.", error);
+      return data || [];
+    },
+
     async listAffiliateCommissionsByInfluencerUserId(userId) {
       const { data, error } = await supabaseClient
         .from("affiliate_commissions")
         .select("*")
         .eq("influencer_user_id", userId)
         .order("created_at", { ascending: false });
+
+      if (error) throw wrapDbError("No se pudieron listar las comisiones.", error);
+      return data || [];
+    },
+
+    async listAffiliateCommissionsByReferralIds(referralIds = []) {
+      if (!Array.isArray(referralIds) || referralIds.length === 0) {
+        return [];
+      }
+
+      const { data, error } = await supabaseClient
+        .from("affiliate_commissions")
+        .select("*")
+        .in("referral_id", referralIds);
 
       if (error) throw wrapDbError("No se pudieron listar las comisiones.", error);
       return data || [];

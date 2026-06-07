@@ -28,6 +28,7 @@ import {
   copyCreatorCode,
   getCreatorStatus,
   loadCreatorStatus,
+  requestCreatorPayout,
   shareCreatorCode,
   submitCreatorApplication,
   setCreatorPanelCache,
@@ -67,6 +68,7 @@ export function CreatorProgramCardView({
   creatorCode = "",
   creatorCodeCustomized = false,
   stats = null,
+  metrics = null,
   profileRequired = false,
   formVisible = false,
   formState = INITIAL_FORM,
@@ -79,6 +81,7 @@ export function CreatorProgramCardView({
   onSubmitApplication,
   onCopyCode,
   onShareCode,
+  onRequestWithdrawal,
   onRetryRequest,
   onRetryCodeActivation,
   onChangeFormState,
@@ -97,38 +100,61 @@ export function CreatorProgramCardView({
   const isRejected = status === "rejected";
   const isEmpty = status === "none";
   const hasCreatorCode = Boolean(creatorCode);
-  const linkClicks = stats?.linkClicks ?? stats?.linkClicksCount ?? stats?.clicks ?? null;
-  const registeredUsers = Number(stats?.registeredUsers ?? 0);
-  const premiumUsers = Number(stats?.premiumUsers ?? 0);
+  const dashboardMetrics =
+    (metrics && typeof metrics === "object" ? metrics : null) ||
+    (stats && typeof stats === "object" && stats.metrics ? stats.metrics : null) ||
+    (stats && typeof stats === "object" ? stats : {});
+  const linkClicks = Number(
+    dashboardMetrics?.clicks ??
+      dashboardMetrics?.linkClicks ??
+      dashboardMetrics?.linkClicksCount ??
+      0
+  );
+  const registeredUsers = Number(
+    dashboardMetrics?.usersWithCode ?? dashboardMetrics?.registeredUsers ?? 0
+  );
+  const premiumUsers = Number(
+    dashboardMetrics?.premiumActive ?? dashboardMetrics?.premiumUsers ?? 0
+  );
   const pendingCommissionAmount = Number(
-    stats?.pendingCommissionAmount ??
-      stats?.pendingCommissionsAmount ??
-      stats?.pendingAmount ??
+    dashboardMetrics?.pendingAmount ??
+      dashboardMetrics?.pendingCommissionAmount ??
+      dashboardMetrics?.pendingCommissionsAmount ??
       0
   );
   const availableCommissionAmount = Number(
-    stats?.availableCommissionAmount ??
-      stats?.withdrawableCommissionAmount ??
-      stats?.commissionBalance ??
-      stats?.availableAmount ??
+    dashboardMetrics?.availableToWithdraw ??
+      dashboardMetrics?.availableCommissionAmount ??
+      dashboardMetrics?.withdrawableCommissionAmount ??
+      dashboardMetrics?.commissionBalance ??
+      dashboardMetrics?.availableAmount ??
       0
   );
   const totalCommissionAmount = Number(
-    stats?.totalCommissionAmount ??
-      stats?.commissionAccumulated ??
-      stats?.totalEarnings ??
-      stats?.totalCommission ??
+    dashboardMetrics?.commissionAccumulated ??
+      dashboardMetrics?.totalCommissionAmount ??
+      dashboardMetrics?.commissionAccumulated ??
+      dashboardMetrics?.totalEarnings ??
+      dashboardMetrics?.totalCommission ??
       0
   );
-  const paymentHistory = Array.isArray(stats?.paymentHistory)
-    ? stats.paymentHistory
-    : Array.isArray(stats?.recentPayments)
-      ? stats.recentPayments
-      : Array.isArray(stats?.history)
-        ? stats.history
+  const conversionRate = Number(
+    dashboardMetrics?.conversionRate ??
+      (registeredUsers > 0 ? ((premiumUsers / registeredUsers) * 100).toFixed(0) : 0)
+  );
+  const paymentHistory = Array.isArray(dashboardMetrics?.history)
+    ? dashboardMetrics.history
+    : Array.isArray(dashboardMetrics?.commissionHistory)
+      ? dashboardMetrics.commissionHistory
+      : Array.isArray(dashboardMetrics?.payoutRequests)
+        ? dashboardMetrics.payoutRequests
         : [];
   const nextWithdrawalThreshold = 25;
-  const canRequestWithdrawal = availableCommissionAmount >= nextWithdrawalThreshold;
+  const canRequestWithdrawal = Boolean(
+    availableCommissionAmount >= nextWithdrawalThreshold &&
+      !dashboardMetrics?.hasPendingPayoutRequest &&
+      !dashboardMetrics?.pendingPayoutRequestsCount
+  );
   const minimumFollowersMet = Number(formState.followersCount || 0) >= 5000;
   const requiresTerms = (isEmpty || isRejected || formVisible) && !isApproved && !isPending;
   const visibleFormError =
@@ -457,7 +483,7 @@ export function CreatorProgramCardView({
                         {creatorCodeCustomized ? (
                           <MetaBadge
                             variant="neutral"
-                            className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                            className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37] mb-3"
                           >
                             Personalizado
                           </MetaBadge>
@@ -527,14 +553,23 @@ export function CreatorProgramCardView({
                     <div className="min-w-0">
                       <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Pagos</h3>
                       <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-                        Estado: Esperando mínimo
+                        Estado:{" "}
+                        {canRequestWithdrawal
+                          ? "Listo para solicitar"
+                          : dashboardMetrics?.hasPendingPayoutRequest
+                            ? "Solicitud pendiente"
+                            : "Esperando mínimo"}
                       </p>
                     </div>
                     <MetaBadge
                       variant="neutral"
                       className="border-[color-mix(in_srgb,#22c55e_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#22c55e]"
                     >
-                      {canRequestWithdrawal ? "DISPONIBLE" : "ESPERANDO"}
+                      {canRequestWithdrawal
+                        ? "DISPONIBLE"
+                        : dashboardMetrics?.hasPendingPayoutRequest
+                          ? "PENDIENTE"
+                          : "ESPERANDO"}
                     </MetaBadge>
                   </div>
 
@@ -562,12 +597,20 @@ export function CreatorProgramCardView({
                         }}
                       />
                     </div>
+                    {dashboardMetrics?.hasPendingPayoutRequest ? (
+                      <p className="text-[9px] font-medium leading-4 text-[#22c55e]">
+                        Tienes una solicitud de retiro pendiente.
+                      </p>
+                    ) : null}
                     <PrimaryButton
                       type="button"
+                      onClick={onRequestWithdrawal}
                       disabled={!canRequestWithdrawal}
                       className="mt-1 h-10 py-0 text-[10px] opacity-70 disabled:opacity-60"
                     >
-                      Solicitar retiro
+                      {dashboardMetrics?.hasPendingPayoutRequest
+                        ? "Solicitado"
+                        : "Solicitar retiro"}
                     </PrimaryButton>
                   </div>
                 </section>
@@ -575,7 +618,7 @@ export function CreatorProgramCardView({
                 {paymentHistory.length > 0 ? (
                   <section className="grid gap-1.5 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Historial de pagos</h3>
+                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Historial de comisiones</h3>
                       <IconCapsule icon={Clock3} tone="purple" size="xs" />
                     </div>
                     <div className="grid gap-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
@@ -617,13 +660,13 @@ export function CreatorProgramCardView({
                     <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
                       <span>Conversión</span>
                       <span className="font-black text-[var(--app-text)]">
-                        {registeredUsers > 0 ? `${Math.min(100, Math.round((premiumUsers / registeredUsers) * 100))}%` : "0%"}
+                        {registeredUsers > 0 ? `${Math.min(100, Math.round(conversionRate))}%` : "0%"}
                       </span>
                     </div>
                   </div>
                 </section>
 
-                <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)] ml-3">
                   Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.
                 </p>
               </>
@@ -680,8 +723,12 @@ const DEFAULT_STATUS_DATA = {
   status: "none",
   creatorCode: "",
   stats: null,
+  metrics: null,
   joinUrl: "",
   payouts: null,
+  history: null,
+  commissionHistory: null,
+  payoutRequests: null,
   updatedAt: null,
   userId: null,
 };
@@ -716,6 +763,7 @@ export default function CreatorProgramCard({
   const [codeEditorValue, setCodeEditorValue] = useState("");
   const [codeEditorError, setCodeEditorError] = useState("");
   const [codeEditorSaving, setCodeEditorSaving] = useState(false);
+  const [withdrawalSaving, setWithdrawalSaving] = useState(false);
 
   useEffect(() => {
     if (skipAutoLoad || initialStatusData) return;
@@ -828,6 +876,12 @@ export default function CreatorProgramCard({
         status: result?.status || "pending",
         creatorCode: result?.creatorCode || current.creatorCode,
         stats: result?.stats || current.stats,
+        metrics: result?.metrics || current.metrics,
+        payouts: result?.payouts || current.payouts,
+        history: result?.history || current.history,
+        commissionHistory: result?.commissionHistory || current.commissionHistory,
+        payoutRequests: result?.payoutRequests || current.payoutRequests,
+        joinUrl: result?.joinUrl || current.joinUrl,
       }));
       setFormVisible(false);
       trackEvent("creator_application_submitted", {
@@ -870,6 +924,34 @@ export default function CreatorProgramCard({
     } catch (shareError) {
       setError(shareError.message || "No se pudo compartir el código.");
       toast.error(shareError.message || "No se pudo compartir el código.");
+    }
+  }
+
+  async function handleRequestWithdrawal() {
+    const requestUserId = statusData.userId || initialStatusData?.userId || null;
+    if (!statusData.creatorCode || withdrawalSaving || !requestUserId) return;
+
+    setWithdrawalSaving(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const payoutResult = await requestCreatorPayout();
+      const refreshedStatus = await loadCreatorStatus(statusData.userId, {
+        forceRefresh: true,
+      });
+
+      setStatusData((current) => ({
+        ...current,
+        ...refreshedStatus,
+      }));
+      setNotice(payoutResult?.message || "Solicitud de retiro enviada.");
+      toast.success(payoutResult?.message || "Solicitud de retiro enviada.");
+    } catch (withdrawalError) {
+      setError(withdrawalError.message || "No se pudo solicitar el retiro.");
+      toast.error(withdrawalError.message || "No se pudo solicitar el retiro.");
+    } finally {
+      setWithdrawalSaving(false);
     }
   }
 
@@ -972,6 +1054,7 @@ export default function CreatorProgramCard({
       creatorCode={viewState.creatorCode}
       creatorCodeCustomized={viewState.creatorCodeCustomized}
       stats={viewState.stats}
+      metrics={viewState.metrics}
       profileRequired={viewState.profileRequired}
       formVisible={viewState.formVisible}
       formState={viewState.formState}
@@ -992,6 +1075,7 @@ export default function CreatorProgramCard({
       onCancelCodeEditor={handleCloseCodeEditor}
       onSaveCodeEditor={handleSaveCodeEditor}
       onShareCode={handleShareCode}
+      onRequestWithdrawal={handleRequestWithdrawal}
       onRetryRequest={handleRetryRequest}
       onRetryCodeActivation={handleRetryCodeActivation}
       onChangeFormState={setFormState}
@@ -1088,7 +1172,7 @@ export function CreatorCodeEditorModal({
               }
               className="h-10 px-2 py-0 text-[8px] normal-case tracking-normal whitespace-nowrap"
             >
-              {saving ? "Guardando..." : "Guardar"}
+              {saving ? "Guardando..." : "Guardar código"}
             </PrimaryButton>
           </div>
         </div>
