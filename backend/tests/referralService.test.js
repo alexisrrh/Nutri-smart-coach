@@ -253,6 +253,25 @@ describe("referral service", () => {
     expect(code.commission_months_limit).toBe(12);
   });
 
+  it("falls back to a userId-based creator code when the profile lookup fails", async () => {
+    const state = createReferralState();
+    const repo = createReferralRepo(state);
+    repo.getProfileByUserId = async () => {
+      throw new Error("No se pudo consultar el perfil.");
+    };
+
+    const code = await createCreatorCode("A1B2C3D4E5F6", "", {
+      repo,
+      logger: { info: vi.fn() },
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIA1B2C3");
+    expect(code.trial_days).toBe(15);
+    expect(code.commission_percent).toBe(30);
+    expect(code.commission_months_limit).toBe(12);
+  });
+
   it("adds a suffix to a creator code when the preferred code is already used", async () => {
     const state = createReferralState({
       profile: {

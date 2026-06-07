@@ -41,10 +41,30 @@ export async function getCreatorStatus(userId, options = {}) {
     options.getMyReferralStatsFn ||
     ((value) => getMyReferralStats(value, referralStatsOptions));
 
-  const application = normalizeCreatorApplicationRecord(
-    await repo.getLatestApplicationByUserId(userId)
-  );
-  let referralStats = await getMyReferralStatsFn(userId);
+  let application = null;
+  try {
+    application = normalizeCreatorApplicationRecord(
+      await repo.getLatestApplicationByUserId(userId)
+    );
+  } catch (error) {
+    auditLog(logger, {
+      event: "creator_status.application_failed",
+      userId,
+      error: error?.message || String(error),
+    });
+  }
+
+  let referralStats = getEmptyCreatorReferralStats();
+  try {
+    referralStats = await getMyReferralStatsFn(userId);
+  } catch (error) {
+    auditLog(logger, {
+      event: "creator_status.metrics_failed",
+      userId,
+      error: error?.message || String(error),
+    });
+  }
+
   const creatorCodeRecord = findCreatorCode(referralStats?.codes || []);
   let creatorCode = creatorCodeRecord?.code || null;
 
@@ -80,18 +100,43 @@ export async function getCreatorStatus(userId, options = {}) {
         creatorCodeFound: creatorCodeRecord?.code || null,
         error: error?.message || String(error),
       });
-      throw error;
+      try {
+        createdCode = await repo.getCodeByUserAndType(userId, "creator");
+        if (createdCode) {
+          auditLog(logger, {
+            event: "creator_status.auto_create_result",
+            userId,
+            applicationStatus: application?.status || null,
+            createdCode: createdCode?.code || null,
+            createdType: createdCode?.type || null,
+            createdId: createdCode?.id || null,
+            recovered: true,
+          });
+        }
+      } catch (recoveryError) {
+        auditLog(logger, {
+          event: "creator_status.auto_create_failed",
+          userId,
+          applicationStatus: application?.status || null,
+          creatorCodeFound: creatorCodeRecord?.code || null,
+          error: recoveryError?.message || String(recoveryError),
+          recovered: false,
+        });
+        createdCode = null;
+      }
     }
     creatorCode = createdCode?.code || null;
 
-    auditLog(logger, {
-      event: "creator_status.auto_create_result",
-      userId,
-      applicationStatus: application?.status || null,
-      createdCode: createdCode?.code || null,
-      createdType: createdCode?.type || null,
-      createdId: createdCode?.id || null,
-    });
+    if (createdCode) {
+      auditLog(logger, {
+        event: "creator_status.auto_create_result",
+        userId,
+        applicationStatus: application?.status || null,
+        createdCode: createdCode?.code || null,
+        createdType: createdCode?.type || null,
+        createdId: createdCode?.id || null,
+      });
+    }
 
     if (creatorCode) {
       referralStats = {
@@ -412,6 +457,16 @@ function buildCreatorStats(referralStats = {}) {
     paidCommissions: commissions.filter(
       (commission) => String(commission.status || "").toLowerCase() === "paid"
     ).length,
+  };
+}
+
+function getEmptyCreatorReferralStats() {
+  return {
+    codes: [],
+    summary: {},
+    commissions: [],
+    rewards: [],
+    referrals: [],
   };
 }
 
