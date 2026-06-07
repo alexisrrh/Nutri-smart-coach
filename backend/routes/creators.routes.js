@@ -8,7 +8,19 @@ import {
 
 const router = Router();
 
-router.get("/creators/me", verifySupabaseUser, async (req, res, next) => {
+router.get("/routes", (req, res) => {
+  return res.json({
+    ok: true,
+    routes: [
+      "GET /creators/me",
+      "POST /creators/apply",
+      "PATCH /creators/code",
+      "GET /creators/routes",
+    ],
+  });
+});
+
+router.get("/me", verifySupabaseUser, async (req, res, next) => {
   try {
     const userId = requireAuthenticatedUser(req, res);
     if (!userId) return;
@@ -21,7 +33,7 @@ router.get("/creators/me", verifySupabaseUser, async (req, res, next) => {
   }
 });
 
-router.post("/creators/apply", verifySupabaseUser, async (req, res, next) => {
+router.post("/apply", verifySupabaseUser, async (req, res, next) => {
   try {
     const userId = requireAuthenticatedUser(req, res);
     if (!userId) return;
@@ -45,7 +57,7 @@ router.post("/creators/apply", verifySupabaseUser, async (req, res, next) => {
   }
 });
 
-router.patch("/creators/code", verifySupabaseUser, async (req, res, next) => {
+router.patch("/code", verifySupabaseUser, async (req, res, next) => {
   try {
     const userId = requireAuthenticatedUser(req, res);
     if (!userId) return;
