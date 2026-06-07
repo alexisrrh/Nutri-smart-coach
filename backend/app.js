@@ -29,7 +29,7 @@ app.use(globalRateLimiter);
 app.use("/", paymentsRoutes);
 app.use(express.json({ limit: "10mb" }));
 app.use("/", referralsRoutes);
-app.use("/", creatorsRoutes);
+app.use("/creators", creatorsRoutes);
 app.use(["/auth", "/login", "/register", "/reset-password"], authRateLimiter);
 app.use("/analyze-food", analyzeFoodRateLimiter);
 app.use("/generate-diet", generateDietRateLimiter);
