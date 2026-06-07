@@ -61,6 +61,7 @@ export function CreatorProgramCardView({
   application = null,
   creatorCode = "",
   stats = null,
+  profileRequired = false,
   formVisible = false,
   formState = INITIAL_FORM,
   formError = "",
@@ -340,6 +341,35 @@ export function CreatorProgramCardView({
 
         {isApproved ? (
           <div className="grid gap-2 rounded-[1.05rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_82%,transparent),color-mix(in_srgb,var(--app-card)_97%,transparent))] p-2.5">
+            {profileRequired && !hasCreatorCode ? (
+              <div className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_9%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_97%,transparent))] p-3">
+                <div className="flex items-start gap-2">
+                  <IconCapsule icon={Users} tone="gold" size="md" />
+                  <div className="min-w-0 flex-1">
+                    <MetaBadge
+                      variant="neutral"
+                      className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
+                    >
+                      ACTIVO
+                    </MetaBadge>
+                    <h2 className="mt-1.5 min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
+                      Completa tu perfil
+                    </h2>
+                    <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      Necesitamos tu nombre para generar un código de creador fácil de recordar.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  to="/settings/profile"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,#D4AF37_28%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] px-3 py-0 text-[10px] font-black normal-case tracking-normal text-[var(--app-surface)] shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_18%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)] transition active:scale-[0.98]"
+                >
+                  Completar perfil
+                </Link>
+              </div>
+            ) : null}
+
             {hasCreatorCode ? (
               <>
                 <div className="flex items-center justify-between gap-2">
@@ -568,7 +598,7 @@ export function CreatorProgramCardView({
                   Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.
                 </p>
               </>
-            ) : (
+            ) : !profileRequired ? (
               <div className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_20%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-3 py-3">
                 <div className="flex items-start gap-2">
                   <IconCapsule icon={Megaphone} tone="gold" size="md" />
@@ -595,7 +625,7 @@ export function CreatorProgramCardView({
                   Reintentar
                 </SecondaryButton>
               </div>
-            )}
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -656,7 +686,11 @@ export default function CreatorProgramCard({
         const nextStatus = await getCreatorStatus();
         if (!active) return;
 
-        if (nextStatus.status === "approved" && !nextStatus.creatorCode) {
+        if (
+          nextStatus.status === "approved" &&
+          !nextStatus.creatorCode &&
+          !nextStatus.profileRequired
+        ) {
           shouldKeepLoading = true;
           setStatusData(nextStatus);
           retryTimer = window.setTimeout(() => {
@@ -829,6 +863,7 @@ export default function CreatorProgramCard({
       application={viewState.application}
       creatorCode={viewState.creatorCode}
       stats={viewState.stats}
+      profileRequired={viewState.profileRequired}
       formVisible={viewState.formVisible}
       formState={viewState.formState}
       formError={viewState.formError}

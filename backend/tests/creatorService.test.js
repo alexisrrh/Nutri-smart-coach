@@ -120,21 +120,18 @@ describe("creator service", () => {
     });
   });
 
-  it("returns approved status and a fallback creator code when the profile lookup fails", async () => {
+  it("returns approved status with profileRequired when the profile lookup fails", async () => {
     const repo = createCreatorRepo({
       application: {
         id: "app-1",
         user_id: "A1B2C3D4E5F6",
         social_platform: "instagram",
-        social_handle: "@creator",
+        social_handle: "",
         followers_count: 12000,
         status: "approved",
       },
     });
     const referralRepo = createCreatorReferralRepo();
-    referralRepo.getProfileByUserId = async () => {
-      throw new Error("No se pudo consultar el perfil.");
-    };
     const logger = { info: vi.fn() };
 
     const result = await getCreatorStatus("A1B2C3D4E5F6", {
@@ -149,7 +146,9 @@ describe("creator service", () => {
     });
 
     expect(result.status).toBe("approved");
-    expect(result.creatorCode).toBe("NUTRIA1B2C3");
+    expect(result.creatorCode).toBeNull();
+    expect(result.profileRequired).toBe(true);
+    expect(result.message).toBe("Completa tu perfil para activar tu código de creador.");
     expect(result.stats).toEqual({
       registeredUsers: 0,
       trialUsers: 0,
@@ -158,21 +157,7 @@ describe("creator service", () => {
       pendingCommissions: 0,
       paidCommissions: 0,
     });
-    expect(referralRepo.insertCodeCalls).toHaveLength(1);
-    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
-      userId: "A1B2C3D4E5F6",
-      code: "NUTRIA1B2C3",
-      type: "creator",
-      trialDays: 15,
-      commissionPercent: 30,
-      commissionMonthsLimit: 12,
-      isActive: true,
-    });
-    expect(
-      logger.info.mock.calls.some(([entry]) =>
-        String(entry).includes("profile_lookup_failed")
-      )
-    ).toBe(true);
+    expect(referralRepo.insertCodeCalls).toHaveLength(0);
   });
 
   it("auto-creates a creator code when the application is approved but no code exists", async () => {
@@ -181,7 +166,45 @@ describe("creator service", () => {
         id: "app-1",
         user_id: "user-1",
         social_platform: "instagram",
-        social_handle: "@creator",
+        social_handle: "@Alexisrrh",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: null,
+    });
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("NUTRIALEXISRRH");
+    expect(referralRepo.insertCodeCalls).toHaveLength(1);
+    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
+      userId: "user-1",
+      type: "creator",
+      trialDays: 15,
+      commissionPercent: 30,
+      commissionMonthsLimit: 12,
+      isActive: true,
+    });
+  });
+
+  it("uses the profile name when the creator application has no social handle", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "",
         followers_count: 12000,
         status: "approved",
       },
@@ -189,7 +212,7 @@ describe("creator service", () => {
     const referralRepo = createCreatorReferralRepo({
       profile: {
         id: "user-1",
-        name: "Alexis",
+        name: "Alexis Rodríguez",
         email: "alexis@example.com",
       },
     });
@@ -206,15 +229,35 @@ describe("creator service", () => {
 
     expect(result.status).toBe("approved");
     expect(result.creatorCode).toBe("NUTRIALEXIS");
-    expect(referralRepo.insertCodeCalls).toHaveLength(1);
-    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
-      userId: "user-1",
-      type: "creator",
-      trialDays: 15,
-      commissionPercent: 30,
-      commissionMonthsLimit: 12,
-      isActive: true,
+  });
+
+  it("creates a creator code from the creator social handle when available", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "Alexisrrh",
+        followers_count: 12000,
+        status: "approved",
+      },
     });
+    const referralRepo = createCreatorReferralRepo({
+      profile: null,
+    });
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("NUTRIALEXISRRH");
   });
 
   it("falls back to an existing creator code if the automatic insert fails", async () => {
@@ -223,7 +266,7 @@ describe("creator service", () => {
         id: "app-1",
         user_id: "user-1",
         social_platform: "instagram",
-        social_handle: "@creator",
+        social_handle: "",
         followers_count: 12000,
         status: "approved",
       },
@@ -271,7 +314,7 @@ describe("creator service", () => {
         id: "app-1",
         user_id: "user-1",
         social_platform: "instagram",
-        social_handle: "@creator",
+        social_handle: "",
         followers_count: 12000,
         status: "approved",
       },

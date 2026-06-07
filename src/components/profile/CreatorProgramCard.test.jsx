@@ -240,6 +240,22 @@ describe("CreatorProgramCard", () => {
     expect(html).not.toContain("Copiar");
   });
 
+  it("shows the complete profile CTA when the profile is required", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <CreatorProgramCardView status="approved" creatorCode="" profileRequired />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Completa tu perfil");
+    expect(html).toContain("Necesitamos tu nombre para generar un código de creador fácil de recordar.");
+    expect(html).toContain("Completar perfil");
+    expect(html).not.toContain("Estamos activando tu código de creador");
+    expect(html).not.toContain("Reintentar");
+  });
+
   it("shows the withdrawal notice when the available amount is below the minimum", () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>

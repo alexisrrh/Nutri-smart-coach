@@ -179,8 +179,15 @@ export function normalizeCreatorPanelCache(creatorStatus, userId = null) {
     application: source.application ?? null,
     creatorCode,
     joinUrl,
+    message: source.message || source.creatorMessage || source.creator_message || null,
     payouts,
     stats,
+    profileRequired: Boolean(
+      source.profileRequired ||
+        source.profile_required ||
+        source.needsProfile ||
+        source.needs_profile
+    ),
     status: String(source.status || "none"),
     updatedAt: source.updatedAt || source.updated_at || new Date().toISOString(),
     userId: userId || source.userId || source.user_id || null,
