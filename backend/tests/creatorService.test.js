@@ -6,6 +6,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy";
 const {
   getCreatorStatus,
   submitCreatorApplication,
+  updateCreatorPanelCode,
 } = await import("../services/creator.service.js");
 
 describe("creator service", () => {
@@ -158,6 +159,45 @@ describe("creator service", () => {
       paidCommissions: 0,
     });
     expect(referralRepo.insertCodeCalls).toHaveLength(0);
+  });
+
+  it("returns profileRequired when the profile has no valid creator seed", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "alexisrrh@gmail.com",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "user-1",
+        username: "alexisrrh",
+        email: "alexisrrh@gmail.com",
+        nombre: "",
+        name: "",
+        full_name: "",
+        display_name: "",
+      },
+    });
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBeNull();
+    expect(result.profileRequired).toBe(true);
+    expect(result.message).toBe("Completa tu perfil para activar tu código de creador.");
   });
 
   it("auto-creates a creator code when the application is approved but no code exists", async () => {
@@ -354,6 +394,287 @@ describe("creator service", () => {
       code: "NUTRIALEXIS2",
       type: "creator",
     });
+  });
+
+  it("allows an approved creator to customize the code once", async () => {
+    const creatorRepo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+          customized_at: null,
+        },
+      ],
+    });
+
+    const result = await updateCreatorPanelCode("creator-1", "ALEXISFIT", {
+      repo: creatorRepo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [
+          {
+            code: "NUTRIALEXIS",
+            type: "creator",
+            is_active: true,
+          },
+        ],
+        summary: {},
+        commissions: [],
+      }),
+      authUser: { id: "creator-1" },
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("ALEXISFIT");
+    expect(result.creatorCodeCustomized).toBe(true);
+    expect(result.creatorCode).toMatch(/^ALEXISFIT$/);
+  });
+
+  it("does not allow non-approved users to customize the code", async () => {
+    const creatorRepo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "pending",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+          customized_at: null,
+        },
+      ],
+    });
+
+    await expect(
+      updateCreatorPanelCode("creator-1", "ALEXISFIT", {
+        repo: creatorRepo,
+        referralRepo,
+        getMyReferralStatsFn: async () => ({
+          codes: [
+            {
+              code: "NUTRIALEXIS",
+              type: "creator",
+              is_active: true,
+            },
+          ],
+          summary: {},
+          commissions: [],
+        }),
+        authUser: { id: "creator-1" },
+      })
+    ).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+
+  it("blocks a second customization attempt", async () => {
+    const creatorRepo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "ALEXISFIT",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+          customized_at: "2026-06-07T10:00:00.000Z",
+        },
+      ],
+    });
+
+    await expect(
+      updateCreatorPanelCode("creator-1", "COACHMARIA", {
+        repo: creatorRepo,
+        referralRepo,
+        getMyReferralStatsFn: async () => ({
+          codes: [
+            {
+              code: "ALEXISFIT",
+              type: "creator",
+              is_active: true,
+              customized_at: "2026-06-07T10:00:00.000Z",
+            },
+          ],
+          summary: {},
+          commissions: [],
+        }),
+        authUser: { id: "creator-1" },
+      })
+    ).rejects.toMatchObject({
+      statusCode: 409,
+    });
+  });
+
+  it("rejects invalid symbols and uppercases the code", async () => {
+    const creatorRepo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+        },
+      ],
+    });
+
+    await expect(
+      updateCreatorPanelCode("creator-1", "alexis fit!", {
+        repo: creatorRepo,
+        referralRepo,
+        getMyReferralStatsFn: async () => ({
+          codes: [
+            {
+              code: "NUTRIALEXIS",
+              type: "creator",
+              is_active: true,
+            },
+          ],
+          summary: {},
+          commissions: [],
+        }),
+        authUser: { id: "creator-1" },
+      })
+    ).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("does not modify user referral codes when customizing the creator code", async () => {
+    const creatorRepo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "creator-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+      },
+      codes: [
+        {
+          id: "code-user-1",
+          user_id: "creator-1",
+          code: "USER123",
+          type: "user",
+          trial_days: 0,
+          commission_percent: 0,
+          commission_months_limit: 0,
+          is_active: true,
+        },
+        {
+          id: "code-creator-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+        },
+      ],
+    });
+
+    const result = await updateCreatorPanelCode("creator-1", "ALEXISFIT", {
+      repo: creatorRepo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [
+          {
+            code: "USER123",
+            type: "user",
+            is_active: true,
+          },
+          {
+            code: "NUTRIALEXIS",
+            type: "creator",
+            is_active: true,
+          },
+        ],
+        summary: {},
+        commissions: [],
+      }),
+      authUser: { id: "creator-1" },
+    });
+
+    expect(result.creatorCode).toBe("ALEXISFIT");
+    const userCode = await referralRepo.getCodeByUserAndType("creator-1", "user");
+    expect(userCode.code).toBe("USER123");
   });
 
   it("creates a pending creator application and flags when the requirement is not met", async () => {
@@ -648,6 +969,7 @@ function createCreatorReferralRepo(initial = {}) {
         commission_percent: payload.commissionPercent,
         commission_months_limit: payload.commissionMonthsLimit,
         is_active: payload.isActive,
+        customized_at: payload.customizedAt ?? null,
       };
       state.codes.push(row);
       return row;
@@ -662,6 +984,7 @@ function createCreatorReferralRepo(initial = {}) {
         commission_percent: payload.commissionPercent,
         commission_months_limit: payload.commissionMonthsLimit,
         is_active: payload.isActive,
+        customized_at: payload.customizedAt ?? row.customized_at ?? null,
       });
       return row;
     },

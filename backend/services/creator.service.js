@@ -3,6 +3,7 @@ import {
   createCreatorCode,
   canCreateInfluencerCode,
   getMyReferralStats,
+  updateCreatorCode as updateCreatorCodeRecord,
 } from "./referral.service.js";
 import { sendEmail } from "./email.service.js";
 
@@ -76,6 +77,7 @@ export async function getCreatorStatus(userId, options = {}) {
     creatorCodeFound: creatorCodeRecord?.code || null,
     creatorCodeType: creatorCodeRecord?.type || null,
     creatorCodeActive: creatorCodeRecord?.is_active !== false,
+    creatorCodeCustomized: Boolean(creatorCodeRecord?.customized_at),
     referralCodesCount: Array.isArray(referralStats?.codes) ? referralStats.codes.length : 0,
   });
 
@@ -176,6 +178,7 @@ export async function getCreatorStatus(userId, options = {}) {
     application,
     status,
     creatorCode,
+    creatorCodeCustomized: Boolean(creatorCodeRecord?.customized_at),
     profileRequired,
     message:
       profileRequired && application?.status === "approved"
@@ -349,6 +352,33 @@ export async function approveCreatorApplication(
   return {
     application: updatedApplication,
     status: "approved",
+  };
+}
+
+export async function updateCreatorPanelCode(userId, code, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createCreatorRepository(options.supabaseClient || supabase);
+  const updatedCode = await updateCreatorCodeRecord(userId, code, {
+    repo: options.referralRepo || options.repo || undefined,
+    creatorRepo: repo,
+    logger: options.logger || console,
+    authUser: options.authUser || null,
+    creatorApplication: options.creatorApplication || null,
+  });
+
+  const status = await getCreatorStatus(userId, {
+    ...options,
+    repo,
+    referralRepo: options.referralRepo || options.repo || undefined,
+    getMyReferralStatsFn: options.getMyReferralStatsFn,
+    logger: options.logger || console,
+  });
+
+  return {
+    ...status,
+    creatorCode: updatedCode?.code || status.creatorCode || null,
+    creatorCodeCustomized: Boolean(updatedCode?.customized_at || status.creatorCodeCustomized),
   };
 }
 

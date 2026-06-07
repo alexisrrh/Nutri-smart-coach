@@ -2,7 +2,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { ToastProvider } from "../ui";
-import CreatorProgramCard, { CreatorProgramCardView } from "./CreatorProgramCard";
+import { validateCreatorCodeEditInput } from "./creatorCodeEditValidation";
+import CreatorProgramCard, {
+  CreatorCodeEditorModal,
+  CreatorProgramCardView,
+} from "./CreatorProgramCard";
 
 vi.mock("../../services/analytics", () => ({
   trackEvent: vi.fn(),
@@ -139,6 +143,7 @@ describe("CreatorProgramCard", () => {
           <CreatorProgramCardView
             status="approved"
             creatorCode="CREATOR30"
+            onEditCode={vi.fn()}
             stats={{
               registeredUsers: 0,
               premiumUsers: 0,
@@ -164,6 +169,7 @@ describe("CreatorProgramCard", () => {
     expect(html).toContain("truncate");
     expect(html).toContain("30%");
     expect(html).toContain("Comparte tu código con tu comunidad.");
+    expect(html).toContain("Editar código");
     expect(html).toContain("Usuarios con código");
     expect(html).toContain("Premium activos");
     expect(html).toContain("Comisión acumulada");
@@ -172,10 +178,49 @@ describe("CreatorProgramCard", () => {
     expect(html).toContain("Clicks del enlace");
     expect(html).toContain("Registros");
     expect(html).toContain("Conversión");
-    expect(html).toContain("Copiar código");
-    expect(html).toContain("Compartir enlace");
-    expect(html).not.toContain("nutrismartcoach.com/join?creator=");
+    expect(html).toContain("Copiar");
+    expect(html).toContain("Compartir");
     expect(html).toContain("Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.");
+  });
+
+  it("shows the creator code editor modal", () => {
+    const html = renderToStaticMarkup(
+      <ToastProvider>
+        <CreatorCodeEditorModal open value="ALEXISFIT" saving={false} />
+      </ToastProvider>
+    );
+
+    expect(html).toContain("Personalizar código");
+    expect(html).toContain("Puedes cambiar tu código una sola vez.");
+    expect(html).toContain("ALEXISFIT");
+    expect(html).toContain("Cancelar");
+    expect(html).toContain("Guardar código");
+  });
+
+  it("allows the code input to be empty while editing", () => {
+    const html = renderToStaticMarkup(
+      <ToastProvider>
+        <CreatorCodeEditorModal open value="" saving={false} />
+      </ToastProvider>
+    );
+
+    expect(html).toContain('value=""');
+    expect(html).toContain('placeholder="ALEXISFIT"');
+    expect(html).not.toContain('value="ALEXISFIT"');
+  });
+
+  it("validates the creator code edit input", () => {
+    expect(validateCreatorCodeEditInput("")).toBe("El código no puede estar vacío.");
+    expect(validateCreatorCodeEditInput("abc!")).toBe(
+      "El código solo puede contener letras y números."
+    );
+    expect(validateCreatorCodeEditInput("abcd")).toBe(
+      "El código debe tener al menos 5 caracteres."
+    );
+    expect(validateCreatorCodeEditInput("A".repeat(21))).toBe(
+      "El código no puede superar 20 caracteres."
+    );
+    expect(validateCreatorCodeEditInput("alexisfit")).toBe(null);
   });
 
   it("shows the rejected state with the rejection reason", () => {
@@ -254,6 +299,23 @@ describe("CreatorProgramCard", () => {
     expect(html).toContain("Completar perfil");
     expect(html).not.toContain("Estamos activando tu código de creador");
     expect(html).not.toContain("Reintentar");
+  });
+
+  it("shows the personalized badge when the creator code was customized", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <ToastProvider>
+          <CreatorProgramCardView
+            status="approved"
+            creatorCode="ALEXISFIT"
+            creatorCodeCustomized
+          />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    expect(html).toContain("Personalizado");
+    expect(html).not.toContain("Editar código");
   });
 
   it("shows the withdrawal notice when the available amount is below the minimum", () => {

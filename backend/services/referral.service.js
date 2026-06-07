@@ -246,6 +246,72 @@ export async function createInfluencerCode(userId, code, options = {}) {
   return repo.insertCode(payload);
 }
 
+export async function updateCreatorCode(userId, code, options = {}) {
+  assertUserId(userId);
+
+  const repo = options.repo || createReferralRepository(options.supabaseClient || supabase);
+  const logger = options.logger || console;
+  const authUser = options.authUser || null;
+  let application = options.creatorApplication || null;
+
+  if (!application && options.creatorRepo?.getLatestApplicationByUserId) {
+    application = await options.creatorRepo.getLatestApplicationByUserId(userId);
+  }
+
+  if (String(application?.status || "").toLowerCase() !== "approved") {
+    throw createPublicError("Tu panel de creadores aún no está aprobado.", 403);
+  }
+
+  let creatorCodeRecord = await repo.getCodeByUserAndType(userId, "creator");
+  if (!creatorCodeRecord) {
+    creatorCodeRecord = await createCreatorCode(userId, "", {
+      repo,
+      logger,
+      creatorApplication: application,
+    });
+  }
+
+  if (!creatorCodeRecord) {
+    throw createPublicError("No existe un código de creador para personalizar.", 404);
+  }
+
+  if (creatorCodeRecord.customized_at) {
+    throw createPublicError("Ya personalizaste tu código de creador.", 409);
+  }
+
+  const normalizedCode = normalizeCreatorCodeForCustomization(code);
+  const existingByCode = await repo.getCodeByCode(normalizedCode);
+  if (existingByCode && String(existingByCode.id) !== String(creatorCodeRecord.id)) {
+    throw createPublicError("Ese código ya está en uso.", 409);
+  }
+
+  const updated = await repo.updateCode(creatorCodeRecord.id, {
+    userId,
+    code: normalizedCode,
+    type: "creator",
+    trialDays: Number(creatorCodeRecord.trial_days || DEFAULT_CREATOR_TRIAL_DAYS),
+    commissionPercent: Number(
+      creatorCodeRecord.commission_percent || DEFAULT_CREATOR_COMMISSION_PERCENT
+    ),
+    commissionMonthsLimit: Number(
+      creatorCodeRecord.commission_months_limit || DEFAULT_CREATOR_COMMISSION_MONTHS_LIMIT
+    ),
+    isActive: creatorCodeRecord.is_active !== false,
+    customizedAt: new Date().toISOString(),
+  });
+
+  auditLog(logger, {
+    event: "creator_code.customized",
+    userId,
+    code: updated?.code || null,
+    id: updated?.id || null,
+    customizedAt: updated?.customized_at || null,
+    authUserId: authUser?.id || null,
+  });
+
+  return updated;
+}
+
 export async function applyReferralCode(
   { userId, code },
   options = {}
@@ -759,7 +825,7 @@ export function canCreateInfluencerCode({ userId, authUser } = {}) {
 }
 
 function toDbCodePayload(payload = {}) {
-  return {
+  const next = {
     user_id: payload.userId,
     code: normalizeReferralCode(payload.code),
     type: payload.type,
@@ -768,6 +834,12 @@ function toDbCodePayload(payload = {}) {
     commission_months_limit: Number(payload.commissionMonthsLimit || 0),
     is_active: payload.isActive !== false,
   };
+
+  if (payload.customizedAt !== undefined) {
+    next.customized_at = payload.customizedAt;
+  }
+
+  return next;
 }
 
 function toDbReferralPayload(payload = {}) {
@@ -805,6 +877,39 @@ function normalizeCreatorCodeSeed(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "");
+}
+
+function normalizeCreatorCodeForCustomization(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    throw createPublicError("El código es obligatorio.", 400);
+  }
+
+  const normalized = raw.toUpperCase();
+  if (!/^[A-Z0-9]+$/.test(normalized)) {
+    throw createPublicError("El código solo puede contener letras y números.", 400);
+  }
+
+  if (normalized.length < 5) {
+    throw createPublicError("El código debe tener al menos 5 caracteres.", 400);
+  }
+
+  if (normalized.length > 20) {
+    throw createPublicError("El código no puede superar 20 caracteres.", 400);
+  }
+
+  if (isReservedCreatorCode(normalized)) {
+    throw createPublicError("Ese código no está disponible.", 400);
+  }
+
+  return normalized;
+}
+
+function isReservedCreatorCode(code) {
+  const normalized = String(code || "").toUpperCase();
+  return ["ADMIN", "SUPPORT", "NUTRISMART", "PREMIUM", "FREE", "GRATIS"].some((reserved) =>
+    normalized.includes(reserved)
+  );
 }
 
 function normalizeUserCodeType(value) {

@@ -18,6 +18,7 @@ const {
   shareCreatorCode,
   submitCreatorApplication,
   setCreatorPanelCache,
+  updateCreatorCode,
 } = await import("./creatorService");
 
 describe("creatorService", () => {
@@ -137,6 +138,33 @@ describe("creatorService", () => {
       { operation: "enviar tu solicitud de creador" }
     );
     expect(result.status).toBe("pending");
+  });
+
+  it("updates the creator code once", async () => {
+    requestMock.mockResolvedValueOnce({
+      status: "approved",
+      creatorCode: "ALEXISFIT",
+      creatorCodeCustomized: true,
+      stats: {
+        registeredUsers: 0,
+      },
+    });
+
+    const result = await updateCreatorCode("alexisfit");
+
+    expect(requestMock).toHaveBeenCalledWith(
+      "/creators/code",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: "ALEXISFIT",
+        }),
+      }),
+      { operation: "actualizar tu código de creador" }
+    );
+    expect(result.creatorCode).toBe("ALEXISFIT");
+    expect(result.creatorCodeCustomized).toBe(true);
   });
 
   it("builds the creator share text with 15 days premium free", () => {
