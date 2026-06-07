@@ -58,12 +58,15 @@ export async function createCreatorCode(userId, code = "", options = {}) {
   const normalizedCode = normalizeReferralCode(code);
   let resolvedCode = normalizedCode;
   const creatorApplication = options.creatorApplication || null;
-  const creatorSocialHandle = extractCreatorHandleSeed(
-    creatorApplication?.socialHandle || options.socialHandle || ""
-  );
+  const creatorSocialHandleRaw = creatorApplication?.socialHandle || options.socialHandle || "";
   let profile = options.profile || null;
 
-  if (!profile?.name) {
+  if (
+    !profile?.nombre &&
+    !profile?.name &&
+    !profile?.full_name &&
+    !profile?.display_name
+  ) {
     auditLog(logger, {
       event: "profile_lookup_start",
       userId,
@@ -76,8 +79,12 @@ export async function createCreatorCode(userId, code = "", options = {}) {
         userId,
         profileFound: Boolean(profile),
         profileId: profile?.id || null,
+        profileFieldsAvailable: getAvailableProfileFields(profile),
+        profileNombre: profile?.nombre || null,
         profileUsername: profile?.username || null,
         profileName: profile?.name || null,
+        profileFullName: profile?.full_name || null,
+        profileDisplayName: profile?.display_name || null,
         profileEmail: profile?.email || null,
       });
     } catch (error) {
@@ -88,6 +95,21 @@ export async function createCreatorCode(userId, code = "", options = {}) {
       });
     }
   }
+
+  const creatorCodeSource = resolveCreatorCodeSource({
+    profile,
+    creatorApplication,
+    socialHandle: creatorSocialHandleRaw,
+  });
+
+  auditLog(logger, {
+    event: "creator_code.name_source",
+    userId,
+    selectedSource: creatorCodeSource.selectedSource || null,
+    selectedValue: creatorCodeSource.selectedValue || null,
+    profileFieldsAvailable: creatorCodeSource.profileFieldsAvailable,
+    socialHandle: creatorCodeSource.socialHandle || null,
+  });
 
   auditLog(logger, {
     event: "creator_code.create_attempt",
@@ -110,12 +132,7 @@ export async function createCreatorCode(userId, code = "", options = {}) {
       throw createPublicError("Ese código ya está en uso.", 409);
     }
   } else {
-    const generatedCode = await generateUniqueCreatorCode(repo, {
-      profile,
-      creatorApplication,
-      socialHandle: creatorSocialHandle,
-      userId,
-    });
+    const generatedCode = await generateUniqueCreatorCode(repo, creatorCodeSource);
     if (!generatedCode) {
       throw createPublicError(
         "Completa tu perfil para activar tu código de creador.",
@@ -149,12 +166,10 @@ export async function createCreatorCode(userId, code = "", options = {}) {
   }
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const attemptCode = attempt === 0 ? resolvedCode : await generateUniqueCreatorCode(repo, {
-      profile,
-      creatorApplication,
-      socialHandle: creatorSocialHandle,
-      userId,
-    });
+    const attemptCode =
+      attempt === 0
+        ? resolvedCode
+        : await generateUniqueCreatorCode(repo, creatorCodeSource);
 
     try {
       const inserted = await repo.insertCode({
@@ -961,23 +976,7 @@ function assertUserId(userId) {
 async function getProfileByUserId(userId, supabaseClient) {
   const { data, error } = await supabaseClient
     .from("profiles")
-    .select(
-      [
-        "id",
-        "email",
-        "plan",
-        "is_premium",
-        "subscription_status",
-        "premium_source",
-        "premium_product_id",
-        "premium_platform_transaction_id",
-        "premium_expires_at",
-        "premium_last_verified_at",
-        "premium_started_at",
-        "stripe_customer_id",
-        "stripe_subscription_id",
-      ].join(", ")
-    )
+    .select("*")
     .eq("id", userId)
     .maybeSingle();
 
@@ -990,13 +989,9 @@ async function getProfileByUserId(userId, supabaseClient) {
 
 async function generateUniqueCreatorCode(
   repo,
-  { profile = null, creatorApplication = null, socialHandle = null } = {}
+  { seed = null } = {}
 ) {
-  const baseSeed = resolveCreatorCodeSeed({
-    profile,
-    creatorApplication,
-    socialHandle,
-  });
+  const baseSeed = normalizeCreatorCodeSeed(seed);
   if (!baseSeed) {
     return null;
   }
@@ -1012,20 +1007,52 @@ async function generateUniqueCreatorCode(
   throw error;
 }
 
-function resolveCreatorCodeSeed({
+function resolveCreatorCodeSource({
   profile = null,
   creatorApplication = null,
   socialHandle = null,
 } = {}) {
-  const profileNameSeed = extractProfileNameSeed(profile?.name);
-  if (profileNameSeed) return normalizeCreatorCodeSeed(profileNameSeed);
+  const profileFieldsAvailable = getAvailableProfileFields(profile);
+  const profileNameSources = [
+    ["profiles.nombre", profile?.nombre],
+    ["profiles.name", profile?.name],
+    ["profiles.full_name", profile?.full_name],
+    ["profiles.display_name", profile?.display_name],
+  ];
 
-  const applicationHandleSeed = extractCreatorHandleSeed(
-    socialHandle || creatorApplication?.socialHandle
-  );
-  if (applicationHandleSeed) return normalizeCreatorCodeSeed(applicationHandleSeed);
+  for (const [source, value] of profileNameSources) {
+    const seed = extractProfileNameSeed(value);
+    if (seed) {
+      return {
+        seed: normalizeCreatorCodeSeed(seed),
+        selectedSource: source,
+        selectedValue: String(value || "").trim(),
+        profileFieldsAvailable,
+        socialHandle: extractCreatorHandleSeed(
+          socialHandle || creatorApplication?.socialHandle
+        ),
+      };
+    }
+  }
 
-  return null;
+  const handleSeed = extractCreatorHandleSeed(socialHandle || creatorApplication?.socialHandle);
+  if (handleSeed) {
+    return {
+      seed: normalizeCreatorCodeSeed(handleSeed),
+      selectedSource: "social_handle",
+      selectedValue: String(socialHandle || creatorApplication?.socialHandle || "").trim(),
+      profileFieldsAvailable,
+      socialHandle: handleSeed,
+    };
+  }
+
+  return {
+    seed: null,
+    selectedSource: null,
+    selectedValue: null,
+    profileFieldsAvailable,
+    socialHandle: null,
+  };
 }
 
 function buildCreatorCodeCandidate(seed, suffix = "") {
@@ -1045,6 +1072,14 @@ function extractProfileNameSeed(name) {
     .split(/\s+/)[0];
 
   return firstToken || "";
+}
+
+function getAvailableProfileFields(profile) {
+  if (!profile || typeof profile !== "object") return [];
+
+  return ["nombre", "name", "full_name", "display_name", "username"].filter(
+    (field) => profile[field] != null && String(profile[field]).trim() !== ""
+  );
 }
 
 function extractCreatorHandleSeed(value) {
