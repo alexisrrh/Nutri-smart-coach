@@ -89,7 +89,13 @@ describe("creator service", () => {
         status: "approved",
       },
     });
-    const referralRepo = createCreatorReferralRepo();
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "user-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+    });
 
     const result = await getCreatorStatus("user-1", {
       repo,
@@ -102,7 +108,7 @@ describe("creator service", () => {
     });
 
     expect(result.status).toBe("approved");
-    expect(result.creatorCode).toMatch(/^NSC/);
+    expect(result.creatorCode).toBe("NUTRIALEXIS");
     expect(referralRepo.insertCodeCalls).toHaveLength(1);
     expect(referralRepo.insertCodeCalls[0]).toMatchObject({
       userId: "user-1",
@@ -111,6 +117,54 @@ describe("creator service", () => {
       commissionPercent: 30,
       commissionMonthsLimit: 12,
       isActive: true,
+    });
+  });
+
+  it("adds a numeric suffix when the preferred creator code is already in use", async () => {
+    const repo = createCreatorRepo({
+      application: {
+        id: "app-1",
+        user_id: "user-1",
+        social_platform: "instagram",
+        social_handle: "@creator",
+        followers_count: 12000,
+        status: "approved",
+      },
+    });
+    const referralRepo = createCreatorReferralRepo({
+      profile: {
+        id: "user-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "user-2",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          is_active: true,
+        },
+      ],
+    });
+
+    const result = await getCreatorStatus("user-1", {
+      repo,
+      referralRepo,
+      getMyReferralStatsFn: async () => ({
+        codes: [],
+        summary: {},
+        commissions: [],
+      }),
+    });
+
+    expect(result.status).toBe("approved");
+    expect(result.creatorCode).toBe("NUTRIALEXIS2");
+    expect(referralRepo.insertCodeCalls).toHaveLength(1);
+    expect(referralRepo.insertCodeCalls[0]).toMatchObject({
+      userId: "user-1",
+      code: "NUTRIALEXIS2",
+      type: "creator",
     });
   });
 
@@ -369,6 +423,7 @@ function createCreatorReferralRepo(initial = {}) {
   const insertCodeCalls = [];
   const state = {
     codes: initial.codes ? [...initial.codes] : [],
+    profile: initial.profile || null,
   };
 
   return {
@@ -390,6 +445,9 @@ function createCreatorReferralRepo(initial = {}) {
       return (
         state.codes.find((code) => code.user_id === userId && code.type === type) || null
       );
+    },
+    async getProfileByUserId() {
+      return state.profile;
     },
     async insertCode(payload) {
       insertCodeCalls.push(payload);
