@@ -253,7 +253,7 @@ describe("referral service", () => {
     expect(code.commission_months_limit).toBe(12);
   });
 
-  it("prefers the creator social handle over the profile name when generating a creator code", async () => {
+  it("uses the profile name before the social handle when generating a creator code", async () => {
     const state = createReferralState({
       profile: {
         id: "creator-1",
@@ -272,15 +272,53 @@ describe("referral service", () => {
     });
 
     expect(code.type).toBe("creator");
-    expect(code.code).toBe("NUTRIALEXISRRH");
-    expect(code.code).toHaveLength(14);
+    expect(code.code).toBe("NUTRINOMBRE");
+    expect(code.code).toHaveLength(11);
+  });
+
+  it("uses the profile name before the social handle when generating a creator code", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Alexis Rodríguez",
+        email: "alexis@example.com",
+      },
+    });
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+      creatorApplication: {
+        socialHandle: "ultraxcode",
+      },
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIALEXIS");
+  });
+
+  it("does not use an email-like social handle as a creator code seed", async () => {
+    const state = createReferralState();
+    const repo = createReferralRepo(state);
+
+    await expect(
+      createCreatorCode("creator-1", "", {
+        repo,
+        creatorApplication: {
+          socialHandle: "creator@example.com",
+        },
+      })
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      message: "Completa tu perfil para activar tu código de creador.",
+    });
   });
 
   it("limits generated creator codes to 20 characters", async () => {
     const state = createReferralState({
       profile: {
         id: "creator-1",
-        name: "Alexis",
+        name: "",
         email: "alexis@example.com",
       },
     });

@@ -58,12 +58,12 @@ export async function createCreatorCode(userId, code = "", options = {}) {
   const normalizedCode = normalizeReferralCode(code);
   let resolvedCode = normalizedCode;
   const creatorApplication = options.creatorApplication || null;
-  const creatorSocialHandle = normalizeCreatorCodeSeed(
+  const creatorSocialHandle = extractCreatorHandleSeed(
     creatorApplication?.socialHandle || options.socialHandle || ""
   );
   let profile = options.profile || null;
 
-  if (!creatorSocialHandle || !profile?.username) {
+  if (!profile?.name) {
     auditLog(logger, {
       event: "profile_lookup_start",
       userId,
@@ -1017,11 +1017,13 @@ function resolveCreatorCodeSeed({
   creatorApplication = null,
   socialHandle = null,
 } = {}) {
-  const applicationSeed = normalizeCreatorCodeSeed(socialHandle || creatorApplication?.socialHandle);
-  if (applicationSeed) return applicationSeed;
-
   const profileNameSeed = extractProfileNameSeed(profile?.name);
   if (profileNameSeed) return normalizeCreatorCodeSeed(profileNameSeed);
+
+  const applicationHandleSeed = extractCreatorHandleSeed(
+    socialHandle || creatorApplication?.socialHandle
+  );
+  if (applicationHandleSeed) return normalizeCreatorCodeSeed(applicationHandleSeed);
 
   return null;
 }
@@ -1043,6 +1045,42 @@ function extractProfileNameSeed(name) {
     .split(/\s+/)[0];
 
   return firstToken || "";
+}
+
+function extractCreatorHandleSeed(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (looksLikeEmail(raw)) return "";
+
+  const cleaned = raw.replace(/^@+/, "");
+  if (!cleaned) return "";
+
+  if (cleaned.includes("://") || cleaned.startsWith("www.")) {
+    try {
+      const url = cleaned.includes("://") ? new URL(cleaned) : new URL(`https://${cleaned}`);
+      const segments = url.pathname.split("/").filter(Boolean);
+      const lastSegment = segments[segments.length - 1] || "";
+      return lastSegment.replace(/^@+/, "");
+    } catch {
+      return "";
+    }
+  }
+
+  if (cleaned.includes("/")) {
+    const segments = cleaned.split("/").filter(Boolean);
+    const lastSegment = segments[segments.length - 1] || "";
+    return lastSegment.replace(/^@+/, "");
+  }
+
+  if (cleaned.includes(".") && !cleaned.includes("_")) {
+    return "";
+  }
+
+  return cleaned;
+}
+
+function looksLikeEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 }
 
 async function upsertProfileSubscription(payload, supabaseClient) {
