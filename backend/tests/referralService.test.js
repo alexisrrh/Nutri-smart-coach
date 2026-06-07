@@ -233,7 +233,13 @@ describe("referral service", () => {
   });
 
   it("creates a creator code with 15 days and 30% commission", async () => {
-    const state = createReferralState();
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+    });
     const repo = createReferralRepo(state);
 
     const code = await createCreatorCode("creator-1", "", {
@@ -241,6 +247,40 @@ describe("referral service", () => {
     });
 
     expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIALEXIS");
+    expect(code.trial_days).toBe(15);
+    expect(code.commission_percent).toBe(30);
+    expect(code.commission_months_limit).toBe(12);
+  });
+
+  it("adds a suffix to a creator code when the preferred code is already used", async () => {
+    const state = createReferralState({
+      profile: {
+        id: "creator-1",
+        name: "Alexis",
+        email: "alexis@example.com",
+      },
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-2",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          trial_days: 15,
+          commission_percent: 30,
+          commission_months_limit: 12,
+          is_active: true,
+        },
+      ],
+    });
+    const repo = createReferralRepo(state);
+
+    const code = await createCreatorCode("creator-1", "", {
+      repo,
+    });
+
+    expect(code.type).toBe("creator");
+    expect(code.code).toBe("NUTRIALEXIS2");
     expect(code.trial_days).toBe(15);
     expect(code.commission_percent).toBe(30);
     expect(code.commission_months_limit).toBe(12);

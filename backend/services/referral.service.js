@@ -55,6 +55,7 @@ export async function createCreatorCode(userId, code = "", options = {}) {
 
   const normalizedCode = normalizeReferralCode(code);
   let resolvedCode = normalizedCode;
+  const profile = await repo.getProfileByUserId(userId);
 
   auditLog(logger, {
     event: "creator_code.create_attempt",
@@ -77,7 +78,10 @@ export async function createCreatorCode(userId, code = "", options = {}) {
       throw createPublicError("Ese código ya está en uso.", 409);
     }
   } else {
-    resolvedCode = await generateUniqueReferralCode(repo);
+    resolvedCode = await generateUniqueCreatorCode(repo, {
+      profile,
+      userId,
+    });
   }
 
   const existingByUser = await repo.getCodeByUserAndType(userId, "creator");
@@ -539,6 +543,9 @@ export function createReferralRepository(supabaseClient) {
         .select(
           [
             "id",
+            "name",
+            "username",
+            "email",
             "plan",
             "is_premium",
             "subscription_status",
@@ -699,6 +706,15 @@ function normalizeReferralCode(code) {
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9_-]/g, "");
+}
+
+function normalizeCreatorCodeSeed(value) {
+  return String(value || "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 }
 
 function normalizeUserCodeType(value) {
@@ -884,14 +900,21 @@ async function getProfileByUserId(userId, supabaseClient) {
   return data || null;
 }
 
-async function generateUniqueReferralCode(repo) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = buildUserReferralCode();
+async function generateUniqueCreatorCode(repo, { profile = null, userId } = {}) {
+  const baseSeed =
+    profile?.username ||
+    profile?.name ||
+    profile?.email?.split("@")?.[0] ||
+    userId;
+  const base = `NUTRI${normalizeCreatorCodeSeed(baseSeed) || "USER"}`;
+
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const candidate = attempt === 0 ? base : `${base}${attempt + 1}`;
     const inUse = await repo.getCodeByCode(candidate);
     if (!inUse) return candidate;
   }
 
-  const error = createPublicError("No se pudo generar un código único.", 500);
+  const error = createPublicError("No se pudo generar un código de creador único.", 500);
   throw error;
 }
 
