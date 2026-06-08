@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -11,6 +11,7 @@ import { useAuth } from "./context/useAuth";
 import SplashScreen from "./components/SplashScreen";
 import { ToastProvider } from "./components/ui";
 import {
+  normalizeCreatorTrackingCode,
   setStoredCreatorCode,
   trackCreatorLinkClick,
 } from "./services/creatorTrackingService";
@@ -214,38 +215,65 @@ function AppRoutes({ splashVisible }) {
   const location = useLocation();
   const navigate = useNavigate();
   const trackedCreatorLinkRef = useRef("");
+  const creatorCodeParam = useMemo(
+    () => normalizeCreatorTrackingCode(new URLSearchParams(location.search).get("creator")),
+    [location.search]
+  );
 
   useEffect(() => {
     if (splashVisible || loadingAuth) return;
+    if (creatorCodeParam) return;
 
     const pathname = location.pathname;
     const isPublicEntry =
-      pathname === "/" || pathname === "/login" || pathname === "/registro";
+      pathname === "/" ||
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/registro" ||
+      pathname === "/join";
 
     if (user && isPublicEntry) {
       navigate("/dashboard", { replace: true });
     }
-  }, [location.pathname, loadingAuth, navigate, splashVisible, user]);
+  }, [creatorCodeParam, location.pathname, loadingAuth, navigate, splashVisible, user]);
 
   useEffect(() => {
     if (loadingAuth) return;
+    if (!creatorCodeParam) return;
 
-    const params = new URLSearchParams(location.search);
-    const creatorCode = setStoredCreatorCode(params.get("creator"));
+    const creatorCode = setStoredCreatorCode(creatorCodeParam);
     if (!creatorCode) return;
 
-    const trackingSignature = `${location.pathname}?creator=${creatorCode}`;
+    const trackingSignature = creatorCode;
     if (trackedCreatorLinkRef.current === trackingSignature) return;
     trackedCreatorLinkRef.current = trackingSignature;
 
     void trackCreatorLinkClick(creatorCode);
-  }, [loadingAuth, location.pathname, location.search]);
+
+    if (user) {
+      if (location.pathname !== "/premium") {
+        navigate("/premium", {
+          replace: true,
+          state: {
+            creatorCodeApplied: true,
+          },
+        });
+      }
+      return;
+    }
+
+    if (location.pathname !== "/register") {
+      navigate("/register", { replace: true });
+    }
+  }, [creatorCodeParam, loadingAuth, location.pathname, navigate, user]);
 
   return (
     <Suspense fallback={<AppLoader />}>
       <Routes key={location.pathname}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/join" element={<Navigate to="/register" replace />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/registro" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -39,6 +39,7 @@ import { trackEvent } from "../services/analytics";
 
 export function Register() {
   const navigate = useNavigate();
+  const [creatorCode] = useState(() => getStoredCreatorCode());
 
   const [form, setForm] = useState({
     nombre: "",
@@ -326,6 +327,32 @@ export function Register() {
                 {success}
               </StatusBox>
             )}
+
+            {creatorCode ? (
+              <div className="mb-4 rounded-[22px] border border-[color-mix(in_srgb,#D4AF37_20%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_10%,var(--app-surface)),var(--app-card))] p-3 shadow-[0_0_0_1px_color-mix(in_srgb,#D4AF37_8%,transparent)]">
+                <div className="flex items-start gap-2.5">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[color-mix(in_srgb,#D4AF37_50%,transparent)] bg-[linear-gradient(180deg,#D4AF3720,#D4AF370d)] text-[#D4AF37]">
+                    <Gift size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#D4AF37]">
+                      Código de creador aplicado
+                    </p>
+                    <div className="mt-2 inline-flex max-w-full items-center rounded-full border border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[var(--app-surface)] px-3 py-2">
+                      <span className="truncate whitespace-nowrap text-[12px] font-black tracking-[0.2em] text-[var(--app-text)]">
+                        {creatorCode}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-4 text-[var(--app-muted)]">
+                      Tus 15 días Premium gratis se activarán al crear tu cuenta.
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold leading-4 text-[#D4AF37]">
+                      15 días Premium gratis por invitación de creador.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <form onSubmit={handleSubmit} className="space-y-2.5">
               <Input

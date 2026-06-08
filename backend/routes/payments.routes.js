@@ -26,6 +26,7 @@ import {
 } from "../services/acquisition.service.js";
 import {
   syncMobilePremiumVerification,
+  getMobilePremiumConfigStatus,
 } from "../services/mobilePremium.service.js";
 
 const router = Router();
@@ -121,6 +122,10 @@ router.post(
     }
   }
 );
+
+router.get("/premium/mobile/config-check", (req, res) => {
+  return res.json(getMobilePremiumConfigStatus());
+});
 
 router.post(
   "/stripe/create-portal-session",
