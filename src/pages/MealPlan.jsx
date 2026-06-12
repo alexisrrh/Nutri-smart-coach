@@ -566,12 +566,12 @@ export function MealPlan() {
     <>
       <PrintablePlan plan={plan} />
 
-     <AppShell
-  className="overflow-hidden pb-18"
-  contentClassName="overflow-x-hidden px-2 pt-2"
-  scrollClassName="overflow-x-hidden overscroll-x-none touch-pan-y"
+<AppShell
+  className="pb-1"
+  contentClassName="px-2 pt-2"
+  scrollClassName="overflow-x-hidden overscroll-x-none   [scrollbar-width:none] touch-pan-y pb-[calc(var(--bottom-nav-space)+30px)]"
 >
-        <div className="flex h-full min-h-0 flex-col gap-3">
+  <div className="flex flex-col gap-3">
           <DietHeroCard
             hasPlan={hasPlan}
             completionPercent={completionPercent}
@@ -600,7 +600,7 @@ export function MealPlan() {
           {notice && !errorMessage && <StatusBox type="success">{notice}</StatusBox>}
 
           {!hasPlan && !loading ? (
-<div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-[calc(var(--bottom-nav-space)+28px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+<div className="pr-0.5 pb-[calc(var(--bottom-nav-space)+40px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <PremiumEmptyState
                 icon={Utensils}
                 title="Tu plan semanal empieza aquí"
@@ -621,10 +621,10 @@ export function MealPlan() {
               />
             </div>
           ) : (
-            <SurfaceCard
-             className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 "
-              radius="lg"
-            >
+         <SurfaceCard
+  className="flex flex-col p-2"
+  radius="lg"
+>
             <div
               className="shrink-0 border-b p-2"
               style={{
@@ -709,7 +709,7 @@ export function MealPlan() {
               )}
             </div>
 
-    <div className="min-h-0 flex-1 overflow-y-auto p-2 pb-15 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+<div className="p-2">
               {loading && <GeneratingDietLoader formData={formData} />}
 
               {!loading && hasPlan && (
@@ -888,7 +888,7 @@ function RewriteMealDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/75 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/75 px-3 pb-5 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <section
