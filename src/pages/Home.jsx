@@ -132,10 +132,12 @@ export function Home() {
           </div>
         </section>
 
-        {/* 3. FOOTER FIJO (Doble nivel para evitar solapamiento) */}
+        {/* 3. FOOTER FIJO */}
         <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
           <div className="flex flex-col w-full">
-            <div className="px-5 pt-4 pb-2 w-full">
+            {/* Contenedor central del botón y el link */}
+            <div className="px-5 pt-4 pb-2 w-full flex flex-col items-center gap-3"> 
+              
               <Link
                 to="/registro"
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
@@ -143,12 +145,24 @@ export function Home() {
                 Iniciar análisis 
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
+
+              {/* Enlace centrado debajo del botón */}
+              <Link 
+                to="/privacidad" 
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors"
+              >
+                Política de Privacidad
+              </Link>
+
             </div>
+
+            {/* Navegación inferior */}
             <div className="h-20 w-full flex items-center justify-center">
               <NavNavigation />
             </div>
           </div>
         </footer>
+
 
       </main>
 
