@@ -151,9 +151,10 @@ export default function FoodPhoto() {
 
 
   return (
-    <AppShell
-      className="overflow-hidden"
+   <AppShell
+      className="overflow-hidden pb-25"
       contentClassName="px-2 pt-2"
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex h-full min-h-0 flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
