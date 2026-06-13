@@ -28,6 +28,7 @@ export default function AppShell({
         style={{
           backgroundColor: "var(--app-card)",
           borderColor: "var(--app-border)",
+          paddingTop: "calc(env(safe-area-inset-top) + 16px)",
         }}
       >
         <AppBackground />
