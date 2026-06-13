@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, Flame, ArrowRight } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 import dietashome from "../../../public/dietashome.jpeg";
+import tortilla from "../../assets/tortilla.jpg";
+import bowl from "../../assets/bowlpollo.jpg";
+import salmon from "../../assets/salmonesparrago.jpg";
+
 
 export function Dietas() {
   const meals = [
@@ -11,7 +15,7 @@ export function Dietas() {
       title: "Tortilla de claras y avena",
       macros: "340 kcal • 30g Pro",
       completed: true,
-      img: "https://cdn0.recetasgratis.net/es/posts/6/2/3/tortilla_de_avena_73326_orig.jpg"
+      img: tortilla
     },
     {
       time: "02:30 PM",
@@ -20,7 +24,7 @@ export function Dietas() {
       macros: "680 kcal • 44g Pro",
       completed: true,
       current: true,
-      img: "https://rodrigoalimentacion.com/wp-content/uploads/2020/07/Sin-t%C3%ADtulo.jpg"
+      img: bowl
     },
     {
       time: "09:35 PM",
@@ -28,7 +32,7 @@ export function Dietas() {
       title: "Salmón con espárragos",
       macros: "520 kcal • 38g Pro",
       completed: false,
-      img: "https://club-royal.es/wp-content/uploads/2021/09/84055431_s.jpg"
+      img: salmon
     }
   ];
 
