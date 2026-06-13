@@ -19,6 +19,16 @@ describe("CORS production config", () => {
     );
   });
 
+  it.each([
+    "https://localhost",
+    "capacitor://localhost",
+  ])("allows Capacitor origin %s on normal requests", async (origin) => {
+    const response = await request(app).get("/health").set("Origin", origin);
+
+    expect(response.status).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe(origin);
+  });
+
   it("responds to preflight with 204 and CORS headers", async () => {
     const response = await request(app)
       .options("/health")
@@ -30,6 +40,28 @@ describe("CORS production config", () => {
     expect(response.headers["access-control-allow-origin"]).toBe(
       "https://www.nutrismartcoach.com"
     );
+    expect(response.headers["access-control-allow-methods"]).toContain("GET");
+    expect(response.headers["access-control-allow-methods"]).toContain("POST");
+    expect(response.headers["access-control-allow-headers"]).toContain(
+      "Authorization"
+    );
+    expect(response.headers["access-control-allow-headers"]).toContain(
+      "Content-Type"
+    );
+  });
+
+  it.each([
+    "https://localhost",
+    "capacitor://localhost",
+  ])("responds to Capacitor preflight from %s", async (origin) => {
+    const response = await request(app)
+      .options("/health")
+      .set("Origin", origin)
+      .set("Access-Control-Request-Method", "POST")
+      .set("Access-Control-Request-Headers", "Authorization, Content-Type");
+
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(origin);
     expect(response.headers["access-control-allow-methods"]).toContain("GET");
     expect(response.headers["access-control-allow-methods"]).toContain("POST");
     expect(response.headers["access-control-allow-headers"]).toContain(
