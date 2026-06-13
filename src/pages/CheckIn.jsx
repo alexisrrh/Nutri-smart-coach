@@ -123,71 +123,50 @@ function closeSheet() {
   });
   
   return (
- <AppShell
-      className="overflow-hidden pb-25"
+    <AppShell
       contentClassName="px-2 pt-2"
-  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div className="flex flex-col gap-2">
-        <section
-          className="relative shrink-0 overflow-hidden rounded-[20px] border p-2.5 shadow-[0_16px_45px_var(--app-glow)]"
+      <div className="flex flex-col gap-2.5">
+        <header
+          className="rounded-[20px] border p-3 shadow-[0_14px_34px_var(--app-glow)]"
           style={{
             borderColor: "var(--app-border)",
             backgroundColor: "var(--app-card)",
           }}
         >
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 20% 0%, var(--app-primary-soft), transparent 42%)",
-            }}
-          />
-
-          <div className="relative z-10 flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl"
               style={{
                 backgroundColor: "var(--app-primary-soft)",
                 color: "var(--app-primary)",
               }}
             >
-              <Activity size={16} />
+              <Activity size={17} />
             </div>
 
-            <div className="min-w-0">
-              <div
-                className="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em]"
-                style={{
-                  backgroundColor: "var(--app-primary-soft)",
-                  color: "var(--app-primary)",
-                }}
-              >
-                <Sparkles size={9} />
-                Body IA
-              </div>
-
-              <h1 className="text-[21px] font-black leading-[0.95] tracking-tight text-[var(--app-text)]">
-                Check-in corporal
+            <div className="min-w-0 flex-1">
+              <h1 className="text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
+                Check-in corporal IA
               </h1>
-
-              <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
-                Foto, peso y progreso visual con IA.
+              <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
+                Foto, peso, análisis y comparación visual.
               </p>
-
-              <span
-                className="mt-1 inline-flex rounded-full border px-2 py-0.5 text-[8px] font-bold"
-                style={{
-                  borderColor: "var(--app-border)",
-                  backgroundColor: "var(--app-surface)",
-                  color: "var(--app-muted)",
-                }}
-              >
-                {formatGoal(goal)}
-              </span>
             </div>
+
+            <span
+              className="shrink-0 rounded-full border px-2 py-1 text-[8px] font-black uppercase"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-surface)",
+                color: "var(--app-muted)",
+              }}
+            >
+              {formatGoal(goal)}
+            </span>
           </div>
-        </section>
+        </header>
 
         <AiUsageCard
           profile={profile}
@@ -199,337 +178,355 @@ function closeSheet() {
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
-      <main className="pb-4 pr-0.5">
-          <div className="flex min-h-full flex-col gap-2.5">
-            <section
-              className="relative shrink-0 overflow-hidden rounded-[20px] border p-2 shadow-[0_16px_45px_var(--app-glow)]"
-              style={{
-                borderColor: "var(--app-border)",
-                backgroundColor: "var(--app-card)",
-              }}
-            >
-              <div
-                className="pointer-events-none absolute inset-0"
+        <main className="space-y-2.5 pr-0.5 pb-2">
+          <section
+            className="rounded-[22px] border p-2.5 shadow-[0_18px_48px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <CheckInFlowSteps
+              hasPhoto={Boolean(preview)}
+              hasWeight={Boolean(form.weight)}
+            />
+
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                  Nuevo análisis
+                </p>
+                <h2 className="text-[16px] font-black leading-tight text-[var(--app-text)]">
+                  {preview ? "Foto lista para analizar" : "Sube tu foto corporal"}
+                </h2>
+              </div>
+
+              <span
+                className="rounded-full border px-2 py-0.5 text-[8px] font-black uppercase"
                 style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 14% 0%, var(--app-primary-soft), transparent 40%)",
+                  borderColor: "var(--app-border)",
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
                 }}
-              />
-              <div className="relative z-10">
-              <CheckInFlowSteps hasPhoto={Boolean(preview)} hasWeight={Boolean(form.weight)} />
+              >
+                Frontal / lateral
+              </span>
+            </div>
 
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                    Check-in físico
-                  </p>
-                  <h2 className="text-[15px] font-black leading-none text-[var(--app-text)]">
-                    {preview ? "Foto actual" : "Sube tu foto corporal"}
-                  </h2>
-                </div>
+            <div className="grid grid-cols-[112px_1fr] gap-2">
+              <div>
+                <label
+                  htmlFor="checkin-photo"
+                  className="group relative block h-[124px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed ring-1 ring-[var(--app-border)] transition active:scale-[0.99]"
+                  style={{
+                    borderColor: "var(--app-border)",
+                    backgroundColor: "var(--app-surface)",
+                  }}
+                >
+                  {preview ? (
+                    <>
+                      <img
+                        src={preview}
+                        alt="Foto actual"
+                        className="h-full w-full object-contain p-2"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/35 via-transparent to-transparent" />
+                    </>
+                  ) : (
+                    <div
+                      className="grid h-full place-items-center text-center"
+                      style={{ backgroundColor: "var(--app-surface)" }}
+                    >
+                      <div className="px-2">
+                        <div
+                          className="mx-auto grid h-9 w-9 place-items-center rounded-xl border"
+                          style={{
+                            borderColor: "var(--app-border)",
+                            backgroundColor: "var(--app-primary-soft)",
+                            color: "var(--app-primary)",
+                          }}
+                        >
+                          <ImagePlus size={17} />
+                        </div>
+                        <p className="mt-2 text-[9px] font-black uppercase tracking-wide text-[var(--app-text)]">
+                          Foto corporal
+                        </p>
+                        <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
+                          Toca para elegir
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-                <span
-                  className="rounded-full border px-2 py-0.5 text-[8px] font-black uppercase"
+                  <input
+                    id="checkin-photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhoto}
+                    className="hidden"
+                  />
+
+                  {preview && (
+                    <div
+                      className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide backdrop-blur"
+                      style={{
+                        backgroundColor: "var(--app-primary)",
+                        color: "var(--app-surface)",
+                      }}
+                    >
+                      Foto lista
+                    </div>
+                  )}
+                </label>
+
+                <label
+                  htmlFor="checkin-photo"
+                  className="mt-1.5 block rounded-xl border px-2 py-1.5 text-center text-[8px] font-black uppercase tracking-wide transition active:scale-[0.98]"
                   style={{
                     borderColor: "var(--app-border)",
                     backgroundColor: "var(--app-primary-soft)",
                     color: "var(--app-primary)",
                   }}
                 >
-                  Frontal / lateral
-                </span>
+                  {preview ? "Cambiar" : "Subir foto"}
+                </label>
               </div>
 
-              <div className="grid grid-cols-[104px_1fr] gap-1.5">
-                <div className="min-w-0">
-                  <label
-                    htmlFor="checkin-photo"
-                    className="group relative block h-[112px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed ring-1 ring-[var(--app-border)] transition hover:border-[var(--app-border)]"
-                    style={{
-                      borderColor: "var(--app-border)",
-                      backgroundColor: "var(--app-surface)",
-                    }}
-                  >
-                    {preview ? (
-                      <>
-                        <img
-                          src={preview}
-                          alt="Foto actual"
-                          className="h-full w-full object-contain p-2"
-                        />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/35 via-transparent to-transparent" />
-                      </>
-                    ) : (
-                      <div
-                        className="grid h-full place-items-center text-center"
-                        style={{ backgroundColor: "var(--app-surface)" }}
-                      >
-                        <div className="px-2">
-                          <div
-                            className="mx-auto grid h-8 w-8 place-items-center rounded-xl border"
-                            style={{
-                              borderColor: "var(--app-border)",
-                              backgroundColor: "var(--app-primary-soft)",
-                              color: "var(--app-primary)",
-                            }}
-                          >
-                            <ImagePlus size={16} />
-                          </div>
-                          <p className="mt-1.5 text-[9px] font-black uppercase tracking-wide text-[var(--app-text)]">
-                            Foto corporal
-                          </p>
-                          <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
-                            Toca para elegir
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <input
-                      id="checkin-photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhoto}
-                      className="hidden"
-                    />
-
-                    {preview && (
-                      <div
-                        className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide backdrop-blur"
-                        style={{
-                          backgroundColor: "var(--app-primary)",
-                          color: "var(--app-surface)",
-                        }}
-                      >
-                        Foto lista
-                      </div>
-                    )}
-                  </label>
-
-                  <div className="mt-1.5">
-                    <label
-                      htmlFor="checkin-photo"
-                      className="block rounded-xl border px-2 py-1 text-center text-[8px] font-black uppercase tracking-wide transition hover:bg-[var(--app-primary-soft)]"
-                      style={{
-                        borderColor: "var(--app-border)",
-                        backgroundColor: "var(--app-primary-soft)",
-                        color: "var(--app-primary)",
-                      }}
-                    >
-                      {preview ? "Cambiar" : "Subir"}
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <InputBox
-                      label="Peso"
-                      value={form.weight}
-                      onChange={(value) => handleChange("weight", value)}
-                      placeholder="72.5"
-                      suffix="kg"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowMeasures((prev) => !prev)}
-                      className="rounded-xl border px-2.5 py-1.5 text-left ring-1 ring-[var(--app-border)]"
-                      style={{
-                        borderColor: "var(--app-border)",
-                        backgroundColor: "var(--app-surface)",
-                      }}
-                    >
-                      <p className="text-[9px] font-black uppercase tracking-wide text-[var(--app-primary)]">
-                        Medidas
-                      </p>
-                      <p className="mt-0.5 text-[13px] font-black uppercase text-[var(--app-text)]">
-                        Opcional
-                      </p>
-                    </button>
-                  </div>
-
-                  {showMeasures && (
-                    <div className="grid grid-cols-3 gap-1">
-                      <InputBox
-                        label="Cint."
-                        value={form.waist}
-                        onChange={(value) => handleChange("waist", value)}
-                        placeholder="80"
-                        suffix="cm"
-                      />
-                      <InputBox
-                        label="Pecho"
-                        value={form.chest}
-                        onChange={(value) => handleChange("chest", value)}
-                        placeholder="95"
-                        suffix="cm"
-                      />
-                      <InputBox
-                        label="Cadera"
-                        value={form.hips}
-                        onChange={(value) => handleChange("hips", value)}
-                        placeholder="90"
-                        suffix="cm"
-                      />
-                    </div>
-                  )}
-
-                  <div
-                    className="mt-auto rounded-xl border px-2.5 py-2"
-                    style={{
-                      borderColor: "var(--app-border)",
-                      backgroundColor: "var(--app-primary-soft)",
-                    }}
-                  >
-                    <div className="flex items-start gap-1.5">
-                      <Sparkles
-                        size={11}
-                        className="mt-0.5 shrink-0 text-[var(--app-primary)]"
-                      />
-                      <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
-                        Sube una foto y tu peso para generar el análisis.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              </div>
-            </section>
-
-            <CheckInLoader loading={loading} />
-
-       {!initialLoading && !loading && history.length === 0 ? (
-              <PremiumEmptyState
-                icon={Camera}
-                title="Tu primer check-in marcará el punto de partida"
-                description="Sube una foto y tu peso para activar el análisis corporal y comparar tu evolución."
-                actionLabel="Subir foto"
-                onAction={() => document.getElementById("checkin-photo")?.click()}
-                className="shrink-0 py-4"
-              />
-            ) : null}
-
-            <section
-              className="shrink-0 rounded-[18px] border p-1 shadow-[0_16px_45px_var(--app-glow)]"
-              style={{
-                borderColor: "var(--app-border)",
-                backgroundColor: "var(--app-card)",
-              }}
-            >
-              <div className="grid grid-cols-4 gap-1">
-                <MiniMetric
-                  icon={<Scale size={11} />}
+              <div className="flex flex-col gap-2">
+                <InputBox
                   label="Peso"
-                  value={lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
+                  value={form.weight}
+                  onChange={(value) => handleChange("weight", value)}
+                  placeholder="72.5"
+                  suffix="kg"
                 />
-                <MiniMetric
-                  icon={<TrendingUp size={11} />}
-                  label="Cambio"
-                  value={weightDiff || "—"}
-                />
-                <MiniMetric
-                  icon={<Target size={11} />}
-                  label="Grasa"
-                  value={shortFatValue(lastCheckin)}
-                />
-                <MiniMetric
-                  icon={<Sparkles size={11} />}
-                  label="Conf."
-                  value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
-                />
-              </div>
-            </section>
 
-            <section
-              className="relative shrink-0 overflow-hidden rounded-[18px] border p-1.5 shadow-[0_14px_34px_var(--app-glow)]"
-              style={{
-                borderColor: "var(--app-border)",
-                backgroundColor: "var(--app-card)",
-              }}
-            >
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 12% 0%, var(--app-primary-soft), transparent 36%)",
-                }}
-              />
-              <div className="relative z-10">
-              <div className="mb-1.5 flex items-center justify-between">
-                <div>
-                  <p className="text-[8px] font-bold tracking-[0.14em] text-[var(--app-primary)]">
-                    Comparación semanal
-                  </p>
-                  <h3 className="text-[12px] font-extrabold text-[var(--app-text)]">
-                    Anterior vs actual
-                  </h3>
-                </div>
-
-                <span
-                  className="rounded-full px-1.5 py-0.5 text-[8px] font-bold"
+                <button
+                  type="button"
+                  onClick={() => setShowMeasures((prev) => !prev)}
+                  className="rounded-xl border px-3 py-2 text-left ring-1 ring-[var(--app-border)] transition active:scale-[0.98]"
                   style={{
-                    backgroundColor: "var(--app-primary-soft)",
-                    color: "var(--app-primary)",
+                    borderColor: "var(--app-border)",
+                    backgroundColor: "var(--app-surface)",
                   }}
                 >
-                  IA visual
-                </span>
-              </div>
-
-              <div className="relative grid grid-cols-2 gap-1.5">
-                <CompareTile
-                  title="Anterior"
-                  checkin={previousCheckin}
-                  image={previousImage}
-                  emptyText={history.length ? "Primer check-in" : "Pendiente"}
-                  onClick={() => openCheckinSheet(previousCheckin)}
-                />
-                <CompareTile
-                  title="Actual"
-                  checkin={lastCheckin}
-                  image={preview || lastImage}
-                  emptyText="Sube foto"
-                  onClick={() => openCheckinSheet(lastCheckin)}
-                />
+                  <p className="text-[9px] font-black uppercase tracking-wide text-[var(--app-primary)]">
+                    Medidas
+                  </p>
+                  <p className="mt-0.5 text-[13px] font-black uppercase text-[var(--app-text)]">
+                    Opcional
+                  </p>
+                </button>
 
                 <div
-                  className="pointer-events-none absolute left-1/2 top-1/2 grid h-4 w-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[6px] font-bold uppercase backdrop-blur-xl"
+                  className="rounded-xl border px-2.5 py-2"
                   style={{
-                    backgroundColor: "color-mix(in srgb, var(--app-surface) 60%, transparent)",
-                    color: "var(--app-muted)",
+                    borderColor: "var(--app-border)",
+                    backgroundColor: "var(--app-primary-soft)",
                   }}
                 >
-                  VS
-                </div>
-              </div>
-
-              <div
-                className="mt-1.5 rounded-xl px-2 py-1.5"
-                style={{ backgroundColor: "var(--app-primary-soft)" }}
-              >
-                <div className="flex items-start gap-1.5">
-                  <Sparkles
-                    size={10}
-                    className="mt-0.5 shrink-0 text-[var(--app-primary)]"
-                  />
-                  <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
-                    {aiMotivation}
+                  <p className="text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
+                    Añade foto y peso para activar el análisis.
                   </p>
                 </div>
               </div>
+            </div>
 
-              {previousCheckin && lastCheckin && (
-                <WeeklyCompareSummary
-                  previousCheckin={previousCheckin}
-                  lastCheckin={lastCheckin}
-                  weightDiff={weightDiff}
+            {showMeasures && (
+              <div className="mt-2 grid grid-cols-3 gap-1.5">
+                <InputBox
+                  label="Cint."
+                  value={form.waist}
+                  onChange={(value) => handleChange("waist", value)}
+                  placeholder="80"
+                  suffix="cm"
                 />
-              )}
+                <InputBox
+                  label="Pecho"
+                  value={form.chest}
+                  onChange={(value) => handleChange("chest", value)}
+                  placeholder="95"
+                  suffix="cm"
+                />
+                <InputBox
+                  label="Cadera"
+                  value={form.hips}
+                  onChange={(value) => handleChange("hips", value)}
+                  placeholder="90"
+                  suffix="cm"
+                />
               </div>
-            </section>
+            )}
 
-          </div>
+            <button
+              type="button"
+              onClick={saveCheckIn}
+              disabled={loading}
+              className="group relative mt-2.5 w-full overflow-hidden rounded-[1.15rem] border px-3 py-3 text-[var(--app-text)] shadow-[0_14px_34px_var(--app-glow)] transition duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              style={{
+                borderColor: "var(--app-border)",
+                background:
+                  "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 40%, var(--app-surface)) 0%, var(--app-primary-soft) 50%, color-mix(in srgb, var(--app-primary) 48%, var(--app-card)) 100%)",
+              }}
+            >
+              <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-4">
+                <span
+                  className="relative grid h-14 w-16 shrink-0 place-items-center overflow-hidden rounded-[0.95rem]"
+                  style={{ backgroundColor: "var(--app-surface)" }}
+                >
+                  <span
+                    className="absolute -inset-4 animate-[spin_2.5s_linear_infinite] rounded-full opacity-70"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, transparent 0deg, transparent 60%, var(--app-primary) 72%, transparent 90%, transparent 100%)",
+                    }}
+                  />
+                  <span
+                    className="absolute inset-[2px] rounded-[0.9rem]"
+                    style={{ backgroundColor: "var(--app-card)" }}
+                  />
+                  <img
+                    src="/icons/bodyscan-icon.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="relative z-10 h-16 w-20 object-contain"
+                  />
+                </span>
+                <span className="flex min-w-0 flex-col items-start justify-center text-left">
+                  <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
+                    {loading ? "ANALIZANDO..." : "ANALIZAR CON IA"}
+                  </span>
+                  <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
+                    Foto corporal + progreso
+                  </span>
+                </span>
+              </span>
+            </button>
+          </section>
+
+          <CheckInLoader loading={loading} />
+
+          {!initialLoading && !loading && history.length === 0 ? (
+            <PremiumEmptyState
+              icon={Camera}
+              title="Tu primer check-in marcará el punto de partida"
+              description="Sube una foto y tu peso para activar el análisis corporal y comparar tu evolución."
+              actionLabel="Subir foto"
+              onAction={() => document.getElementById("checkin-photo")?.click()}
+              className="shrink-0 py-4"
+            />
+          ) : null}
+
+          <section
+            className="rounded-[18px] border p-1.5 shadow-[0_12px_30px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <div className="grid grid-cols-4 gap-1">
+              <MiniMetric
+                icon={<Scale size={11} />}
+                label="Peso"
+                value={lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
+              />
+              <MiniMetric
+                icon={<TrendingUp size={11} />}
+                label="Cambio"
+                value={weightDiff || "—"}
+              />
+              <MiniMetric
+                icon={<Target size={11} />}
+                label="Grasa"
+                value={shortFatValue(lastCheckin)}
+              />
+              <MiniMetric
+                icon={<Sparkles size={11} />}
+                label="Conf."
+                value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
+              />
+            </div>
+          </section>
+
+          <section
+            className="rounded-[20px] border p-2 shadow-[0_14px_34px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                  Comparación visual
+                </p>
+                <h3 className="text-[14px] font-extrabold text-[var(--app-text)]">
+                  Anterior vs actual
+                </h3>
+              </div>
+
+              <span
+                className="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase"
+                style={{
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
+                }}
+              >
+                IA visual
+              </span>
+            </div>
+
+            <div className="relative grid grid-cols-2 gap-1.5">
+              <CompareTile
+                title="Anterior"
+                checkin={previousCheckin}
+                image={previousImage}
+                emptyText={history.length ? "Primer check-in" : "Pendiente"}
+                onClick={() => openCheckinSheet(previousCheckin)}
+              />
+              <CompareTile
+                title="Actual"
+                checkin={lastCheckin}
+                image={preview || lastImage}
+                emptyText="Sube foto"
+                onClick={() => openCheckinSheet(lastCheckin)}
+              />
+
+              <div
+                className="pointer-events-none absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[7px] font-bold uppercase backdrop-blur-xl"
+                style={{
+                  backgroundColor:
+                    "color-mix(in srgb, var(--app-surface) 72%, transparent)",
+                  color: "var(--app-muted)",
+                }}
+              >
+                VS
+              </div>
+            </div>
+
+            <div
+              className="mt-2 rounded-xl px-2.5 py-2"
+              style={{ backgroundColor: "var(--app-primary-soft)" }}
+            >
+              <div className="flex items-start gap-1.5">
+                <Sparkles
+                  size={10}
+                  className="mt-0.5 shrink-0 text-[var(--app-primary)]"
+                />
+                <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
+                  {aiMotivation}
+                </p>
+              </div>
+            </div>
+
+            {previousCheckin && lastCheckin && (
+              <WeeklyCompareSummary
+                previousCheckin={previousCheckin}
+                lastCheckin={lastCheckin}
+                weightDiff={weightDiff}
+              />
+            )}
+          </section>
         </main>
 
         {selectedCheckin && (
@@ -540,50 +537,6 @@ function closeSheet() {
             onClose={closeSheet}
           />
         )}
-
-        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+96px)] z-[90] mx-auto w-full max-w-[430px] px-3">
-          <style>{`
-            @keyframes rotateGlow {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
-          <button
-            type="button"
-            onClick={saveCheckIn}
-            disabled={loading}
-                  className="group relative w-full overflow-hidden rounded-[1.15rem] border px-3 py-3 text-[var(--app-text)] shadow-[0_12px_28px_var(--app-glow)] transition duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                  style={{
-                    borderColor: "var(--app-border)",
-                    background:
-                      "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 40%, var(--app-surface)) 0%, var(--app-primary-soft) 50%, color-mix(in srgb, var(--app-primary) 48%, var(--app-card)) 100%)",
-                  }}
-                >
-             <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-9">
-              <span
-                className="relative grid h-18 w-20 shrink-0 place-items-center overflow-hidden rounded-[0.95rem]"
-                style={{ backgroundColor: "var(--app-surface)" }}
-              >
-                <span className="absolute -inset-4 animate-[spin_2.5s_linear_infinite] rounded-full opacity-70" style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 60%, var(--app-primary) 72%, transparent 90%, transparent 100%)" }} />
-                <span className="absolute inset-[2px] rounded-[0.9rem]" style={{ backgroundColor: "var(--app-card)" }} />
-                <img
-                  src="/icons/bodyscan-icon.png"
-                  alt=""
-                  aria-hidden="true"
-                  className="relative z-10 h-19 w-25 object-contain"
-                />
-              </span>
-              <span className="flex min-w-0 flex-col items-start justify-center text-left">
-                <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
-                  {loading ? "ANALIZANDO..." : "ANALIZAR CON IA"}
-                </span>
-                <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
-                  Foto corporal + progreso
-                </span>
-              </span>
-            </span>
-          </button>
-        </div>
       </div>
     </AppShell>
   );
