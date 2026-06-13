@@ -8,9 +8,15 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "android:add": "npx cap add android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
     "@supabase/supabase-js": "^2.105.3",
     "framer-motion": "^12.38.0",
     "heic2any": "^0.0.4",
@@ -32,7 +38,13 @@
     "globals": "^17.5.0",
     "supertest": "^7.2.2",
     "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3",
     "vite": "^8.0.10",
     "vitest": "^4.1.7"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.1.1",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.1",
+    "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }

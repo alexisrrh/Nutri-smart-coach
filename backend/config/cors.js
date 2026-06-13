@@ -12,10 +12,16 @@ const productionOrigins = [
   "https://nutrismartcoach.com",
 ];
 
+const capacitorOrigins = [
+  "https://localhost",
+  "capacitor://localhost",
+];
+
 export const allowedOrigins = [
   ...new Set([
     ...localOrigins,
     ...productionOrigins,
+    ...capacitorOrigins,
     ...parseOrigins(process.env.FRONTEND_URL),
     ...parseOrigins(process.env.CORS_ORIGINS),
   ]),
