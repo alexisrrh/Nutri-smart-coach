@@ -22,7 +22,7 @@ export default function BottomNav() {
   return (
     <nav
       data-bottom-nav="true"
-      className="bottom-nav fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] left-1/2 z-50 w-[90%] max-w-[430px] -translate-x-1/2 rounded-[1.4rem] border p-1.5 shadow-[0_14px_45px_var(--app-glow)] backdrop-blur-2xl"
+      className="bottom-nav fixed bottom-[calc(env(safe-area-inset-bottom)+8px)] left-1/2 z-50 w-[90%] max-w-[430px] -translate-x-1/2 rounded-[1.4rem] border p-1.5 shadow-[0_14px_45px_var(--app-glow)] backdrop-blur-2xl"
       style={{
         backgroundColor: "var(--app-surface)",
         borderColor: "var(--app-border)",
