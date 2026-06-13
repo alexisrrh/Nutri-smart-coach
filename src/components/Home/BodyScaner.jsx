@@ -27,7 +27,10 @@ export function BodyScaner() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <main className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[var(--app-border)] flex flex-col overflow-hidden">
+      <main
+        className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[var(--app-border)] flex flex-col overflow-hidden"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+      >
         
         {/* Capas decorativas de fondo */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,var(--app-primary)15,transparent_55%)] pointer-events-none" />

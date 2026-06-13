@@ -193,8 +193,16 @@ export function Premium() {
   }
 
   return (
-    <AppShell wide contentClassName="!px-2 !pt-2 pb-21">
-      <main className="flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <AppShell
+   className="overflow-hidden "
+  contentClassName="px-2 pt-2"
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>
+      <div
+        className="flex h-full min-h-0 flex-col gap-1"
+        style={{ backgroundColor: "var(--app-surface)" }}
+      >
+      <main className="flex ">
         <div className="mx-auto flex w-full max-w-[520px] flex-col gap-2 rounded-[28px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2.5 py-2.5 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:rounded-[34px] md:border-8 md:px-3 md:py-3">
           <header className="shrink-0">
             <div className="mb-1.5 flex items-center justify-between gap-3">
@@ -491,6 +499,7 @@ export function Premium() {
           )}
         </div>
       </main>
+      </div>
     </AppShell>
   );
 }

@@ -20,7 +20,6 @@ import {
   setPendingLegalConsent,
 } from "../services/legalConsentService";
 import {
-  UserPlus,
   Mail,
   Lock,
   User,
@@ -40,6 +39,7 @@ import { trackEvent } from "../services/analytics";
 export function Register() {
   const navigate = useNavigate();
   const [creatorCode] = useState(() => getStoredCreatorCode());
+  const [referralOpen, setReferralOpen] = useState(Boolean(getStoredReferralCode()));
 
   const [form, setForm] = useState({
     nombre: "",
@@ -288,14 +288,14 @@ export function Register() {
   return (
     <AppShell
       withBottomNav={false}
-      contentClassName="!px-3 !pb-4 !pt-[calc(env(safe-area-inset-top)+16px)]"
+      contentClassName="!px-3 !pb-3 !pt-[calc(env(safe-area-inset-top)+16px)]"
       scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex flex-col gap-3">
         <SurfaceCard className="relative overflow-hidden p-2">
           <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
 
-          <div className="relative z-10 pt-1">
+          <div className="relative z-10 pt-0.5">
             <div className="mb-2 flex items-center gap-4 justify-center">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
                 <img
@@ -308,7 +308,6 @@ export function Register() {
               <div className="min-w-0">
                 <h1 className="flex items-center gap-2 text-2xl font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
                   Crea tu plan inteligente
-                  <UserPlus size={21} className="shrink-0 text-[var(--app-primary)]" />
                 </h1>
               </div>
             </div>
@@ -385,59 +384,89 @@ export function Register() {
               />
 
               <div className="rounded-[22px] border border-[color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_96%,transparent),var(--app-surface))] p-3 shadow-[0_0_0_1px_color-mix(in_srgb,var(--app-primary)_8%,transparent)]">
-                <div className="mb-2.5 flex items-start gap-2.5">
-                  <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[color-mix(in_srgb,#D4AF37_50%,transparent)] bg-[linear-gradient(180deg,#D4AF3720,#D4AF370d)] text-[#D4AF37]">
-                    <Gift size={14} />
-                  </div>
-
+                <button
+                  type="button"
+                  onClick={() => setReferralOpen((value) => !value)}
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                >
                   <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#D4AF37]">
-                      Código de invitación
+                      ¿Tienes un código de invitación?
                     </p>
                     <h2 className="mt-0.5 text-[12px] font-bold leading-4 text-[var(--app-text)]">
                       Desbloquea pruebas Premium y recompensas.
                     </h2>
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                    <input
-                      type="text"
-                      value={referralCode}
-                      onChange={handleReferralCodeChange}
-                      placeholder="Introduce tu código"
-                      className="h-11 w-full min-w-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--app-text)] outline-none transition placeholder:normal-case placeholder:tracking-normal focus:border-[#D4AF37] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.12)]"
-                      autoComplete="off"
-                      spellCheck="false"
-                    />
-                    <SecondaryButton
-                      type="button"
-                      onClick={handleSaveReferralCode}
-                      disabled={referralSaving || referralValidating}
-                      className="h-11 w-full shrink-0 px-4 text-[10px] sm:w-auto sm:px-4"
-                    >
-                      {referralValidating ? "Validando..." : "Aplicar código"}
-                    </SecondaryButton>
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[color-mix(in_srgb,#D4AF37_50%,transparent)] bg-[linear-gradient(180deg,#D4AF3720,#D4AF370d)] text-[#D4AF37]">
+                    <Gift size={14} />
                   </div>
+                </button>
 
-                  {referralNote ? (
-                    <StatusBox type="success" className="p-2.5 text-[11px] leading-4">
-                      {referralNote}
-                    </StatusBox>
-                  ) : null}
-                  {referralError ? (
-                    <StatusBox type="error" className="p-2.5 text-[11px] leading-4">
-                      {referralError}
-                    </StatusBox>
-                  ) : null}
-                </div>
+                {referralOpen ? (
+                  <div className="mt-3 space-y-1.5">
+                    <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                      <input
+                        type="text"
+                        value={referralCode}
+                        onChange={handleReferralCodeChange}
+                        placeholder="Introduce tu código"
+                        className="h-11 w-full min-w-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--app-text)] outline-none transition placeholder:normal-case placeholder:tracking-normal focus:border-[#D4AF37] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.12)]"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                      <SecondaryButton
+                        type="button"
+                        onClick={handleSaveReferralCode}
+                        disabled={referralSaving || referralValidating}
+                        className="h-11 w-full shrink-0 px-4 text-[10px] sm:w-auto sm:px-4"
+                      >
+                        {referralValidating ? "Validando..." : "Aplicar código"}
+                      </SecondaryButton>
+                    </div>
+
+                    {referralNote ? (
+                      <StatusBox type="success" className="p-2.5 text-[11px] leading-4">
+                        {referralNote}
+                      </StatusBox>
+                    ) : null}
+                    {referralError ? (
+                      <StatusBox type="error" className="p-2.5 text-[11px] leading-4">
+                        {referralError}
+                      </StatusBox>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
-              <LegalConsentCard
-                checked={acceptedPolicies}
-                onChange={setAcceptedPolicies}
-              />
+              <div className="rounded-[22px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),var(--app-card))] p-3 shadow-[inset_0_0_0_1px_var(--app-border)]">
+                <label className="flex items-start gap-3">
+                  <span className="relative mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[7px] border border-[var(--app-border)] bg-[var(--app-card)]">
+                    <input
+                      type="checkbox"
+                      checked={acceptedPolicies}
+                      onChange={(event) => setAcceptedPolicies(event.target.checked)}
+                      className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
+                    <span className={`h-3.5 w-3.5 rounded-[5px] transition ${acceptedPolicies ? "bg-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]" : "bg-transparent"}`} />
+                  </span>
+
+                  <span className="min-w-0">
+                    <span className="block text-[12px] font-bold leading-5 text-[var(--app-text)]">
+                      Acepto las políticas y condiciones de NutriSmart Coach
+                    </span>
+                    <span className="mt-1 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/privacy">
+                        Política de privacidad
+                      </Link>
+                      {" "}•{" "}
+                      <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/terms">
+                        Términos del servicio
+                      </Link>
+                    </span>
+                  </span>
+                </label>
+              </div>
 
               <PrimaryButton
                 disabled={loading || referralSaving}
@@ -447,7 +476,7 @@ export function Register() {
               >
                 {loading || referralSaving
                   ? "Creando cuenta..."
-                  : "Crear cuenta"}
+                  : "→ Crear cuenta gratis"}
               </PrimaryButton>
             </form>
 
@@ -501,52 +530,6 @@ export function Register() {
   );
 }
 
-function LegalConsentCard({ checked, onChange }) {
-  return (
-    <div className="rounded-[22px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent),var(--app-card))] p-3 shadow-[inset_0_0_0_1px_var(--app-border)]">
-      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-        Consentimiento legal
-      </p>
-      <p className="mt-1.5 text-[12px] font-medium leading-5 text-[var(--app-muted)]">
-        Al crear tu cuenta aceptas la{" "}
-        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/privacy">
-          Política de privacidad
-        </Link>
-        , los{" "}
-        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/terms">
-          Términos del servicio
-        </Link>
-        {" "}y la{" "}
-        <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/delete-account">
-          gestión de tus datos
-        </Link>
-        .
-      </p>
-
-      <label className="mt-3 flex items-start gap-3 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 transition active:scale-[0.99]">
-        <span className="relative mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[7px] border border-[var(--app-border)] bg-[var(--app-card)]">
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={(event) => onChange(event.target.checked)}
-            className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          />
-          <span className={`h-3.5 w-3.5 rounded-[5px] transition ${checked ? "bg-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]" : "bg-transparent"}`} />
-        </span>
-
-        <span className="min-w-0">
-          <span className="block text-[12px] font-bold leading-5 text-[var(--app-text)]">
-            Acepto las políticas y condiciones de NutriSmartCoach.
-          </span>
-          <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            Necesario para crear tu cuenta y guardar tu consentimiento.
-          </span>
-        </span>
-      </label>
-    </div>
-  );
-}
-
 function Input({ label, icon, ...props }) {
   return (
     <FormField label={label} icon={icon}>
@@ -557,4 +540,3 @@ function Input({ label, icon, ...props }) {
     </FormField>
   );
 }
-
