@@ -747,7 +747,7 @@ function CheckInResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(96px+env(safe-area-inset-bottom))] pt-6 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-[var(--app-surface)] px-2 pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+24px)] backdrop-blur-[6px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       onClick={onClose}
       role="presentation"
     >
@@ -755,7 +755,7 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[calc(100dvh-112px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_56px_var(--app-glow)]"
+        className="flex w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_56px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="shrink-0 px-3 pt-2">
@@ -764,7 +764,7 @@ function CheckInResultSheet({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-5 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="px-3 pb-5 pt-2">
           <section
             className="mb-2 overflow-hidden rounded-[22px] border border-[var(--app-border)] px-3 py-2 shadow-[0_12px_32px_var(--app-glow)]"
             style={{ backgroundColor: "var(--app-surface)" }}
