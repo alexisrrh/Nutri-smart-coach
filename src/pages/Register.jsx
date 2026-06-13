@@ -288,7 +288,7 @@ export function Register() {
   return (
     <AppShell
       withBottomNav={false}
-      contentClassName="!px-3 !pb-4 !pt-1.5"
+      contentClassName="!px-3 !pb-4 !pt-[calc(env(safe-area-inset-top)+16px)]"
       scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex flex-col gap-3">
