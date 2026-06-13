@@ -34,7 +34,10 @@ export function Home() {
   return (
     <div className="h-dvh w-full bg-[var(--app-bg)] flex items-center justify-center overflow-hidden font-sans">
       
-      <main className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden">
+      <main
+        className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+      >
         
         {/* FONDO CUADRICULADO Y GLOW (Recuperados) */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%)] pointer-events-none opacity-40" />

@@ -173,7 +173,7 @@ export function Login() {
   }
 
   return (
-    <AppShell withBottomNav={false} contentClassName="!px-3 !pb-6 !pt-2">
+    <AppShell withBottomNav={false} contentClassName="!px-3 !pb-6 !pt-[calc(env(safe-area-inset-top)+16px)]">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <SecondaryButton
