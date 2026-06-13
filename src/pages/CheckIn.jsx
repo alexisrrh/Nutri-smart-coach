@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import { trackEvent } from "../services/analytics";
 import {
-  Activity,
   Camera,
+  BrainCircuit,
   ImagePlus,
-  Scale,
-  Sparkles,
-  Target,
+  ScanLine,
   TrendingUp,
   X,
 } from "lucide-react";
@@ -50,7 +48,7 @@ export function CheckIn() {
     setError,
     setMessage: (...args) => clearMessageRef.current(...args),
   });
-  const { refreshUsage, usage } = useAiUsageStatus(
+  const { refreshUsage } = useAiUsageStatus(
     "checkin_analysis",
     user?.id || ""
   );
@@ -112,7 +110,6 @@ function closeSheet() {
     updatedAt: new Date().toISOString(),
   });
 }
-  const goal = profile?.goal || profile?.objetivo || "ganar_musculo";
   const lastImage = getCheckinImage(lastCheckin);
   const previousImage = getCheckinImage(previousCheckin);
   const aiMotivation = getCheckinMotivation({
@@ -120,7 +117,6 @@ function closeSheet() {
     previousCheckin,
     weightDiff,
   });
-  const aiUsageCounter = formatCheckinUsageCounter(usage);
   
   return (
     <AppShell
@@ -129,33 +125,58 @@ function closeSheet() {
     >
       <div className="flex flex-col gap-2.5">
         <header
-          className="rounded-[20px] border p-3 shadow-[0_14px_34px_var(--app-glow)]"
+          className="relative overflow-hidden rounded-[24px] border px-2.5 py-2 shadow-[0_18px_42px_var(--app-glow)]"
           style={{
             borderColor: "var(--app-border)",
-            backgroundColor: "var(--app-card)",
+            background:
+              "linear-gradient(180deg, color-mix(in srgb, var(--app-card) 96%, #08131b), var(--app-card))",
           }}
         >
-          <div className="flex items-center gap-2.5">
-            <div
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl"
-              style={{
-                backgroundColor: "var(--app-primary-soft)",
-                color: "var(--app-primary)",
-              }}
-            >
-              <Activity size={17} />
-            </div>
+          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[var(--app-primary)]/15 blur-3xl" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[var(--app-primary)]/35 to-transparent" />
 
-            <div className="min-w-0 flex-1">
-              <h1 className="text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
-                Check-in corporal IA
-              </h1>
-              <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-                Foto, peso, análisis y comparación visual.
+            <div className="relative z-10 flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+              <p className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                <ScanLine size={10} />
+                CHECK-IN IA
               </p>
+
+              <h1 className="mt-1.5 whitespace-nowrap text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
+                BODY AI SCAN
+              </h1>
+
+              <p className="mt-1.25 text-[14px] font-black leading-4 text-[var(--app-primary)]">
+                Haz tu check-in semanal
+              </p>
+
+              <p className="mt-1 max-w-[25rem] text-[11px] font-medium leading-4 text-[var(--app-muted)]">
+                La IA compara tu cuerpo y detecta tu evolución física.
+              </p>
+
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <HeroChip icon={<Camera size={10} />} label="Foto corporal" />
+                <HeroChip icon={<TrendingUp size={10} />} label="Evolución" />
+                <HeroChip icon={<BrainCircuit size={10} />} label="IA" />
+              </div>
             </div>
 
-            <UsagePill counter={aiUsageCounter} />
+            <div className="ml-auto flex flex-col items-center gap-1">
+              <div className="relative grid h-24 w-24 place-items-center rounded-full border border-[var(--app-border)] bg-[radial-gradient(circle_at_35%_30%,color-mix(in_srgb,var(--app-primary)_42%,transparent),var(--app-card)_55%,#08131b)] shadow-[0_0_48px_var(--app-glow)]">
+                <div className="absolute inset-0 rounded-full border border-[var(--app-primary)]/20" />
+                <div className="absolute inset-[6px] rounded-full border border-[var(--app-primary)]/28 animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-[13px] rounded-full border border-[var(--app-primary)]/18 bg-[radial-gradient(circle_at_50%_50%,var(--app-primary)28,transparent_62%)]" />
+                <div className="absolute inset-[18px] rounded-full border border-[var(--app-border)] bg-[var(--app-card)]/85" />
+                <div className="absolute left-1/2 top-2 h-[44%] w-px -translate-x-1/2 rounded-full bg-gradient-to-b from-[var(--app-primary)] via-[var(--app-primary)]/80 to-transparent shadow-[0_0_16px_var(--app-glow)]" />
+                <div className="absolute left-1/2 top-[30%] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)]" />
+                <div className="relative z-10 grid h-12 w-12 place-items-center rounded-[18px] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_24%,var(--app-surface)),var(--app-primary-soft))] text-[var(--app-primary)] shadow-[0_0_26px_var(--app-glow)]">
+                  <ScanLine size={24} />
+                </div>
+              </div>
+              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[7px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                AI BODY SCAN
+              </span>
+            </div>
           </div>
         </header>
 
@@ -164,139 +185,101 @@ function closeSheet() {
 
         <main className="space-y-2.5 pr-0.5 pb-2">
           <section
-            className="rounded-[20px] border p-2.5 shadow-[0_12px_30px_var(--app-glow)]"
+            className="rounded-[28px] border p-2.5 shadow-[0_18px_48px_var(--app-glow)]"
             style={{
               borderColor: "var(--app-border)",
-              backgroundColor: "var(--app-card)",
+              background:
+                "linear-gradient(180deg, color-mix(in srgb, var(--app-card) 96%, #08131b), var(--app-card))",
             }}
           >
-            <div className="grid grid-cols-3 gap-1.5">
-              <TopStatCard
-                label="Peso actual"
-                value={form.weight ? `${form.weight}kg` : lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
-              />
-              <TopStatCard
-                label="Último check-in"
-                value={lastCheckin ? formatDate(lastCheckin.created_at || lastCheckin.createdAt) : "Sin registro"}
-              />
-              <TopStatCard label="Objetivo" value={formatShortGoal(goal)} />
-            </div>
-          </section>
-
-          <section
-            className="rounded-[22px] border p-2.5 shadow-[0_18px_48px_var(--app-glow)]"
-            style={{
-              borderColor: "var(--app-border)",
-              backgroundColor: "var(--app-card)",
-            }}
-          >
-            <CheckInFlowSteps
-              hasPhoto={Boolean(preview)}
-              hasWeight={Boolean(form.weight)}
-            />
-
             <div className="mb-2 flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Nuevo análisis
+                  Paso 1
                 </p>
                 <h2 className="text-[16px] font-black leading-tight text-[var(--app-text)]">
-                  {preview ? "Foto lista para analizar" : "Sube tu foto corporal"}
+                  FOTO SEMANAL
                 </h2>
               </div>
-
-              <span
-                className="rounded-full border px-2 py-0.5 text-[8px] font-black uppercase"
-                style={{
-                  borderColor: "var(--app-border)",
-                  backgroundColor: "var(--app-primary-soft)",
-                  color: "var(--app-primary)",
-                }}
-              >
-                Frontal / lateral
-              </span>
             </div>
 
-            <div className="space-y-2">
-              <div>
-                <label
-                  htmlFor="checkin-photo"
-                  className="group relative block h-[260px] cursor-pointer overflow-hidden rounded-[22px] border border-dashed ring-1 ring-[var(--app-border)] transition active:scale-[0.99]"
-                  style={{
-                    borderColor: "var(--app-border)",
-                    backgroundColor: "var(--app-surface)",
-                  }}
-                >
-                  {preview ? (
-                    <>
-                      <img
-                        src={preview}
-                        alt="Foto actual"
-                        className="h-full w-full object-contain p-3"
-                      />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/35 via-transparent to-transparent" />
-                    </>
-                  ) : (
-                    <div
-                      className="grid h-full place-items-center text-center"
-                      style={{ backgroundColor: "var(--app-surface)" }}
-                    >
-                      <div className="px-2">
-                        <div
-                          className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border"
-                          style={{
-                            borderColor: "var(--app-border)",
-                            backgroundColor: "var(--app-primary-soft)",
-                            color: "var(--app-primary)",
-                          }}
-                        >
-                          <ImagePlus size={24} />
-                        </div>
-                        <p className="mt-3 text-[13px] font-black uppercase tracking-wide text-[var(--app-text)]">
-                          Foto corporal
-                        </p>
-                        <p className="mx-auto mt-1 max-w-[220px] text-[11px] font-bold leading-4 text-[var(--app-muted)]">
-                          Toca para subir una foto clara de cuerpo completo.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <input
-                    id="checkin-photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhoto}
-                    className="hidden"
+            <label
+              htmlFor="checkin-photo"
+              className="group relative block h-[152px] cursor-pointer overflow-hidden rounded-[26px] border border-dashed ring-1 ring-[var(--app-border)] transition active:scale-[0.99]"
+              style={{
+                borderColor: "var(--app-border)",
+                backgroundColor: "var(--app-surface)",
+              }}
+            >
+              {preview ? (
+                <>
+                  <img
+                    src={preview}
+                    alt="Foto actual"
+                    className="h-full w-full object-contain p-3"
                   />
-
-                  {preview && (
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/42 via-transparent to-transparent" />
+                </>
+              ) : (
+                <div
+                  className="grid h-full place-items-center px-2 text-center"
+                  style={{ backgroundColor: "var(--app-surface)" }}
+                >
+                  <div className="px-1">
                     <div
-                      className="absolute inset-x-3 bottom-3 rounded-full px-2 py-1.5 text-center text-[9px] font-black uppercase tracking-wide backdrop-blur"
+                      className="mx-auto grid h-12 w-12 place-items-center rounded-[22px] border"
                       style={{
-                        backgroundColor: "var(--app-primary)",
-                        color: "var(--app-surface)",
+                        borderColor: "var(--app-border)",
+                        backgroundColor: "var(--app-primary-soft)",
+                        color: "var(--app-primary)",
                       }}
                     >
-                      Foto lista
+                      <ImagePlus size={22} />
                     </div>
-                  )}
-                </label>
+                    <p className="mt-2 text-[12px] font-black uppercase tracking-wide text-[var(--app-text)]">
+                      SUBE TU FOTO SEMANAL
+                    </p>
+                    <p className="mx-auto mt-0.5 max-w-[220px] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
+                      Toca para subir tu foto corporal
+                    </p>
+                  </div>
+                </div>
+              )}
 
-                <label
-                  htmlFor="checkin-photo"
-                  className="mt-2 block rounded-xl border px-2 py-2 text-center text-[9px] font-black uppercase tracking-wide transition active:scale-[0.98]"
-                  style={{
-                    borderColor: "var(--app-border)",
-                    backgroundColor: "var(--app-primary-soft)",
-                    color: "var(--app-primary)",
-                  }}
-                >
-                  {preview ? "Cambiar" : "Subir foto"}
-                </label>
+              <input
+                id="checkin-photo"
+                type="file"
+                accept="image/*"
+                onChange={handlePhoto}
+                className="hidden"
+              />
+
+              <div
+                className="absolute inset-x-3 bottom-2.5 rounded-full px-2 py-1 text-center text-[8px] font-black uppercase tracking-wide backdrop-blur"
+                style={{
+                  backgroundColor: preview
+                    ? "var(--app-primary)"
+                    : "color-mix(in srgb, var(--app-surface) 78%, transparent)",
+                  color: preview ? "var(--app-surface)" : "var(--app-primary)",
+                }}
+              >
+                {preview ? "Foto lista" : " "}
+              </div>
+            </label>
+
+            <div className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-card)] p-2 shadow-[0_12px_30px_var(--app-glow)]">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                    Paso 2
+                  </p>
+                  <h3 className="text-[13px] font-black leading-tight text-[var(--app-text)]">
+                    PESO ACTUAL
+                  </h3>
+                </div>
               </div>
 
-              <div className="grid grid-cols-[1fr_112px] gap-2">
+              <div className="grid grid-cols-1 gap-1.5">
                 <InputBox
                   label="Peso"
                   value={form.weight}
@@ -304,61 +287,53 @@ function closeSheet() {
                   placeholder="72.5"
                   suffix="kg"
                 />
-
-                <button
-                  type="button"
-                  onClick={() => setShowMeasures((prev) => !prev)}
-                  className="rounded-xl border px-3 py-2 text-left ring-1 ring-[var(--app-border)] transition active:scale-[0.98]"
-                  style={{
-                    borderColor: "var(--app-border)",
-                    backgroundColor: "var(--app-surface)",
-                  }}
-                >
-                  <p className="text-[9px] font-black uppercase tracking-wide text-[var(--app-primary)]">
-                    Medidas
-                  </p>
-                  <p className="mt-0.5 text-[13px] font-black uppercase text-[var(--app-text)]">
-                    Opcional
-                  </p>
-                </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setShowMeasures((prev) => !prev)}
+                className="mt-1.5 inline-flex items-center gap-1.5 self-start rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]"
+              >
+                <span>{showMeasures ? "−" : "+"}</span>
+                <span>{showMeasures ? "Ocultar medidas" : "Añadir medidas (opcional)"}</span>
+              </button>
+
+              {showMeasures && (
+                <div className="mt-2 grid grid-cols-3 gap-1.5">
+                  <InputBox
+                    label="Cint."
+                    value={form.waist}
+                    onChange={(value) => handleChange("waist", value)}
+                    placeholder="80"
+                    suffix="cm"
+                  />
+                  <InputBox
+                    label="Pecho"
+                    value={form.chest}
+                    onChange={(value) => handleChange("chest", value)}
+                    placeholder="95"
+                    suffix="cm"
+                  />
+                  <InputBox
+                    label="Cadera"
+                    value={form.hips}
+                    onChange={(value) => handleChange("hips", value)}
+                    placeholder="90"
+                    suffix="cm"
+                  />
+                </div>
+              )}
             </div>
-
-            {showMeasures && (
-              <div className="mt-2 grid grid-cols-3 gap-1.5">
-                <InputBox
-                  label="Cint."
-                  value={form.waist}
-                  onChange={(value) => handleChange("waist", value)}
-                  placeholder="80"
-                  suffix="cm"
-                />
-                <InputBox
-                  label="Pecho"
-                  value={form.chest}
-                  onChange={(value) => handleChange("chest", value)}
-                  placeholder="95"
-                  suffix="cm"
-                />
-                <InputBox
-                  label="Cadera"
-                  value={form.hips}
-                  onChange={(value) => handleChange("hips", value)}
-                  placeholder="90"
-                  suffix="cm"
-                />
-              </div>
-            )}
 
             <button
               type="button"
               onClick={saveCheckIn}
               disabled={loading}
-              className="group relative mt-2.5 w-full overflow-hidden rounded-[1.15rem] border px-3 py-3 text-[var(--app-text)] shadow-[0_14px_34px_var(--app-glow)] transition duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="group relative mt-2 w-full overflow-hidden rounded-[1.25rem] border px-3 py-3 text-[var(--app-text)] shadow-[0_18px_42px_var(--app-glow)] transition duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               style={{
                 borderColor: "var(--app-border)",
                 background:
-                  "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 40%, var(--app-surface)) 0%, var(--app-primary-soft) 50%, color-mix(in srgb, var(--app-primary) 48%, var(--app-card)) 100%)",
+                  "linear-gradient(135deg, color-mix(in srgb, var(--app-primary) 46%, var(--app-surface)) 0%, var(--app-primary-soft) 48%, color-mix(in srgb, var(--app-primary) 54%, var(--app-card)) 100%)",
               }}
             >
               <span className="relative z-10 flex min-h-[48px] items-center justify-center gap-4">
@@ -385,11 +360,11 @@ function closeSheet() {
                   />
                 </span>
                 <span className="flex min-w-0 flex-col items-start justify-center text-left">
-                  <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
-                    {loading ? "ANALIZANDO..." : "ANALIZAR CON IA"}
-                  </span>
-                  <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
-                    Foto corporal + progreso
+                    <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
+                      {loading ? "ANALIZANDO..." : "GENERAR INFORME IA"}
+                    </span>
+                    <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
+                    Informe IA semanal
                   </span>
                 </span>
               </span>
@@ -410,18 +385,19 @@ function closeSheet() {
           ) : null}
 
           <section
-            className="rounded-[22px] border p-2.5 shadow-[0_16px_42px_var(--app-glow)]"
+            className="rounded-[28px] border p-3 shadow-[0_18px_48px_var(--app-glow)]"
             style={{
               borderColor: "var(--app-border)",
-              backgroundColor: "var(--app-card)",
+              background:
+                "linear-gradient(180deg, color-mix(in srgb, var(--app-card) 96%, #08131b), var(--app-card))",
             }}
           >
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Comparación visual
+                <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                  3. Genera tu informe
                 </p>
-                <h3 className="text-[18px] font-black leading-tight text-[var(--app-text)]">
+                <h3 className="text-[17px] font-black leading-tight text-[var(--app-text)]">
                   Anterior vs actual
                 </h3>
               </div>
@@ -433,7 +409,7 @@ function closeSheet() {
                   color: "var(--app-primary)",
                 }}
               >
-                IA visual
+                BLOQUE PRINCIPAL
               </span>
             </div>
 
@@ -464,88 +440,35 @@ function closeSheet() {
                 VS
               </div>
             </div>
-
-            {previousCheckin && lastCheckin && (
-              <WeeklyCompareSummary
-                previousCheckin={previousCheckin}
-                lastCheckin={lastCheckin}
-                weightDiff={weightDiff}
-              />
-            )}
           </section>
 
           <section
-            className="rounded-[18px] border p-1.5 shadow-[0_12px_30px_var(--app-glow)]"
+            className="rounded-[22px] border p-3 shadow-[0_14px_34px_var(--app-glow)]"
             style={{
               borderColor: "var(--app-border)",
-              backgroundColor: "var(--app-card)",
+              background:
+                "linear-gradient(180deg, color-mix(in srgb, var(--app-card) 95%, #08131b), var(--app-card))",
             }}
           >
-            <div className="grid grid-cols-4 gap-1">
-              <MiniMetric
-                icon={<Scale size={11} />}
-                label="Peso"
-                value={lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
+            <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+              BODY AI REPORT
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              <ReportMetric
+                label="Estado corporal"
+                value={lastCheckin ? "Progreso registrado" : "Sin base"}
               />
-              <MiniMetric
-                icon={<TrendingUp size={11} />}
-                label="Cambio"
-                value={weightDiff || "—"}
-              />
-              <MiniMetric
-                icon={<Target size={11} />}
-                label="Grasa"
-                value={shortFatValue(lastCheckin)}
-              />
-              <MiniMetric
-                icon={<Sparkles size={11} />}
-                label="Conf."
-                value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
-              />
-            </div>
-          </section>
-
-          <section
-            className="rounded-[20px] border p-2.5 shadow-[0_14px_34px_var(--app-glow)]"
-            style={{
-              borderColor: "var(--app-border)",
-              backgroundColor: "var(--app-card)",
-            }}
-          >
-            <div className="mb-2 flex items-center gap-2">
-              <div
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-xl"
-                style={{
-                  backgroundColor: "var(--app-primary-soft)",
-                  color: "var(--app-primary)",
-                }}
-              >
-                <Sparkles size={14} />
-              </div>
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                  Resumen IA
-                </p>
-                <h3 className="text-[14px] font-black leading-tight text-[var(--app-text)]">
-                  Lectura de evolución
-                </h3>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-1.5">
-              <AiSummaryStat label="Consistencia" value={lastCheckin ? getDefinitionTrend(lastCheckin) : "Inicial"} />
-              <AiSummaryStat label="Cambio de peso" value={weightDiff || "—"} />
-              <AiSummaryStat
-                label="Confianza"
-                value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
+              <ReportMetric
+                label="Cambio detectado"
+                value={lastCheckin ? `${weightDiff || "0kg"}` : "—"}
               />
             </div>
 
-            <div
-              className="mt-2 rounded-xl px-2.5 py-2"
-              style={{ backgroundColor: "var(--app-primary-soft)" }}
-            >
-              <p className="text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+            <div className="mt-2 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2.5 shadow-[0_0_24px_var(--app-glow)]">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                Recomendación IA
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {aiMotivation}
               </p>
             </div>
@@ -562,33 +485,6 @@ function closeSheet() {
         )}
       </div>
     </AppShell>
-  );
-}
-
-function CheckInFlowSteps({ hasPhoto, hasWeight }) {
-  const steps = [
-    { label: "Foto", active: hasPhoto },
-    { label: "Datos", active: hasWeight },
-    { label: "IA", active: hasPhoto && hasWeight },
-  ];
-
-  return (
-   
-    <div className="mb-2 grid grid-cols-3 gap-1 rounded-full bg-[var(--app-surface)] p-0.5">
-
-      {steps.map((step) => (
-        <div
-          key={step.label}
-          className={`rounded-full px-2 py-1 text-center text-[9px] font-medium transition ${
-            step.active
-              ? "bg-[var(--app-primary)] text-[var(--app-surface)]"
-              : "bg-[var(--app-primary-soft)] text-[var(--app-muted)]"
-          }`}
-        >
-          {step.label}
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -616,55 +512,24 @@ function InputBox({ label, value, onChange, placeholder, suffix }) {
   );
 }
 
-function UsagePill({ counter }) {
+function HeroChip({ icon, label }) {
   return (
-    <span
-      className="shrink-0 rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase leading-none tracking-[0.1em]"
-      style={{
-        borderColor: "var(--app-border)",
-        backgroundColor: "var(--app-primary-soft)",
-        color: "var(--app-primary)",
-      }}
-    >
-      {counter} análisis IA disponibles hoy
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-text)]">
+      <span className="text-[var(--app-primary)]">{icon}</span>
+      {label}
     </span>
   );
 }
 
-function TopStatCard({ label, value }) {
+function ReportMetric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2">
-      <p className="truncate text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5">
+      <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
-      <p className="mt-1 truncate text-[12px] font-black leading-tight text-[var(--app-text)]">
+      <p className="mt-1 text-[11px] font-black leading-4 text-[var(--app-text)]">
         {value}
       </p>
-    </div>
-  );
-}
-
-function AiSummaryStat({ label, value }) {
-  return (
-    <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2">
-      <p className="truncate text-[7px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-        {label}
-      </p>
-      <p className="mt-1 truncate text-[10px] font-black text-[var(--app-text)]">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function MiniMetric({ icon, label, value }) {
-  return (
-    <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-1.5 py-1">
-      <div className="mb-0.5 text-[var(--app-primary)]">{icon}</div>
-      <p className="truncate text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-        {label}
-      </p>
-      <p className="truncate text-[10px] font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }
@@ -720,40 +585,6 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
         )}
       </div>
     </button>
-  );
-}
-
-function WeeklyCompareSummary({ previousCheckin, lastCheckin, weightDiff }) {
-  return (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      <CompareChip
-        label="Peso"
-        value={`${formatKg(previousCheckin?.weight)} → ${formatKg(lastCheckin?.weight)}`}
-      />
-      <CompareChip label="Cambio" value={weightDiff || "—"} />
-      <CompareChip
-        label="Confianza"
-        value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
-      />
-      <CompareChip label="Grasa" value={shortFatValue(lastCheckin)} />
-      <CompareChip
-        label="Definición"
-        value={getDefinitionTrend(lastCheckin)}
-      />
-    </div>
-  );
-}
-
-function CompareChip({ label, value }) {
-  return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-1.5 py-0.5">
-      <span className="text-[7px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-        {label}
-      </span>
-      <span className="max-w-[104px] truncate text-[8px] font-black text-[var(--app-text)]">
-        {value}
-      </span>
-    </div>
   );
 }
 
@@ -1190,21 +1021,6 @@ function formatDate(date) {
   });
 }
 
-function formatShortGoal(goal) {
-  if (goal === "ganar_musculo") return "Ganar músculo";
-  if (goal === "mantener_peso") return "Mantener";
-  return "Perder grasa";
-}
-
-function formatCheckinUsageCounter(usage) {
-  const limit = Number(usage?.limit || 1);
-  const remaining = Number.isFinite(Number(usage?.remaining))
-    ? Number(usage.remaining)
-    : Math.max(limit - Number(usage?.usedToday || 0), 0);
-
-  return `${Math.max(remaining, 0)}/${limit}`;
-}
-
 function getCheckinTimelineSummary(checkin, previousCheckin) {
   const currentDate = checkin?.created_at || checkin?.createdAt;
   const previousDate = previousCheckin?.created_at || previousCheckin?.createdAt;
@@ -1269,42 +1085,4 @@ function getCheckinMotivation({ lastCheckin, previousCheckin, weightDiff }) {
   }
 
   return "Primer check-in guardado. La constancia hará visible el progreso.";
-}
-
-function formatKg(value) {
-  if (value === null || value === undefined || value === "") return "—";
-
-  const number = Number(value);
-  if (!Number.isFinite(number)) return "—";
-
-  return `${number}kg`;
-}
-
-function getDefinitionTrend(checkin) {
-  const text = String(checkin?.visual_changes || "").toLowerCase();
-
-  if (!text) return "No estim.";
-  if (text.includes("mejor")) return "Mejorando";
-  if (text.includes("defin")) return "Observada";
-  if (text.includes("sin cambio") || text.includes("estable")) return "Estable";
-
-  return "Registrada";
-}
-
-function shortFatValue(checkin) {
-  const value =
-    checkin?.bodyFat ||
-    checkin?.body_fat ||
-    checkin?.fatPercentage ||
-    checkin?.fat_percentage ||
-    checkin?.analysis?.bodyFat;
-
-  if (!value) return "—";
-
-  if (typeof value === "number") return `${value}%`;
-
-  const text = String(value);
-
-  if (text.length > 12) return "No estim.";
-  return text;
 }

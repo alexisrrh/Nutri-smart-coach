@@ -12,21 +12,17 @@ import {
   LogIn,
   Mail,
   Lock,
-  Sparkles,
   ArrowLeft,
   ArrowRight,
   X,
   Target,
   ScanLine,
   Activity,
-  Flame,
 } from "lucide-react";
 import {
   AppShell,
   FormField,
-  MetaBadge,
   PrimaryButton,
-  SecondaryButton,
   StatusBox,
   SurfaceCard,
 } from "../components/ui";
@@ -173,23 +169,24 @@ export function Login() {
   }
 
   return (
-    <AppShell withBottomNav={false} contentClassName="!px-3 !pb-6 !pt-[calc(env(safe-area-inset-top)+16px)]">
+    <AppShell
+      withBottomNav={false}
+      contentClassName="!px-3 !pb-3 !pt-[calc(env(safe-area-inset-top)+16px)]"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <SecondaryButton
-            onClick={() => navigate("/")}
-            icon={<ArrowLeft size={14} />}
-            className="w-auto px-2.5 py-1.5 text-[10px]"
-          >
-            Inicio
-          </SecondaryButton>
-
-          <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
-            App IA
-          </MetaBadge>
-        </div>
-
         <SurfaceCard className="relative overflow-hidden p-2.5">
+          <div className="relative z-10 flex items-start justify-start">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_20px_var(--app-glow)] transition hover:text-[var(--app-text)] active:scale-[0.96]"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft size={14} />
+            </button>
+          </div>
+
           <div className="absolute -right-14 -top-16 h-40 w-36 rounded-full bg-[var(--app-primary)]/20 blur-3xl " />
 
           <div className="relative z-10 pt-2">
@@ -282,10 +279,6 @@ export function Login() {
 
         <div className="pt-2">
           <ActiveCore />
-        </div>
-
-        <div className="pt-2">
-          <ProductPreview />
         </div>
 
         <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
@@ -482,78 +475,6 @@ function ActiveCore() {
         </div>
       </div>
     </SurfaceCard>
-  );
-}
-
-function ProductPreview() {
-  return (
-    <SurfaceCard
-      variant="soft"
-      radius="md"
-      className="relative overflow-hidden p-2"
-    >
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-cyan-300/10 blur-2xl" />
-
-      <div className="relative z-10">
-        <div className="mb-1.5 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              Tu próximo análisis
-            </p>
-            <p className="mt-0.5 text-sm font-bold text-[var(--app-muted)]">
-              Plan ajustado por IA
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 px-3 py-1.5 text-right">
-            <p className="text-xl font-black italic leading-none text-[var(--app-text)]">
-              850
-            </p>
-            <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-primary)]">
-              kcal
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-[0.9fr_1.1fr] gap-2">
-          <PreviewMetric
-            icon={<Flame size={13} />}
-            label="Energía"
-            value="850 kcal"
-            percent={76}
-          />
-          <PreviewMetric
-            icon={<Activity size={13} />}
-            label="Proteína"
-            value="62g"
-            percent={82}
-          />
-        </div>
-      </div>
-    </SurfaceCard>
-  );
-}
-
-function PreviewMetric({ icon, label, percent, value }) {
-  return (
-    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[var(--app-primary)]">
-          {icon}
-          <span className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-            {label}
-          </span>
-        </span>
-        <span className="text-xs font-black text-[var(--app-text)]">{value}</span>
-      </div>
-
-      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--app-surface)]">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-cyan-300"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-    </div>
   );
 }
 
