@@ -16,7 +16,6 @@ import { CheckInLoader } from "../components/checkin/CheckInLoader";
 import { getWeightDiff } from "../components/checkin/checkinUtils";
 import {
   AiErrorNotice,
-  AiUsageCard,
   AppShell,
   PremiumEmptyState,
 } from "../components/ui";
@@ -121,6 +120,7 @@ function closeSheet() {
     previousCheckin,
     weightDiff,
   });
+  const aiUsageCounter = formatCheckinUsageCounter(usage);
   
   return (
     <AppShell
@@ -155,30 +155,34 @@ function closeSheet() {
               </p>
             </div>
 
-            <span
-              className="shrink-0 rounded-full border px-2 py-1 text-[8px] font-black uppercase"
-              style={{
-                borderColor: "var(--app-border)",
-                backgroundColor: "var(--app-surface)",
-                color: "var(--app-muted)",
-              }}
-            >
-              {formatGoal(goal)}
-            </span>
+            <UsagePill counter={aiUsageCounter} />
           </div>
         </header>
-
-        <AiUsageCard
-          profile={profile}
-          type="checkin_analysis"
-          usage={usage}
-          className="shrink-0"
-        />
 
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
         <main className="space-y-2.5 pr-0.5 pb-2">
+          <section
+            className="rounded-[20px] border p-2.5 shadow-[0_12px_30px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <div className="grid grid-cols-3 gap-1.5">
+              <TopStatCard
+                label="Peso actual"
+                value={form.weight ? `${form.weight}kg` : lastCheckin?.weight ? `${lastCheckin.weight}kg` : "—"}
+              />
+              <TopStatCard
+                label="Último check-in"
+                value={lastCheckin ? formatDate(lastCheckin.created_at || lastCheckin.createdAt) : "Sin registro"}
+              />
+              <TopStatCard label="Objetivo" value={formatShortGoal(goal)} />
+            </div>
+          </section>
+
           <section
             className="rounded-[22px] border p-2.5 shadow-[0_18px_48px_var(--app-glow)]"
             style={{
@@ -213,11 +217,11 @@ function closeSheet() {
               </span>
             </div>
 
-            <div className="grid grid-cols-[112px_1fr] gap-2">
+            <div className="space-y-2">
               <div>
                 <label
                   htmlFor="checkin-photo"
-                  className="group relative block h-[124px] cursor-pointer overflow-hidden rounded-[18px] border border-dashed ring-1 ring-[var(--app-border)] transition active:scale-[0.99]"
+                  className="group relative block h-[260px] cursor-pointer overflow-hidden rounded-[22px] border border-dashed ring-1 ring-[var(--app-border)] transition active:scale-[0.99]"
                   style={{
                     borderColor: "var(--app-border)",
                     backgroundColor: "var(--app-surface)",
@@ -228,7 +232,7 @@ function closeSheet() {
                       <img
                         src={preview}
                         alt="Foto actual"
-                        className="h-full w-full object-contain p-2"
+                        className="h-full w-full object-contain p-3"
                       />
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/35 via-transparent to-transparent" />
                     </>
@@ -239,20 +243,20 @@ function closeSheet() {
                     >
                       <div className="px-2">
                         <div
-                          className="mx-auto grid h-9 w-9 place-items-center rounded-xl border"
+                          className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border"
                           style={{
                             borderColor: "var(--app-border)",
                             backgroundColor: "var(--app-primary-soft)",
                             color: "var(--app-primary)",
                           }}
                         >
-                          <ImagePlus size={17} />
+                          <ImagePlus size={24} />
                         </div>
-                        <p className="mt-2 text-[9px] font-black uppercase tracking-wide text-[var(--app-text)]">
+                        <p className="mt-3 text-[13px] font-black uppercase tracking-wide text-[var(--app-text)]">
                           Foto corporal
                         </p>
-                        <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
-                          Toca para elegir
+                        <p className="mx-auto mt-1 max-w-[220px] text-[11px] font-bold leading-4 text-[var(--app-muted)]">
+                          Toca para subir una foto clara de cuerpo completo.
                         </p>
                       </div>
                     </div>
@@ -268,7 +272,7 @@ function closeSheet() {
 
                   {preview && (
                     <div
-                      className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide backdrop-blur"
+                      className="absolute inset-x-3 bottom-3 rounded-full px-2 py-1.5 text-center text-[9px] font-black uppercase tracking-wide backdrop-blur"
                       style={{
                         backgroundColor: "var(--app-primary)",
                         color: "var(--app-surface)",
@@ -281,7 +285,7 @@ function closeSheet() {
 
                 <label
                   htmlFor="checkin-photo"
-                  className="mt-1.5 block rounded-xl border px-2 py-1.5 text-center text-[8px] font-black uppercase tracking-wide transition active:scale-[0.98]"
+                  className="mt-2 block rounded-xl border px-2 py-2 text-center text-[9px] font-black uppercase tracking-wide transition active:scale-[0.98]"
                   style={{
                     borderColor: "var(--app-border)",
                     backgroundColor: "var(--app-primary-soft)",
@@ -292,7 +296,7 @@ function closeSheet() {
                 </label>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-[1fr_112px] gap-2">
                 <InputBox
                   label="Peso"
                   value={form.weight}
@@ -317,18 +321,6 @@ function closeSheet() {
                     Opcional
                   </p>
                 </button>
-
-                <div
-                  className="rounded-xl border px-2.5 py-2"
-                  style={{
-                    borderColor: "var(--app-border)",
-                    backgroundColor: "var(--app-primary-soft)",
-                  }}
-                >
-                  <p className="text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
-                    Añade foto y peso para activar el análisis.
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -418,6 +410,71 @@ function closeSheet() {
           ) : null}
 
           <section
+            className="rounded-[22px] border p-2.5 shadow-[0_16px_42px_var(--app-glow)]"
+            style={{
+              borderColor: "var(--app-border)",
+              backgroundColor: "var(--app-card)",
+            }}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <div>
+                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                  Comparación visual
+                </p>
+                <h3 className="text-[18px] font-black leading-tight text-[var(--app-text)]">
+                  Anterior vs actual
+                </h3>
+              </div>
+
+              <span
+                className="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase"
+                style={{
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
+                }}
+              >
+                IA visual
+              </span>
+            </div>
+
+            <div className="relative grid grid-cols-2 gap-2">
+              <CompareTile
+                title="Anterior"
+                checkin={previousCheckin}
+                image={previousImage}
+                emptyText={history.length ? "Primer check-in" : "Pendiente"}
+                onClick={() => openCheckinSheet(previousCheckin)}
+              />
+              <CompareTile
+                title="Actual"
+                checkin={lastCheckin}
+                image={preview || lastImage}
+                emptyText="Sube foto"
+                onClick={() => openCheckinSheet(lastCheckin)}
+              />
+
+              <div
+                className="pointer-events-none absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[7px] font-bold uppercase backdrop-blur-xl"
+                style={{
+                  backgroundColor:
+                    "color-mix(in srgb, var(--app-surface) 72%, transparent)",
+                  color: "var(--app-muted)",
+                }}
+              >
+                VS
+              </div>
+            </div>
+
+            {previousCheckin && lastCheckin && (
+              <WeeklyCompareSummary
+                previousCheckin={previousCheckin}
+                lastCheckin={lastCheckin}
+                weightDiff={weightDiff}
+              />
+            )}
+          </section>
+
+          <section
             className="rounded-[18px] border p-1.5 shadow-[0_12px_30px_var(--app-glow)]"
             style={{
               borderColor: "var(--app-border)",
@@ -449,83 +506,49 @@ function closeSheet() {
           </section>
 
           <section
-            className="rounded-[20px] border p-2 shadow-[0_14px_34px_var(--app-glow)]"
+            className="rounded-[20px] border p-2.5 shadow-[0_14px_34px_var(--app-glow)]"
             style={{
               borderColor: "var(--app-border)",
               backgroundColor: "var(--app-card)",
             }}
           >
-            <div className="mb-2 flex items-center justify-between">
-              <div>
-                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Comparación visual
-                </p>
-                <h3 className="text-[14px] font-extrabold text-[var(--app-text)]">
-                  Anterior vs actual
-                </h3>
-              </div>
-
-              <span
-                className="rounded-full px-2 py-0.5 text-[8px] font-bold uppercase"
+            <div className="mb-2 flex items-center gap-2">
+              <div
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-xl"
                 style={{
                   backgroundColor: "var(--app-primary-soft)",
                   color: "var(--app-primary)",
                 }}
               >
-                IA visual
-              </span>
+                <Sparkles size={14} />
+              </div>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                  Resumen IA
+                </p>
+                <h3 className="text-[14px] font-black leading-tight text-[var(--app-text)]">
+                  Lectura de evolución
+                </h3>
+              </div>
             </div>
 
-            <div className="relative grid grid-cols-2 gap-1.5">
-              <CompareTile
-                title="Anterior"
-                checkin={previousCheckin}
-                image={previousImage}
-                emptyText={history.length ? "Primer check-in" : "Pendiente"}
-                onClick={() => openCheckinSheet(previousCheckin)}
+            <div className="grid grid-cols-3 gap-1.5">
+              <AiSummaryStat label="Consistencia" value={lastCheckin ? getDefinitionTrend(lastCheckin) : "Inicial"} />
+              <AiSummaryStat label="Cambio de peso" value={weightDiff || "—"} />
+              <AiSummaryStat
+                label="Confianza"
+                value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "—"}
               />
-              <CompareTile
-                title="Actual"
-                checkin={lastCheckin}
-                image={preview || lastImage}
-                emptyText="Sube foto"
-                onClick={() => openCheckinSheet(lastCheckin)}
-              />
-
-              <div
-                className="pointer-events-none absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[7px] font-bold uppercase backdrop-blur-xl"
-                style={{
-                  backgroundColor:
-                    "color-mix(in srgb, var(--app-surface) 72%, transparent)",
-                  color: "var(--app-muted)",
-                }}
-              >
-                VS
-              </div>
             </div>
 
             <div
               className="mt-2 rounded-xl px-2.5 py-2"
               style={{ backgroundColor: "var(--app-primary-soft)" }}
             >
-              <div className="flex items-start gap-1.5">
-                <Sparkles
-                  size={10}
-                  className="mt-0.5 shrink-0 text-[var(--app-primary)]"
-                />
-                <p className="line-clamp-2 text-[9px] font-bold leading-[1.35] text-[var(--app-muted)]">
-                  {aiMotivation}
-                </p>
-              </div>
+              <p className="text-[10px] font-bold leading-4 text-[var(--app-muted)]">
+                {aiMotivation}
+              </p>
             </div>
-
-            {previousCheckin && lastCheckin && (
-              <WeeklyCompareSummary
-                previousCheckin={previousCheckin}
-                lastCheckin={lastCheckin}
-                weightDiff={weightDiff}
-              />
-            )}
           </section>
         </main>
 
@@ -593,6 +616,47 @@ function InputBox({ label, value, onChange, placeholder, suffix }) {
   );
 }
 
+function UsagePill({ counter }) {
+  return (
+    <span
+      className="shrink-0 rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase leading-none tracking-[0.1em]"
+      style={{
+        borderColor: "var(--app-border)",
+        backgroundColor: "var(--app-primary-soft)",
+        color: "var(--app-primary)",
+      }}
+    >
+      {counter} análisis IA disponibles hoy
+    </span>
+  );
+}
+
+function TopStatCard({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2">
+      <p className="truncate text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-[12px] font-black leading-tight text-[var(--app-text)]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function AiSummaryStat({ label, value }) {
+  return (
+    <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-2">
+      <p className="truncate text-[7px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-[10px] font-black text-[var(--app-text)]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function MiniMetric({ icon, label, value }) {
   return (
     <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-1.5 py-1">
@@ -616,21 +680,21 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
       type="button"
       onClick={onClick}
       disabled={!checkin && !image}
-      className="group min-h-[94px] overflow-hidden rounded-xl bg-[var(--app-surface)] p-1.5 text-left ring-1 ring-[var(--app-primary)]/10 transition hover:bg-[var(--app-primary-soft)] hover:ring-[var(--app-border)] disabled:opacity-70"
+      className="group min-h-[174px] overflow-hidden rounded-2xl bg-[var(--app-surface)] p-1.5 text-left ring-1 ring-[var(--app-primary)]/10 transition hover:bg-[var(--app-primary-soft)] hover:ring-[var(--app-border)] disabled:opacity-70"
     >
-      <div className="flex h-full items-center gap-2">
+      <div className="flex h-full flex-col gap-2">
         {image ? (
           <>
-            <div className="relative grid h-[84px] w-[56px] shrink-0 place-items-center overflow-hidden rounded-[14px] bg-[var(--app-surface)] ring-1 ring-[var(--app-border)]">
+            <div className="relative grid h-[130px] w-full shrink-0 place-items-center overflow-hidden rounded-[16px] bg-[var(--app-surface)] ring-1 ring-[var(--app-border)]">
               <img
                 src={image}
                 alt={title}
-                className="h-full w-full object-contain p-0.5 transition duration-300 group-hover:scale-[1.025]"
+                className="h-full w-full object-contain p-1.5 transition duration-300 group-hover:scale-[1.025]"
               />
               <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[var(--app-bg)]/45 to-transparent" />
             </div>
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 px-0.5">
               <p className="text-[8px] font-bold tracking-[0.12em] text-[var(--app-primary)]/80">
                 {title}
               </p>
@@ -643,10 +707,10 @@ function CompareTile({ title, checkin, image, emptyText, onClick }) {
             </div>
           </>
         ) : (
-          <div className="grid h-[84px] w-full place-items-center rounded-[14px] bg-[var(--app-surface)] text-center">
+          <div className="grid h-full w-full place-items-center rounded-[16px] bg-[var(--app-surface)] text-center">
             <div>
-              <div className="mx-auto grid h-7 w-7 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
-                <Camera size={14} />
+              <div className="mx-auto grid h-10 w-10 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
+                <Camera size={18} />
               </div>
               <p className="mt-1 text-[8px] font-black uppercase text-[var(--app-muted)]">
                 {emptyText}
@@ -712,13 +776,32 @@ function CheckInResultSheet({
   if (!checkin) return null;
 
   const image = getCheckinImage(checkin);
-  const date = formatDate(checkin.created_at || checkin.createdAt);
-  const hasAiResult = Boolean(
-    checkin.visual_changes ||
-      checkin.recommendation ||
-      checkin.body_fat_range ||
-      checkin.confidence
-  );
+  const confidenceValue = Number(checkin.confidence || 0);
+  const hasConfidence = Number.isFinite(confidenceValue) && confidenceValue > 0;
+  const score = hasConfidence
+    ? Math.max(0, Math.min(Math.round(confidenceValue), 100))
+    : null;
+  const confidenceLabel =
+    score === null
+      ? "Confianza pendiente"
+      : score >= 70
+      ? "Confianza alta"
+      : score >= 40
+      ? "Confianza media"
+      : "Confianza baja";
+  const isLowConfidence = score !== null && score < 20;
+  const isFirstCheckin = !previousCheckin;
+  const previousConfidenceValue = Number(previousCheckin?.confidence || 0);
+  const hasPreviousScore =
+    Number.isFinite(previousConfidenceValue) && previousConfidenceValue > 0;
+  const previousScore = hasPreviousScore
+    ? Math.max(0, Math.min(Math.round(previousConfidenceValue), 100))
+    : null;
+  const scoreDelta =
+    score !== null && previousScore !== null ? score - previousScore : null;
+  const scoreClass = getScoreClass(score);
+  const trend = getVisualTrend(scoreDelta);
+  const streakWeeks = previousCheckin ? 2 : checkin ? 1 : 0;
   const visualChanges =
     checkin.visual_changes ||
     "La IA revisa grasa corporal, definición y consistencia entre semanas.";
@@ -726,10 +809,114 @@ function CheckInResultSheet({
     checkin.recommendation ||
     "Mantén la misma luz, postura y distancia para comparar mejor la evolución.";
   const timeline = getCheckinTimelineSummary(checkin, previousCheckin);
+  const detectionText = `${visualChanges} ${recommendation}`.toLowerCase();
+  const hasImageIssue =
+    isLowConfidence ||
+    detectionText.includes("no válida") ||
+    detectionText.includes("invalida") ||
+    detectionText.includes("borrosa") ||
+    detectionText.includes("no pudo") ||
+    detectionText.includes("confianza baja");
+  const detectionBullets = buildDetectionBullets(visualChanges, {
+    hasImageIssue,
+    isLowConfidence,
+    previousCheckin,
+    weightDiff: timeline.weightChange,
+  });
+  const issueReason = getLowConfidenceReason(visualChanges, recommendation);
+
+  function buildDetectionBullets(text, context) {
+    if (context.hasImageIssue) {
+      return [
+        { text: context.isLowConfidence ? "Confianza baja" : "Foto no válida", warning: true },
+        { text: "La imagen necesita mejores condiciones", warning: true },
+      ];
+    }
+
+    const normalized = String(text || "")
+      .replace(/\n/g, ".")
+      .split(/[.;]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    if (normalized.length > 0) {
+      return normalized.map((item) => ({
+        text: item.charAt(0).toUpperCase() + item.slice(1),
+        warning: false,
+      }));
+    }
+
+    return [
+      { text: "Mejor definición corporal", warning: false },
+      {
+        text:
+          context.previousCheckin && context.weightDiff !== "Sin base"
+            ? "Comparación semanal registrada"
+            : "Punto inicial creado",
+        warning: false,
+      },
+      { text: "Consistencia positiva", warning: false },
+    ];
+  }
+
+  function getLowConfidenceReason(changes, nextRecommendation) {
+    const source = String(changes || nextRecommendation || "").trim();
+    if (!source) {
+      return "La imagen no ofrece suficiente información visual para un análisis fiable.";
+    }
+
+    return source.length > 120 ? `${source.slice(0, 117)}...` : source;
+  }
+
+  function getScoreClass(nextScore) {
+    if (nextScore === null) return "Sin clasificar";
+    if (nextScore <= 39) return "Inicial";
+    if (nextScore <= 59) return "En progreso";
+    if (nextScore <= 79) return "Bueno";
+    if (nextScore <= 89) return "Excelente";
+    return "Élite";
+  }
+
+  function getVisualTrend(delta) {
+    if (delta === null) return "Completa más check-ins para ver tu evolución";
+    if (delta > 2) return "📈 Mejorando";
+    if (delta < -2) return "📉 Retroceso";
+    return "➖ Estable";
+  }
+
+  function formatDelta(delta) {
+    if (delta === null) return "—";
+    if (delta === 0) return "0";
+    return `${delta > 0 ? "+" : ""}${delta}`;
+  }
+
+  function renderEvolutionStat(label, value, active = false) {
+    return (
+      <div
+        key={label}
+        className="rounded-2xl border px-2 py-2"
+        style={{
+          borderColor: "var(--app-border)",
+          backgroundColor: active ? "var(--app-primary-soft)" : "var(--app-surface)",
+        }}
+      >
+        <p className="truncate text-[7px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+          {label}
+        </p>
+        <p
+          className="mt-1 truncate text-[14px] font-black leading-none"
+          style={{ color: active ? "var(--app-primary)" : "var(--app-text)" }}
+        >
+          {value}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(156px+env(safe-area-inset-bottom))] pt-8 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[var(--app-surface)] px-2 pb-[calc(96px+env(safe-area-inset-bottom))] pt-6 backdrop-blur-[6px]"
       onClick={onClose}
       role="presentation"
     >
@@ -737,86 +924,200 @@ function CheckInResultSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Análisis IA"
-        className="flex max-h-[calc(100dvh-214px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[28px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-16px_48px_var(--app-glow)]"
+        className="flex max-h-[calc(100dvh-112px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_56px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="shrink-0 px-3 pb-1.5 pt-2">
-          <div className="mb-1.5 flex items-center justify-center">
+        <div className="shrink-0 px-3 pt-2">
+          <div className="flex items-center justify-center">
             <div className="h-1 w-10 rounded-full bg-[var(--app-primary-soft)]" />
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <p className="truncate text-[12px] font-semibold text-[var(--app-text)]">
-                {date}
-              </p>
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)]">
-                {hasAiResult ? "IA lista" : "IA base"}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Cerrar análisis"
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
-            >
-              <X size={13} />
-            </button>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="mb-2 flex gap-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-5 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <section
+            className="mb-2 overflow-hidden rounded-[22px] border border-[var(--app-border)] px-3 py-2 shadow-[0_12px_32px_var(--app-glow)]"
+            style={{ backgroundColor: "var(--app-surface)" }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                  Body Score IA
+                </p>
+                <div className="mt-1 flex min-w-0 items-end gap-2">
+                  <div className="flex shrink-0 items-end gap-1">
+                    <span className="text-[32px] font-black leading-none text-[var(--app-text)]">
+                      {score ?? "--"}
+                    </span>
+                    <span className="pb-0.5 text-[11px] font-black text-[var(--app-muted)]">
+                      / 100
+                    </span>
+                  </div>
+                  <span className="mb-0.5 truncate text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+                    {scoreClass}
+                  </span>
+                </div>
+                <p
+                  className="mt-1 inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wide"
+                  style={{
+                    backgroundColor: "var(--app-primary-soft)",
+                    color: "var(--app-primary)",
+                  }}
+                >
+                  {confidenceLabel}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar análisis"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </section>
+
+          <section
+            className="mb-2 rounded-[22px] border border-[var(--app-border)] p-2 shadow-[0_14px_34px_var(--app-glow)]"
+            style={{ backgroundColor: "var(--app-card)" }}
+          >
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+                  Evolución corporal
+                </p>
+                <h3 className="text-[14px] font-black leading-tight text-[var(--app-text)]">
+                  {previousScore === null
+                    ? "Completa más check-ins para ver tu evolución"
+                    : trend}
+                </h3>
+              </div>
+              <span
+                className="rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wide"
+                style={{
+                  backgroundColor: "var(--app-primary-soft)",
+                  color: "var(--app-primary)",
+                }}
+              >
+                🔥 {streakWeeks} semana{streakWeeks === 1 ? "" : "s"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1">
+              {renderEvolutionStat(
+                "Score anterior",
+                previousScore === null ? "—" : `${previousScore}`
+              )}
+              {renderEvolutionStat("Score actual", score === null ? "—" : `${score}`)}
+              {renderEvolutionStat(
+                "Diferencia visual",
+                formatDelta(scoreDelta),
+                scoreDelta !== null
+              )}
+            </div>
+
+            {previousScore === null ? (
+              <p className="mt-1.5 rounded-xl bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-bold leading-3 text-[var(--app-muted)]">
+                Completa más check-ins para ver tu evolución.
+              </p>
+            ) : null}
+          </section>
+
+          <section className="mb-2">
             {image ? (
-              <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)]">
+              <div className="relative h-[246px] overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_18px_50px_var(--app-glow)]">
                 <img
                   src={image}
                   alt={mode === "analysis" ? "Resultado del análisis IA" : "Check-in corporal"}
-                  className="h-full w-full object-contain p-2"
+                  className="h-full w-full object-contain p-3"
                 />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/38 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/42 via-transparent to-transparent" />
+                <span className="absolute bottom-3 left-3 rounded-full border border-[var(--app-border)] bg-[var(--app-card)]/86 px-2.5 py-1 text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)] backdrop-blur">
+                  Imagen analizada
+                </span>
               </div>
             ) : (
-              <div className="grid h-[124px] w-[112px] shrink-0 place-items-center rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-center">
+              <div className="grid h-[240px] place-items-center rounded-[26px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-center">
                 <div>
-                  <Camera className="mx-auto mb-1 text-[var(--app-primary)]" size={16} />
-                  <p className="text-[9px] font-black uppercase text-[var(--app-muted)]">
+                  <Camera className="mx-auto mb-2 text-[var(--app-primary)]" size={24} />
+                  <p className="text-[10px] font-black uppercase text-[var(--app-muted)]">
                     Sin foto
                   </p>
                 </div>
               </div>
             )}
+          </section>
 
-            <div className="min-w-0 flex-1 space-y-1">
+          {!isFirstCheckin ? (
+            <div className="mb-2 grid grid-cols-3 gap-1.5">
               <SheetStatRow label="Tiempo" value={timeline.timeAgo} />
-              <SheetStatRow label="Cambio peso" value={timeline.weightChange} />
+              <SheetStatRow label="Cambio" value={timeline.weightChange} />
               <SheetStatRow label="Estado" value={timeline.status} />
-              <SheetStatRow
-                label="Confianza"
-                value={checkin.confidence ? `${checkin.confidence}%` : "—"}
-              />
             </div>
-          </div>
+          ) : null}
 
           <div className="space-y-1.5">
             <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Cambios detectados
+                Lo que detectó la IA
               </p>
-              <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
-                {visualChanges}
-              </p>
+              <div className="mt-2 space-y-1.5">
+                {detectionBullets.map((item) => (
+                  <div
+                    key={item.text}
+                    className="flex items-start gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5"
+                  >
+                    <span
+                      className="mt-0.5 text-[10px] font-black"
+                      style={{ color: item.warning ? "#fbbf24" : "var(--app-primary)" }}
+                    >
+                      {item.warning ? "⚠" : "✓"}
+                    </span>
+                    <p className="text-[11px] font-bold leading-4 text-[var(--app-text)]">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Recomendación
+                Qué significa este resultado
               </p>
               <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {recommendation}
               </p>
             </div>
+
+            {isLowConfidence ? (
+              <div className="rounded-2xl border border-amber-300/35 bg-amber-300/10 px-2.5 py-2 shadow-[0_12px_28px_rgba(251,191,36,0.12)]">
+                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-200">
+                  ⚠ La IA no pudo analizar correctamente esta imagen.
+                </p>
+                <div className="mt-2 rounded-xl bg-[var(--app-card)] px-2 py-1.5">
+                  <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+                    Motivo
+                  </p>
+                  <p className="mt-1 text-[11px] font-bold leading-4 text-[var(--app-text)]">
+                    {issueReason}
+                  </p>
+                </div>
+                <div className="mt-2 grid gap-1">
+                  {["Sube una foto real", "Buena iluminación", "Cuerpo completo"].map(
+                    (step) => (
+                      <p
+                        key={step}
+                        className="rounded-xl bg-[var(--app-card)] px-2 py-1 text-[10px] font-black text-[var(--app-text)]"
+                      >
+                        ✓ {step}
+                      </p>
+                    )
+                  )}
+                </div>
+              </div>
+            ) : null}
 
             {checkin.notes ? (
               <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
@@ -828,6 +1129,26 @@ function CheckInResultSheet({
                 </p>
               </div>
             ) : null}
+
+            <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+                Próximo paso
+              </p>
+              <div className="mt-2 grid gap-1">
+                {[
+                  "Realiza un nuevo check-in en 7 días",
+                  "Mantén la misma postura para comparar mejor",
+                  "Sigue tu plan actual",
+                ].map((step) => (
+                  <p
+                    key={step}
+                    className="rounded-xl bg-[var(--app-primary-soft)] px-2 py-1 text-[10px] font-black text-[var(--app-text)]"
+                  >
+                    ✓ {step}
+                  </p>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -869,10 +1190,19 @@ function formatDate(date) {
   });
 }
 
-function formatGoal(goal) {
-  if (goal === "ganar_musculo") return "Objetivo · Ganar músculo";
-  if (goal === "mantener_peso") return "Objetivo · Mantener";
-  return "Objetivo · Perder grasa";
+function formatShortGoal(goal) {
+  if (goal === "ganar_musculo") return "Ganar músculo";
+  if (goal === "mantener_peso") return "Mantener";
+  return "Perder grasa";
+}
+
+function formatCheckinUsageCounter(usage) {
+  const limit = Number(usage?.limit || 1);
+  const remaining = Number.isFinite(Number(usage?.remaining))
+    ? Number(usage.remaining)
+    : Math.max(limit - Number(usage?.usedToday || 0), 0);
+
+  return `${Math.max(remaining, 0)}/${limit}`;
 }
 
 function getCheckinTimelineSummary(checkin, previousCheckin) {
