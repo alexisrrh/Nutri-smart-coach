@@ -408,7 +408,7 @@ export function Dashboard() {
 
   return (
     <AppShell
-  className="overflow-hidden"
+   className="overflow-hidden pb-10"
   contentClassName="px-2 pt-2"
   scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 >
