@@ -44,10 +44,10 @@ export function Meals() {
 
   return (
     <AppShell
-      className="overflow-hidden"
+      className="overflow-hidden pb-15"
       contentClassName="px-2 pt-2"
-    >
-     <section className="flex h-full min-h-0 flex-col gap-1 pb-22">
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+     <section className="flex flex-col gap-1 pb-6">
         <div className="shrink-0 space-y-1.5">
           <HistoryHeader
             onBack={() => navigate("/dashboard")}
@@ -101,7 +101,7 @@ export function Meals() {
           </SurfaceCard>
         </div>
 
-        <SurfaceCard className="flex min-h-0 flex-1 flex-col p-2" radius="lg">
+        <SurfaceCard className="flex flex-col p-2" radius="lg">
           <div
             className="mb-1.5 flex shrink-0 items-center justify-between gap-3 border-b pb-1.5"
             style={{ borderColor: "var(--app-border)" }}
@@ -127,7 +127,7 @@ export function Meals() {
             )}
           </div>
 
-         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+         <div className="pr-0.5 pb-2">
             {filteredMeals.length === 0 ? (
               <Empty onClick={() => navigate("/foto-comida")} />
             ) : (
