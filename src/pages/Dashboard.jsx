@@ -419,7 +419,7 @@ export function Dashboard() {
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
-       <div className="flex flex-col gap-1 pb-20">
+       <div className="flex flex-col gap-1 pb-25">
           {loadingData ? (
             <DashboardSkeleton />
           ) : (

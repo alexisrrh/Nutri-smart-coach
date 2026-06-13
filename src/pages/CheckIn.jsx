@@ -123,11 +123,12 @@ function closeSheet() {
   });
   
   return (
-    <AppShell
-      contentClassName="px-2 pb-10 pt-2"
-      scrollClassName="!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+48px)]"
+ <AppShell
+      className="overflow-hidden pb-25"
+      contentClassName="px-2 pt-2"
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+      <div className="flex flex-col gap-2">
         <section
           className="relative shrink-0 overflow-hidden rounded-[20px] border p-2.5 shadow-[0_16px_45px_var(--app-glow)]"
           style={{
@@ -198,7 +199,7 @@ function closeSheet() {
         <AiErrorNotice message={error} />
         <CheckInAlert type="success" text={message} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto pb-4 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <main className="pb-4 pr-0.5">
           <div className="flex min-h-full flex-col gap-2.5">
             <section
               className="relative shrink-0 overflow-hidden rounded-[20px] border p-2 shadow-[0_16px_45px_var(--app-glow)]"

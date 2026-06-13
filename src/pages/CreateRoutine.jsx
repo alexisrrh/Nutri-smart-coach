@@ -189,7 +189,11 @@ export function CreateRoutine() {
   }
 
   return (
-    <AppShell contentClassName="overflow-x-hidden px-3 pb-[var(--bottom-nav-space)] pt-1.5">
+ <AppShell
+  className="overflow-hidden"
+  contentClassName="px-2 pt-2 pb-1"
+
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {loadingRoutine ? (
         <div className="flex h-[calc(100svh-var(--bottom-nav-space)-1rem)] min-h-0 items-center justify-center">
           <div className="rounded-[1.1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_88%,#08131b),var(--app-card))] px-4 py-4 text-center shadow-[0_12px_30px_var(--app-glow)]">
@@ -200,7 +204,7 @@ export function CreateRoutine() {
           </div>
         </div>
       ) : (
-      <div className="flex h-full min-h-0 flex-col gap-2">
+<div className="flex flex-col gap-2">
         <header>
           <button
             type="button"
@@ -240,7 +244,7 @@ export function CreateRoutine() {
           </section>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <main className="w-full max-w-full overflow-x-hidden">
           <div className="space-y-2 pb-3">
             <section className="relative overflow-hidden rounded-[1rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_92%,#08131b),var(--app-surface))] p-2.5 shadow-[0_10px_24px_var(--app-glow)]">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(0,196,255,0.08),transparent_34%)]" />
