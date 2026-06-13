@@ -11,6 +11,9 @@ export default function AppShell({
 }) {
   const showBottomNav = withBottomNav && !hideBottomNav;
   const shellWidthClass = wide ? "max-w-[520px]" : "max-w-[430px]";
+  const scrollPaddingBottom = showBottomNav
+    ? "calc(var(--bottom-nav-space) + 16px)"
+    : "env(safe-area-inset-bottom)";
 
   return (
     <main
@@ -31,6 +34,7 @@ export default function AppShell({
 
         <div
           className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] ${scrollClassName}`}
+          style={{ paddingBottom: scrollPaddingBottom }}
         >
           {children}
         </div>

@@ -36,7 +36,6 @@ export default function FoodPhoto() {
     setMeals,
     resetRecoveryState,
   } = useFoodPhotoRecovery();
-  const isAndroid = /Android/i.test(navigator.userAgent);
   const { handleImage } = useFoodPhotoImageUpload({
     preview,
     setPreview,
@@ -155,12 +154,7 @@ export default function FoodPhoto() {
     <AppShell
       className="overflow-hidden"
       contentClassName="px-2 pt-2"
-    scrollClassName={
-    isAndroid
-      ? "!pb-[calc(var(--bottom-nav-space)+150px)]"
-      : "!pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+24px)]"
-  }
->
+    >
       <div className="flex h-full min-h-0 flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
 
@@ -192,7 +186,7 @@ export default function FoodPhoto() {
 
         {result && !loading && (
           <>
-         <div className={`space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isAndroid ? "pb-40" : "pb-20"}`}>
+         <div className="space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="space-y-2">
                 <FoodResultCard result={result} preview={preview} />
                 <NutritionInsights result={result} />

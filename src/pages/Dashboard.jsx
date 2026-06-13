@@ -407,7 +407,11 @@ export function Dashboard() {
   );
 
   return (
-    <AppShell className="overflow-hidden" contentClassName="px-2 pt-2">
+    <AppShell
+  className="overflow-hidden"
+  contentClassName="px-2 pt-2"
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>
       <div
         className="flex h-full min-h-0 flex-col gap-1"
         style={{ backgroundColor: "var(--app-surface)" }}
@@ -415,7 +419,7 @@ export function Dashboard() {
         <div className="shrink-0">
           <DashboardHeader loadingData={loadingData} navigate={navigate} />
         </div>
-        <div className="flex flex-1 min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain pb-30 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+       <div className="flex flex-col gap-1 pb-20">
           {loadingData ? (
             <DashboardSkeleton />
           ) : (
