@@ -182,7 +182,12 @@ export function DayDietView({
                       event.stopPropagation();
                       onRewriteMeal?.({
                         dayIndex: safeActiveDay,
+                        dayName: activeDayData?.day || "",
                         mealId,
+                        mealIndex: index,
+                        mealName,
+                        mealType: meal.name || meal.mealType || meal.meal_type || meal.type || "",
+                        foodName,
                         meal,
                       });
                     }}
