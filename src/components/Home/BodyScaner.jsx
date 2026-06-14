@@ -116,7 +116,7 @@ export function BodyScaner() {
         {/* 3. FOOTER FIJO (Botón + Nav integrados) */}
         <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
           <div className="flex flex-col w-full">
-            <div className="px-5 pt-2.5 pb-2 w-full">
+          <div className="px-5 pt-3 pb-10 w-full">
               <Link
                 to="/registro"
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
