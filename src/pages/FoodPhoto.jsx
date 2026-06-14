@@ -152,12 +152,12 @@ export default function FoodPhoto() {
 
   return (
   <AppShell
-  className="pb-25"
-  contentClassName="px-2 pt-2 pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+24px)]"
+
+  contentClassName="px-2 pt-2 pb-[calc(var(--bottom-nav-space)+env(safe-area-inset-bottom)+2px)]"
   scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-  
+
 >
-  <div className="flex min-h-screen flex-col gap-2">
+  <div className="flex flex-col gap-2">
         {(!result || loading) && <AIScanHero />}
 
         <AiUsageCard

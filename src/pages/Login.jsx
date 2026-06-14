@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trackEvent } from "../services/analytics";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { STORAGE_KEYS } from "../config/storageKeys";
+import { App } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import {
   clearCachedProfile,
   getProfile,
@@ -37,17 +39,68 @@ export function Login() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const isAndroidNative =
+    Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+
+  useEffect(() => {
+    if (!isAndroidNative) return undefined;
+
+    let listener;
+
+    const handleOAuthCallback = async (url) => {
+      try {
+        const callbackUrl = new URL(url);
+        const authCode = callbackUrl.searchParams.get("code");
+
+        if (!authCode) return;
+
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
+          authCode
+        );
+
+        if (exchangeError) {
+          setError("No pudimos completar el inicio de sesión: " + exchangeError.message);
+          return;
+        }
+
+        setError("");
+        navigate("/dashboard", { replace: true });
+      } catch (callbackError) {
+        setError(
+          "No pudimos completar el inicio de sesión: " +
+            (callbackError?.message || "callback inválido")
+        );
+      }
+    };
+
+    const registerListener = async () => {
+      listener = await App.addListener("appUrlOpen", ({ url }) => {
+        if (!url) return;
+        void handleOAuthCallback(url);
+      });
+    };
+
+    void registerListener();
+
+    return () => {
+      void listener?.remove?.();
+    };
+  }, [isAndroidNative, navigate]);
 
   async function handleSocialLogin(provider) {
     setError("");
 
     trackEvent("login_started", {
-  provider,
-});
+      provider,
+    });
+    const redirectTo = isAndroidNative
+      ? "com.nutrismartcoach.app://login-callback"
+      : `${window.location.origin}/dashboard`;
+
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin + "/dashboard",
+        redirectTo,
       },
     });
 

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { saveProfile } from "../services/profileService";
+import { App } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import {
   clearStoredReferralCode,
   clearOAuthReferralFlowPending,
@@ -40,6 +42,8 @@ export function Register() {
   const navigate = useNavigate();
   const [creatorCode] = useState(() => getStoredCreatorCode());
   const [referralOpen, setReferralOpen] = useState(Boolean(getStoredReferralCode()));
+  const isAndroidNative =
+    Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
 
   const [form, setForm] = useState({
     nombre: "",
@@ -57,6 +61,52 @@ export function Register() {
   const [referralSaving, setReferralSaving] = useState(false);
   const [referralValidating, setReferralValidating] = useState(false);
 
+  useEffect(() => {
+    if (!isAndroidNative) return undefined;
+
+    let listener;
+
+    const handleOAuthCallback = async (url) => {
+      try {
+        const callbackUrl = new URL(url);
+        const authCode = callbackUrl.searchParams.get("code");
+
+        if (!authCode) return;
+
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
+          authCode
+        );
+
+        if (exchangeError) {
+          setError("No pudimos completar el inicio de sesión: " + exchangeError.message);
+          return;
+        }
+
+        setError("");
+        setSuccess("");
+        navigate("/dashboard", { replace: true });
+      } catch (callbackError) {
+        setError(
+          "No pudimos completar el inicio de sesión: " +
+            (callbackError?.message || "callback inválido")
+        );
+      }
+    };
+
+    const registerListener = async () => {
+      listener = await App.addListener("appUrlOpen", ({ url }) => {
+        if (!url) return;
+        void handleOAuthCallback(url);
+      });
+    };
+
+    void registerListener();
+
+    return () => {
+      void listener?.remove?.();
+    };
+  }, [isAndroidNative, navigate]);
+
   async function handleSocialLogin(provider) {
     if (!acceptedPolicies) {
       setError("Debes aceptar las políticas antes de continuar con OAuth.");
@@ -65,17 +115,19 @@ export function Register() {
 
     setPendingLegalConsent(buildAcceptedLegalConsent());
     prepareOAuthReferralCode(getStoredReferralCode());
+    trackEvent("oauth_started", {
+      provider,
+    });
 
-      // Evento Analytics
- trackEvent("oauth_started", {
-  provider,
-});
+    const redirectTo = isAndroidNative
+      ? "com.nutrismartcoach.app://login-callback"
+      : `${window.location.origin}/perfil`;
 
 
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin + "/perfil",
+        redirectTo,
       },
     });
 
