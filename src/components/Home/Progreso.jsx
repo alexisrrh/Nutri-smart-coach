@@ -102,7 +102,7 @@ export function Progreso() {
         </section>
 
         {/* 3. FOOTER FIJO (Doble nivel para evitar solapamiento) */}
-        <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
+      
           <div className="flex flex-col w-full">
             <div className="px-5 pt-3 pb-10 w-full">
               <Link
@@ -117,8 +117,7 @@ export function Progreso() {
               <NavNavigation />
             </div>
           </div>
-        </footer>
-
+   
       </main>
 
       <style dangerouslySetInnerHTML={{ __html: `
