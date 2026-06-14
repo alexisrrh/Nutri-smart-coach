@@ -54,7 +54,7 @@ export const NavNavigation = () => {
         <DashboardTab 
           to="/progresohome" 
           icon={<LineChart size={16} />} 
-          title="Peso/medidas" 
+          title="Progreso" 
           active={location.pathname === "/progresohome"}
         />
       </div>

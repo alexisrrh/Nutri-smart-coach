@@ -74,7 +74,7 @@ export function Home() {
         </header>
 
         {/* 2. CONTENIDO SCROLLABLE */}
-     <section className="relative z-10 flex-1 px-5 pb-1 overflow-hidden">
+    <section className="relative z-10 flex-1 px-5 pb-4 overflow-hidden">
       <div className="flex h-full flex-col justify-between gap-2 pt-3">
             
             {/* TITULO */}
@@ -131,16 +131,23 @@ export function Home() {
                 <Stat value="24/7" label="Coach" />
                 <Stat value="PRO" label="Hábitos" />
               </div>
+               <div className="text-center justify-center">
+                <Link 
+                to="/privacidad" 
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors "
+              >
+                Política de Privacidad
+              </Link>
+              </div>
             </div>
           </div>
         </section>
 
         {/* 3. FOOTER FIJO */}
-        <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
+     
           <div className="flex flex-col w-full">
             {/* Contenedor central del botón y el link */}
-            <div className="px-5 pt-4 pb-2 w-full flex flex-col items-center gap-3"> 
-              
+         <div className="px-5 pt-2 pb-10 w-full flex flex-col items-center gap-2">
               <Link
                 to="/registro"
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
@@ -149,22 +156,16 @@ export function Home() {
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
 
-              {/* Enlace centrado debajo del botón */}
-              <Link 
-                to="/privacidad" 
-                className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors"
-              >
-                Política de Privacidad
-              </Link>
+  
 
             </div>
 
             {/* Navegación inferior */}
-            <div className="h-20 w-full flex items-center justify-center">
+           <div className="h-[72px] w-full flex items-center justify-center">
               <NavNavigation />
             </div>
           </div>
-        </footer>
+     
 
 
       </main>
