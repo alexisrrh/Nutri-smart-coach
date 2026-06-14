@@ -4,10 +4,30 @@ import { NavNavigation } from "./NavNavigation";
 
 export function Progreso() {
   return (
-    <div className="min-h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-x-hidden font-sans">
+     <div className="h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-hidden font-sans">
       
-      <main
-        className="relative w-full max-w-[430px] h-dvh md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
+      <style>{`
+        @keyframes laserMotion {
+            0%, 100% { top: 0%; opacity: 1; }
+            50% { top: 100%; opacity: 1; }
+        }
+        @keyframes radarPulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.15; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .laser-line {
+            animation: laserMotion 3s ease-in-out infinite;
+        }
+        .radar-glow {
+            animation: radarPulse 4s ease-in-out infinite;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+    <main
+        className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[var(--app-border)] flex flex-col overflow-hidden"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
       >
         
