@@ -5,7 +5,7 @@ import { NavNavigation } from "./NavNavigation";
 
 export function BodyScaner() {
   return (
-    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-hidden font-sans">
+    <div className="home-analyze-shell min-h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-visible font-sans">
       
       <style>{`
         @keyframes laserMotion {
@@ -25,10 +25,78 @@ export function BodyScaner() {
         }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @media (max-height: 760px) {
+          .home-analyze-shell > main {
+            padding-top: calc(env(safe-area-inset-top) + 12px);
+          }
+          .home-analyze-shell .home-analyze-header {
+            padding-top: 10px;
+          }
+          .home-analyze-shell .home-analyze-nav {
+            padding-bottom: 10px;
+          }
+          .home-analyze-shell .home-analyze-title {
+            font-size: 1.45rem;
+          }
+          .home-analyze-shell .home-analyze-scanner {
+            margin-top: 12px;
+            width: 132px;
+            height: 132px;
+          }
+          .home-analyze-shell .home-analyze-features {
+            margin-top: 12px;
+            padding-bottom: 4px;
+            gap: 8px;
+          }
+          .home-analyze-shell .home-analyze-feature-card {
+            padding: 12px;
+            gap: 12px;
+          }
+          .home-analyze-shell .home-analyze-feature-icon {
+            padding: 7px;
+          }
+          .home-analyze-shell .home-analyze-feature-title {
+            font-size: 11px;
+          }
+          .home-analyze-shell .home-analyze-feature-desc {
+            font-size: 9px;
+          }
+          .home-analyze-shell .home-analyze-footer-cta {
+            padding-top: 10px;
+          }
+          .home-analyze-shell .home-analyze-footer-button {
+            padding-top: 10px;
+            padding-bottom: 10px;
+          }
+          .home-analyze-shell .home-analyze-footer-nav {
+            height: 56px;
+          }
+        }
+        @media (max-height: 700px) {
+          .home-analyze-shell .home-analyze-title {
+            font-size: 1.32rem;
+          }
+          .home-analyze-shell .home-analyze-scanner {
+            margin-top: 8px;
+            width: 118px;
+            height: 118px;
+          }
+          .home-analyze-shell .home-analyze-features {
+            margin-top: 10px;
+            gap: 7px;
+          }
+          .home-analyze-shell .home-analyze-feature-card {
+            padding: 10px;
+            gap: 10px;
+          }
+          .home-analyze-shell .home-analyze-footer-nav {
+            height: 50px;
+          }
+        }
       `}</style>
 
       <main
-        className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[var(--app-border)] flex flex-col overflow-hidden"
+        className="relative w-full max-w-[430px] min-h-dvh md:min-h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[var(--app-border)] flex flex-col overflow-visible"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
       >
         
@@ -37,8 +105,8 @@ export function BodyScaner() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-20" />
 
         {/* 1. HEADER (Fijo) */}
-        <header className="relative z-20 px-5 pt-3 shrink-0">
-          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-3">
+        <header className="home-analyze-header relative z-20 px-5 pt-3 shrink-0">
+          <nav className="home-analyze-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -67,9 +135,9 @@ export function BodyScaner() {
         </header>
 
         {/* 2. CONTENIDO SCROLLABLE (Para evitar choques en móviles pequeños) */}
-        <section className="relative z-10 flex-1 overflow-hidden overflow-x-hidden px-5">
+        <section className="relative z-10 flex-1 overflow-visible overflow-x-hidden px-5">
           <div className="flex h-full flex-col items-center text-center py-3">
-            <h1 className="text-[1.75rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
+            <h1 className="home-analyze-title text-[1.75rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
               Body <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">Scaner</span>
             </h1>
             <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
@@ -77,7 +145,7 @@ export function BodyScaner() {
             </p>
 
             {/* VISOR DE ESCÁNER */}
-            <div className="mt-4">
+            <div className="home-analyze-scanner mt-4">
               <Link 
                 to="/registro" 
                 className="relative flex h-36 w-36 items-center justify-center rounded-[3rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-1.5 backdrop-blur-sm active:scale-[0.98] shadow-[0_0_40px_var(--app-glow)] transition-all block group"
@@ -93,7 +161,7 @@ export function BodyScaner() {
             </div>
 
             {/* LISTA DE CARACTERÍSTICAS (Incluyendo Privacidad) */}
-            <div className="mt-4 w-full space-y-2 text-left pb-2">
+            <div className="home-analyze-features mt-4 w-full space-y-2 text-left pb-2">
               <FeatureCard 
                 icon={<Sparkles size={14} className="text-[var(--app-primary)]" />}
                 title="Grasa Corporal Estimada"
@@ -116,15 +184,15 @@ export function BodyScaner() {
         {/* 3. FOOTER FIJO (Botón + Nav integrados) */}
      
           <div className="flex flex-col w-full">
-          <div className="px-5 pt-3 pb-10 w-full">
+          <div className="home-analyze-footer-cta px-5 pt-3 pb-10 w-full">
               <Link
                 to="/registro"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+                className="home-analyze-footer-button group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
                 Iniciar Escaneo <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
-            <div className="h-16 flex items-center justify-center">
+            <div className="home-analyze-footer-nav h-16 flex items-center justify-center">
               <NavNavigation />
             </div>
           </div>
@@ -136,13 +204,13 @@ export function BodyScaner() {
 
 function FeatureCard({ icon, title, desc }) {
   return (
-    <div className="flex gap-4 p-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/50 backdrop-blur-sm">
-      <div className="shrink-0 mt-0.5 bg-[var(--app-surface)] p-2 rounded-xl border border-[var(--app-border)] shadow-sm">
+    <div className="home-analyze-feature-card flex gap-4 p-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/50 backdrop-blur-sm">
+      <div className="home-analyze-feature-icon shrink-0 mt-0.5 bg-[var(--app-surface)] p-2 rounded-xl border border-[var(--app-border)] shadow-sm">
         {icon}
       </div>
       <div>
-        <h4 className="text-[12px] font-black uppercase italic text-[var(--app-text)] tracking-tight">{title}</h4>
-        <p className="text-[10px] text-[var(--app-muted)] leading-snug mt-0.5">{desc}</p>
+        <h4 className="home-analyze-feature-title text-[12px] font-black uppercase italic text-[var(--app-text)] tracking-tight">{title}</h4>
+        <p className="home-analyze-feature-desc text-[10px] text-[var(--app-muted)] leading-snug mt-0.5">{desc}</p>
       </div>
     </div>
   );
