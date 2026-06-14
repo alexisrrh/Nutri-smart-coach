@@ -1,55 +1,23 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Flame, ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2, Flame } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
+
 import dietashome from "../../../public/dietashome.jpeg";
 import tortilla from "../../assets/tortilla.jpg";
-import bowl from "../../assets/bowlpollo.jpg";
-import salmon from "../../assets/salmonesparrago.jpg";
-
-
+import bowlpollo from "../../assets/bowlpollo.jpg";
+import salmonesparrago from "../../assets/salmonesparrago.jpg";
 export function Dietas() {
-  const meals = [
-    {
-      time: "08:30 AM",
-      type: "Desayuno",
-      title: "Tortilla de claras y avena",
-      macros: "340 kcal • 30g Pro",
-      completed: true,
-      img: tortilla
-    },
-    {
-      time: "02:30 PM",
-      type: "Almuerzo",
-      title: "Bowl de pollo y quinoa",
-      macros: "680 kcal • 44g Pro",
-      completed: true,
-      current: true,
-      img: bowl
-    },
-    {
-      time: "09:35 PM",
-      type: "Cena",
-      title: "Salmón con espárragos",
-      macros: "520 kcal • 38g Pro",
-      completed: false,
-      img: salmon
-    }
-  ];
-
   return (
-    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-center justify-center overflow-hidden font-sans">
+    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-hidden font-sans">
       <main
         className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-card)] text-[var(--app-text)] md:rounded-[40px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] md:border-8 md:border-[var(--app-border)] flex flex-col overflow-hidden"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
       >
-        
-        {/* FONDO CUADRICULADO Y GLOW (Recuperados para consistencia) */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%)] pointer-events-none opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-20" />
 
-        {/* 1. HEADER (Fijo) */}
-        <header className="relative z-20 px-5 pt-5 shrink-0">
-          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-4">
+        <header className="relative z-20 px-5 pt-3 shrink-0">
+          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-3">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -67,82 +35,119 @@ export function Dietas() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-text)]">
+              <Link
+                to="/login"
+                className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-text)]"
+              >
                 INICIAR SESIÓN
               </Link>
-              <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition-transform active:scale-95">
+              <Link
+                to="/registro"
+                className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition-transform active:scale-95"
+              >
                 REGÍSTRATE
               </Link>
             </div>
           </nav>
         </header>
 
-        {/* 2. CONTENIDO SCROLLABLE */}
-        <section className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-5">
-          <div className="pt-6 pb-4 text-center shrink-0">
-            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--app-text)]">
+        <section className="relative z-10 flex flex-1 flex-col overflow-hidden px-5">
+          <div className="shrink-0 pt-3 pb-2 text-center">
+            <h1 className="text-[1.7rem] font-black italic uppercase tracking-tighter text-[var(--app-text)]">
               Mi Dieta <span className="text-[var(--app-primary)]">Hoy</span>
             </h1>
-            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">Generamos tu dieta en segundos con IA</p>
-
+            <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
+              Generamos tu dieta en segundos con IA
+            </p>
           </div>
 
-          {/* IMAGEN HERO */}
-          <div className="relative mb-6 px-1 shrink-0">
-            <div className="relative flex h-52 w-full items-center justify-center rounded-[2.5rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-2.5 backdrop-blur-sm shadow-[0_0_40px_var(--app-glow)]">
-                <div className="relative h-full w-full overflow-hidden rounded-[1.8rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)] shadow-[inset_0_0_20px_var(--app-glow)]">
-                    <img src={dietashome} alt="Panel" className="h-full w-full object-cover opacity-100 transition-transform duration-700 hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/70 via-transparent to-transparent z-10 pointer-events-none" />
-                </div>
-            </div>
-          </div>
-
-          {/* LISTA DE COMIDAS */}
-          <div className="flex flex-col gap-2.5 pb-10">
-            {meals.map((meal, index) => (
-              <div key={index} className={`flex gap-3.5 p-3 rounded-2xl border transition-all duration-300 ${
-                meal.current ? 'border-[var(--app-border)] bg-[var(--app-primary-soft)]' : 'border-[var(--app-border)] bg-[var(--app-surface)]'
-              }`}>
-                <img src={meal.img} className="h-14 w-14 shrink-0 rounded-xl object-cover border border-[var(--app-border)]" alt="food" />
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="flex justify-between items-start">
-                    <span className="text-[8px] font-black text-[var(--app-muted)] uppercase tracking-widest">{meal.time}</span>
-                    {meal.completed && <CheckCircle2 size={12} className="text-[var(--app-primary)]" />}
-                  </div>
-                  <h4 className={`text-[13px] font-black uppercase italic truncate ${meal.current ? 'text-[var(--app-primary)]' : 'text-[var(--app-text)]'}`}>{meal.title}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Flame size={10} className="text-orange-400" />
-                    <span className="text-[9px] font-bold text-[var(--app-muted)]">{meal.macros}</span>
-                  </div>
-                </div>
+          <div className="flex flex-1 flex-col justify-center gap-2.5 pb-2">
+            <div className="relative shrink-0">
+              <div className="relative h-[150px] w-full overflow-hidden rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_0_30px_var(--app-glow)]">
+                <img
+                  src={dietashome}
+                  alt="Dieta personalizada"
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/65 via-transparent to-transparent pointer-events-none" />
               </div>
-            ))}
+            </div>
+
+            <div className="grid gap-2">
+              <MealPreview
+                image={tortilla}
+                time="08:30 AM"
+                title="Tortilla de claras y avena"
+                info="340 kcal • 30g Pro"
+              />
+              <MealPreview
+                image={bowlpollo}
+                time="02:30 PM"
+                title="Bowl de pollo y quinoa"
+                info="680 kcal • 44g Pro"
+                active
+              />
+              <MealPreview
+                image={salmonesparrago}
+                time="09:35 PM"
+                title="Salmón con espárragos"
+                info="520 kcal • 38g Pro"
+              />
+            </div>
           </div>
         </section>
 
-        {/* 3. FOOTER FIJO (Doble nivel impecable) */}
         <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
           <div className="flex flex-col w-full">
-            <div className="px-5 pt-4 pb-2 w-full">
+            <div className="px-5 pt-2 pb-1.5 w-full">
               <Link
                 to="/registro"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
                 Iniciar Dietas
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
-            <div className="h-20 w-full flex items-center justify-center">
+
+            <div className="h-16 w-full flex items-center justify-center">
               <NavNavigation />
             </div>
           </div>
         </footer>
       </main>
+    </div>
+  );
+}
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
+function MealPreview({ image, time, title, info, active = false }) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl border px-3 py-2 ${
+        active
+          ? "border-[var(--app-border)] bg-[var(--app-primary-soft)]"
+          : "border-[var(--app-border)] bg-[var(--app-surface)]/80"
+      }`}
+    >
+      <img
+        src={image}
+        alt={title}
+        className="h-12 w-12 shrink-0 rounded-xl object-cover"
+      />
+
+      <div className="min-w-0 flex-1 text-left">
+        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[var(--app-muted)]">
+          {time}
+        </p>
+        <h3 className="mt-0.5 truncate text-[12px] font-black uppercase italic text-[var(--app-text)]">
+          {title}
+        </h3>
+        <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-[var(--app-muted)]">
+          <Flame size={11} className="text-amber-400" />
+          {info}
+        </p>
+      </div>
+
+      <CheckCircle2 size={17} className="shrink-0 text-[var(--app-primary)]" />
     </div>
   );
 }

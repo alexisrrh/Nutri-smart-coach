@@ -32,10 +32,10 @@ export function Home() {
   }, [loadingAuth, user?.id]);
 
   return (
-    <div className="min-h-dvh w-full bg-[var(--app-bg)] flex justify-center overflow-y-auto overflow-x-hidden font-sans">
+    <div className="min-h-dvh w-full bg-[var(--app-bg)] flex justify-center overflow-x-hidden font-sans">
       
       <main
-  className="relative w-full max-w-[430px] min-h-screen  md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
+  className="relative w-full max-w-[430px] h-dvh md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 24px)" }}
       >
         
@@ -44,8 +44,8 @@ export function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-20" />
 
         {/* 1. HEADER (Fijo) */}
-        <header className="relative z-20 px-5 pt-5 shrink-0">
-          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-4">
+       <header className="relative z-20 px-5 pt-2 shrink-0">
+          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-2">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -74,15 +74,15 @@ export function Home() {
         </header>
 
         {/* 2. CONTENIDO SCROLLABLE */}
-       <section className="relative z-10 px-5 pb-1">
-          <div className="flex flex-col gap-6 mt-6">
+     <section className="relative z-10 flex-1 px-5 pb-1 overflow-hidden">
+      <div className="flex h-full flex-col justify-between gap-2 pt-3">
             
             {/* TITULO */}
             <div className="flex flex-col items-center text-center shrink-0">
               <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
                 <Zap size={11} className="fill-current" /> Fitness + NUTRICIÓN IA
               </div>
-              <h1 className="text-[1.8rem] font-black italic uppercase leading-none tracking-tight">
+              <h1 className="text-[1.55rem] font-black italic uppercase leading-none tracking-tight">
                 Domina <span className="bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">tu cuerpo</span>
               </h1>
               <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">ANALISAMOS TU COMIDA CON PRECISIÓN</p>
