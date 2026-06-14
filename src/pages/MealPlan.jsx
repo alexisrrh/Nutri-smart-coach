@@ -107,6 +107,7 @@ export function MealPlan() {
   const [rewriteTarget, setRewriteTarget] = useState(null);
   const [rewriteReason, setRewriteReason] = useState("");
   const [rewriteMealState, setRewriteMealState] = useState({});
+  const [rewriteDialogError, setRewriteDialogError] = useState("");
   const currentGenerationRequestIdRef = useRef(null);
   const { applyUsageError, refreshUsage, usage } = useAiUsageStatus(
     "diet_generation",
@@ -489,11 +490,19 @@ export function MealPlan() {
   function openRewriteMeal(target) {
     setRewriteTarget(target);
     setRewriteReason("");
+    setRewriteDialogError("");
     setErrorMessage("");
   }
 
   async function submitRewriteMeal() {
     if (!rewriteTarget) return;
+
+    const normalizedReason = rewriteReason.trim();
+
+    if (!normalizedReason) {
+      setRewriteDialogError("Escribe qué quieres cambiar para continuar.");
+      return;
+    }
 
     if (!isPremium) {
       trackEvent("premium_feature_clicked", {
@@ -506,6 +515,7 @@ export function MealPlan() {
     try {
       setErrorMessage("");
       setNotice("");
+      setRewriteDialogError("");
       setRewriteMealState({ mealId: rewriteTarget.mealId });
 
       const data = await rewriteDietMeal({
@@ -513,8 +523,13 @@ export function MealPlan() {
         userId,
         dayIndex: rewriteTarget.dayIndex,
         mealId: rewriteTarget.mealId,
+        mealIndex: rewriteTarget.mealIndex,
+        dayName: rewriteTarget.dayName,
+        mealName: rewriteTarget.mealName,
+        mealType: rewriteTarget.mealType,
+        foodName: rewriteTarget.foodName,
         meal: rewriteTarget.meal,
-        reason: rewriteReason,
+        reason: normalizedReason,
       });
 
       if (!Array.isArray(data.week) || data.week.length === 0) {
@@ -524,6 +539,7 @@ export function MealPlan() {
       setPlan(data.week);
       setRewriteTarget(null);
       setRewriteReason("");
+      setRewriteDialogError("");
       setNotice("Comida cambiada correctamente.");
     } catch (error) {
       if (error?.status === 403 && error?.data?.upgradeAvailable) {
@@ -538,7 +554,9 @@ export function MealPlan() {
         error,
       });
 
-      setErrorMessage(error.message || "No se pudo cambiar la comida.");
+      const message = error?.message || "No se pudo cambiar la comida.";
+      setRewriteDialogError(message);
+      setErrorMessage(message);
     } finally {
       setRewriteMealState({});
     }
@@ -751,6 +769,8 @@ export function MealPlan() {
           isPremium={isPremium}
           reason={rewriteReason}
           setReason={setRewriteReason}
+          error={rewriteDialogError}
+          setError={setRewriteDialogError}
           loading={Boolean(rewriteMealState.mealId)}
           onClose={() => setRewriteTarget(null)}
           onConfirm={submitRewriteMeal}
@@ -881,6 +901,8 @@ function RewriteMealDialog({
   isPremium,
   reason,
   setReason,
+  error,
+  setError,
   loading,
   onClose,
   onConfirm,
@@ -923,12 +945,35 @@ function RewriteMealDialog({
         </div>
 
         {isPremium ? (
-          <textarea
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            placeholder="Ej: sin arroz, algo más barato, no me gusta el atún..."
-            className="mt-3 min-h-24 w-full resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[12px] font-medium text-[var(--app-text)] outline-none focus:border-[var(--app-primary)]"
-          />
+          <>
+            <textarea
+              value={reason}
+              onChange={(event) => {
+                setReason(event.target.value);
+                if (error) setError("");
+              }}
+              placeholder="Ej: sin arroz, algo más barato, no me gusta el atún..."
+              className={`mt-3 min-h-24 w-full resize-none rounded-2xl border bg-[var(--app-surface)] px-3 py-2 text-[12px] font-medium text-[var(--app-text)] outline-none focus:border-[var(--app-primary)] ${
+                error
+                  ? "border-rose-400/60"
+                  : "border-[var(--app-border)]"
+              }`}
+            />
+
+            <p
+              className={`mt-1.5 text-[10px] font-medium leading-4 ${
+                loading
+                  ? "text-[var(--app-primary)]"
+                  : error
+                  ? "text-rose-300"
+                  : "text-[var(--app-muted)]"
+              }`}
+            >
+              {loading
+                ? "Cambiando..."
+                : error || "Describe el cambio que quieres ver en esta comida."}
+            </p>
+          </>
         ) : null}
 
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -944,7 +989,7 @@ function RewriteMealDialog({
           <button
             type="button"
             onClick={isPremium ? onConfirm : onUpgrade}
-            disabled={loading}
+            disabled={loading || (isPremium && !reason.trim())}
             className="rounded-2xl bg-[var(--app-primary)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] disabled:opacity-50"
           >
             {loading ? "Cambiando..." : isPremium ? "Cambiar" : "Ver Premium"}

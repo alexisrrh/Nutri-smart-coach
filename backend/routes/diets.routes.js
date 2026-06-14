@@ -241,10 +241,20 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
 
     const dayIndex = Number(req.body?.day_index);
     const mealId = String(req.body?.meal_id || "").trim();
+    const mealIndexHint = Number.parseInt(req.body?.meal_index, 10);
+    const mealName = String(req.body?.meal_name || "").trim();
+    const mealType = String(req.body?.meal_type || "").trim();
+    const foodName = String(req.body?.food_name || "").trim();
+    const dayName = String(req.body?.day_name || "").trim();
     const currentMeal = req.body?.meal || null;
     const reason = String(req.body?.reason || "").trim();
 
-    if (!Number.isInteger(dayIndex) || dayIndex < 0 || !mealId || !currentMeal) {
+    if (
+      !Number.isInteger(dayIndex) ||
+      dayIndex < 0 ||
+      !currentMeal ||
+      (!mealId && !Number.isInteger(mealIndexHint) && !mealName && !mealType && !foodName)
+    ) {
       return res.status(400).json({
         error: "Faltan datos para cambiar la comida.",
       });
@@ -277,9 +287,17 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
     const week = Array.isArray(dietPlan.week) ? dietPlan.week : [];
     const day = week[dayIndex];
     const meals = Array.isArray(day?.meals) ? day.meals : [];
-    const mealIndex = meals.findIndex((meal, index) =>
-      getDietMealId(day?.day, meal, index) === mealId || meal?.id === mealId
-    );
+    const mealIndex = resolveRewriteMealIndex({
+      day,
+      meals,
+      mealId,
+      mealIndexHint,
+      mealName,
+      mealType,
+      foodName,
+      dayName,
+      currentMeal,
+    });
 
     if (!day || mealIndex < 0) {
       return res.status(404).json({
@@ -620,6 +638,95 @@ Reglas:
 
 function getDietMealId(day, meal, index) {
   return `${day || "day"}-${meal?.id || meal?.type || meal?.name || "meal"}-${index}`;
+}
+
+function resolveRewriteMealIndex({
+  day,
+  meals,
+  mealId,
+  mealIndexHint,
+  mealName,
+  mealType,
+  foodName,
+  dayName,
+  currentMeal,
+}) {
+  if (Number.isInteger(mealIndexHint) && mealIndexHint >= 0 && mealIndexHint < meals.length) {
+    return mealIndexHint;
+  }
+
+  return meals.findIndex((meal, index) =>
+    matchesRewriteMeal(meal, day, index, {
+      mealId,
+      mealName,
+      mealType,
+      foodName,
+      dayName,
+      currentMeal,
+    })
+  );
+}
+
+function matchesRewriteMeal(meal, day, index, criteria) {
+  if (!meal) return false;
+
+  const normalizedMealId = normalizeMealLookupValue(criteria.mealId);
+  const normalizedMealName = normalizeMealLookupValue(criteria.mealName);
+  const normalizedMealType = normalizeMealLookupValue(criteria.mealType);
+  const normalizedFoodName = normalizeMealLookupValue(criteria.foodName);
+  const normalizedDayName = normalizeMealLookupValue(criteria.dayName);
+  const normalizedCurrentFood = normalizeMealLookupValue(
+    criteria.currentMeal?.food || criteria.currentMeal?.title || criteria.currentMeal?.name
+  );
+
+  const mealIdMatches =
+    normalizedMealId &&
+    [
+      getDietMealId(day?.day || normalizedDayName || "day", meal, index),
+      meal?.id,
+    ]
+      .map(normalizeMealLookupValue)
+      .includes(normalizedMealId);
+
+  const mealNameMatches =
+    normalizedMealName &&
+    [meal?.name, meal?.mealType, meal?.meal_type, meal?.type]
+      .map(normalizeMealLookupValue)
+      .includes(normalizedMealName);
+
+  const mealTypeMatches =
+    normalizedMealType &&
+    [meal?.mealType, meal?.meal_type, meal?.type, meal?.name]
+      .map(normalizeMealLookupValue)
+      .includes(normalizedMealType);
+
+  const foodNameMatches =
+    normalizedFoodName &&
+    [meal?.food, meal?.title, meal?.description]
+      .map(normalizeMealLookupValue)
+      .includes(normalizedFoodName);
+
+  const currentMealMatches =
+    normalizedCurrentFood &&
+    [meal?.food, meal?.title, meal?.description]
+      .map(normalizeMealLookupValue)
+      .includes(normalizedCurrentFood);
+
+  return Boolean(
+    mealIdMatches ||
+      mealNameMatches ||
+      mealTypeMatches ||
+      foodNameMatches ||
+      currentMealMatches
+  );
+}
+
+function normalizeMealLookupValue(value) {
+  return String(value || "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function buildDietProgressMap(mealLogs) {
