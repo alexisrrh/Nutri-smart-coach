@@ -32,11 +32,11 @@ export function Home() {
   }, [loadingAuth, user?.id]);
 
   return (
-    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-center justify-center overflow-hidden font-sans">
+    <div className="min-h-dvh w-full bg-[var(--app-bg)] flex justify-center overflow-y-auto overflow-x-hidden font-sans">
       
       <main
-        className="relative w-full max-w-[430px] h-full md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+  className="relative w-full max-w-[430px] min-h-screen  md:h-[880px] bg-[var(--app-surface)] text-[var(--app-text)] md:rounded-[40px] shadow-2xl md:border-8 md:border-[#1f2937] flex flex-col overflow-hidden"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 24px)" }}
       >
         
         {/* FONDO CUADRICULADO Y GLOW (Recuperados) */}
@@ -74,7 +74,7 @@ export function Home() {
         </header>
 
         {/* 2. CONTENIDO SCROLLABLE */}
-        <section className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-5 pb-6">
+       <section className="relative z-10 px-5 pb-1">
           <div className="flex flex-col gap-6 mt-6">
             
             {/* TITULO */}
