@@ -63,8 +63,10 @@ export function Progress() {
   const loadingHistory = loadingLogs || loadingCheckins;
 
   return (
-    <AppShell contentClassName="px-2 pb-2 pt-1.5">
-      <div className="flex h-full min-h-0 flex-col gap-2.5 overflow-hidden">
+    <AppShell contentClassName="px-2 pb-2 pt-1.5
+     contentClassName="px-2 pt-2
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-col gap-2.5 overflow-hidden">
         <div className="shrink-0">
           <button
             onClick={() => navigate("/dashboard")}
@@ -125,7 +127,7 @@ export function Progress() {
           </div>
 
           <div
-            className="grid grid-cols-[104px_1fr] items-end gap-3 rounded-[18px] border px-2.5 py-2"
+            className="grid grid-cols-[104px_1fr] items-center gap-3 rounded-[18px] border px-2.5 py-2"
             style={{
               borderColor: "var(--app-border)",
               background:
@@ -155,7 +157,7 @@ export function Progress() {
         <ProgressViewTabs activeView={activeView} setActiveView={setActiveView} />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex-1 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-3">
             {errorMessage && (
               <StatusBox type="error">

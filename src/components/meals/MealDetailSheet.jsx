@@ -28,7 +28,7 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
 
   return (
     <div
-        className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/60 px-2 pb-2 pt-10 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-3 pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(env(safe-area-inset-bottom)+16px)] backdrop-blur-md"
       onClick={onClose}
       role="presentation"
     >
@@ -43,7 +43,7 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
         role="dialog"
         aria-modal="true"
         aria-label="Detalle de comida"
-        className="flex max-h-[75vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_-18px_60px_rgba(0,0,0,0.45)]"
+        className="flex max-h-[calc(100dvh-96px)] w-full max-w-[410px] flex-col overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_18px_60px_var(--app-glow)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ animation: "mealSheetIn 220ms ease-out" }}
         onClick={(event) => event.stopPropagation()}
       >
