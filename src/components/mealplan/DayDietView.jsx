@@ -239,6 +239,7 @@ function MealDetailSheet({ detail, onClose }) {
   const protein = Math.round(Number(meal.protein || 0));
   const carbs = Math.round(Number(meal.carbs || 0));
   const fat = Math.round(Number(meal.fat || 0));
+  const nutritionSummary = getNutritionSummary({ calories, protein, carbs, fat });
   const rawFoodDetail = meal.food || meal.title || meal.description || meal.details;
   const foodDetail =
     rawFoodDetail && String(rawFoodDetail).trim().toLowerCase() !== String(foodName).trim().toLowerCase()
@@ -247,25 +248,25 @@ function MealDetailSheet({ detail, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--app-bg)]/70 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--app-bg)]/70 px-3 py-3 backdrop-blur-sm sm:p-4"
       onClick={onClose}
     >
       <section
         role="dialog"
         aria-modal="true"
-        className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[var(--app-primary)]/20 bg-[var(--app-card)] p-2.5 shadow-[0_24px_80px_var(--app-glow)]"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-sm overflow-y-auto rounded-[22px] border border-[var(--app-primary)]/20 bg-[var(--app-card)] p-3 shadow-[0_24px_80px_var(--app-glow)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="inline-flex rounded-full border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               {mealName}
             </p>
-            <h3 className="mt-0.5 line-clamp-2 text-[15px] font-bold normal-case leading-snug text-[var(--app-text)]">
+            <h3 className="mt-2 line-clamp-2 text-[17px] font-extrabold normal-case leading-tight text-[var(--app-text)]">
               {foodName}
             </h3>
             {mealTime && (
-              <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold normal-case text-slate-500">
+              <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium normal-case text-slate-500">
                 <Clock size={11} />
                 {mealTime}
               </p>
@@ -282,32 +283,53 @@ function MealDetailSheet({ detail, onClose }) {
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-1">
-          {calories > 0 && <DetailMetric label="kcal" value={calories} />}
-          {protein > 0 && <DetailMetric label="proteína" value={`${protein}g`} />}
-          {carbs > 0 && <DetailMetric label="carbs" value={`${carbs}g`} />}
-          {fat > 0 && <DetailMetric label="grasa" value={`${fat}g`} />}
+        <div className="mt-4 space-y-2.5">
+          {calories > 0 && <CaloriesHero value={calories} />}
+
+          <div className="grid grid-cols-3 gap-2">
+            {protein > 0 && <MacroBlock label="proteína" value={`${protein}g`} />}
+            {carbs > 0 && <MacroBlock label="carbs" value={`${carbs}g`} />}
+            {fat > 0 && <MacroBlock label="grasa" value={`${fat}g`} />}
+          </div>
         </div>
 
+        {nutritionSummary.length > 0 && (
+          <div className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/75 px-3 py-2">
+            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">
+              Resumen nutricional
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {nutritionSummary.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-[var(--app-primary)]/15 bg-[var(--app-primary)]/8 px-2 py-0.5 text-[10px] font-semibold text-[var(--app-text)]/90"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {foodDetail && (
-          <div className="mt-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
+          <div className="mt-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-3">
             <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
               Comida completa
             </p>
-            <p className="mt-0.5 text-[11px] font-semibold normal-case leading-snug text-[var(--app-text)]">
+            <p className="mt-1 text-[11px] font-medium normal-case leading-snug text-[var(--app-text)]">
               {foodDetail}
             </p>
           </div>
         )}
 
         {ingredients.length > 0 && (
-          <div className="mt-2">
-            <p className="mb-0.5 text-[9px] font-black uppercase tracking-wide text-slate-500">
+          <div className="mt-4">
+            <p className="mb-2 text-[9px] font-black uppercase tracking-wide text-slate-500">
               Ingredientes / porciones
             </p>
-            <div className="flex flex-wrap gap-1">
+            <div className="space-y-1.25 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/60 p-2.5">
               {ingredients.map((item, idx) => (
-                <IngredientPill key={`detail-ing-${idx}`} item={item} />
+                <IngredientRow key={`detail-ing-${idx}`} item={item} />
               ))}
             </div>
           </div>
@@ -317,31 +339,62 @@ function MealDetailSheet({ detail, onClose }) {
   );
 }
 
-function DetailMetric({ label, value }) {
+function CaloriesHero({ value }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]/70 px-1.5 py-0.5">
-      <span className="text-[8px] font-black uppercase tracking-wide text-slate-500">
-        {label}
-      </span>
-      <span className="text-[9px] font-black text-[var(--app-text)]">{value}</span>
+    <div className="rounded-2xl border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 px-4 py-3">
+      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
+        kcal
+      </p>
+      <div className="mt-1 flex items-end gap-2">
+        <span className="text-[28px] font-black leading-none tracking-tight text-[var(--app-text)]">
+          {value}
+        </span>
+        <span className="pb-0.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
+          calorías
+        </span>
+      </div>
     </div>
   );
 }
 
-function IngredientPill({ item }) {
+function MacroBlock({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/80 px-3 py-2.5">
+      <div className="flex min-h-[2.75rem] flex-col justify-center">
+        <span className="block text-[8px] font-black uppercase tracking-[0.12em] text-slate-500">
+          {label}
+        </span>
+        <span className="mt-1 block text-[13px] font-extrabold leading-none text-[var(--app-text)]">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function IngredientRow({ item }) {
   const { amount, name } = splitIngredient(item);
 
   return (
-    <div className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)]/70 px-1.5 py-px">
-      <span className="max-w-[96px] truncate text-[8px] font-semibold normal-case text-slate-300">
-        {name}
-      </span>
-
-      <span className="shrink-0 text-[8px] font-black normal-case text-[var(--app-primary)]">
-        {amount}
-      </span>
+    <div className="flex items-start gap-2 text-[11px] leading-snug text-[var(--app-text)]">
+      <span className="mt-[0.2rem] shrink-0 text-[var(--app-primary)]">•</span>
+      <p className="min-w-0">
+        <span className="font-semibold normal-case">{name}</span>
+        {amount ? <span className="text-slate-300/90"> ({amount})</span> : null}
+      </p>
     </div>
   );
+}
+
+function getNutritionSummary({ calories, protein, carbs, fat }) {
+  const summary = [];
+
+  if (protein >= 25) summary.push("Proteína adecuada");
+  if (carbs >= 35) summary.push("Alta en carbohidratos");
+  if (fat <= 10 && fat > 0) summary.push("Ligera en grasa");
+  if (calories >= 500) summary.push("Buena para recuperación");
+
+  return summary.slice(0, 3);
 }
 
 function getMealId(day, meal, index) {
