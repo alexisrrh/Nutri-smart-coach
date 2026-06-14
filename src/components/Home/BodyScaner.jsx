@@ -5,7 +5,7 @@ import { NavNavigation } from "./NavNavigation";
 
 export function BodyScaner() {
   return (
-    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-center justify-center overflow-hidden font-sans">
+    <div className="h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-hidden font-sans">
       
       <style>{`
         @keyframes laserMotion {
@@ -37,8 +37,8 @@ export function BodyScaner() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-20" />
 
         {/* 1. HEADER (Fijo) */}
-       <header className="relative z-20 px-5 pt-5 shrink-0">
-          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-4">
+        <header className="relative z-20 px-5 pt-3 shrink-0">
+          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-3">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -67,23 +67,23 @@ export function BodyScaner() {
         </header>
 
         {/* 2. CONTENIDO SCROLLABLE (Para evitar choques en móviles pequeños) */}
-        <section className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide px-5">
-          <div className="flex flex-col items-center text-center py-6">
-            <h1 className="text-[2.2rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
+        <section className="relative z-10 flex-1 overflow-hidden overflow-x-hidden px-5">
+          <div className="flex h-full flex-col items-center text-center py-3">
+            <h1 className="text-[1.75rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
               Body <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">Scaner</span>
             </h1>
-            <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
+            <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
               Check-in físico con foto
             </p>
 
             {/* VISOR DE ESCÁNER */}
-            <div className="mt-8">
+            <div className="mt-4">
               <Link 
                 to="/registro" 
-                className="relative flex h-44 w-44 items-center justify-center rounded-[3.2rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-2.5 backdrop-blur-sm active:scale-[0.98] shadow-[0_0_40px_var(--app-glow)] transition-all block group"
+                className="relative flex h-36 w-36 items-center justify-center rounded-[3rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-1.5 backdrop-blur-sm active:scale-[0.98] shadow-[0_0_40px_var(--app-glow)] transition-all block group"
               >
-                <div className="radar-glow absolute inset-0 rounded-[3.2rem] bg-[var(--app-primary)]/20" />
-                <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[2.6rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)] shadow-[inset_0_0_20px_var(--app-glow)]">
+                <div className="radar-glow absolute inset-0 rounded-[3rem] bg-[var(--app-primary)]/20" />
+                <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[2.4rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)] shadow-[inset_0_0_20px_var(--app-glow)]">
                     <SmartImage src="/icons/bodyscan.png" alt="Body Scan" className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/70 via-transparent to-transparent z-10 pointer-events-none" />
                     {/* LÍNEA LÁSER ROJA */}
@@ -93,19 +93,19 @@ export function BodyScaner() {
             </div>
 
             {/* LISTA DE CARACTERÍSTICAS (Incluyendo Privacidad) */}
-            <div className="mt-8 w-full space-y-3 text-left pb-6">
+            <div className="mt-4 w-full space-y-2 text-left pb-2">
               <FeatureCard 
-                icon={<Sparkles size={16} className="text-[var(--app-primary)]" />}
+                icon={<Sparkles size={14} className="text-[var(--app-primary)]" />}
                 title="Grasa Corporal Estimada"
                 desc="Detecta cambios en la definición muscular mediante IA visual."
               />
               <FeatureCard 
-                icon={<Zap size={16} className="text-cyan-300" />}
+                icon={<Zap size={14} className="text-cyan-300" />}
                 title="Evolución de Perímetros"
                 desc="Mide variaciones en hombros, cintura y extremidades."
               />
               <FeatureCard 
-                icon={<ShieldCheck size={16} className="text-amber-300" />}
+                icon={<ShieldCheck size={14} className="text-amber-300" />}
                 title="Privacidad Protegida"
                 desc="Tus fotos se procesan localmente y nunca se comparten."
               />
@@ -116,15 +116,15 @@ export function BodyScaner() {
         {/* 3. FOOTER FIJO (Botón + Nav integrados) */}
         <footer className="relative z-30 shrink-0 bg-[var(--app-surface)]/95 backdrop-blur-2xl border-t border-[var(--app-border)]/20 pb-[env(safe-area-inset-bottom)]">
           <div className="flex flex-col w-full">
-            <div className="px-5 pt-4 pb-2 w-full">
+            <div className="px-5 pt-2.5 pb-2 w-full">
               <Link
                 to="/registro"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
                 Iniciar Escaneo <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
-            <div className="h-20 flex items-center justify-center">
+            <div className="h-16 flex items-center justify-center">
               <NavNavigation />
             </div>
           </div>

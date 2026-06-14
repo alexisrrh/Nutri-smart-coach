@@ -305,7 +305,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
     status: "active",
   });
 
-  if (referralActivation?.referral?.type !== "influencer") {
+  if (!["influencer", "creator"].includes(referralActivation?.referral?.type)) {
     return;
   }
 

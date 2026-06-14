@@ -26,6 +26,7 @@ import {
 } from "../services/premiumService";
 import { trackEvent } from "../services/analytics";
 import { getRuntimePlatform } from "../services/platform";
+import { isNativeAndroid, loadProducts } from "../services/mobileBillingService";
 import { getPremiumReferralBannerCopy } from "./premiumReferralBannerCopy";
 
 const comparisonRows = [
@@ -53,7 +54,7 @@ export function Premium() {
   const runtimePlatform = getRuntimePlatform();
   const isWebPlatform = runtimePlatform === "web";
   const isIosPlatform = runtimePlatform === "ios";
-  const isAndroidPlatform = runtimePlatform === "android";
+  const isAndroidPlatform = isNativeAndroid();
   const isNativePlatform = isIosPlatform || isAndroidPlatform;
   const isPremium = Boolean(premiumStatus?.is_premium);
   const premiumSource = premiumStatus?.premium_source || null;
@@ -153,6 +154,14 @@ export function Premium() {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!isAndroidPlatform) return undefined;
+
+    void loadProducts();
+
+    return undefined;
+  }, [isAndroidPlatform]);
 
   async function handleCheckout(plan) {
     if (!user) {
