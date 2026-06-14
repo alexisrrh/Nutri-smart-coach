@@ -312,35 +312,98 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
       day,
       mealIndex,
     });
-    const nextWeek = week.map((weekDay, index) => {
-      if (index !== dayIndex) return weekDay;
-
-      return {
-        ...weekDay,
-        meals: weekDay.meals.map((meal, currentIndex) =>
-          currentIndex === mealIndex ? replacementMeal : meal
-        ),
-      };
+    const nextWeek = buildUpdatedRewriteWeek({
+      week,
+      dayIndex,
+      mealIndex,
+      replacementMeal,
     });
 
-    const { error: updateError } = await supabase
-      .from("diet_plans")
-      .update({
-        week: nextWeek,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", dietPlanId)
-      .eq("user_id", userId);
+    console.info("rewrite-meal update context", {
+      dietPlanId,
+      userId,
+      dayIndex,
+      mealIndex,
+      weekType: Array.isArray(week) ? "array" : typeof week,
+      dayType: day ? typeof day : "missing",
+      mealsType: Array.isArray(meals) ? "array" : typeof meals,
+      updatePath: "diet_plans.week",
+      targetDay: day?.day || null,
+      mealId,
+      mealName,
+      mealType,
+      foodName,
+    });
+
+    console.info("rewrite-meal updated day snapshot", {
+      dayIndex,
+      dayLabel: nextWeek?.[dayIndex]?.day || null,
+      mealCount: Array.isArray(nextWeek?.[dayIndex]?.meals)
+        ? nextWeek[dayIndex].meals.length
+        : null,
+      firstMeal: nextWeek?.[dayIndex]?.meals?.[mealIndex] || null,
+    });
+
+    const updatePayload = {
+      week: nextWeek,
+      updated_at: new Date().toISOString(),
+    };
+
+    let updatedDietPlan = null;
+    let updateError = null;
+
+    {
+      const primaryUpdate = await supabase
+        .from("diet_plans")
+        .update(updatePayload)
+        .eq("id", dietPlanId)
+        .eq("user_id", userId)
+        .select("id, user_id, week, profile, preferences")
+        .single();
+
+      updatedDietPlan = primaryUpdate.data || null;
+      updateError = primaryUpdate.error || null;
+
+      if (updateError && looksLikeMissingUpdatedAtColumn(updateError)) {
+        console.warn("rewrite-meal retrying save without updated_at", {
+          dietPlanId,
+          userId,
+          dayIndex,
+          mealIndex,
+          message: updateError.message || String(updateError),
+        });
+
+        const fallbackUpdate = await supabase
+          .from("diet_plans")
+          .update({ week: nextWeek })
+          .eq("id", dietPlanId)
+          .eq("user_id", userId)
+          .select("id, user_id, week, profile, preferences")
+          .single();
+
+        updatedDietPlan = fallbackUpdate.data || null;
+        updateError = fallbackUpdate.error || null;
+      }
+    }
 
     if (updateError) {
+      console.error("rewrite-meal Supabase update failed", {
+        dietPlanId,
+        userId,
+        dayIndex,
+        mealIndex,
+        updatePayload,
+        error: updateError,
+      });
       return res.status(500).json({
         error: "No se pudo guardar la comida actualizada.",
+        detail: updateError.message || String(updateError),
       });
     }
 
     return res.json({
       meal: replacementMeal,
-      week: nextWeek,
+      week: updatedDietPlan?.week || nextWeek,
       diet_plan_id: dietPlanId,
     });
   } catch (error) {
@@ -638,6 +701,48 @@ Reglas:
 
 function getDietMealId(day, meal, index) {
   return `${day || "day"}-${meal?.id || meal?.type || meal?.name || "meal"}-${index}`;
+}
+
+function buildUpdatedRewriteWeek({ week, dayIndex, mealIndex, replacementMeal }) {
+  if (!Array.isArray(week)) return [];
+
+  return week.map((weekDay, index) => {
+    if (index !== dayIndex) {
+      return weekDay;
+    }
+
+    const meals = Array.isArray(weekDay?.meals)
+      ? weekDay.meals
+      : Object.values(weekDay?.meals || {});
+
+    if (!Array.isArray(meals) || meals.length === 0) {
+      return {
+        ...weekDay,
+        meals: meals || [],
+      };
+    }
+
+    const updatedMeals = meals.map((meal, currentIndex) =>
+      currentIndex === mealIndex ? replacementMeal : meal
+    );
+
+    return {
+      ...weekDay,
+      meals: updatedMeals,
+    };
+  });
+}
+
+function looksLikeMissingUpdatedAtColumn(error) {
+  const message = String(error?.message || error || "").toLowerCase();
+
+  return (
+    message.includes("updated_at") &&
+    (message.includes("column") ||
+      message.includes("not exist") ||
+      message.includes("does not exist") ||
+      message.includes("unknown"))
+  );
 }
 
 function resolveRewriteMealIndex({
