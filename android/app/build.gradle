@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+
     namespace = "com.nutrismartcoach.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -16,8 +17,18 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+
+    signingConfigs {
+        release {
+            storeFile file("C:/Users/alexi/Documents/nutrismartcoach-release.jks")
+            storePassword "haddad123"
+            keyAlias "nutrismartcoach"
+            keyPassword "haddad123"
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
