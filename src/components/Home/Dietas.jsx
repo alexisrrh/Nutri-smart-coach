@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, CheckCircle2, Flame } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 
@@ -7,6 +8,7 @@ import tortilla from "../../assets/tortilla.jpg";
 import bowlpollo from "../../assets/bowlpollo.jpg";
 import salmonesparrago from "../../assets/salmonesparrago.jpg";
 export function Dietas() {
+  const { t } = useTranslation();
   return (
     <div className="h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-hidden font-sans">
       <main
@@ -21,15 +23,15 @@ export function Dietas() {
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
-                alt="Logo"
+                alt={t("home.brandAlt")}
                 className="h-10 w-10 rounded-xl object-cover bg-transparent p-0.5 shadow-[0_0_20px_var(--app-glow)] border border-[var(--app-border)]"
               />
               <div className="leading-none">
                 <p className="text-sm font-black italic tracking-tight text-[var(--app-text)]">
-                  NUTRI<span className="text-[var(--app-primary)]">SMART</span>
+                  {t("home.brandPrefix")}<span className="text-[var(--app-primary)]">{t("home.brandSuffix")}</span>
                 </p>
                 <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)]">
-                  Coach IA
+                  {t("home.headerTagline")}
                 </p>
               </div>
             </div>
@@ -39,13 +41,13 @@ export function Dietas() {
                 to="/login"
                 className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-text)]"
               >
-                INICIAR SESIÓN
+                {t("home.header.login")}
               </Link>
               <Link
                 to="/registro"
                 className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition-transform active:scale-95"
               >
-                REGÍSTRATE
+                {t("home.header.register")}
               </Link>
             </div>
           </nav>
@@ -54,10 +56,10 @@ export function Dietas() {
         <section className="relative z-10 flex flex-1 flex-col overflow-hidden px-5">
           <div className="shrink-0 pt-3 pb-2 text-center">
             <h1 className="text-[1.7rem] font-black italic uppercase tracking-tighter text-[var(--app-text)]">
-              Mi Dieta <span className="text-[var(--app-primary)]">Hoy</span>
+              {t("home.mealPlans.titlePrefix")} <span className="text-[var(--app-primary)]">{t("home.mealPlans.titleAccent")}</span>
             </h1>
             <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
-              Generamos tu dieta en segundos con IA
+              {t("home.mealPlans.subtitle")}
             </p>
           </div>
 
@@ -66,7 +68,7 @@ export function Dietas() {
               <div className="relative h-[150px] w-full overflow-hidden rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_0_30px_var(--app-glow)]">
                 <img
                   src={dietashome}
-                  alt="Dieta personalizada"
+                  alt={t("home.mealPlans.imageAlt")}
                   className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/65 via-transparent to-transparent pointer-events-none" />
@@ -76,22 +78,22 @@ export function Dietas() {
             <div className="grid gap-2">
               <MealPreview
                 image={tortilla}
-                time="08:30 AM"
-                title="Tortilla de claras y avena"
-                info="340 kcal • 30g Pro"
+                time={t("home.mealPlans.samples.breakfast.time")}
+                title={t("home.mealPlans.samples.breakfast.title")}
+                info={t("home.mealPlans.samples.breakfast.info")}
               />
               <MealPreview
                 image={bowlpollo}
-                time="02:30 PM"
-                title="Bowl de pollo y quinoa"
-                info="680 kcal • 44g Pro"
+                time={t("home.mealPlans.samples.lunch.time")}
+                title={t("home.mealPlans.samples.lunch.title")}
+                info={t("home.mealPlans.samples.lunch.info")}
                 active
               />
               <MealPreview
                 image={salmonesparrago}
-                time="09:35 PM"
-                title="Salmón con espárragos"
-                info="520 kcal • 38g Pro"
+                time={t("home.mealPlans.samples.dinner.time")}
+                title={t("home.mealPlans.samples.dinner.title")}
+                info={t("home.mealPlans.samples.dinner.info")}
               />
             </div>
           </div>
@@ -104,7 +106,7 @@ export function Dietas() {
                 to="/registro"
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
-                Iniciar Dietas
+                {t("home.mealPlans.cta")}
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

@@ -10,6 +10,215 @@
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos del servicio"
   },
+  "home": {
+    "brandAlt": "Nutri Smart Coach",
+    "brand": "Nutri Smart Coach",
+    "brandPrefix": "NUTRI",
+    "brandSuffix": "SMART",
+    "headerTagline": "Análisis en vivo",
+    "header": {
+      "login": "Iniciar sesión",
+      "register": "Registrarse"
+    },
+    "hero": {
+      "badge": "Coach IA",
+      "title": "Fitness +",
+      "titleAccent": "NUTRICIÓN IA",
+      "subtitle": "ANALIZAMOS TU COMIDA CON PRECISIÓN"
+    },
+    "panel": {
+      "badge": "Sistema IA activo",
+      "title": "Análisis en vivo",
+      "imageAlt": "Nutrición"
+    },
+    "macros": {
+      "calories": "Calorías",
+      "protein": "Proteína",
+      "carbs": "Carbs",
+      "fat": "Grasas"
+    },
+    "stats": {
+      "analysis": "Análisis",
+      "coach": "Coach",
+      "habits": "Hábitos"
+    },
+    "privacy": "Política de Privacidad",
+    "cta": "Iniciar análisis",
+    "nav": {
+      "analyze": "Analizar",
+      "checkinPhoto": "Check-in foto",
+      "mealPlan": "Dietas",
+      "progress": "Progreso"
+    },
+    "bodyScanner": {
+      "titlePrefix": "CHECK-IN",
+      "titleAccent": "FÍSICO",
+      "subtitle": "CON FOTO",
+      "imageAlt": "Escaneo corporal",
+      "cta": "Iniciar escaneo",
+      "features": {
+        "fat": {
+          "title": "Grasa corporal estimada",
+          "desc": "Detecta cambios en la definición muscular mediante IA visual."
+        },
+        "measurements": {
+          "title": "Evolución de perímetros",
+          "desc": "Mide variaciones en hombros, cintura y extremidades."
+        },
+        "privacy": {
+          "title": "Privacidad protegida",
+          "desc": "Tus fotos se procesan localmente y nunca se comparten."
+        }
+      }
+    },
+    "mealPlans": {
+      "titlePrefix": "Mi dieta",
+      "titleAccent": "hoy",
+      "subtitle": "Generamos tu dieta en segundos con IA",
+      "imageAlt": "Dieta personalizada",
+      "cta": "Iniciar dietas",
+      "samples": {
+        "breakfast": {
+          "time": "08:30 AM",
+          "title": "Tortilla de claras y avena",
+          "info": "340 kcal • 30g Pro"
+        },
+        "lunch": {
+          "time": "02:30 PM",
+          "title": "Bowl de pollo y quinoa",
+          "info": "680 kcal • 44g Pro"
+        },
+        "dinner": {
+          "time": "09:35 PM",
+          "title": "Salmón con espárragos",
+          "info": "520 kcal • 38g Pro"
+        }
+      }
+    },
+    "progress": {
+      "titlePrefix": "Mi",
+      "titleAccent": "progreso",
+      "subtitle": "Métricas en tiempo real",
+      "banner": {
+        "title": "¡Meta semanal alcanzada!",
+        "subtitle": "Tu ritmo de quema grasa se ha acelerado."
+      },
+      "weightTitle": "Evolución de peso",
+      "weeks": {
+        "s1": "S1",
+        "s2": "S2",
+        "s3": "S3",
+        "s4": "S4"
+      },
+      "metrics": {
+        "fat": "Grasa",
+        "muscle": "Músculo"
+      },
+      "habitsTitle": "Línea de hábitos",
+      "history": {
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "meal": "Análisis Plato",
+        "weight": "Peso"
+      },
+      "cta": "Iniciar registro"
+    }
+  },
+  "auth": {
+    "common": {
+      "back": "Volver",
+      "close": "Cerrar",
+      "privacyPolicy": "Política de privacidad",
+      "termsOfService": "Términos del servicio"
+    },
+    "login": {
+      "brand": "Nutri Smart Coach",
+      "title": "Entra",
+      "subtitle": "Continúa con tus calorías, dietas y progreso en un solo panel.",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "emailPlaceholder": "tu@email.com",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "loading": "Iniciando...",
+      "newHere": "¿Nuevo aquí?",
+      "createAccount": "Crear cuenta",
+      "privacyNote": "Privacidad segura · Datos protegidos · IA nutricional",
+      "errors": {
+        "invalidCredentials": "El correo o la contraseña no son válidos.",
+        "connect": "Error al conectar: ",
+        "callbackInvalid": "callback inválido",
+        "resetRequired": "Introduce tu email para enviarte el enlace.",
+        "resetFailed": "No pudimos enviar el enlace: ",
+        "resetSuccess": "Te enviamos un enlace para restablecer tu contraseña.",
+        "callbackFailed": "No pudimos completar el inicio de sesión: ",
+        "createProfileFailed": "No se pudo crear el perfil del usuario."
+      },
+      "reset": {
+        "eyebrow": "Recuperación segura",
+        "title": "Restablecer contraseña",
+        "subtitle": "Te enviaremos un enlace privado para crear una nueva contraseña.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "tu@email.com",
+        "submit": "Enviar enlace",
+        "loading": "Enviando...",
+        "close": "Cerrar"
+      },
+      "social": {
+        "google": "Continuar con Google",
+        "facebook": "Continuar con Facebook"
+      },
+      "hero": {
+        "badge": "AI ACTIVE",
+        "title": "Nutrición inteligente en tiempo real",
+        "features": {
+          "smartPlans": "Planes inteligentes",
+          "visualAnalysis": "Análisis visual",
+          "adaptiveProgress": "Progreso adaptativo"
+        }
+      }
+    },
+    "register": {
+      "title": "Crea tu plan inteligente",
+      "subtitle": "Empieza con objetivos claros, análisis visual y progreso guiado por IA.",
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "namePlaceholder": "Ej. Alexis Rodríguez",
+      "emailPlaceholder": "tu@email.com",
+      "passwordPlaceholder": "Mínimo 6 caracteres",
+      "invitationQuestion": "¿Tienes un código de invitación?",
+      "invitationSubtitle": "Desbloquea pruebas Premium y recompensas.",
+      "invitationPlaceholder": "Introduce tu código",
+      "invitationApply": "Aplicar código",
+      "invitationValidating": "Validando...",
+      "referralApplied": "Código aplicado al crear tu cuenta.",
+      "creatorCodeApplied": "Código de creador aplicado",
+      "creatorBonusLine1": "Tus 15 días Premium gratis se activarán al crear tu cuenta.",
+      "creatorBonusLine2": "15 días Premium gratis por invitación de creador.",
+      "policyCheckbox": "Acepto las políticas y condiciones de NutriSmart Coach",
+      "submit": "→ Crear cuenta gratis",
+      "loading": "Creando cuenta...",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Iniciar sesión",
+      "errors": {
+        "completeFields": "Completa todos los campos.",
+        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+        "policiesRequired": "Debes aceptar las políticas y condiciones de NutriSmartCoach.",
+        "signUpFailed": "Error al crear la cuenta: ",
+        "profileFailed": "Error creando el perfil.",
+        "invalidReferral": "El código de invitación no es válido o ya no está disponible.",
+        "callbackFailed": "No pudimos completar el inicio de sesión: ",
+        "callbackInvalid": "callback inválido",
+        "connect": "Error al conectar: "
+      },
+      "social": {
+        "google": "Continuar con Google",
+        "facebook": "Continuar con Facebook"
+      }
+    }
+  },
   "progress": {
     "backToDashboard": "Panel",
     "badge": "Evolución IA",

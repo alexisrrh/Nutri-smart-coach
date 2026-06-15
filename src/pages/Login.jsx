@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { trackEvent } from "../services/analytics";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,6 +33,8 @@ import {
 export function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const tl = useCallback((key, options) => t(`auth.login.${key}`, options), [t]);
+  const tc = useCallback((key, options) => t(`auth.common.${key}`, options), [t]);
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,7 +63,7 @@ export function Login() {
         );
 
         if (exchangeError) {
-          setError(t("login.errors.callbackFailed") + exchangeError.message);
+          setError(tl("errors.callbackFailed") + exchangeError.message);
           return;
         }
 
@@ -69,8 +71,8 @@ export function Login() {
         navigate("/dashboard", { replace: true });
       } catch (callbackError) {
         setError(
-          t("login.errors.callbackFailed") +
-            (callbackError?.message || t("login.errors.callbackInvalid"))
+          tl("errors.callbackFailed") +
+            (callbackError?.message || tl("errors.callbackInvalid"))
         );
       }
     };
@@ -87,7 +89,7 @@ export function Login() {
     return () => {
       void listener?.remove?.();
     };
-  }, [isAndroidNative, navigate, t]);
+  }, [isAndroidNative, navigate, tl]);
 
   async function handleSocialLogin(provider) {
     setError("");
@@ -107,7 +109,7 @@ export function Login() {
     });
 
     if (socialError) {
-      setError(t("login.errors.connect") + socialError.message);
+      setError(tl("errors.connect") + socialError.message);
     }
   }
 
@@ -136,7 +138,7 @@ export function Login() {
     const email = resetEmail.trim();
 
     if (!email) {
-      setResetError(t("login.errors.resetRequired"));
+      setResetError(tl("errors.resetRequired"));
       return;
     }
 
@@ -150,11 +152,11 @@ export function Login() {
     setResetLoading(false);
 
     if (resetPasswordError) {
-      setResetError(t("login.errors.resetFailed") + resetPasswordError.message);
+      setResetError(tl("errors.resetFailed") + resetPasswordError.message);
       return;
     }
 
-    setResetMessage(t("login.errors.resetSuccess"));
+    setResetMessage(tl("errors.resetSuccess"));
   }
 
   async function handleSubmit(e) {
@@ -169,7 +171,7 @@ export function Login() {
 
     if (error) {
       setLoading(false);
-      setError(t("login.errors.invalidCredentials"));
+      setError(tl("errors.invalidCredentials"));
       return;
     }
 
@@ -214,7 +216,7 @@ export function Login() {
       } catch (createError) {
         console.error("Error creando perfil:", createError);
         setLoading(false);
-        setError(t("login.errors.createProfileFailed"));
+        setError(tl("errors.createProfileFailed"));
         return;
       }
     }
@@ -236,7 +238,7 @@ export function Login() {
               type="button"
               onClick={() => navigate("/")}
               className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_20px_var(--app-glow)] transition hover:text-[var(--app-text)] active:scale-[0.96]"
-              aria-label={t("common.back")}
+              aria-label={tc("back")}
             >
               <ArrowLeft size={14} />
             </button>
@@ -247,26 +249,26 @@ export function Login() {
           <div className="relative z-10 pt-2">
             <div className="mb-3 flex items-center gap-5 justify-center">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-primary)]/35 bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
-                <img
-                  src="/favicon.png"
-                  alt={t("login.brand")}
-                  className="h-full w-full rounded-2xl object-contain"
-                />
+              <img
+                src="/favicon.png"
+                alt={tl("brand")}
+                className="h-full w-full rounded-2xl object-contain"
+              />
               </div>
 
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  {t("login.brand")}
+                  {tl("brand")}
                 </p>
                 <h1 className="mt-1 flex items-center gap-2 text-[30px] font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
-                  {t("login.title")}
+                  {tl("title")}
                   <LogIn size={21} className="text-[var(--app-primary)]" />
                 </h1>
               </div>
             </div >
 <div className="justify-center text-center">
             <p className="ml-10 mb-3 max-w-[18rem] text-sm leading-5 text-[var(--app-muted)] text-center flex justify-center">
-              {t("login.subtitle")}
+              {tl("subtitle")}
             </p></div>
 
             {error && (
@@ -277,22 +279,22 @@ export function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-2.5">
               <Input
-                label={t("login.emailLabel")}
+                label={tl("emailLabel")}
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder={t("login.emailPlaceholder")}
+                placeholder={tl("emailPlaceholder")}
                 icon={<Mail size={16} />}
               />
 
               <Input
-                label={t("login.passwordLabel")}
+                label={tl("passwordLabel")}
                 name="password"
                 type="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder={t("login.passwordPlaceholder")}
+                placeholder={tl("passwordPlaceholder")}
                 icon={<Lock size={16} />}
               />
 
@@ -302,7 +304,7 @@ export function Login() {
                   onClick={openPasswordReset}
                   className="text-[11px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
-                  {t("login.forgotPassword")}
+                  {tl("forgotPassword")}
                 </button>
               </div>
 
@@ -312,7 +314,7 @@ export function Login() {
                 type="submit"
                 className="mt-1 py-3"
               >
-                {loading ? t("login.loading") : t("login.submit")}
+                {loading ? tl("loading") : tl("submit")}
               </PrimaryButton>
             </form>
 
@@ -320,12 +322,12 @@ export function Login() {
 
             <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5 text-center">
               <p className="text-sm text-[var(--app-muted)]">
-                {t("login.newHere")}{" "}
+                {tl("newHere")}{" "}
                 <Link
                   to="/registro"
                   className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
-                  {t("login.createAccount")}
+                  {tl("createAccount")}
                 </Link>
               </p>
             </div>
@@ -337,7 +339,7 @@ export function Login() {
         </div>
 
         <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
-          {t("login.privacyNote")}
+          {tl("privacyNote")}
         </p>
       </div>
 
@@ -366,6 +368,7 @@ function PasswordResetModal({
   onSubmit,
 }) {
   const { t } = useTranslation();
+  const tl = (key, options) => t(`auth.login.${key}`, options);
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-6 backdrop-blur-md">
       <section
@@ -381,16 +384,16 @@ function PasswordResetModal({
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                {t("login.reset.eyebrow")}
+                {tl("reset.eyebrow")}
               </p>
               <h2
                 id="password-reset-title"
                 className="mt-1 text-xl font-black uppercase italic leading-tight text-[var(--app-text)]"
               >
-                {t("login.reset.title")}
+                {tl("reset.title")}
               </h2>
               <p className="mt-2 text-sm font-medium leading-5 text-[var(--app-muted)]">
-                {t("login.reset.subtitle")}
+                {tl("reset.subtitle")}
               </p>
             </div>
 
@@ -399,7 +402,7 @@ function PasswordResetModal({
               onClick={onClose}
               disabled={loading}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)] active:scale-[0.96] disabled:opacity-50"
-              aria-label={t("login.reset.close")}
+              aria-label={tl("reset.close")}
             >
               <X size={16} />
             </button>
@@ -419,12 +422,12 @@ function PasswordResetModal({
 
           <form onSubmit={onSubmit} className="space-y-3">
             <Input
-              label={t("login.reset.emailLabel")}
+              label={tl("reset.emailLabel")}
               name="resetEmail"
               type="email"
               value={email}
               onChange={(event) => onChangeEmail(event.target.value)}
-              placeholder={t("login.reset.emailPlaceholder")}
+              placeholder={tl("reset.emailPlaceholder")}
               icon={<Mail size={16} />}
             />
 
@@ -434,7 +437,7 @@ function PasswordResetModal({
               icon={!loading && <ArrowRight size={16} />}
               className="py-3"
             >
-              {loading ? t("login.reset.loading") : t("login.reset.submit")}
+              {loading ? tl("reset.loading") : tl("reset.submit")}
             </PrimaryButton>
           </form>
         </div>
@@ -445,6 +448,7 @@ function PasswordResetModal({
 
 function SocialLoginButtons({ onSocialLogin }) {
   const { t } = useTranslation();
+  const tl = (key, options) => t(`auth.login.${key}`, options);
   return (
     <div className="mt-3 flex flex-col gap-3">
       <button
@@ -458,7 +462,7 @@ function SocialLoginButtons({ onSocialLogin }) {
           <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
           <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
         </svg>
-        {t("login.social.google")}
+        {tl("social.google")}
       </button>
 
       <button
@@ -469,7 +473,7 @@ function SocialLoginButtons({ onSocialLogin }) {
         <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
-        {t("login.social.facebook")}
+        {tl("social.facebook")}
       </button>
     </div>
   );
@@ -487,6 +491,8 @@ function Input({ label, icon, ...props }) {
 }
 
 function ActiveCore() {
+  const { t } = useTranslation();
+  const tl = (key, options) => t(`auth.login.${key}`, options);
   return (
     <SurfaceCard className="relative overflow-hidden p-2.5">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,#22d3ee22,transparent_32%),radial-gradient(circle_at_90%_20%,var(--app-primary)24,transparent_36%)]" />
@@ -507,26 +513,26 @@ function ActiveCore() {
           <div className="mb-1.5 flex items-center gap-2">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]" />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
-              AI ACTIVE
+              {tl("hero.badge")}
             </p>
           </div>
 
           <p className="text-sm font-black uppercase italic leading-5 text-[var(--app-text)]">
-            Nutrición inteligente en tiempo real
+            {tl("hero.title")}
           </p>
 
           <div className="mt-2 grid grid-cols-3 gap-1.5">
             <CoreHighlight
               icon={<Target size={12} />}
-              label="planes inteligentes"
+              label={tl("hero.features.smartPlans")}
             />
             <CoreHighlight
               icon={<ScanLine size={12} />}
-              label="análisis visual"
+              label={tl("hero.features.visualAnalysis")}
             />
             <CoreHighlight
               icon={<Activity size={12} />}
-              label="progreso adaptativo"
+              label={tl("hero.features.adaptiveProgress")}
             />
           </div>
         </div>
