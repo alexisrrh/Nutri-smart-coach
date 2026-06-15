@@ -298,7 +298,7 @@ export function Home() {
               </div>
                <div className="home-home-privacy text-center justify-center">
                 <Link 
-                to="/privacidad" 
+                to="/privacy" 
                 className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors "
               >
                 Política de Privacidad
