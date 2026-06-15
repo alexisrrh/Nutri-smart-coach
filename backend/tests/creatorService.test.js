@@ -361,7 +361,9 @@ describe("creator service", () => {
     );
 
     expect(result.tracked).toBe(true);
+    expect(result.deduped).toBe(false);
     expect(repo.insertClickCalls).toHaveLength(1);
+    expect(repo.findRecentCreatorLinkClicksByCreatorCodeCalls).toHaveLength(1);
     expect(repo.insertClickCalls[0]).toMatchObject({
       creatorCode: "NUTRIALEXIS",
       creatorUserId: "creator-1",
@@ -369,6 +371,73 @@ describe("creator service", () => {
       userAgent: "UA",
     });
     expect(repo.insertClickCalls[0].ipHash).not.toBe("1.2.3.4");
+  });
+
+  it("deduplicates a recent click within the cooldown window", async () => {
+    const repo = createCreatorRepo({
+      recentClicksByCreatorCode: [
+        {
+          id: "click-1",
+          creator_code: "NUTRIALEXIS",
+          creator_user_id: "creator-1",
+          visitor_id: "visitor-1",
+          ip_hash: null,
+          user_agent: null,
+          created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+      ],
+    });
+    const referralRepo = createCreatorReferralRepo({
+      codes: [
+        {
+          id: "code-1",
+          user_id: "creator-1",
+          code: "NUTRIALEXIS",
+          type: "creator",
+          is_active: true,
+        },
+      ],
+    });
+
+    const result = await trackCreatorLinkClick(
+      { code: "nutrialexis", visitorId: "visitor-1", ipHash: "1.2.3.4", userAgent: "UA" },
+      { repo, referralRepo }
+    );
+
+    expect(result.tracked).toBe(true);
+    expect(result.deduped).toBe(true);
+    expect(result.click).toMatchObject({ id: "click-1" });
+    expect(repo.findRecentCreatorLinkClicksByCreatorCodeCalls).toHaveLength(1);
+    expect(repo.insertClickCalls).toHaveLength(0);
+  });
+
+  it("rejects invalid tracking bodies", async () => {
+    const repo = createCreatorRepo();
+    const referralRepo = createCreatorReferralRepo();
+
+    await expect(
+      trackCreatorLinkClick(
+        { code: { bad: true } },
+        { repo, referralRepo }
+      )
+    ).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("rejects invalid creator codes with a controlled error", async () => {
+    const repo = createCreatorRepo();
+    const referralRepo = createCreatorReferralRepo();
+
+    await expect(
+      trackCreatorLinkClick(
+        { code: "NUTRIALEXIS" },
+        { repo, referralRepo }
+      )
+    ).rejects.toMatchObject({
+      statusCode: 404,
+    });
+    expect(repo.insertClickCalls).toHaveLength(0);
   });
 
   it("requests a payout only when the available balance reaches the minimum", async () => {
@@ -1105,12 +1174,14 @@ describe("creator service", () => {
 function createCreatorRepo(initial = {}) {
   const insertCalls = [];
   const insertClickCalls = [];
+  const findRecentCreatorLinkClicksByCreatorCodeCalls = [];
   const application = initial.application || null;
   const activeApplication = initial.activeApplication || null;
 
   return {
     insertCalls,
     insertClickCalls,
+    findRecentCreatorLinkClicksByCreatorCodeCalls,
     async getLatestApplicationByUserId() {
       return application;
     },
@@ -1135,6 +1206,14 @@ function createCreatorRepo(initial = {}) {
     },
     async countCreatorLinkClicksByCreatorUserId() {
       return initial.clicks || 0;
+    },
+    async findRecentCreatorLinkClicksByCreatorCode(creatorCode, sinceIso, limit) {
+      findRecentCreatorLinkClicksByCreatorCodeCalls.push({
+        creatorCode,
+        sinceIso,
+        limit,
+      });
+      return initial.recentClicksByCreatorCode || [];
     },
     async listCreatorPayoutRequestsByCreatorUserId() {
       return initial.payoutRequests || [];

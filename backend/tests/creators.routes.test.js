@@ -162,6 +162,42 @@ describe("creator routes", () => {
     expect(response.body).toEqual({ ok: true });
   });
 
+  it("returns deduped=true when the click is deduplicated", async () => {
+    const trackCreatorLinkClick = (await import("../services/creator.service.js")).trackCreatorLinkClick;
+    trackCreatorLinkClick.mockResolvedValueOnce({ tracked: true, deduped: true });
+
+    const response = await invokeRouter("POST", "/track-click", {
+      body: { code: "NUTRIALEXIS" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({ ok: true, deduped: true });
+  });
+
+  it("returns a controlled error for invalid creator codes", async () => {
+    const trackCreatorLinkClick = (await import("../services/creator.service.js")).trackCreatorLinkClick;
+    trackCreatorLinkClick.mockRejectedValueOnce(Object.assign(new Error("Código de creador no válido."), { statusCode: 404 }));
+
+    const response = await invokeRouter("POST", "/track-click", {
+      body: { code: "INVALIDO" },
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toEqual({ error: "Código de creador no válido." });
+  });
+
+  it("returns a controlled error for invalid tracking bodies", async () => {
+    const trackCreatorLinkClick = (await import("../services/creator.service.js")).trackCreatorLinkClick;
+    trackCreatorLinkClick.mockRejectedValueOnce(Object.assign(new Error("Carga de tracking inválida."), { statusCode: 400 }));
+
+    const response = await invokeRouter("POST", "/track-click", {
+      body: { code: { bad: true } },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({ error: "Carga de tracking inválida." });
+  });
+
   it("returns 201 for POST /creators/payouts/request when authenticated", async () => {
     const response = await invokeRouter("POST", "/payouts/request", {
       headers: { authorization: "Bearer test-token" },

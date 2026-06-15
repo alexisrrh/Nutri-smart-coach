@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAuthenticatedUser, verifySupabaseUser } from "../middleware/auth.js";
+import { createRateLimiter } from "../middleware/rateLimit.js";
 import {
   getCreatorStatus,
   requestCreatorPayout,
@@ -9,6 +10,12 @@ import {
 } from "../services/creator.service.js";
 
 const router = Router();
+const trackClickRateLimiter = createRateLimiter({
+  name: "creator_track_click",
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: "Demasiadas peticiones de tracking en poco tiempo. Inténtalo de nuevo más tarde.",
+});
 
 router.get("/routes", (req, res) => {
   return res.json({
@@ -24,20 +31,30 @@ router.get("/routes", (req, res) => {
   });
 });
 
-router.post("/track-click", async (req, res) => {
-  await trackCreatorLinkClick(
-    {
-      code: req.body?.code,
-      visitorId: req.body?.visitorId || null,
-      userAgent: req.get("user-agent") || null,
-      ipHash: req.ip || req.headers["x-forwarded-for"] || null,
-    },
-    {
-      logger: console,
-    }
-  );
+router.post("/track-click", trackClickRateLimiter, async (req, res) => {
+  try {
+    const result = await trackCreatorLinkClick(
+      {
+        code: req.body?.code,
+        visitorId: req.body?.visitorId || null,
+        userAgent: req.get("user-agent") || null,
+        ipHash: req.ip || req.headers["x-forwarded-for"] || null,
+      },
+      {
+        logger: console,
+      }
+    );
 
-  return res.status(200).json({ ok: true });
+    return res.status(200).json({
+      ok: true,
+      ...(result?.deduped ? { deduped: true } : {}),
+    });
+  } catch (error) {
+    const statusCode = Number(error?.statusCode || 500);
+    return res.status(statusCode).json({
+      error: error?.message || "No se pudo registrar el clic.",
+    });
+  }
 });
 
 router.get("/me", verifySupabaseUser, async (req, res, next) => {

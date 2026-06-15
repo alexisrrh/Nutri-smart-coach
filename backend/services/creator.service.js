@@ -12,6 +12,12 @@ import { sendEmail } from "./email.service.js";
 const MINIMUM_CREATOR_FOLLOWERS = 5000;
 const CREATOR_SHARING_TRIAL_DAYS = 15;
 const CREATOR_PAYOUT_MINIMUM = 25;
+const TRACK_CLICK_DEDUP_WINDOW_MS = 6 * 60 * 60 * 1000;
+const TRACK_CLICK_MAX_CODE_LENGTH = 64;
+const TRACK_CLICK_MAX_VISITOR_ID_LENGTH = 128;
+const TRACK_CLICK_MAX_USER_AGENT_LENGTH = 256;
+const TRACK_CLICK_MAX_IP_HASH_LENGTH = 128;
+const TRACK_CLICK_RECENT_LIMIT = 25;
 const CREATOR_APPLICATION_ADMIN_EMAIL =
   process.env.CREATOR_APPLICATION_ADMIN_EMAIL || "info@nutrismartcoach.com";
 const VALID_SOCIAL_PLATFORMS = new Set(["instagram", "tiktok", "youtube", "other"]);
@@ -438,50 +444,74 @@ export async function trackCreatorLinkClick(
     options.referralRepo || createReferralRepository(options.supabaseClient || supabase);
   const creatorRepo = options.repo || createCreatorRepository(options.supabaseClient || supabase);
   const logger = options.logger || console;
-  const normalizedCode = normalizeTrackingCreatorCode(code);
-  const safeIpHash = hashTrackingIp(ipHash);
+  const normalized = normalizeTrackingClickPayload({
+    code,
+    visitorId,
+    userAgent,
+    ipHash,
+  });
+  const normalizedCode = normalizeTrackingCreatorCode(normalized.code);
 
   if (!normalizedCode) {
-    return { tracked: false };
+    throw createPublicError("Código de creador requerido.", 400);
   }
 
-  try {
-    const referralCode = await referralRepo.getCodeByCode(normalizedCode);
-    if (
-      !referralCode ||
-      referralCode.is_active === false ||
-      String(referralCode.type || "").toLowerCase() !== "creator"
-    ) {
-      return { tracked: false };
-    }
+  const referralCode = await referralRepo.getCodeByCode(normalizedCode);
+  if (
+    !referralCode ||
+    referralCode.is_active === false ||
+    String(referralCode.type || "").toLowerCase() !== "creator"
+  ) {
+    throw createPublicError("Código de creador no válido.", 404);
+  }
 
-    const trackedClick = await creatorRepo.insertCreatorLinkClick({
-      creatorCode: referralCode.code,
-      creatorUserId: referralCode.user_id,
-      visitorId,
-      ipHash: safeIpHash,
-      userAgent,
-    });
+  const safeIpHash = hashTrackingIp(normalized.ipHash);
+  const recentClicks = await creatorRepo.findRecentCreatorLinkClicksByCreatorCode?.(
+    referralCode.code,
+    new Date(Date.now() - TRACK_CLICK_DEDUP_WINDOW_MS).toISOString(),
+    TRACK_CLICK_RECENT_LIMIT
+  );
+  const duplicateClick = findRecentTrackingClick(recentClicks, {
+    visitorId: normalized.visitorId,
+    ipHash: safeIpHash,
+    userAgent: normalized.userAgent,
+  });
 
+  if (duplicateClick) {
     auditLog(logger, {
-      event: "creator_link_click.tracked",
+      event: "creator_link_click.deduped",
       code: referralCode.code,
       creatorUserId: referralCode.user_id,
-      clickId: trackedClick?.id || null,
+      clickId: duplicateClick?.id || null,
     });
 
     return {
       tracked: true,
-      click: trackedClick,
+      deduped: true,
+      click: duplicateClick,
     };
-  } catch (error) {
-    auditLog(logger, {
-      event: "creator_link_click.failed",
-      code: normalizedCode,
-      error: error?.message || String(error),
-    });
-    return { tracked: false };
   }
+
+  const trackedClick = await creatorRepo.insertCreatorLinkClick({
+    creatorCode: referralCode.code,
+    creatorUserId: referralCode.user_id,
+    visitorId: normalized.visitorId,
+    ipHash: safeIpHash,
+    userAgent: normalized.userAgent,
+  });
+
+  auditLog(logger, {
+    event: "creator_link_click.tracked",
+    code: referralCode.code,
+    creatorUserId: referralCode.user_id,
+    clickId: trackedClick?.id || null,
+  });
+
+  return {
+    tracked: true,
+    deduped: false,
+    click: trackedClick,
+  };
 }
 
 export async function requestCreatorPayout(userId, options = {}) {
@@ -653,6 +683,19 @@ export function createCreatorRepository(supabaseClient) {
 
       if (error) throw wrapDbError("No se pudieron contar los clics.", error);
       return count || 0;
+    },
+
+    async findRecentCreatorLinkClicksByCreatorCode(creatorCode, sinceIso, limit = TRACK_CLICK_RECENT_LIMIT) {
+      const { data, error } = await supabaseClient
+        .from("creator_link_clicks")
+        .select("id, creator_code, creator_user_id, visitor_id, ip_hash, user_agent, created_at")
+        .eq("creator_code", creatorCode)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(Math.max(1, Number(limit) || TRACK_CLICK_RECENT_LIMIT));
+
+      if (error) throw wrapDbError("No se pudieron revisar los clics recientes.", error);
+      return data || [];
     },
 
     async insertCreatorLinkClick(payload) {
@@ -1199,11 +1242,83 @@ function normalizeTrackingCreatorCode(value) {
     .replace(/[^A-Z0-9]/g, "");
 }
 
+function normalizeTrackingClickPayload(payload = {}) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw createPublicError("Carga de tracking inválida.", 400);
+  }
+
+  const code = normalizeTrackingField(payload.code, {
+    label: "Código de creador",
+    maxLength: TRACK_CLICK_MAX_CODE_LENGTH,
+    required: true,
+  });
+  const visitorId = normalizeTrackingField(payload.visitorId, {
+    label: "visitorId",
+    maxLength: TRACK_CLICK_MAX_VISITOR_ID_LENGTH,
+  });
+  const userAgent = normalizeTrackingField(payload.userAgent, {
+    label: "userAgent",
+    maxLength: TRACK_CLICK_MAX_USER_AGENT_LENGTH,
+  });
+  const ipHash = normalizeTrackingField(payload.ipHash, {
+    label: "ipHash",
+    maxLength: TRACK_CLICK_MAX_IP_HASH_LENGTH,
+  });
+
+  return { code, visitorId, userAgent, ipHash };
+}
+
+function normalizeTrackingField(value, { label, maxLength, required = false } = {}) {
+  if (value == null || value === "") {
+    if (required) {
+      throw createPublicError(`${label} requerido.`, 400);
+    }
+
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw createPublicError(`${label} inválido.`, 400);
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    if (required) {
+      throw createPublicError(`${label} requerido.`, 400);
+    }
+
+    return null;
+  }
+
+  if (normalized.length > maxLength) {
+    throw createPublicError(`${label} demasiado largo.`, 413);
+  }
+
+  return normalized;
+}
+
 function hashTrackingIp(value) {
   const raw = String(value || "").trim();
   if (!raw) return null;
 
-  return createHash("sha256").update(raw).digest("hex");
+  const firstIp = raw.split(",")[0]?.trim() || "";
+  if (!firstIp) return null;
+
+  return createHash("sha256").update(firstIp).digest("hex");
+}
+
+function findRecentTrackingClick(recentClicks, { visitorId = null, ipHash = null, userAgent = null } = {}) {
+  const clicks = Array.isArray(recentClicks) ? recentClicks : [];
+  if (clicks.length === 0) return null;
+
+  return (
+    clicks.find((click) => {
+      if (visitorId && String(click?.visitor_id || "") === visitorId) return true;
+      if (ipHash && String(click?.ip_hash || "") === ipHash) return true;
+      if (userAgent && String(click?.user_agent || "") === userAgent) return true;
+      return false;
+    }) || null
+  );
 }
 
 function toDbCreatorLinkClickPayload(payload = {}) {
