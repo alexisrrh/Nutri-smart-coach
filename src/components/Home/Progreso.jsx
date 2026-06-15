@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, Award, ArrowRight } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 
 export function Progreso() {
+  const { t } = useTranslation();
   return (
      <div className="home-progress-shell min-h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-visible font-sans">
       
@@ -109,25 +111,25 @@ export function Progreso() {
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
-                alt="Logo"
+                alt={t("home.brandAlt")}
                 className="h-10 w-10 rounded-xl object-cover bg-transparent p-0.5 shadow-[0_0_20px_var(--app-glow)] border border-[var(--app-border)]"
               />
               <div className="leading-none">
                 <p className="text-sm font-black italic tracking-tight text-[var(--app-text)]">
-                  NUTRI<span className="text-[var(--app-primary)]">SMART</span>
+                  {t("home.brandPrefix")}<span className="text-[var(--app-primary)]">{t("home.brandSuffix")}</span>
                 </p>
                 <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)]">
-                  Coach IA
+                  {t("home.headerTagline")}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
-                INICIAR SESIÓN
+                {t("home.header.login")}
               </Link>
               <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
-                REGÍSTRATE
+                {t("home.header.register")}
               </Link>
             </div>
           </nav>
@@ -141,9 +143,9 @@ export function Progreso() {
             {/* TÍTULO */}
             <div className="text-center">
                 <h1 className="home-progress-title text-[1.95rem] font-black italic uppercase tracking-tighter leading-none text-[var(--app-text)]">
-                    MY <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">PROGRESS</span>
+                    {t("home.progress.titlePrefix")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">{t("home.progress.titleAccent")}</span>
                 </h1>
-                <p className="mt-1 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">Métricas en tiempo real</p>
+                <p className="mt-1 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">{t("home.progress.subtitle")}</p>
             </div>
 
             {/* BANNER DE LOGRO */}
@@ -153,36 +155,36 @@ export function Progreso() {
                 <Award size={20} />
               </div>
               <div className="leading-tight z-10">
-                <h3 className="text-xs font-black uppercase text-[var(--app-text)] tracking-wide italic">¡Meta semanal alcanzada!</h3>
-                <p className="text-[10px] text-[var(--app-muted)] mt-0.5 font-bold uppercase tracking-tight">Tu ritmo de quema grasa se ha acelerado.</p>
+                <h3 className="text-xs font-black uppercase text-[var(--app-text)] tracking-wide italic">{t("home.progress.banner.title")}</h3>
+                <p className="text-[10px] text-[var(--app-muted)] mt-0.5 font-bold uppercase tracking-tight">{t("home.progress.banner.subtitle")}</p>
               </div>
             </div>
 
             {/* GRÁFICO DE PESO */}
             <div className="home-progress-chart space-y-3">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] px-1">Evolución de peso</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] px-1">{t("home.progress.weightTitle")}</h3>
               <div className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface)]/50 p-4 backdrop-blur-md shadow-xl">
                 <div className="home-progress-bars flex justify-between items-end h-24 gap-2.5">
-                  <BarChartColumn pct="90%" label="S1" value="78.2" />
-                  <BarChartColumn pct="75%" label="S2" value="77.5" />
-                  <BarChartColumn pct="55%" label="S3" value="76.9" />
-                  <BarChartColumn pct="40%" label="S4" value="76.1" active />
+                  <BarChartColumn pct="90%" label={t("home.progress.weeks.s1")} value="78.2" />
+                  <BarChartColumn pct="75%" label={t("home.progress.weeks.s2")} value="77.5" />
+                  <BarChartColumn pct="55%" label={t("home.progress.weeks.s3")} value="76.9" />
+                  <BarChartColumn pct="40%" label={t("home.progress.weeks.s4")} value="76.1" active />
                 </div>
               </div>
             </div>
 
             {/* MÉTRICAS SECUNDARIAS */}
             <div className="home-progress-metrics grid grid-cols-2 gap-2.5">
-              <MetricCard title="Grasa" value="14.2%" change="-1.5%" icon={<TrendingUp size={14} className="text-rose-400 rotate-180" />} />
-              <MetricCard title="Músculo" value="62.4 kg" change="+0.8 kg" icon={<TrendingUp size={14} className="text-emerald-400" />} />
+              <MetricCard title={t("home.progress.metrics.fat")} value="14.2%" change="-1.5%" icon={<TrendingUp size={14} className="text-rose-400 rotate-180" />} />
+              <MetricCard title={t("home.progress.metrics.muscle")} value="62.4 kg" change="+0.8 kg" icon={<TrendingUp size={14} className="text-emerald-400" />} />
             </div>
 
             {/* HISTORIAL RECIENTE */}
             <div className="home-progress-history space-y-2.5 pb-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] px-1">Línea de hábitos</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] px-1">{t("home.progress.habitsTitle")}</h3>
               <div className="space-y-2.5">
-                <HistoryRow date="Hoy" title="Análisis Plato" details="1230 kcal" />
-                <HistoryRow date="Ayer" title="Peso" details="76.1 kg" />
+                <HistoryRow date={t("home.progress.history.today")} title={t("home.progress.history.meal")} details="1230 kcal" />
+                <HistoryRow date={t("home.progress.history.yesterday")} title={t("home.progress.history.weight")} details="76.1 kg" />
               </div>
             </div>
 
@@ -197,7 +199,7 @@ export function Progreso() {
                 to="/registro"
                 className="home-progress-footer-button group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
-                Iniciar REGISTRO
+                {t("home.progress.cta")}
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

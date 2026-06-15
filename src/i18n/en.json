@@ -10,6 +10,215 @@
     "privacyPolicy": "Privacy policy",
     "termsOfService": "Terms of service"
   },
+  "home": {
+    "brandAlt": "Nutri Smart Coach",
+    "brand": "Nutri Smart Coach",
+    "brandPrefix": "NUTRI",
+    "brandSuffix": "SMART",
+    "headerTagline": "Live analysis",
+    "header": {
+      "login": "Sign in",
+      "register": "Register"
+    },
+    "hero": {
+      "badge": "AI Coach",
+      "title": "Fitness +",
+      "titleAccent": "AI NUTRITION",
+      "subtitle": "WE ANALYZE YOUR FOOD WITH PRECISION"
+    },
+    "panel": {
+      "badge": "AI system active",
+      "title": "Live analysis",
+      "imageAlt": "Nutrition"
+    },
+    "macros": {
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    },
+    "stats": {
+      "analysis": "Analysis",
+      "coach": "Coach",
+      "habits": "Habits"
+    },
+    "privacy": "Privacy policy",
+    "cta": "Start analysis",
+    "nav": {
+      "analyze": "Analyze",
+      "checkinPhoto": "Photo check-in",
+      "mealPlan": "Meal plans",
+      "progress": "Progress"
+    },
+    "bodyScanner": {
+      "titlePrefix": "PHOTO",
+      "titleAccent": "CHECK-IN",
+      "subtitle": "BODY SCANNER",
+      "imageAlt": "Body scan",
+      "cta": "Start scan",
+      "features": {
+        "fat": {
+          "title": "Estimated body fat",
+          "desc": "Detects changes in muscle definition with visual AI."
+        },
+        "measurements": {
+          "title": "Measurement progress",
+          "desc": "Tracks changes in shoulders, waist and limbs."
+        },
+        "privacy": {
+          "title": "Protected privacy",
+          "desc": "Your photos are processed locally and never shared."
+        }
+      }
+    },
+    "mealPlans": {
+      "titlePrefix": "My meal",
+      "titleAccent": "today",
+      "subtitle": "We generate your meal plan in seconds with AI",
+      "imageAlt": "Personalized meal plan",
+      "cta": "Start meal plans",
+      "samples": {
+        "breakfast": {
+          "time": "08:30 AM",
+          "title": "Egg white omelet and oats",
+          "info": "340 kcal • 30g Pro"
+        },
+        "lunch": {
+          "time": "02:30 PM",
+          "title": "Chicken and quinoa bowl",
+          "info": "680 kcal • 44g Pro"
+        },
+        "dinner": {
+          "time": "09:35 PM",
+          "title": "Salmon with asparagus",
+          "info": "520 kcal • 38g Pro"
+        }
+      }
+    },
+    "progress": {
+      "titlePrefix": "My",
+      "titleAccent": "progress",
+      "subtitle": "Real-time metrics",
+      "banner": {
+        "title": "Weekly goal achieved!",
+        "subtitle": "Your fat loss pace has accelerated."
+      },
+      "weightTitle": "Weight progress",
+      "weeks": {
+        "s1": "W1",
+        "s2": "W2",
+        "s3": "W3",
+        "s4": "W4"
+      },
+      "metrics": {
+        "fat": "Fat",
+        "muscle": "Muscle"
+      },
+      "habitsTitle": "Habit streak",
+      "history": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "meal": "Plate analysis",
+        "weight": "Weight"
+      },
+      "cta": "Start logging"
+    }
+  },
+  "auth": {
+    "common": {
+      "back": "Back",
+      "close": "Close",
+      "privacyPolicy": "Privacy policy",
+      "termsOfService": "Terms of service"
+    },
+    "login": {
+      "brand": "Nutri Smart Coach",
+      "title": "Sign in",
+      "subtitle": "Continue with your calories, meals and progress in one panel.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "emailPlaceholder": "you@email.com",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot your password?",
+      "submit": "Sign in",
+      "loading": "Signing in...",
+      "newHere": "New here?",
+      "createAccount": "Create account",
+      "privacyNote": "Secure privacy · Protected data · Nutritional AI",
+      "errors": {
+        "invalidCredentials": "Email or password are invalid.",
+        "connect": "Connection error: ",
+        "callbackInvalid": "invalid callback",
+        "resetRequired": "Enter your email to receive the link.",
+        "resetFailed": "We could not send the link: ",
+        "resetSuccess": "We sent you a link to reset your password.",
+        "callbackFailed": "We could not complete the sign-in: ",
+        "createProfileFailed": "We could not create the user profile."
+      },
+      "reset": {
+        "eyebrow": "Secure recovery",
+        "title": "Reset password",
+        "subtitle": "We will send you a private link to create a new password.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "you@email.com",
+        "submit": "Send link",
+        "loading": "Sending...",
+        "close": "Close"
+      },
+      "social": {
+        "google": "Continue with Google",
+        "facebook": "Continue with Facebook"
+      },
+      "hero": {
+        "badge": "AI ACTIVE",
+        "title": "Intelligent nutrition in real time",
+        "features": {
+          "smartPlans": "Smart plans",
+          "visualAnalysis": "Visual analysis",
+          "adaptiveProgress": "Adaptive progress"
+        }
+      }
+    },
+    "register": {
+      "title": "Build your smart plan",
+      "subtitle": "Start with clear goals, visual analysis and AI-guided progress.",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "namePlaceholder": "Ex. Alexis Rodríguez",
+      "emailPlaceholder": "you@email.com",
+      "passwordPlaceholder": "At least 6 characters",
+      "invitationQuestion": "Do you have an invite code?",
+      "invitationSubtitle": "Unlock Premium trials and rewards.",
+      "invitationPlaceholder": "Enter your code",
+      "invitationApply": "Apply code",
+      "invitationValidating": "Validating...",
+      "referralApplied": "Code applied when creating your account.",
+      "creatorCodeApplied": "Creator code applied",
+      "creatorBonusLine1": "Your 15 free Premium days will activate when you create your account.",
+      "creatorBonusLine2": "15 free Premium days from creator invite.",
+      "policyCheckbox": "I accept the policies and terms of NutriSmart Coach",
+      "submit": "→ Create free account",
+      "loading": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "errors": {
+        "completeFields": "Complete all fields.",
+        "passwordTooShort": "Password must have at least 6 characters.",
+        "policiesRequired": "You must accept the policies and terms of NutriSmartCoach.",
+        "signUpFailed": "Error creating account: ",
+        "profileFailed": "Error creating profile.",
+        "invalidReferral": "The invite code is invalid or no longer available.",
+        "callbackFailed": "We could not complete the sign-in: ",
+        "callbackInvalid": "invalid callback",
+        "connect": "Connection error: "
+      },
+      "social": {
+        "google": "Continue with Google",
+        "facebook": "Continue with Facebook"
+      }
+    }
+  },
   "progress": {
     "backToDashboard": "Dashboard",
     "badge": "AI evolution",

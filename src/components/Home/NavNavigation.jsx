@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Camera, ShieldCheck, Utensils, LineChart } from "lucide-react";
 
 // Definimos el DashboardTab aquí mismo para que no tengas que buscar archivos externos
@@ -29,6 +30,7 @@ const DashboardTab = ({ to, icon, title, active }) => {
 
 export const NavNavigation = () => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   return (
     <div className="absolute bottom-4 left-4 right-4 z-50">
@@ -36,25 +38,25 @@ export const NavNavigation = () => {
         <DashboardTab 
           to="/" 
           icon={<Camera size={16} />} 
-          title="Analizar" 
+          title={t("home.nav.analyze")} 
           active={location.pathname === "/"}
         />
         <DashboardTab 
           to="/bodyscannerhome" 
           icon={<ShieldCheck size={16} />} 
-          title="Check-in foto" 
+          title={t("home.nav.checkinPhoto")} 
           active={location.pathname === "/bodyscannerhome"}
         />
         <DashboardTab 
           to="/dietahome" 
           icon={<Utensils size={16} />} 
-          title="Dietas" 
+          title={t("home.nav.mealPlan")} 
           active={location.pathname === "/dietahome"}
         />
         <DashboardTab 
           to="/progresohome" 
           icon={<LineChart size={16} />} 
-          title="Progreso" 
+          title={t("home.nav.progress")} 
           active={location.pathname === "/progresohome"}
         />
       </div>

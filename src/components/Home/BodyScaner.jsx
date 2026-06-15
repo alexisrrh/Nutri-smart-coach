@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, Sparkles, Zap, ArrowRight } from "lucide-react";
 import SmartImage from "../../components/ui/SmartImage";
 import { NavNavigation } from "./NavNavigation";
 
 export function BodyScaner() {
+  const { t } = useTranslation();
   return (
     <div className="home-analyze-shell min-h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-visible font-sans">
       
@@ -110,25 +112,25 @@ export function BodyScaner() {
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
-                alt="Logo"
+                alt={t("home.brandAlt")}
                 className="h-10 w-10 rounded-xl object-cover bg-transparent p-0.5 shadow-[0_0_20px_var(--app-glow)] border border-[var(--app-border)]"
               />
               <div className="leading-none">
                 <p className="text-sm font-black italic tracking-tight text-[var(--app-text)]">
-                  NUTRI<span className="text-[var(--app-primary)]">SMART</span>
+                  {t("home.brandPrefix")}<span className="text-[var(--app-primary)]">{t("home.brandSuffix")}</span>
                 </p>
                 <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)]">
-                  Coach IA
+                  {t("home.headerTagline")}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
-                INICIAR SESIÓN
+                {t("home.header.login")}
               </Link>
               <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
-                REGÍSTRATE
+                {t("home.header.register")}
               </Link>
             </div>
           </nav>
@@ -138,10 +140,10 @@ export function BodyScaner() {
         <section className="relative z-10 flex-1 overflow-visible overflow-x-hidden px-5">
           <div className="flex h-full flex-col items-center text-center py-3">
             <h1 className="home-analyze-title text-[1.75rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
-              Body <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">Scaner</span>
+              {t("home.bodyScanner.titlePrefix")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">{t("home.bodyScanner.titleAccent")}</span>
             </h1>
             <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
-              Check-in físico con foto
+              {t("home.bodyScanner.subtitle")}
             </p>
 
             {/* VISOR DE ESCÁNER */}
@@ -152,7 +154,7 @@ export function BodyScaner() {
               >
                 <div className="radar-glow absolute inset-0 rounded-[3rem] bg-[var(--app-primary)]/20" />
                 <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[2.4rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)] shadow-[inset_0_0_20px_var(--app-glow)]">
-                    <SmartImage src="/icons/bodyscan.png" alt="Body Scan" className="h-full w-full object-cover" />
+                    <SmartImage src="/icons/bodyscan.png" alt={t("home.bodyScanner.imageAlt")} className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/70 via-transparent to-transparent z-10 pointer-events-none" />
                     {/* LÍNEA LÁSER ROJA */}
                     <div className="laser-line absolute inset-x-0 z-20 h-[2px] bg-red-500 shadow-[0_0_15px_#ef4444,0_0_5px_#ffffff]" />
@@ -164,18 +166,18 @@ export function BodyScaner() {
             <div className="home-analyze-features mt-4 w-full space-y-2 text-left pb-2">
               <FeatureCard 
                 icon={<Sparkles size={14} className="text-[var(--app-primary)]" />}
-                title="Grasa Corporal Estimada"
-                desc="Detecta cambios en la definición muscular mediante IA visual."
+                title={t("home.bodyScanner.features.fat.title")}
+                desc={t("home.bodyScanner.features.fat.desc")}
               />
               <FeatureCard 
                 icon={<Zap size={14} className="text-cyan-300" />}
-                title="Evolución de Perímetros"
-                desc="Mide variaciones en hombros, cintura y extremidades."
+                title={t("home.bodyScanner.features.measurements.title")}
+                desc={t("home.bodyScanner.features.measurements.desc")}
               />
               <FeatureCard 
                 icon={<ShieldCheck size={14} className="text-amber-300" />}
-                title="Privacidad Protegida"
-                desc="Tus fotos se procesan localmente y nunca se comparten."
+                title={t("home.bodyScanner.features.privacy.title")}
+                desc={t("home.bodyScanner.features.privacy.desc")}
               />
             </div>
           </div>
@@ -189,7 +191,7 @@ export function BodyScaner() {
                 to="/registro"
                 className="home-analyze-footer-button group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
-                Iniciar Escaneo <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                {t("home.bodyScanner.cta")} <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
             <div className="home-analyze-footer-nav h-16 flex items-center justify-center">

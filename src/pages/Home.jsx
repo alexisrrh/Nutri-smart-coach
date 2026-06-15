@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Camera, ArrowRight, Zap } from "lucide-react";
 import SmartImage from "../components/ui/SmartImage";
@@ -11,6 +12,7 @@ import {
 
 export function Home() {
   const { user, loadingAuth } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (loadingAuth || !user?.id) return undefined;
@@ -214,25 +216,25 @@ export function Home() {
             <div className="home-header-brand flex items-center gap-2">
               <img
                 src="/favicon.png"
-                alt="Logo"
+                alt={t("home.brandAlt")}
                 className="h-10 w-10 rounded-xl object-cover bg-transparent p-0.5 shadow-[0_0_20px_var(--app-glow)] border border-[var(--app-border)]"
               />
               <div className="leading-none">
                 <p className="text-sm font-black italic tracking-tight text-[var(--app-text)]">
-                  NUTRI<span className="text-[var(--app-primary)]">SMART</span>
+                  {t("home.brand")}
                 </p>
                 <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)]">
-                  Coach IA
+                  {t("home.headerTagline")}
                 </p>
               </div>
             </div>
 
             <div className="home-header-auth flex items-center gap-2">
               <Link to="/login" className="home-header-auth-btn rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
-                INICIAR SESIÓN
+                {t("home.header.login")}
               </Link>
               <Link to="/registro" className="home-header-auth-btn home-header-auth-primary rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
-                REGÍSTRATE
+                {t("home.header.register")}
               </Link>
             </div>
           </nav>
@@ -245,12 +247,12 @@ export function Home() {
             {/* TITULO */}
             <div className="flex flex-col items-center text-center shrink-0">
               <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
-                <Zap size={11} className="fill-current" /> Fitness + NUTRICIÓN IA
+                <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
               </div>
               <h1 className="home-home-title text-[1.55rem] font-black italic uppercase leading-none tracking-tight">
-                Domina <span className="bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">tu cuerpo</span>
+                {t("home.hero.title")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">{t("home.hero.titleAccent")}</span>
               </h1>
-              <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">ANALISAMOS TU COMIDA CON PRECISIÓN</p>
+              <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">{t("home.hero.subtitle")}</p>
 
             </div>
 
@@ -261,9 +263,9 @@ export function Home() {
                 <div className="home-home-panel-inner rounded-[1.4rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)]/95 p-3 shadow-[inset_0_0_20px_var(--app-glow)]">
                   
                   <div className="home-home-panel-header mb-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--app-primary)]">Sistema IA activo</p>
-                      <h2 className="home-home-panel-title mt-0.5 text-base font-black uppercase italic tracking-tight text-[var(--app-text)]">Análisis en vivo</h2>
+                  <div>
+                      <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--app-primary)]">{t("home.panel.badge")}</p>
+                      <h2 className="home-home-panel-title mt-0.5 text-base font-black uppercase italic tracking-tight text-[var(--app-text)]">{t("home.panel.title")}</h2>
                     </div>
                     <Link to="/registro" className="home-home-camera-btn h-9 w-9 flex items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] active:scale-90 transition-all">
                       <Camera size={18} />
@@ -273,17 +275,17 @@ export function Home() {
                   <Link to="/registro" className="home-home-preview relative block h-40 overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[var(--app-surface)] active:scale-[0.97] transition-transform group">
                     <SmartImage 
                       src="https://imag.bonviveur.com/presentacion-final-del-poke-bowl-de-pollo-y-verduras.webp" 
-                      alt="Nutrición" 
+                      alt={t("home.panel.imageAlt")} 
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
                     />
                     <div className="absolute inset-x-0 z-20 h-[2px] animate-[scan_2.8s_ease-in-out_infinite] bg-red-500 shadow-[0_0_12px_#ef4444]" />
                   </Link>
 
                   <div className="home-home-macros grid grid-cols-2 gap-2 mt-3">
-                    <DashboardMacro title="Calorías" value="450" unit="kcal" color="bg-emerald-400" pct="60%" />
-                    <DashboardMacro title="Proteína" value="28" unit="g" color="bg-cyan-400" pct="85%" />
-                    <DashboardMacro title="Carbs" value="42" unit="g" color="bg-amber-300" pct="45%" />
-                    <DashboardMacro title="Grasas" value="12" unit="g" color="bg-rose-400" pct="30%" />
+                    <DashboardMacro title={t("home.macros.calories")} value="450" unit="kcal" color="bg-emerald-400" pct="60%" />
+                    <DashboardMacro title={t("home.macros.protein")} value="28" unit="g" color="bg-cyan-400" pct="85%" />
+                    <DashboardMacro title={t("home.macros.carbs")} value="42" unit="g" color="bg-amber-300" pct="45%" />
+                    <DashboardMacro title={t("home.macros.fat")} value="12" unit="g" color="bg-rose-400" pct="30%" />
                   </div>
                 </div>
               </div>
@@ -292,16 +294,16 @@ export function Home() {
             {/* STATS */}
             <div className="w-full shrink-0">
               <div className="home-home-stats-grid grid grid-cols-3 gap-2 pb-4">
-                <Stat value="IA" label="Análisis" className="home-home-stat" />
-                <Stat value="24/7" label="Coach" className="home-home-stat" />
-                <Stat value="PRO" label="Hábitos" className="home-home-stat" />
+                <Stat value="IA" label={t("home.stats.analysis")} className="home-home-stat" />
+                <Stat value="24/7" label={t("home.stats.coach")} className="home-home-stat" />
+                <Stat value="PRO" label={t("home.stats.habits")} className="home-home-stat" />
               </div>
                <div className="home-home-privacy text-center justify-center">
                 <Link 
                 to="/privacy" 
                 className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors "
               >
-                Política de Privacidad
+                {t("home.privacy")}
               </Link>
               </div>
             </div>
@@ -317,7 +319,7 @@ export function Home() {
                 to="/registro"
                 className="home-home-cta group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
               >
-                Iniciar análisis 
+                {t("home.cta")} 
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
 
