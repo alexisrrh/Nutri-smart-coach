@@ -1,16 +1,20 @@
 import { ArrowLeft, FileText, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AppShell, MetaBadge, SecondaryButton, SurfaceCard } from "../../components/ui";
-
-const navLinks = [
-  { to: "/privacy", label: "Privacidad", icon: ShieldCheck },
-  { to: "/terms", label: "Términos", icon: FileText },
-  { to: "/delete-account", label: "Eliminar cuenta", icon: Trash2 },
-];
+import { getCurrentAppLanguage } from "../../i18n";
 
 export function LegalLayout({ children, eyebrow, title, updatedAt }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const language = i18n.resolvedLanguage || i18n.language || getCurrentAppLanguage();
+  const navLinks = [
+    { to: "/privacy", label: t("settings.legal.layout.nav.privacy"), icon: ShieldCheck },
+    { to: "/terms", label: t("settings.legal.layout.nav.terms"), icon: FileText },
+    { to: "/delete-account", label: t("settings.legal.layout.nav.deleteAccount"), icon: Trash2 },
+  ];
+  const formattedUpdatedAt = formatDate(updatedAt, language);
 
   return (
     <AppShell
@@ -28,11 +32,11 @@ export function LegalLayout({ children, eyebrow, title, updatedAt }) {
                 icon={<ArrowLeft size={14} />}
                 className="w-auto px-2.5 py-1.5 text-[10px]"
               >
-                Volver
+                {t("settings.legal.layout.back")}
               </SecondaryButton>
 
               <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
-                Trust Center
+                {t("settings.legal.layout.trustCenter")}
               </MetaBadge>
             </div>
 
@@ -53,18 +57,18 @@ export function LegalLayout({ children, eyebrow, title, updatedAt }) {
                     {title}
                   </h1>
                   <p className="mt-1.5 max-w-[28rem] text-[12px] font-medium leading-5 text-[var(--app-muted)]">
-                    Centro de confianza para revisar políticas, transparencia y control de datos.
+                    {t("settings.legal.layout.description")}
                   </p>
                   <p className="mt-2 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-                    Última actualización: {updatedAt}
+                    {t("settings.legal.layout.updatedAt")}: {formattedUpdatedAt}
                   </p>
                 </div>
               </div>
 
               <div className="relative z-10 mt-3 flex flex-wrap gap-1.5">
-                <TrustChip>Datos protegidos</TrustChip>
-                <TrustChip>Gestión disponible</TrustChip>
-                <TrustChip>Cuenta sincronizada</TrustChip>
+                <TrustChip>{t("settings.legal.layout.chips.protected")}</TrustChip>
+                <TrustChip>{t("settings.legal.layout.chips.management")}</TrustChip>
+                <TrustChip>{t("settings.legal.layout.chips.synced")}</TrustChip>
               </div>
             </SurfaceCard>
           </header>
@@ -129,4 +133,22 @@ function TrustChip({ children }) {
       {children}
     </span>
   );
+}
+
+function formatDate(value, locale) {
+  if (!value) return "—";
+
+  try {
+    const parsed = new Date(value);
+
+    if (Number.isNaN(parsed.getTime())) return value;
+
+    return new Intl.DateTimeFormat(locale || "es", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(parsed);
+  } catch {
+    return value;
+  }
 }

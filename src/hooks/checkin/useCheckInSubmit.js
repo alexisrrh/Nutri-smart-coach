@@ -24,9 +24,10 @@ export function useCheckInSubmit({
   onUsageUpdated,
   user,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [message, setMessage] = useState("");
   const clearMessage = useCallback(() => setMessage(""), []);
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "es";
 
   const createCheckInRequestId = useCallback(
     () => `checkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -89,6 +90,7 @@ export function useCheckInSubmit({
         chest: form.chest,
         hips: form.hips,
         notes: form.notes,
+        language: activeLanguage,
       });
 
       const latestState = getCheckinProcessState();
@@ -166,6 +168,7 @@ export function useCheckInSubmit({
     onUsageUpdated,
     user,
     t,
+    activeLanguage,
   ]);
 
   return {

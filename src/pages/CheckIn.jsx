@@ -717,7 +717,7 @@ function CheckInResultSheet({
       return t("checkin.sheet.lowConfidenceReasonFallback");
     }
 
-    return source.length > 120 ? `${source.slice(0, 117)}...` : source;
+    return source;
   }
 
   function getScoreClass(nextScore) {
@@ -955,7 +955,7 @@ function CheckInResultSheet({
                   <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
                     {t("checkin.sheet.reasonTitle")}
                   </p>
-                  <p className="mt-1 text-[11px] font-bold leading-4 text-[var(--app-text)]">
+                  <p className="mt-1 whitespace-normal break-words text-[11px] font-bold leading-5 text-[var(--app-text)]">
                     {issueReason}
                   </p>
                 </div>

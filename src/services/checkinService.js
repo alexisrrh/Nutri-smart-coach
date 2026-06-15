@@ -108,6 +108,7 @@ export async function createCheckin({
   chest,
   hips,
   notes,
+  language = i18n.resolvedLanguage || i18n.language || "es",
 }) {
   const formData = new FormData();
 
@@ -118,6 +119,7 @@ export async function createCheckin({
   formData.append("chest", chest);
   formData.append("hips", hips);
   formData.append("notes", notes);
+  formData.append("language", normalizeCheckinLanguage(language));
 
   const data = await request(
     "/checkins",
@@ -193,4 +195,10 @@ function normalizeCheckinProcessState(state) {
     result: state.result || null,
     error: state.error || "",
   };
+}
+
+function normalizeCheckinLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  return normalized.startsWith("en") ? "en" : "es";
 }
