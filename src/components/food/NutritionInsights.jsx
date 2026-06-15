@@ -1,9 +1,11 @@
 import { AlertTriangle, CheckCircle2, Sparkles, Target } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function NutritionInsights({ result }) {
+  const { t } = useTranslation();
   if (!result) return null;
 
-  const insights = buildInsights(result);
+  const insights = buildInsights(result, t);
 
   return (
     <section
@@ -24,7 +26,7 @@ export default function NutritionInsights({ result }) {
             <Sparkles size={13} className="text-[var(--app-primary)]" />
 
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Insights IA
+              {t("food.insights.title")}
             </p>
           </div>
 
@@ -36,7 +38,7 @@ export default function NutritionInsights({ result }) {
               color: "var(--app-primary)",
             }}
           >
-            Smart
+            {t("food.insights.badge")}
           </span>
         </div>
 
@@ -93,7 +95,7 @@ function InsightRow({ icon, title, text, type }) {
   );
 }
 
-function buildInsights(result) {
+function buildInsights(result, t) {
   const goal = normalizeFoodGoal(result.goal);
   const protein = Number(result.protein || 0);
   const calories = Number(result.calories || 0);
@@ -103,15 +105,15 @@ function buildInsights(result) {
 
   if (score >= 8) {
     insights.push({
-      title: getGoalTitle(goal),
-      text: result.goal_fit || getGoalInsight(goal),
+      title: getGoalTitle(goal, t),
+      text: result.goal_fit || getGoalInsight(goal, t),
       icon: <CheckCircle2 size={14} />,
       type: "success",
     });
   } else {
     insights.push({
-      title: getGoalTitle(goal),
-      text: result.goal_fit || getGoalInsight(goal),
+      title: getGoalTitle(goal, t),
+      text: result.goal_fit || getGoalInsight(goal, t),
       icon: <Target size={14} />,
       type: "warning",
     });
@@ -119,8 +121,8 @@ function buildInsights(result) {
 
   if (protein < 20) {
     insights.push({
-      title: "Proteína baja",
-      text: "Añade pollo, huevos, atún, yogur griego o proteína magra.",
+      title: t("food.insights.lowProtein.title"),
+      text: t("food.insights.lowProtein.text"),
       icon: <AlertTriangle size={14} />,
       type: "warning",
     });
@@ -128,8 +130,8 @@ function buildInsights(result) {
 
   if (calories > 850) {
     insights.push({
-      title: "Alta en calorías",
-      text: "Reduce salsas, fritos o porción de carbohidratos.",
+      title: t("food.insights.highCalories.title"),
+      text: t("food.insights.highCalories.text"),
       icon: <AlertTriangle size={14} />,
       type: "danger",
     });
@@ -137,10 +139,10 @@ function buildInsights(result) {
 
   if (insights.length === 1) {
     insights.push({
-      title: "Siguiente mejora",
+      title: t("food.insights.nextStep.title"),
       text:
         result.recommendation ||
-        "Mantén proteína alta y controla la porción.",
+        t("food.insights.nextStep.text"),
       icon: <Sparkles size={14} />,
       type: "success",
     });
@@ -183,32 +185,32 @@ function normalizeFoodGoal(goal) {
   return "general";
 }
 
-function getGoalTitle(goal) {
+function getGoalTitle(goal, t) {
   switch (goal) {
     case "ganar_musculo":
-      return "Volumen limpio";
+      return t("food.insights.goalTitles.bulk");
     case "perder_grasa":
-      return "Déficit controlado";
+      return t("food.insights.goalTitles.fatLoss");
     case "mantener_peso":
-      return "Equilibrio diario";
+      return t("food.insights.goalTitles.maintain");
     case "recomposicion":
-      return "Recomposición";
+      return t("food.insights.goalTitles.recomp");
     default:
-      return "Análisis fitness";
+      return t("food.insights.goalTitles.general");
   }
 }
 
-function getGoalInsight(goal) {
+function getGoalInsight(goal, t) {
   switch (goal) {
     case "ganar_musculo":
-      return "Prioriza proteína y recuperación para ganar masa muscular sin frenar tu rendimiento.";
+      return t("food.insights.goalInsights.bulk");
     case "perder_grasa":
-      return "Prioriza saciedad y control de calorías para mantener el déficit sin perder adherencia.";
+      return t("food.insights.goalInsights.fatLoss");
     case "mantener_peso":
-      return "Mantén un equilibrio entre energía, proteína y porción para sostener el peso actual.";
+      return t("food.insights.goalInsights.maintain");
     case "recomposicion":
-      return "Busca proteína alta y calorías razonables para mejorar composición corporal sin extremos.";
+      return t("food.insights.goalInsights.recomp");
     default:
-      return "Ajusta porción y proteína según tu objetivo actual.";
+      return t("food.insights.goalInsights.general");
   }
 }

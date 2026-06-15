@@ -74,6 +74,12 @@ function parseFoodContext(rawContext) {
   }
 }
 
+function normalizeAnalysisLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  return normalized.startsWith("en") ? "en" : "es";
+}
+
 router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), async (req, res) => {
   const timing = createTimingLogger("analyze-food");
 
@@ -85,6 +91,9 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     }
 
     const description = String(req.body.description || "").trim();
+    const language = normalizeAnalysisLanguage(
+      req.body.language || req.body.preferred_language || req.body.profile_language
+    );
     const hasImage = Boolean(req.file);
 
     if (!hasImage && !description) {
@@ -114,10 +123,11 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     timing.mark("hash");
 
     if (userId && imageHash) {
-      const existingAnalysis = await findMealAnalysisByImageHash({
-        userId,
-        imageHash,
-      });
+        const existingAnalysis = await findMealAnalysisByImageHash({
+          userId,
+          imageHash,
+          language,
+        });
       timing.mark("lookup");
 
       if (existingAnalysis) {
@@ -137,6 +147,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
           imageHash,
           goal,
           analysis: existingAnalysis,
+          language,
         });
 
         if (!reusedRecord) {
@@ -149,6 +160,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
         return res.json({
           ...reusedRecord,
+          language: reusedRecord.language || language,
           image_hash: imageHash,
           image_url: reusedRecord.image_url || reusedImageUrl || null,
           reused: true,
@@ -200,6 +212,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
       description,
       hasImage,
       profileContext,
+      language,
     });
 
     const contents = [
@@ -250,10 +263,11 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
       });
     }
 
-    const analysis = normalizeFoodAnalysis(data);
+    const analysis = normalizeFoodAnalysis(data, language);
     if (description) {
       analysis.description = analysis.description || description;
     }
+    analysis.language = language;
 
     let imageUrl = null;
     let savedRecord = null;
@@ -275,6 +289,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
         imageHash,
         goal,
         analysis,
+        language,
       });
       timing.mark("insert");
     } else {
@@ -286,6 +301,7 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
     return res.json({
       ...(savedRecord || analysis),
+      language,
       image_hash: imageHash,
       image_url: imageUrl,
       description: description || (savedRecord || analysis)?.description || "",
@@ -483,7 +499,7 @@ router.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => 
   }
 });
 
-async function findMealAnalysisByImageHash({ userId, imageHash }) {
+async function findMealAnalysisByImageHash({ userId, imageHash, language = "es" }) {
   if (!userId || !imageHash) return null;
 
   const { data, error } = await supabase
@@ -491,6 +507,7 @@ async function findMealAnalysisByImageHash({ userId, imageHash }) {
     .select("*")
     .eq("user_id", userId)
     .eq("image_hash", imageHash)
+    .eq("language", language)
     .order("created_at", { ascending: false })
     .limit(1);
 
@@ -502,10 +519,18 @@ async function findMealAnalysisByImageHash({ userId, imageHash }) {
   return data?.[0] || null;
 }
 
-async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis }) {
+async function saveMealAnalysis({
+  userId,
+  imageUrl,
+  imageHash,
+  goal,
+  analysis,
+  language = "es",
+}) {
   if (!userId) return null;
 
   const mealId = crypto.randomUUID();
+  const normalizedLanguage = normalizeAnalysisLanguage(language || analysis?.language || "es");
 
   const { data, error } = await supabase
     .from("meal_analyses")
@@ -514,6 +539,7 @@ async function saveMealAnalysis({ userId, imageUrl, imageHash, goal, analysis })
       user_id: userId,
       image_url: imageUrl,
       image_hash: imageHash,
+      language: normalizedLanguage,
       goal,
       food: analysis.food,
       description: analysis.description,

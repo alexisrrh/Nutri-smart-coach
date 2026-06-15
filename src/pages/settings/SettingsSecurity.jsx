@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { KeyRound, Lock, LogOut, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
@@ -11,6 +12,7 @@ import { SettingsCard, SettingsMetric, SettingsRow, SettingsScreenShell } from "
 export function SettingsSecurity() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ email: user?.email || "" });
@@ -40,14 +42,12 @@ export function SettingsSecurity() {
     setPasswordSuccess("");
 
     if (socialOnly) {
-      setPasswordError(
-        "Tu cuenta usa inicio de sesión social. La contraseña se gestiona desde tu proveedor."
-      );
+      setPasswordError(t("settings.security.password.socialInfo"));
       return;
     }
 
     if (!passwordForm.email?.trim()) {
-      setPasswordError("Introduce un correo electrónico válido.");
+      setPasswordError(t("settings.security.password.invalidEmail"));
       return;
     }
 
@@ -58,11 +58,11 @@ export function SettingsSecurity() {
     setPasswordLoading(false);
 
     if (error) {
-      setPasswordError(getPasswordResetErrorMessage(error));
+      setPasswordError(getPasswordResetErrorMessage(error, t));
       return;
     }
 
-    setPasswordSuccess("Te enviamos un enlace seguro para cambiar tu contraseña.");
+    setPasswordSuccess(t("settings.security.password.success"));
     setPasswordForm((current) => ({ ...current, email: current.email.trim() }));
   }
 
@@ -78,19 +78,19 @@ export function SettingsSecurity() {
 
   return (
     <SettingsScreenShell
-      badge="Seguridad"
-      title="Security Center"
-      subtitle="Acceso protegido, sesión sincronizada y control de tu cuenta."
+      badge={t("settings.security.badge")}
+      title={t("settings.security.title")}
+      subtitle={t("settings.security.subtitle")}
       onBack={() => navigate("/perfil")}
     >
       <SettingsCard
         icon={<ShieldCheck size={16} />}
-        title="Cuenta protegida"
-        description="Estado actual de acceso y sincronización de sesión."
+        title={t("settings.security.account.title")}
+        description={t("settings.security.account.desc")}
         right={
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
-            Protegida
+            {t("settings.security.account.protected")}
           </span>
         }
       >
@@ -105,61 +105,83 @@ export function SettingsSecurity() {
 
             <div className="min-w-0 flex-1">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                Sesión sincronizada
+                {t("settings.security.account.sessionSynced")}
               </p>
               <h2 className="mt-1 text-[17px] font-bold leading-tight text-[var(--app-text)]">
-                {socialOnly ? "Acceso social activo" : "Acceso local activo"}
+                {socialOnly
+                  ? t("settings.security.account.socialActive")
+                  : t("settings.security.account.localActive")}
               </h2>
               <p className="mt-1.5 max-w-[26rem] text-[12px] font-medium leading-5 text-[var(--app-muted)]">
                 {socialOnly
-                  ? "Tu cuenta usa un proveedor externo para iniciar sesión con seguridad."
-                  : "Tu contraseña local controla el acceso principal a esta cuenta."}
+                  ? t("settings.security.account.socialDesc")
+                  : t("settings.security.account.localDesc")}
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <SecurityChip icon={<Sparkles size={10} />} label="Sesión sincronizada" />
-                <SecurityChip icon={<ShieldCheck size={10} />} label="Cuenta protegida" active />
-                <SecurityChip icon={<KeyRound size={10} />} label={`Proveedor: ${providerLabel}`} />
+                <SecurityChip
+                  icon={<Sparkles size={10} />}
+                  label={t("settings.security.account.sessionSynced")}
+                />
+                <SecurityChip
+                  icon={<ShieldCheck size={10} />}
+                  label={t("settings.security.account.protected")}
+                  active
+                />
+                <SecurityChip
+                  icon={<KeyRound size={10} />}
+                  label={`${t("settings.ai.core.provider")} ${providerLabel}`}
+                />
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-2 grid grid-cols-3 gap-1.5 ">
-          <SettingsMetric label="Proveedor" value={providerLabel} accent />
-          <SettingsMetric label="Estado" value={socialOnly ? "Social" : "Local"} />
-          <SettingsMetric label="Sesión" value="Activa" accent />
+          <SettingsMetric label={t("settings.ai.core.provider")} value={providerLabel} accent />
+          <SettingsMetric
+            label={t("settings.security.account.session")}
+            value={socialOnly ? "Social" : "Local"}
+          />
+          <SettingsMetric
+            label={t("settings.security.account.session")}
+            value={t("settings.security.account.active")}
+            accent
+          />
         </div>
       </SettingsCard>
 
       <SettingsCard
         icon={<KeyRound size={16} />}
-        title="Contraseña y salida"
-        description="Gestiona tu acceso local o cierra la sesión activa."
+        title={t("settings.security.actions.title")}
+        description={t("settings.security.actions.desc")}
       >
         <div className="space-y-1.5 ">
           <SettingsRow
             icon={<KeyRound size={15} />}
-            label="Cambiar contraseña"
-            description={socialOnly ? "Gestionada por tu proveedor social." : "Actualizar contraseña local."}
+            label={t("settings.security.actions.changePassword")}
+            description={
+              socialOnly
+                ? t("settings.security.actions.socialManagedDesc")
+                : t("settings.security.actions.changePasswordDesc")
+            }
             onClick={openPasswordModal}
           />
           <SettingsRow
             danger
             icon={<LogOut size={15} />}
-            label="Cerrar sesión"
-            description="Salir de este dispositivo."
+            label={t("settings.security.actions.logout")}
+            description={t("settings.security.actions.logoutDesc")}
             onClick={() => setConfirmLogoutOpen(true)}
           />
         </div>
 
         <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 shadow-[inset_0_0_0_1px_var(--app-border)] ">
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-muted)]">
-            Control activo
+            {t("settings.security.actions.controlTitle")}
           </p>
           <p className="mt-1 text-[12px] font-medium leading-5 text-[var(--app-muted)]">
-            Puedes actualizar tu contraseña cuando quieras. Si usas un proveedor social, el
-            acceso sigue gestionado por tu cuenta externa.
+            {t("settings.security.actions.controlBody")}
           </p>
         </div>
       
@@ -207,6 +229,7 @@ function SecurityChip({ active = false, icon, label }) {
 }
 
 function LogoutDialog({ onCancel, onConfirm }) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-[120] grid place-items-center bg-black/65 px-3 py-6 backdrop-blur-md"
@@ -233,16 +256,16 @@ function LogoutDialog({ onCancel, onConfirm }) {
             </div>
             <div className="min-w-0">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-red-200/80">
-                Acción crítica
+                {t("settings.security.logout.accessSecure")}
               </p>
               <h2
                 id="logout-dialog-title"
                 className="mt-1 text-[18px] font-bold leading-tight text-[var(--app-text)]"
               >
-                Cerrar sesión
+                {t("settings.security.logout.title")}
               </h2>
               <p className="mt-2 text-[12px] font-medium leading-5 text-[var(--app-muted)]">
-                Se cerrará tu sesión en este dispositivo. Podrás volver a entrar cuando quieras.
+                {t("settings.security.logout.desc")}
               </p>
             </div>
           </div>
@@ -253,7 +276,7 @@ function LogoutDialog({ onCancel, onConfirm }) {
               onClick={onCancel}
               className="h-11 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[11px] font-black uppercase tracking-wide text-[var(--app-muted)] transition hover:text-[var(--app-text)] active:scale-[0.98]"
             >
-              Cancelar
+              {t("settings.security.logout.cancel")}
             </button>
 
             <button
@@ -261,7 +284,7 @@ function LogoutDialog({ onCancel, onConfirm }) {
               onClick={onConfirm}
               className="h-11 rounded-2xl bg-red-400 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_0_22px_rgba(248,113,113,0.28)] transition hover:bg-red-300 active:scale-[0.98]"
             >
-              Cerrar sesión
+              {t("settings.security.logout.confirm")}
             </button>
           </div>
         </div>
@@ -281,6 +304,7 @@ function PasswordModal({
   providerLabel,
   success,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-3 backdrop-blur-md sm:items-center sm:py-6">
       <section
@@ -297,16 +321,16 @@ function PasswordModal({
             <div className="min-w-0">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                 <ShieldCheck size={10} />
-                Acceso seguro
+                {t("settings.security.logout.accessSecure")}
               </div>
               <h2
                 id="password-title"
                 className="mt-2 text-xl font-bold leading-tight text-[var(--app-text)]"
               >
-                Cambiar contraseña
+                {t("settings.security.password.title")}
               </h2>
               <p className="mt-2 text-[13px] font-medium leading-5 text-[var(--app-muted)]">
-                Actualiza tu contraseña local de acceso.
+                {t("settings.security.password.desc")}
               </p>
             </div>
             <button
@@ -322,13 +346,14 @@ function PasswordModal({
 
           <div className="mb-3 grid grid-cols-3 gap-2">
             <SecurityBadge label="Sesión activa" value="Sí" />
-            <SecurityBadge label="Proveedor" value={socialOnly ? providerLabel : "Email"} />
-            <SecurityBadge label="Control" value="Local" />
+            <SecurityBadge label={t("settings.security.account.session")} value={t("settings.security.logout.yes")} />
+            <SecurityBadge label={t("settings.ai.core.provider")} value={socialOnly ? providerLabel : "Email"} />
+            <SecurityBadge label={t("settings.security.account.status")} value="Local" />
           </div>
 
           {socialOnly ? (
             <StatusBox type="info" className="mb-3 p-3 text-[12px] leading-5">
-              Tu cuenta usa inicio de sesión social. La contraseña se gestiona desde tu proveedor.
+              {t("settings.security.password.socialInfo")}
             </StatusBox>
           ) : null}
 
@@ -347,8 +372,8 @@ function PasswordModal({
           <form onSubmit={onSubmit} className="space-y-3">
             <PasswordField
               icon={<Lock size={14} />}
-              label="Correo electrónico"
-              placeholder="nombre@correo.com"
+              label={t("settings.security.password.emailLabel")}
+              placeholder={t("settings.security.password.emailPlaceholder")}
               type="email"
               value={form.email}
               disabled={socialOnly}
@@ -362,7 +387,7 @@ function PasswordModal({
               icon={<KeyRound size={15} />}
               className="py-3 text-[11px]"
             >
-              {loading ? "Enviando..." : "Enviar enlace"}
+              {loading ? t("settings.security.password.sending") : t("settings.security.password.submit")}
             </PrimaryButton>
           </form>
         </div>
@@ -425,10 +450,10 @@ function getProviderLabel(user) {
   return provider || "Local";
 }
 
-function getPasswordResetErrorMessage(error) {
+function getPasswordResetErrorMessage(error, t) {
   const message = String(error?.message || "").toLowerCase();
   if (message.includes("session") || message.includes("jwt")) {
-    return "Tu sesión ha caducado. Vuelve a iniciar sesión para solicitar el enlace.";
+    return t("settings.security.password.sessionExpired");
   }
-  return "No pudimos enviar el enlace: " + error.message;
+  return t("settings.security.password.passwordResetError") + error.message;
 }

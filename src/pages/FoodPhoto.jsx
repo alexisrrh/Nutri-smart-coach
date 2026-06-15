@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trackEvent } from "../services/analytics";
 import AIScanHero from "../components/food/AIScanHero";
 import FoodUploadCard from "../components/food/FoodUploadCard";
@@ -18,6 +19,7 @@ import { calculateNutritionGoals } from "../services/nutritionGoalsService";
 import { getCachedProfile, getProfile } from "../services/profileService";
 
 export default function FoodPhoto() {
+  const { t, i18n } = useTranslation();
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [description, setDescription] = useState("");
@@ -69,6 +71,7 @@ export default function FoodPhoto() {
     image,
     preview,
     description,
+    language: normalizeAnalysisLanguage(i18n.resolvedLanguage || i18n.language),
     profileContext: analysisContext,
     loading,
     setAnalysisState,
@@ -98,14 +101,14 @@ export default function FoodPhoto() {
         const profileData = await getProfile(user.id);
         if (!cancelled) setProfile(profileData);
       } catch (profileError) {
-        console.warn("No se pudo cargar el perfil para metas:", profileError);
+        console.warn(t("food.errors.profileLoadFailed"), profileError);
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const totals = useMemo(() => {
     const today = new Date().toDateString();
@@ -139,26 +142,24 @@ export default function FoodPhoto() {
   }
 
   useEffect(() => {
-  if (!result) return;
+    if (!result) return;
 
-  trackEvent("analyze_food", {
-    food: result.food || "unknown",
-    calories: Number(result.calories || 0),
-    protein: Number(result.protein || 0),
-    score: Number(result.score || 0),
-  });
-}, [result]);
+    trackEvent("analyze_food", {
+      food: result.food || "unknown",
+      calories: Number(result.calories || 0),
+      protein: Number(result.protein || 0),
+      score: Number(result.score || 0),
+    });
+  }, [result]);
 
 
   return (
-   <AppShell
-   className="overflow-hidden pb-2"
-  contentClassName="px-2 pt-2"
-  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
->
-      <div
-        className="flex flex-col gap-1"
-      >
+    <AppShell
+      className="overflow-hidden pb-2"
+      contentClassName="px-2 pt-2"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="flex flex-col gap-1">
         {(!result || loading) && <AIScanHero />}
 
         <AiUsageCard
@@ -169,7 +170,7 @@ export default function FoodPhoto() {
         />
 
         <p className="px-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-          Plan Free: 3 análisis IA/día. Premium: 20 análisis IA/día.
+          {t("food.usage.planNotice", { free: 3, premium: 20 })}
         </p>
 
         {!result && !loading && (
@@ -189,7 +190,7 @@ export default function FoodPhoto() {
 
         {result && !loading && (
           <>
-         <div className="space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="space-y-2">
                 <FoodResultCard result={result} preview={preview} />
                 <NutritionInsights result={result} />
@@ -207,7 +208,7 @@ export default function FoodPhoto() {
                       color: "var(--app-surface)",
                     }}
                   >
-                    Analizar otra comida
+                    {t("food.actions.analyzeAnother")}
                   </button>
 
                   <button
@@ -220,7 +221,7 @@ export default function FoodPhoto() {
                       color: "var(--app-muted)",
                     }}
                   >
-                    Descartar análisis
+                    {t("food.actions.discardAnalysis")}
                   </button>
                 </div>
               </div>
@@ -230,4 +231,10 @@ export default function FoodPhoto() {
       </div>
     </AppShell>
   );
+}
+
+function normalizeAnalysisLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  return normalized.startsWith("en") ? "en" : "es";
 }

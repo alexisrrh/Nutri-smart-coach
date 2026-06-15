@@ -1,4 +1,5 @@
 import { Lightbulb, Target } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function SmartInsightCard({
   smartTip,
@@ -6,11 +7,13 @@ export default function SmartInsightCard({
   mealCount = 0,
   hasDiet = false,
 }) {
+  const { t } = useTranslation();
   const insight = getInsight({
     smartTip,
     nutritionScore,
     mealCount,
     hasDiet,
+    t,
   });
 
   return (
@@ -26,10 +29,10 @@ export default function SmartInsightCard({
 
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-muted)]">
-                Consejo IA
+                {t("dashboard.ai.insight.badge")}
               </p>
 
-                <h3 className="mt-1 text-lg font-black italic leading-tight text-[var(--app-text)]">
+              <h3 className="mt-1 text-lg font-black italic leading-tight text-[var(--app-text)]">
                 {insight.title}
               </h3>
             </div>
@@ -51,7 +54,7 @@ export default function SmartInsightCard({
             <Target size={15} className="text-[var(--app-primary)]" />
 
             <p className="text-[9px] font-black uppercase tracking-widest text-[var(--app-muted)]">
-              Próximo paso recomendado
+              {t("dashboard.ai.insight.nextStep")}
             </p>
           </div>
 
@@ -64,64 +67,52 @@ export default function SmartInsightCard({
   );
 }
 
-function getInsight({ smartTip, nutritionScore, mealCount, hasDiet }) {
+function getInsight({ smartTip, nutritionScore, mealCount, hasDiet, t }) {
   if (!hasDiet) {
     return {
-      status: "Configurar",
+      status: t("dashboard.ai.insight.status.configure"),
       badgeClass: "border-yellow-400/20 bg-yellow-400/10 text-yellow-300",
-      title: "Primero crea tu plan base",
-      text:
-        "Aún no tienes una dieta activa. Cuando crees tu plan semanal, Nutri Smart podrá comparar tus comidas contra una meta real.",
-      action:
-        "Crea una dieta IA desde la sección Plan para recibir recomendaciones más precisas.",
+      title: t("dashboard.ai.insight.noDiet.title"),
+      text: t("dashboard.ai.insight.noDiet.text"),
+      action: t("dashboard.ai.insight.noDiet.action"),
     };
   }
 
   if (mealCount === 0) {
     return {
-      status: "Pendiente",
+      status: t("dashboard.ai.insight.status.pending"),
       badgeClass: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
-      title: "Activa el seguimiento de hoy",
-      text:
-        "Todavía no has escaneado comidas hoy. Cuando subas tu primera foto, verás cuántas calorías llevas y cuánto te falta.",
-      action:
-        "Escanea tu primera comida para empezar a completar tu objetivo diario.",
+      title: t("dashboard.ai.insight.noMeals.title"),
+      text: t("dashboard.ai.insight.noMeals.text"),
+      action: t("dashboard.ai.insight.noMeals.action"),
     };
   }
 
   if (nutritionScore >= 8) {
     return {
-      status: "Excelente",
+      status: t("dashboard.ai.insight.status.excellent"),
       badgeClass: "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
-      title: "Vas muy bien hoy",
-      text:
-        "Tus comidas van alineadas con tu objetivo. Mantener este ritmo hará que tu progreso semanal sea más fácil de sostener.",
-      action:
-        "Sigue priorizando proteína y evita calorías extra innecesarias.",
+      title: t("dashboard.ai.insight.excellent.title"),
+      text: t("dashboard.ai.insight.excellent.text"),
+      action: t("dashboard.ai.insight.excellent.action"),
     };
   }
 
   if (nutritionScore >= 5) {
     return {
-      status: "Mejorable",
+      status: t("dashboard.ai.insight.status.improvable"),
       badgeClass: "border-yellow-400/20 bg-yellow-400/10 text-yellow-300",
-      title: "Puedes mejorar la próxima comida",
-      text:
-        smartTip ||
-        "La IA detecta que aún puedes mejorar alguna métrica importante de hoy.",
-      action:
-        "Haz tu próxima comida más alta en proteína y escanéala para ajustar mejor tu día.",
+      title: t("dashboard.ai.insight.improvable.title"),
+      text: smartTip || t("dashboard.ai.insight.improvable.text"),
+      action: t("dashboard.ai.insight.improvable.action"),
     };
   }
 
   return {
-    status: "Atención",
+    status: t("dashboard.ai.insight.status.attention"),
     badgeClass: "border-red-400/20 bg-red-400/10 text-red-300",
-    title: "Vamos a corregir el rumbo",
-    text:
-      smartTip ||
-      "Tu día todavía no está alineado con el objetivo, pero puedes mejorarlo con tu próxima comida.",
-    action:
-      "Elige una comida más limpia, alta en proteína y escanéala antes de cerrar el día.",
+    title: t("dashboard.ai.insight.attention.title"),
+    text: smartTip || t("dashboard.ai.insight.attention.text"),
+    action: t("dashboard.ai.insight.attention.action"),
   };
 }

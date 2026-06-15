@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -21,6 +22,7 @@ import { SettingsScreenShell } from "./SettingsShared";
 export function SettingsProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -72,7 +74,7 @@ export function SettingsProfile() {
         });
       } catch (loadError) {
         if (!active) return;
-        setError(loadError.message || "No se pudo cargar el perfil.");
+        setError(loadError.message || t("settings.profile.loadError"));
       } finally {
         if (active) setLoading(false);
       }
@@ -83,7 +85,7 @@ export function SettingsProfile() {
     return () => {
       active = false;
     };
-  }, [navigate, user]);
+  }, [navigate, user, t]);
 
   const goals = useMemo(
     () =>
@@ -109,7 +111,7 @@ export function SettingsProfile() {
       const currentUser = user || (await supabase.auth.getUser()).data.user;
 
       if (!currentUser?.id) {
-        setError("No hay usuario conectado.");
+      setError(t("settings.profile.noUser"));
         return;
       }
 
@@ -134,10 +136,10 @@ export function SettingsProfile() {
         updated_at: new Date().toISOString(),
       });
 
-      setSuccess("Perfil actualizado correctamente.");
+      setSuccess(t("settings.profile.saved"));
       setTimeout(() => navigate("/perfil"), 700);
     } catch (saveError) {
-      setError(saveError.message || "No se pudo guardar el perfil.");
+      setError(saveError.message || t("settings.profile.saveError"));
     } finally {
       setSaving(false);
     }
@@ -146,9 +148,9 @@ export function SettingsProfile() {
   if (loading) {
     return (
       <SettingsScreenShell
-        badge="Perfil"
-        title="Mi perfil"
-        subtitle="Cargando tus datos personales."
+        badge={t("settings.profile.badge")}
+        title={t("settings.profile.title")}
+        subtitle={t("settings.profile.loadingSubtitle")}
         onBack={() => navigate("/perfil")}
       >
         <ProfileCoreSkeleton />
@@ -157,16 +159,20 @@ export function SettingsProfile() {
   }
 
   return (
-    <SettingsScreenShell
-      badge="Perfil"
-      title="Mi perfil"
-      subtitle="Ajusta tus datos base para personalizar macros, progreso y recomendaciones."
+      <SettingsScreenShell
+      badge={t("settings.profile.badge")}
+      title={t("settings.profile.title")}
+      subtitle={t("settings.profile.subtitle")}
       onBack={() => navigate("/perfil")}
     >
       {error ? <StatusBox type="error">{error}</StatusBox> : null}
       {success ? <StatusBox type="success">{success}</StatusBox> : null}
 
-      <AIProfileCore goal={goalLabel(form.goal)} activity={activityLabel(form.activity)} calories={goals.calories} />
+      <AIProfileCore
+        goal={goalLabel(form.goal, t)}
+        activity={activityLabel(form.activity, t)}
+        calories={goals.calories}
+      />
 
       <form
         onSubmit={handleSubmit}
@@ -174,14 +180,14 @@ export function SettingsProfile() {
       >
         <ProfileModule
           icon={<UserRound size={16} />}
-          title="Datos básicos"
-          description="Perfil, edad y medidas base."
+          title={t("settings.profile.data")}
+          description={t("settings.profile.dataDesc")}
           tone="base"
-          badge="Compacto"
+          badge={t("settings.profile.compact")}
         >
           <CompactField
             icon={<UserRound size={14} />}
-            label="Nombre"
+            label={t("settings.profile.name")}
             value={form.name}
             onChange={(value) => setForm((current) => ({ ...current, name: value }))}
             placeholder="Ej. Alexis Rodríguez"
@@ -189,14 +195,14 @@ export function SettingsProfile() {
           <div className="grid grid-cols-3 gap-1.5">
             <CompactField
               icon={<Calendar size={14} />}
-              label="Edad"
+              label={t("settings.profile.age")}
               type="number"
               value={form.age}
               onChange={(value) => setForm((current) => ({ ...current, age: value }))}
             />
             <CompactField
               icon={<Weight size={14} />}
-              label="Peso"
+              label={t("settings.profile.weight")}
               type="number"
               step="0.1"
               value={form.weight}
@@ -205,7 +211,7 @@ export function SettingsProfile() {
             />
             <CompactField
               icon={<Ruler size={14} />}
-              label="Altura"
+              label={t("settings.profile.height")}
               type="number"
               value={form.height}
               onChange={(value) => setForm((current) => ({ ...current, height: value }))}
@@ -215,11 +221,11 @@ export function SettingsProfile() {
 
           <CompactChoiceGroup
             icon={<UserRound size={14} />}
-            label="Género"
+            label={t("settings.profile.gender")}
             value={form.gender}
             options={[
-              { id: "male", label: "Hombre" },
-              { id: "female", label: "Mujer" },
+              { id: "male", label: t("settings.profile.genderOptions.male") },
+              { id: "female", label: t("settings.profile.genderOptions.female") },
             ]}
             onChange={(value) => setForm((current) => ({ ...current, gender: value }))}
           />
@@ -227,19 +233,19 @@ export function SettingsProfile() {
 
         <ProfileModule
           icon={<Target size={16} />}
-          title="Sistema metabólico"
-          description="Alinea el motor con tu meta real."
+          title={t("settings.profile.system")}
+          description={t("settings.profile.systemDesc")}
           tone="metabolic"
-          badge="Core"
+          badge={t("settings.profile.core")}
         >
           <CompactChoiceGroup
             icon={<Target size={14} />}
-            label="Objetivo"
+            label={t("settings.profile.goal")}
             value={form.goal}
             options={[
-              { id: "perder_grasa", label: "Perder grasa" },
-              { id: "ganar_musculo", label: "Ganar músculo" },
-              { id: "mantener_peso", label: "Mantener peso" },
+              { id: "perder_grasa", label: t("settings.profile.goalOptions.lose") },
+              { id: "ganar_musculo", label: t("settings.profile.goalOptions.gain") },
+              { id: "mantener_peso", label: t("settings.profile.goalOptions.maintain") },
             ]}
             onChange={(value) => setForm((current) => ({ ...current, goal: value }))}
           />
@@ -247,12 +253,12 @@ export function SettingsProfile() {
           <div className="mt-2">
             <CompactChoiceGroup
               icon={<Activity size={14} />}
-              label="Actividad"
+              label={t("settings.profile.activity")}
               value={form.activity}
               options={[
-                { id: "low", label: "Sedentario" },
-                { id: "moderate", label: "Moderada" },
-                { id: "high", label: "Alta" },
+              { id: "low", label: t("settings.profile.activityOptions.low") },
+              { id: "moderate", label: t("settings.profile.activityOptions.moderate") },
+              { id: "high", label: t("settings.profile.activityOptions.high") },
               ]}
               onChange={(value) => setForm((current) => ({ ...current, activity: value }))}
             />
@@ -261,14 +267,14 @@ export function SettingsProfile() {
 
         <ProfileModule
           icon={<Activity size={16} />}
-          title="Nutrición"
-          description="Define tu frecuencia diaria de comidas."
+          title={t("settings.profile.nutrition")}
+          description={t("settings.profile.nutritionDesc")}
           tone="nutrition"
-          badge="Ritmo"
+          badge={t("settings.profile.rhythm")}
         >
           <CompactChoiceGroup
             icon={<Activity size={14} />}
-            label="Comidas al día"
+            label={t("settings.profile.mealsPerDay")}
             value={form.mealsPerDay}
             options={[
               { id: "3", label: "3" },
@@ -282,15 +288,15 @@ export function SettingsProfile() {
 
         <div className="pt-1 pb-[calc(env(safe-area-inset-bottom)+12px)]">
           <div className="rounded-[1.35rem] border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_82%,transparent)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-            <button
-              type="submit"
-              disabled={saving}
-              className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.15rem] bg-[var(--app-primary)] px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] transition duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <Save size={16} />
-                {saving ? "Guardando..." : "Guardar cambios"}
-              </span>
+          <button
+            type="submit"
+            disabled={saving}
+            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.15rem] bg-[var(--app-primary)] px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] transition duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <Save size={16} />
+                {saving ? t("settings.profile.saving") : t("settings.profile.save")}
+            </span>
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--app-primary-soft)] to-transparent transition duration-700 group-hover:translate-x-full" />
             </button>
           </div>
@@ -367,6 +373,7 @@ function CompactChoiceGroup({ icon, label, options, onChange, value }) {
 }
 
 function AIProfileCore({ activity, calories, goal }) {
+  const { t } = useTranslation();
   return (
     <SurfaceCard
       as="section"
@@ -386,27 +393,27 @@ function AIProfileCore({ activity, calories, goal }) {
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <MetaBadge variant="neutral" icon={<BrainCircuit size={11} />}>
-            AI Profile Core
+            {t("settings.profile.corePanel.badge")}
           </MetaBadge>
           <h2 className="mt-2 text-[20px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
-            Perfil sincronizado
+            {t("settings.profile.corePanel.title")}
           </h2>
           <p className="mt-2 max-w-[24rem] text-[13px] font-medium leading-5 text-[var(--app-muted)]">
-            Tus datos ya están alineados con el motor de recomendaciones para recalcular macros y ritmo diario.
+            {t("settings.profile.corePanel.subtitle")}
           </p>
         </div>
 
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)] shadow-[0_0_18px_var(--app-glow)]">
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]" />
-          Live
+          {t("settings.profile.corePanel.live")}
         </span>
       </div>
 
       <div className="relative z-10 mt-4 grid grid-cols-2 gap-1.5">
-        <ProfileCoreMetric label="Objetivo activo" value={goal} />
-        <ProfileCoreMetric label="Kcal objetivo" value={calories} unit="kcal" accent />
-        <ProfileCoreMetric label="Actividad" value={activity} />
-        <ProfileCoreMetric label="Estado" value="Perfil sincronizado" />
+        <ProfileCoreMetric label={t("settings.profile.corePanel.objective")} value={goal} />
+        <ProfileCoreMetric label={t("settings.profile.corePanel.kcalObjective")} value={calories} unit="kcal" accent />
+        <ProfileCoreMetric label={t("settings.profile.corePanel.activity")} value={activity} />
+        <ProfileCoreMetric label={t("settings.profile.corePanel.status")} value={t("settings.profile.corePanel.synced")} />
       </div>
 
       <div className="relative z-10 mt-3 flex items-center gap-3 rounded-[1.1rem] border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-surface)_84%,transparent)] px-3 py-2.5">
@@ -419,10 +426,10 @@ function AIProfileCore({ activity, calories, goal }) {
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--app-text)]">
             <Sparkles size={11} className="text-[var(--app-primary)]" />
-            Núcleo activo
+            {t("settings.profile.corePanel.coreActive")}
           </p>
           <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            El perfil ya está listo para guiar tus recomendaciones.
+            {t("settings.profile.corePanel.coreBody")}
           </p>
         </div>
       </div>
@@ -528,14 +535,14 @@ function ProfileModule({ badge, children, description, icon, title, tone = "base
   );
 }
 
-function goalLabel(goal) {
-  if (goal === "ganar_musculo") return "Ganar músculo";
-  if (goal === "mantener_peso") return "Mantener peso";
-  return "Perder grasa";
+function goalLabel(goal, t) {
+  if (goal === "ganar_musculo") return t("settings.profile.goals.gain");
+  if (goal === "mantener_peso") return t("settings.profile.goals.maintain");
+  return t("settings.profile.goals.lose");
 }
 
-function activityLabel(activity) {
-  if (activity === "low") return "Sedentario";
-  if (activity === "high") return "Alta";
-  return "Moderada";
+function activityLabel(activity, t) {
+  if (activity === "low") return t("settings.profile.activityValues.low");
+  if (activity === "high") return t("settings.profile.activityValues.high");
+  return t("settings.profile.activityValues.moderate");
 }

@@ -13,6 +13,7 @@ export function normalizeProfile(data) {
   const mealsPerDay = normalizeMealsPerDay(
     data.meals_per_day ?? data.mealsPerDay ?? preferences.meals_per_day ?? preferences.mealsPerDay
   );
+  const language = normalizeLanguage(data.language || preferences.language || preferences.locale);
 
   return {
     ...data,
@@ -49,6 +50,7 @@ export function normalizeProfile(data) {
     activity: activityLevel,
     meals_per_day: mealsPerDay,
     mealsPerDay,
+    language,
     accepted_terms: Boolean(data.accepted_terms),
     accepted_terms_at: data.accepted_terms_at || null,
     accepted_privacy: Boolean(data.accepted_privacy),
@@ -58,6 +60,7 @@ export function normalizeProfile(data) {
     legal_version: data.legal_version || "",
     preferences: {
       ...preferences,
+      language,
       meals_per_day: mealsPerDay,
     },
     updated_at: data.updated_at || null,
@@ -210,4 +213,9 @@ function toNumberOrNull(value) {
   const number = Number(value);
 
   return Number.isNaN(number) ? null : number;
+}
+
+export function normalizeLanguage(language) {
+  if (language === "en") return "en";
+  return "es";
 }

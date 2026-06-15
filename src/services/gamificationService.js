@@ -23,7 +23,7 @@ export function getGamificationState() {
   );
 }
 
-export function syncGamificationState(activity) {
+export function syncGamificationState(activity, locale = "es", t) {
   const state = getGamificationState();
   const todayKey = getLocalDateKey();
   const activeToday = Boolean(
@@ -66,10 +66,10 @@ export function syncGamificationState(activity) {
 
   setCache(GAMIFICATION_STORAGE_KEY, nextState);
 
-  return buildGamificationSnapshot(nextState, activity);
+  return buildGamificationSnapshot(nextState, activity, locale, t);
 }
 
-export function buildGamificationSnapshot(state, activity) {
+export function buildGamificationSnapshot(state, activity, locale = "es", t) {
   const normalizedState = normalizeGamificationState(state);
   const dailyItems = getDailyProgressItems(activity);
   const completedCount = dailyItems.filter((item) => item.completed).length;
@@ -86,7 +86,7 @@ export function buildGamificationSnapshot(state, activity) {
     dailyMealGoal: normalizeDailyMealGoal(activity?.dailyMealGoal),
     xpToNextLevel: XP_PER_LEVEL,
     achievements: getUnlockedAchievements(normalizedState, activity),
-    dailySummary: getDailySummary(normalizedState, activity),
+    dailySummary: getDailySummary(normalizedState, activity, locale, t),
   };
 }
 
@@ -291,7 +291,8 @@ function getUnlockedAchievements(state, activity) {
   }));
 }
 
-function getDailySummary(state, activity) {
+function getDailySummary(state, activity, locale = "es", t) {
+  const isEnglish = locale === "en";
   const dailyMealGoal = normalizeDailyMealGoal(activity?.dailyMealGoal);
   const proteinMissing = Math.max(
     0,
@@ -299,30 +300,58 @@ function getDailySummary(state, activity) {
   );
 
   if (activity?.hasWorkoutToday && activity?.hasMealToday) {
-    return "Entreno completado y nutrición activa hoy.";
+    return t
+      ? t("dashboard.progress.summaryMessages.workoutAndNutrition")
+      : isEnglish
+        ? "Workout completed and nutrition is active today."
+        : "Entreno completado y nutrición activa hoy.";
   }
 
   if (activity?.hasWorkoutToday) {
-    return "Entreno completado. Buen punto para sostener la racha.";
+    return t
+      ? t("dashboard.progress.summaryMessages.workoutOnly")
+      : isEnglish
+        ? "Workout completed. A good moment to keep the streak going."
+        : "Entreno completado. Buen punto para sostener la racha.";
   }
 
   if (activity?.proteinCompleted && activity?.hasMealToday) {
-    return "Hoy vas muy bien. Mantén el ritmo.";
+    return t
+      ? t("dashboard.progress.summaryMessages.proteinAndMeals")
+      : isEnglish
+        ? "You are doing great today. Keep the pace."
+        : "Hoy vas muy bien. Mantén el ritmo.";
   }
 
   if (proteinMissing > 0 && activity?.hasMealToday) {
-    return `Te faltan ${proteinMissing}g de proteína.`;
+    return t
+      ? t("dashboard.progress.summaryMessages.proteinMissing", { proteinMissing })
+      : isEnglish
+        ? `You still need ${proteinMissing}g of protein.`
+        : `Te faltan ${proteinMissing}g de proteína.`;
   }
 
   if (state.currentStreak >= 2) {
-    return `Llevas ${state.currentStreak} días seguidos.`;
+    return t
+      ? t("dashboard.progress.summaryMessages.streak", { currentStreak: state.currentStreak })
+      : isEnglish
+        ? `You are on a ${state.currentStreak}-day streak.`
+        : `Llevas ${state.currentStreak} días seguidos.`;
   }
 
   if (activity?.hasActiveDiet) {
-    return `Tienes el plan listo: ${dailyMealGoal} comidas marcadas para hoy.`;
+    return t
+      ? t("dashboard.progress.summaryMessages.activeDiet", { dailyMealGoal })
+      : isEnglish
+        ? `Plan ready: ${dailyMealGoal} meals set for today.`
+        : `Tienes el plan listo: ${dailyMealGoal} comidas marcadas para hoy.`;
   }
 
-  return "Empieza con una comida o check-in pequeño hoy.";
+  return t
+    ? t("dashboard.progress.summaryMessages.startSmall")
+    : isEnglish
+      ? "Start with one meal or a small check-in today."
+      : "Empieza con una comida o check-in pequeño hoy.";
 }
 
 function getOffsetDateKey(offsetDays) {

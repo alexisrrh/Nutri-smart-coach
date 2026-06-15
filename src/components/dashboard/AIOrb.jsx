@@ -1,6 +1,8 @@
 import { Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AIOrb() {
+  const { t } = useTranslation();
   return (
     <div className="relative flex h-[150px] w-[150px] items-center justify-center">
       <div
@@ -45,7 +47,7 @@ export default function AIOrb() {
         <Sparkles size={20} className="text-[var(--app-surface)]" />
 
         <p className="mt-1 text-[10px] font-black uppercase tracking-[0.28em] text-[var(--app-surface)]/70">
-          AI
+          {t("dashboard.ai.orbLabel")}
         </p>
       </div>
 

@@ -1,8 +1,13 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../../context/themeContext";
+import { useAuth } from "../../context/useAuth";
 import { MetaBadge, SurfaceCard } from "../../components/ui";
-import { Check, Palette, Sparkles } from "lucide-react";
+import { Check, Globe, Palette } from "lucide-react";
 import { SettingsCard, SettingsScreenShell } from "./SettingsShared";
 import { useNavigate } from "react-router-dom";
+import { getProfile, saveProfile } from "../../services/profileService";
+import { setAppLanguage } from "../../i18n";
 
 const THEMES = [
   {
@@ -109,25 +114,89 @@ const THEMES = [
   },
 ];
 
+const LANGUAGES = [
+  { id: "es", label: "Español", flag: "🇪🇸" },
+  { id: "en", label: "English", flag: "🇺🇸" },
+];
+
 export function SettingsTheme() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const activeTheme = THEMES.find((item) => item.id === theme) || THEMES[0];
+  const [language, setLanguage] = useState("es");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLanguage() {
+      if (!user?.id) {
+        await setAppLanguage("es");
+        if (active) setLanguage("es");
+        return;
+      }
+
+      try {
+        const profile = await getProfile(user.id, { fallbackToCache: false });
+        const nextLanguage =
+          profile?.preferences?.language || profile?.language || "es";
+
+        if (!active) return;
+        setLanguage(nextLanguage === "en" ? "en" : "es");
+        await setAppLanguage(nextLanguage);
+      } catch {
+        if (!active) return;
+        setLanguage("es");
+        await setAppLanguage("es");
+      }
+    }
+
+    void loadLanguage();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  async function handleLanguageChange(nextLanguage) {
+    const normalized = nextLanguage === "en" ? "en" : "es";
+    setLanguage(normalized);
+    await setAppLanguage(normalized);
+
+    if (!user?.id) return;
+
+    try {
+      const profile = await getProfile(user.id, { fallbackToCache: false });
+
+      if (!profile?.id) return;
+
+      await saveProfile({
+        ...profile,
+        preferences: {
+          ...(profile.preferences || {}),
+          language: normalized,
+        },
+      });
+    } catch (error) {
+      console.warn("No se pudo guardar el idioma en el perfil:", error);
+    }
+  }
 
   return (
     <SettingsScreenShell
-      badge="Theme"
-      title="Personalización"
-      subtitle="Personaliza la apariencia de NutriSmartCoach."
+      badge={t("settings.theme.badge")}
+      title={t("settings.theme.title")}
+      subtitle={t("settings.theme.subtitle")}
       onBack={() => navigate("/perfil")}
     >
-      <div className="space-y-2 pb-23">
+      <div className="space-y-2 pb-16">
         <ThemeHero activeTheme={activeTheme} />
 
         <SettingsCard
           icon={<Palette size={16} />}
-          title="Colección de temas"
-          description="Elige una piel visual con materiales vivos, no cajas planas."
+          title={t("settings.theme.themesTitle")}
+          description={t("settings.theme.themesDesc")}
           right={<MetaBadge variant="neutral">{activeTheme.label}</MetaBadge>}
         >
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -148,57 +217,75 @@ export function SettingsTheme() {
                     boxShadow: active ? `0 16px 34px ${item.preview.glow}` : "0 10px 22px rgba(0,0,0,0.12)",
                   }}
                   aria-pressed={active}
-                >
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-90"
-                    style={{ backgroundImage: item.preview.ambient }}
-                  />
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p
-                        className="text-[11px] font-semibold"
-                        style={{ color: item.preview.text }}
+                  >
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-90"
+                      style={{ backgroundImage: item.preview.ambient }}
+                    />
+                  <div className="relative z-10 flex min-h-[78px] flex-col justify-between gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p
+                          className="text-[12px] font-bold leading-tight"
+                          style={{ color: item.preview.text }}
+                        >
+                          {item.label}
+                        </p>
+                        <p
+                          className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em]"
+                          style={{ color: item.preview.muted }}
+                        >
+                          {t(`settings.theme.themeTones.${item.id}`)}
+                        </p>
+                      </div>
+
+                      <span
+                        className="relative h-4 w-4 shrink-0 rounded-full border border-white/10"
+                        style={{
+                          background: item.preview.primary,
+                          boxShadow: `0 0 16px ${item.preview.glow}`,
+                        }}
                       >
-                        {item.label}
-                      </p>
-                      <p
-                        className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em]"
-                        style={{ color: item.preview.muted }}
-                      >
-                        {item.tone}
-                      </p>
+                        {active ? (
+                          <span
+                            className="absolute inset-[-3px] rounded-full border"
+                            style={{ borderColor: item.preview.border }}
+                          />
+                        ) : null}
+                      </span>
                     </div>
 
-                    <span
-                      className="relative h-4 w-4 shrink-0 rounded-full border border-white/10"
-                      style={{
-                        background: item.preview.primary,
-                        boxShadow: `0 0 16px ${item.preview.glow}`,
-                      }}
-                    >
-                      {active ? (
+                    <div className="flex items-end justify-between gap-2">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[8px] font-bold uppercase tracking-[0.14em] backdrop-blur-md"
+                        style={{
+                          borderColor: item.preview.border,
+                          backgroundColor: "rgba(255,255,255,0.04)",
+                          color: item.preview.primary,
+                        }}
+                      >
                         <span
-                          className="absolute inset-[-3px] rounded-full border"
-                          style={{ borderColor: item.preview.border }}
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ background: item.preview.primary }}
                         />
-                      ) : null}
-                    </span>
+                        {item.preview.primary}
+                      </span>
+
+                          {active ? (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[8px] font-bold uppercase tracking-[0.14em] backdrop-blur-md"
+                              style={{
+                                borderColor: item.preview.border,
+                                backgroundColor: "rgba(255,255,255,0.04)",
+                                color: item.preview.text,
+                              }}
+                            >
+                              <Check size={9} />
+                          {t("common.active")}
+                            </span>
+                          ) : null}
+                    </div>
                   </div>
-
-                  <ThemeTilePreview item={item} active={active} />
-
-                  {active ? (
-                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] backdrop-blur-md"
-                      style={{
-                        borderColor: item.preview.border,
-                        backgroundColor: "rgba(255,255,255,0.04)",
-                        color: item.preview.primary,
-                      }}
-                    >
-                      <Check size={9} />
-                      Activo
-                    </span>
-                  ) : null}
                 </button>
               );
             })}
@@ -206,11 +293,47 @@ export function SettingsTheme() {
         </SettingsCard>
 
         <SettingsCard
-          icon={<Sparkles size={16} />}
-          title="Live preview"
-          description="Una interfaz miniatura para validar materiales, contraste y profundidad."
+          icon={<Globe size={16} />}
+          title={t("settings.theme.languageTitle")}
+          description={t("settings.theme.languageDesc")}
+          right={<MetaBadge variant="neutral">{language === "en" ? "English" : "Español"}</MetaBadge>}
         >
-          <ThemeLivePreview themeData={activeTheme.preview} themeLabel={activeTheme.label} />
+          <div className="grid grid-cols-2 gap-2">
+            {LANGUAGES.map((item) => {
+              const active = item.id === language;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => void handleLanguageChange(item.id)}
+                  className={`flex items-center justify-between gap-3 rounded-[1.15rem] border px-3 py-2.5 text-left transition active:scale-[0.985] ${
+                    active
+                      ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] shadow-[0_12px_28px_var(--app-glow)]"
+                      : "border-[var(--app-border)] bg-[var(--app-surface)]"
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-bold text-[var(--app-text)]">
+                      {item.flag} {item.label}
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                      {active ? t("common.active") : t("common.available")}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border ${
+                      active
+                        ? "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-surface)]"
+                        : "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]"
+                    }`}
+                  >
+                    {active ? <Check size={12} /> : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </SettingsCard>
       </div>
     </SettingsScreenShell>
@@ -218,12 +341,13 @@ export function SettingsTheme() {
 }
 
 function ThemeHero({ activeTheme }) {
+  const { t } = useTranslation();
   const p = activeTheme.preview;
 
   return (
     <SurfaceCard
       radius="xl"
-      className="relative overflow-hidden border border-[var(--app-border)]/80 p-3 shadow-[0_22px_64px_var(--app-glow)]"
+      className="relative overflow-hidden border border-[var(--app-border)]/80 p-2.5 shadow-[0_18px_48px_var(--app-glow)]"
       style={{
         background: p.bg,
         color: p.text,
@@ -238,18 +362,18 @@ function ThemeHero({ activeTheme }) {
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <MetaBadge variant="neutral" icon={<Palette size={11} />}>
-            Theme activo
+            {t("settings.theme.activeTheme")}
           </MetaBadge>
-          <h2 className="mt-2 text-[20px] font-semibold leading-tight tracking-tight">
+          <h2 className="mt-2 text-[18px] font-semibold leading-tight tracking-tight">
             {activeTheme.label}
           </h2>
-          <p className="mt-2 max-w-[24rem] text-[13px] font-medium leading-5" style={{ color: p.muted }}>
-            Ajusta la piel visual sin perder la lectura premium ni la jerarquía del sistema.
+          <p className="mt-1.5 max-w-[24rem] text-[12px] font-medium leading-5" style={{ color: p.muted }}>
+            {t("settings.theme.hero.title")}
           </p>
         </div>
 
         <div
-          className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.4rem] border backdrop-blur-sm"
+          className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.3rem] border backdrop-blur-sm"
           style={{
             borderColor: p.border,
             backgroundColor: "rgba(255,255,255,0.04)",
@@ -257,7 +381,7 @@ function ThemeHero({ activeTheme }) {
           }}
         >
           <span
-            className="absolute inset-3 rounded-full"
+            className="absolute inset-[11px] rounded-full"
             style={{
               background: p.primary,
               boxShadow: `0 0 24px ${p.glow}`,
@@ -267,7 +391,7 @@ function ThemeHero({ activeTheme }) {
         </div>
       </div>
 
-      <div className="relative z-10 mt-4 overflow-hidden rounded-[1.35rem] border p-3 backdrop-blur-md transition duration-500 ease-out"
+      <div className="relative z-10 mt-3 overflow-hidden rounded-[1.2rem] border p-2.5 backdrop-blur-md transition duration-500 ease-out"
         style={{
           borderColor: p.border,
           backgroundColor: "rgba(255,255,255,0.04)",
@@ -277,114 +401,19 @@ function ThemeHero({ activeTheme }) {
         <ThemeMaterialFrame themeData={p} />
       </div>
 
-      <div className="relative z-10 mt-4 grid grid-cols-2 gap-1.5">
-        <PreviewMetric label="Actual" value={activeTheme.label} />
-        <PreviewMetric label="Estado" value="Sincronizado" accent />
+      <div className="relative z-10 mt-3 grid grid-cols-2 gap-1.5">
+        <PreviewMetric label={t("settings.theme.current")} value={activeTheme.label} />
+        <PreviewMetric label={t("settings.theme.status")} value={t("settings.theme.synced")} accent />
       </div>
     </SurfaceCard>
   );
 }
 
-function ThemeTilePreview({ item, active }) {
-  const p = item.preview;
-  return (
-    <div
-      className="relative mt-3 overflow-hidden rounded-[1.1rem] border p-2.5 backdrop-blur-md"
-      style={{
-        backgroundColor: "rgba(255,255,255,0.045)",
-        borderColor: p.border,
-      }}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className="h-5 w-12 rounded-full border"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderColor: p.border,
-          }}
-        />
-        <span
-          className="h-5 w-5 rounded-full"
-          style={{
-            background: p.primary,
-            boxShadow: `0 0 12px ${p.glow}`,
-          }}
-        />
-      </div>
-
-      <div className="mt-2 grid grid-cols-[1.2fr_0.8fr] gap-2">
-        <div
-          className="rounded-[0.9rem] border p-2"
-          style={{
-            backgroundColor: p.card,
-            borderColor: p.border,
-          }}
-        >
-          <div
-            className="h-1.5 w-8 rounded-full"
-            style={{ backgroundColor: p.primary }}
-          />
-          <div
-            className="mt-2 h-8 rounded-[0.7rem] border"
-            style={{
-              backgroundColor: p.surface,
-              borderColor: p.border,
-            }}
-          />
-        </div>
-
-        <div
-          className="flex flex-col justify-between rounded-[0.9rem] border p-2"
-          style={{
-            backgroundColor: p.surface,
-            borderColor: p.border,
-          }}
-        >
-          <span
-            className="inline-flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
-            style={{
-              color: p.primary,
-              borderColor: p.border,
-              backgroundColor: p.card,
-            }}
-          >
-            {active ? <Check size={8} /> : "•"}
-          </span>
-          <span className="mt-2 h-2 w-full rounded-full" style={{ backgroundColor: p.soft }} />
-          <span className="mt-1 h-6 w-full rounded-[0.65rem] border" style={{ backgroundColor: p.card, borderColor: p.border }} />
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span
-          className="rounded-full border px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.12em]"
-          style={{
-            color: p.muted,
-            borderColor: p.border,
-            backgroundColor: "rgba(255,255,255,0.03)",
-          }}
-        >
-          Material
-        </span>
-        <span
-          className="rounded-full border px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.12em]"
-          style={{
-            color: p.primary,
-            borderColor: p.border,
-            backgroundColor: p.soft,
-          }}
-        >
-          Preview
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function ThemeMaterialFrame({ themeData }) {
+  const { t } = useTranslation();
   const p = themeData;
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <span
           className="h-2.5 w-16 rounded-full"
@@ -397,7 +426,7 @@ function ThemeMaterialFrame({ themeData }) {
       </div>
 
       <div
-        className="rounded-[1rem] border p-3"
+        className="rounded-[0.95rem] border p-2.5"
         style={{
           backgroundColor: p.card,
           borderColor: p.border,
@@ -412,12 +441,12 @@ function ThemeMaterialFrame({ themeData }) {
               backgroundColor: p.surface,
             }}
           >
-            Live
+            {t("settings.theme.live")}
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-[1.2fr_0.8fr] gap-2">
+        <div className="mt-2.5 grid grid-cols-[1.2fr_0.8fr] gap-2">
           <div
-            className="rounded-[0.9rem] border p-2.5"
+            className="rounded-[0.9rem] border p-2"
             style={{
               backgroundColor: p.surface,
               borderColor: p.border,
@@ -431,7 +460,7 @@ function ThemeMaterialFrame({ themeData }) {
             <div className="mt-2 h-8 rounded-[0.7rem] border" style={{ backgroundColor: p.card, borderColor: p.border }} />
           </div>
           <div
-            className="rounded-[0.9rem] border p-2.5"
+            className="rounded-[0.9rem] border p-2"
             style={{
               backgroundColor: p.surface,
               borderColor: p.border,
@@ -447,85 +476,6 @@ function ThemeMaterialFrame({ themeData }) {
         </div>
       </div>
 
-    </div>
-  );
-}
-
-function ThemeLivePreview({ themeData, themeLabel }) {
-  const p = themeData;
-
-  return (
-    <div className="relative overflow-hidden rounded-[1.35rem] border p-3"
-      style={{
-        backgroundColor: p.card,
-        borderColor: p.border,
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ backgroundImage: p.ambient }}
-      />
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: p.muted }}>
-            {themeLabel}
-          </p>
-          <h3 className="mt-1 text-[18px] font-semibold leading-tight" style={{ color: p.text }}>
-            Sistema visual vivo
-          </h3>
-          <p className="mt-2 max-w-[22rem] text-[13px] font-medium leading-5" style={{ color: p.muted }}>
-            Materiales, contraste y profundidad alineados para una experiencia más nativa.
-          </p>
-        </div>
-        <div
-          className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] border"
-          style={{
-            backgroundColor: p.surface,
-            borderColor: p.border,
-            boxShadow: `0 0 22px ${p.glow}`,
-          }}
-        >
-          <span className="absolute inset-3 rounded-full" style={{ backgroundColor: p.primary, boxShadow: `0 0 18px ${p.glow}` }} />
-        </div>
-      </div>
-
-      <div className="relative z-10 mt-4 grid grid-cols-2 gap-2">
-        <div
-          className="rounded-[1rem] border p-2.5"
-          style={{
-            backgroundColor: p.surface,
-            borderColor: p.border,
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full" style={{ backgroundColor: p.primary, boxShadow: `0 0 12px ${p.glow}` }} />
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold" style={{ color: p.text }}>
-                Control Hub
-              </p>
-              <p className="text-[9px] font-medium" style={{ color: p.muted }}>
-                Visual adaptada
-              </p>
-            </div>
-          </div>
-        </div>
-        <div
-          className="rounded-[1rem] border p-2.5"
-          style={{
-            backgroundColor: p.surface,
-            borderColor: p.border,
-          }}
-        >
-          <div className="h-2 w-10 rounded-full" style={{ backgroundColor: p.soft }} />
-          <div className="mt-2 h-7 rounded-[0.7rem] border" style={{ backgroundColor: p.card, borderColor: p.border }} />
-        </div>
-      </div>
-
-      <div className="relative z-10 mt-3 flex items-center gap-2">
-        <span className="h-1.5 flex-1 rounded-full" style={{ backgroundColor: p.soft }} />
-        <span className="h-1.5 flex-1 rounded-full" style={{ backgroundColor: p.primary }} />
-        <span className="h-1.5 flex-1 rounded-full" style={{ backgroundColor: p.soft }} />
-      </div>
     </div>
   );
 }

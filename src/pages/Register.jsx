@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { saveProfile } from "../services/profileService";
@@ -40,6 +41,7 @@ import { trackEvent } from "../services/analytics";
 
 export function Register() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [creatorCode] = useState(() => getStoredCreatorCode());
   const [referralOpen, setReferralOpen] = useState(Boolean(getStoredReferralCode()));
   const isAndroidNative =
@@ -78,7 +80,7 @@ export function Register() {
         );
 
         if (exchangeError) {
-          setError("No pudimos completar el inicio de sesión: " + exchangeError.message);
+          setError(t("register.errors.callbackFailed") + exchangeError.message);
           return;
         }
 
@@ -87,8 +89,8 @@ export function Register() {
         navigate("/dashboard", { replace: true });
       } catch (callbackError) {
         setError(
-          "No pudimos completar el inicio de sesión: " +
-            (callbackError?.message || "callback inválido")
+          t("register.errors.callbackFailed") +
+            (callbackError?.message || t("register.errors.callbackInvalid"))
         );
       }
     };
@@ -105,11 +107,11 @@ export function Register() {
     return () => {
       void listener?.remove?.();
     };
-  }, [isAndroidNative, navigate]);
+  }, [isAndroidNative, navigate, t]);
 
   async function handleSocialLogin(provider) {
     if (!acceptedPolicies) {
-      setError("Debes aceptar las políticas antes de continuar con OAuth.");
+      setError(t("register.errors.policiesRequired"));
       return;
     }
 
@@ -131,7 +133,7 @@ export function Register() {
       },
     });
 
-    if (socialError) setError("Error al conectar: " + socialError.message);
+    if (socialError) setError(t("register.errors.connect") + socialError.message);
     if (socialError) {
       clearStoredReferralCode();
       clearOAuthReferralFlowPending();
@@ -166,14 +168,14 @@ export function Register() {
 
     setReferralValidating(true);
     setReferralError("");
-    setReferralNote("Validando código...");
+    setReferralNote(t("register.invitationValidating"));
 
     try {
       const validation = await validateAndStoreReferralCode(normalized);
 
       if (!validation.valid) {
         setReferralNote("");
-        setReferralError(validation.message || "Código no válido o expirado.");
+        setReferralError(validation.message || t("register.errors.invalidReferral"));
         clearStoredReferralCode();
         return;
       }
@@ -183,9 +185,9 @@ export function Register() {
     } catch (validationError) {
       clearStoredReferralCode();
       setReferralNote("");
-      setReferralError(
-        validationError?.message || "Código no válido o expirado."
-      );
+        setReferralError(
+          validationError?.message || t("register.errors.invalidReferral")
+        );
     } finally {
       setReferralValidating(false);
     }
@@ -199,19 +201,19 @@ export function Register() {
 
     if (!form.nombre.trim() || !form.email.trim() || !form.password) {
       setLoading(false);
-      setError("Completa todos los campos.");
+      setError(t("register.errors.completeFields"));
       return;
     }
 
     if (form.password.length < 6) {
       setLoading(false);
-      setError("La contraseña debe tener al menos 6 caracteres.");
+      setError(t("register.errors.passwordTooShort"));
       return;
     }
 
     if (!acceptedPolicies) {
       setLoading(false);
-      setError("Debes aceptar las políticas y condiciones de NutriSmartCoach.");
+      setError(t("register.errors.policiesRequired"));
       return;
     }
 
@@ -230,7 +232,7 @@ export function Register() {
 
     if (error) {
       setLoading(false);
-      setError("Error al crear la cuenta: " + error.message);
+      setError(t("register.errors.signUpFailed") + error.message);
       return;
     }
 
@@ -264,9 +266,9 @@ export function Register() {
         });
       } catch (profileError) {
         if (profileError?.message) {
-          setError(profileError.message);
+          setError(profileError.message || t("register.errors.profileFailed"));
         } else {
-          setError("Error creando el perfil.");
+          setError(t("register.errors.profileFailed"));
         }
         console.error("Error creando perfil:", profileError);
         setLoading(false);
@@ -294,7 +296,7 @@ export function Register() {
         } catch (referralError) {
           const referralMessage =
             referralError?.message ||
-            "El código de invitación no es válido o ya no está disponible.";
+            t("register.errors.invalidReferral");
           setReferralError(referralMessage);
           setSuccess("");
           setError(referralMessage);
@@ -318,7 +320,7 @@ export function Register() {
         } catch (referralError) {
           const referralMessage =
             referralError?.message ||
-            "El código de invitación no es válido o ya no está disponible.";
+            t("register.errors.invalidReferral");
           setReferralError(referralMessage);
           setSuccess("");
           setError(referralMessage);
@@ -352,20 +354,20 @@ export function Register() {
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
                 <img
                   src="/favicon.png"
-                  alt="NutriSmart Coach"
+                  alt={t("register.title")}
                   className="h-full w-full rounded-2xl object-contain"
                 />
               </div>
 
               <div className="min-w-0">
                 <h1 className="flex items-center gap-2 text-2xl font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
-                  Crea tu plan inteligente
+                  {t("register.title")}
                 </h1>
               </div>
             </div>
 
             <p className="mb-3 text-sm leading-5 text-[var(--app-muted)] text-center">
-              Empieza con objetivos claros, análisis visual y progreso guiado por IA.
+              {t("register.subtitle")}
             </p>
 
             {error && (
@@ -387,7 +389,7 @@ export function Register() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#D4AF37]">
-                      Código de creador aplicado
+                      {t("register.creatorCodeApplied")}
                     </p>
                     <div className="mt-2 inline-flex max-w-full items-center rounded-full border border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[var(--app-surface)] px-3 py-2">
                       <span className="truncate whitespace-nowrap text-[12px] font-black tracking-[0.2em] text-[var(--app-text)]">
@@ -395,10 +397,10 @@ export function Register() {
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] leading-4 text-[var(--app-muted)]">
-                      Tus 15 días Premium gratis se activarán al crear tu cuenta.
+                      {t("register.creatorBonusLine1")}
                     </p>
                     <p className="mt-1 text-[10px] font-semibold leading-4 text-[#D4AF37]">
-                      15 días Premium gratis por invitación de creador.
+                      {t("register.creatorBonusLine2")}
                     </p>
                   </div>
                 </div>
@@ -407,31 +409,31 @@ export function Register() {
 
             <form onSubmit={handleSubmit} className="space-y-2.5">
               <Input
-                label="Nombre"
+                label={t("register.nameLabel")}
                 name="nombre"
                 value={form.nombre}
                 onChange={handleChange}
-                placeholder="Ej. Alexis Rodríguez"
+                placeholder={t("register.namePlaceholder")}
                 icon={<User size={16} />}
               />
 
               <Input
-                label="Correo"
+                label={t("register.emailLabel")}
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="tu@email.com"
+                placeholder={t("register.emailPlaceholder")}
                 icon={<Mail size={16} />}
               />
 
               <Input
-                label="Contraseña"
+                label={t("register.passwordLabel")}
                 name="password"
                 type="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t("register.passwordPlaceholder")}
                 icon={<Lock size={16} />}
               />
 
@@ -443,10 +445,10 @@ export function Register() {
                 >
                   <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#D4AF37]">
-                      ¿Tienes un código de invitación?
+                      {t("register.invitationQuestion")}
                     </p>
                     <h2 className="mt-0.5 text-[12px] font-bold leading-4 text-[var(--app-text)]">
-                      Desbloquea pruebas Premium y recompensas.
+                      {t("register.invitationSubtitle")}
                     </h2>
                   </div>
 
@@ -462,7 +464,7 @@ export function Register() {
                         type="text"
                         value={referralCode}
                         onChange={handleReferralCodeChange}
-                        placeholder="Introduce tu código"
+                        placeholder={t("register.invitationPlaceholder")}
                         className="h-11 w-full min-w-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--app-text)] outline-none transition placeholder:normal-case placeholder:tracking-normal focus:border-[#D4AF37] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.12)]"
                         autoComplete="off"
                         spellCheck="false"
@@ -473,7 +475,9 @@ export function Register() {
                         disabled={referralSaving || referralValidating}
                         className="h-11 w-full shrink-0 px-4 text-[10px] sm:w-auto sm:px-4"
                       >
-                        {referralValidating ? "Validando..." : "Aplicar código"}
+                        {referralValidating
+                          ? t("register.invitationValidating")
+                          : t("register.invitationApply")}
                       </SecondaryButton>
                     </div>
 
@@ -505,15 +509,15 @@ export function Register() {
 
                   <span className="min-w-0">
                     <span className="block text-[12px] font-bold leading-5 text-[var(--app-text)]">
-                      Acepto las políticas y condiciones de NutriSmart Coach
+                      {t("register.policyCheckbox")}
                     </span>
                     <span className="mt-1 block text-[10px] font-medium leading-4 text-[var(--app-muted)]">
                       <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/privacy">
-                        Política de privacidad
+                        {t("common.privacyPolicy")}
                       </Link>
                       {" "}•{" "}
                       <Link className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]" to="/terms">
-                        Términos del servicio
+                        {t("common.termsOfService")}
                       </Link>
                     </span>
                   </span>
@@ -527,19 +531,19 @@ export function Register() {
                 className="mt-1 py-3"
               >
                 {loading || referralSaving
-                  ? "Creando cuenta..."
-                  : "→ Crear cuenta gratis"}
+                  ? t("register.loading")
+                  : t("register.submit")}
               </PrimaryButton>
             </form>
 
             <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5 text-center">
               <p className="text-sm text-[var(--app-muted)]">
-                ¿Ya tienes cuenta?{" "}
+                {t("register.haveAccount")}{" "}
                 <Link
                   to="/login"
                   className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
-                  Iniciar sesión
+                  {t("register.signIn")}
                 </Link>
             
                 </p> 
@@ -558,7 +562,7 @@ export function Register() {
                     <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
                     <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
                   </svg>
-                  Continuar con Google
+                  {t("register.social.google")}
                 </button>
 
                 {/* Botón de Facebook */}
@@ -570,7 +574,7 @@ export function Register() {
                   <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                   </svg>
-                  Continuar con Facebook
+                  {t("register.social.facebook")}
                 </button>
               </div>
 

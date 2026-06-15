@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { Award, Check, Flame, Sparkles, Trophy } from "lucide-react";
 
 export default function DailyProgressCard({ gamification }) {
+  const { t } = useTranslation();
   const unlockedAchievements = gamification.achievements.filter(
     (achievement) => achievement.unlocked
   );
@@ -18,10 +20,10 @@ export default function DailyProgressCard({ gamification }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]/70">
-              Daily Progress
+              {t("dashboard.progress.badge")}
             </p>
             <h2 className="mt-1 text-[18px] font-black leading-none text-[var(--app-text)]">
-              Tu progreso de hoy
+              {t("dashboard.progress.title")}
             </h2>
           </div>
 
@@ -33,7 +35,7 @@ export default function DailyProgressCard({ gamification }) {
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] font-bold text-[var(--app-muted)]">
-              Progreso
+              {t("dashboard.progress.current")}
             </p>
             <p className="mt-0.5 text-[30px] font-black leading-none text-[var(--app-text)]">
               {gamification.progressPercent}
@@ -43,7 +45,7 @@ export default function DailyProgressCard({ gamification }) {
 
           <div className="text-right">
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Nivel {gamification.level}
+              {t("dashboard.progress.level", { level: gamification.level })}
             </p>
             <p className="mt-0.5 text-[12px] font-black text-[var(--app-text)]">
               {gamification.xp} XP
@@ -69,7 +71,7 @@ export default function DailyProgressCard({ gamification }) {
             <div className="flex items-center gap-1.5 text-[var(--app-primary)]">
               <Sparkles size={12} />
               <p className="text-[8px] font-black uppercase tracking-[0.16em]">
-                Resumen
+                {t("dashboard.progress.summary")}
               </p>
             </div>
             <p className="mt-1 line-clamp-2 text-[11px] font-bold leading-snug text-[var(--app-muted)]">
@@ -82,7 +84,7 @@ export default function DailyProgressCard({ gamification }) {
               {gamification.currentStreak}
             </p>
             <p className="mt-0.5 text-[8px] font-black uppercase leading-3 tracking-[0.14em] text-[var(--app-primary)]">
-              días seguidos
+              {t("dashboard.progress.streakDays")}
             </p>
           </div>
         </div>
@@ -101,6 +103,8 @@ export default function DailyProgressCard({ gamification }) {
 }
 
 function DailyProgressItem({ item }) {
+  const { t } = useTranslation();
+  const label = getProgressLabel(item.id, t);
   return (
     <div
       className={[
@@ -121,13 +125,15 @@ function DailyProgressItem({ item }) {
         {item.completed ? <Check size={12} strokeWidth={3} /> : null}
       </span>
       <span className="min-w-0 truncate text-[11px] font-black">
-        {item.label}
+        {label}
       </span>
     </div>
   );
 }
 
 function AchievementChip({ achievement }) {
+  const { t } = useTranslation();
+  const label = getAchievementLabel(achievement.id, t);
   return (
     <div
       className={[
@@ -136,9 +142,31 @@ function AchievementChip({ achievement }) {
           ? "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
           : "border-[var(--app-border)] bg-[var(--app-surface)]/70 text-[var(--app-muted)] opacity-70",
       ].join(" ")}
-    >
+      >
       {achievement.unlocked ? <Trophy size={11} /> : <Award size={11} />}
-      <span className="truncate">{achievement.label}</span>
+      <span className="truncate">{label}</span>
     </div>
   );
+}
+
+function getProgressLabel(id, t) {
+  const map = {
+    diet: t("dashboard.progress.items.diet"),
+    protein: t("dashboard.progress.items.protein"),
+    workout: t("dashboard.progress.items.workout"),
+    checkin: t("dashboard.progress.items.checkin"),
+  };
+
+  return map[id] || "";
+}
+
+function getAchievementLabel(id, t) {
+  const map = {
+    first_meal: t("dashboard.achievements.firstMeal"),
+    three_day_streak: t("dashboard.achievements.threeDayStreak"),
+    first_checkin: t("dashboard.achievements.firstCheckin"),
+    first_workout: t("dashboard.achievements.firstWorkout"),
+  };
+
+  return map[id] || "";
 }

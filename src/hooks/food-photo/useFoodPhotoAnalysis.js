@@ -33,6 +33,7 @@ export function useFoodPhotoAnalysis({
   image,
   preview,
   description,
+  language = "es",
   profileContext = null,
   loading,
   setAnalysisState,
@@ -96,6 +97,7 @@ export function useFoodPhotoAnalysis({
         goal: profileContext?.goal || "perder_grasa",
         userId: user?.id,
         profileContext,
+        language,
       });
 
       const latestState = getFoodAnalysisProcessState();
@@ -166,6 +168,7 @@ export function useFoodPhotoAnalysis({
     loading,
     preview,
     profileContext,
+    language,
     setAnalysisState,
     setError,
     setLoading,

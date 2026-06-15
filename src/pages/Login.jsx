@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trackEvent } from "../services/analytics";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -31,6 +32,7 @@ import {
 
 export function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,7 +61,7 @@ export function Login() {
         );
 
         if (exchangeError) {
-          setError("No pudimos completar el inicio de sesión: " + exchangeError.message);
+          setError(t("login.errors.callbackFailed") + exchangeError.message);
           return;
         }
 
@@ -67,8 +69,8 @@ export function Login() {
         navigate("/dashboard", { replace: true });
       } catch (callbackError) {
         setError(
-          "No pudimos completar el inicio de sesión: " +
-            (callbackError?.message || "callback inválido")
+          t("login.errors.callbackFailed") +
+            (callbackError?.message || t("login.errors.callbackInvalid"))
         );
       }
     };
@@ -85,7 +87,7 @@ export function Login() {
     return () => {
       void listener?.remove?.();
     };
-  }, [isAndroidNative, navigate]);
+  }, [isAndroidNative, navigate, t]);
 
   async function handleSocialLogin(provider) {
     setError("");
@@ -105,7 +107,7 @@ export function Login() {
     });
 
     if (socialError) {
-      setError("Error al conectar: " + socialError.message);
+      setError(t("login.errors.connect") + socialError.message);
     }
   }
 
@@ -134,7 +136,7 @@ export function Login() {
     const email = resetEmail.trim();
 
     if (!email) {
-      setResetError("Introduce tu email para enviarte el enlace.");
+      setResetError(t("login.errors.resetRequired"));
       return;
     }
 
@@ -148,11 +150,11 @@ export function Login() {
     setResetLoading(false);
 
     if (resetPasswordError) {
-      setResetError("No pudimos enviar el enlace: " + resetPasswordError.message);
+      setResetError(t("login.errors.resetFailed") + resetPasswordError.message);
       return;
     }
 
-    setResetMessage("Te enviamos un enlace para restablecer tu contraseña.");
+    setResetMessage(t("login.errors.resetSuccess"));
   }
 
   async function handleSubmit(e) {
@@ -167,14 +169,14 @@ export function Login() {
 
     if (error) {
       setLoading(false);
-      setError("El correo o la contraseña no son válidos.");
+      setError(t("login.errors.invalidCredentials"));
       return;
     }
 
     const user = data.user;
     trackEvent("login", {
-  method: "email",
-});
+      method: "email",
+    });
 
     clearCachedProfile();
     localStorage.removeItem(STORAGE_KEYS.DIET_PLAN);
@@ -186,7 +188,7 @@ export function Login() {
     try {
       profileData = await getProfile(user.id, { fallbackToCache: false });
     } catch (profileError) {
-      console.error("Error cargando perfil:", profileError);
+        console.error("Error cargando perfil:", profileError);
     }
 
     if (!profileData) {
@@ -212,7 +214,7 @@ export function Login() {
       } catch (createError) {
         console.error("Error creando perfil:", createError);
         setLoading(false);
-        setError("No se pudo crear el perfil del usuario.");
+        setError(t("login.errors.createProfileFailed"));
         return;
       }
     }
@@ -234,7 +236,7 @@ export function Login() {
               type="button"
               onClick={() => navigate("/")}
               className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_20px_var(--app-glow)] transition hover:text-[var(--app-text)] active:scale-[0.96]"
-              aria-label="Volver al inicio"
+              aria-label={t("common.back")}
             >
               <ArrowLeft size={14} />
             </button>
@@ -247,24 +249,24 @@ export function Login() {
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[var(--app-primary)]/35 bg-[var(--app-surface)] p-1.5 shadow-[0_0_30px_var(--app-glow)]">
                 <img
                   src="/favicon.png"
-                  alt="NutriSmart Coach"
+                  alt={t("login.brand")}
                   className="h-full w-full rounded-2xl object-contain"
                 />
               </div>
 
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Nutri Smart Coach
+                  {t("login.brand")}
                 </p>
                 <h1 className="mt-1 flex items-center gap-2 text-[30px] font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
-                  Entra
+                  {t("login.title")}
                   <LogIn size={21} className="text-[var(--app-primary)]" />
                 </h1>
               </div>
             </div >
 <div className="justify-center text-center">
             <p className="ml-10 mb-3 max-w-[18rem] text-sm leading-5 text-[var(--app-muted)] text-center flex justify-center">
-              Continúa con tus calorías, dietas y progreso en un solo panel.
+              {t("login.subtitle")}
             </p></div>
 
             {error && (
@@ -275,22 +277,22 @@ export function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-2.5">
               <Input
-                label="Correo"
+                label={t("login.emailLabel")}
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="tu@email.com"
+                placeholder={t("login.emailPlaceholder")}
                 icon={<Mail size={16} />}
               />
 
               <Input
-                label="Contraseña"
+                label={t("login.passwordLabel")}
                 name="password"
                 type="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t("login.passwordPlaceholder")}
                 icon={<Lock size={16} />}
               />
 
@@ -300,7 +302,7 @@ export function Login() {
                   onClick={openPasswordReset}
                   className="text-[11px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t("login.forgotPassword")}
                 </button>
               </div>
 
@@ -310,7 +312,7 @@ export function Login() {
                 type="submit"
                 className="mt-1 py-3"
               >
-                {loading ? "Iniciando..." : "Iniciar sesión"}
+                {loading ? t("login.loading") : t("login.submit")}
               </PrimaryButton>
             </form>
 
@@ -318,12 +320,12 @@ export function Login() {
 
             <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5 text-center">
               <p className="text-sm text-[var(--app-muted)]">
-                ¿Nuevo aquí?{" "}
+                {t("login.newHere")}{" "}
                 <Link
                   to="/registro"
                   className="font-black text-[var(--app-primary)] transition hover:text-[var(--app-text)]"
                 >
-                  Crear cuenta
+                  {t("login.createAccount")}
                 </Link>
               </p>
             </div>
@@ -335,7 +337,7 @@ export function Login() {
         </div>
 
         <p className="px-2 pt-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--app-muted)]">
-          Privacidad segura · Datos protegidos · IA nutricional
+          {t("login.privacyNote")}
         </p>
       </div>
 
@@ -363,6 +365,7 @@ function PasswordResetModal({
   onClose,
   onSubmit,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 px-3 py-6 backdrop-blur-md">
       <section
@@ -378,16 +381,16 @@ function PasswordResetModal({
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                Recuperación segura
+                {t("login.reset.eyebrow")}
               </p>
               <h2
                 id="password-reset-title"
                 className="mt-1 text-xl font-black uppercase italic leading-tight text-[var(--app-text)]"
               >
-                Restablecer contraseña
+                {t("login.reset.title")}
               </h2>
               <p className="mt-2 text-sm font-medium leading-5 text-[var(--app-muted)]">
-                Te enviaremos un enlace privado para crear una nueva contraseña.
+                {t("login.reset.subtitle")}
               </p>
             </div>
 
@@ -396,7 +399,7 @@ function PasswordResetModal({
               onClick={onClose}
               disabled={loading}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)] active:scale-[0.96] disabled:opacity-50"
-              aria-label="Cerrar"
+              aria-label={t("login.reset.close")}
             >
               <X size={16} />
             </button>
@@ -416,12 +419,12 @@ function PasswordResetModal({
 
           <form onSubmit={onSubmit} className="space-y-3">
             <Input
-              label="Email"
+              label={t("login.reset.emailLabel")}
               name="resetEmail"
               type="email"
               value={email}
               onChange={(event) => onChangeEmail(event.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t("login.reset.emailPlaceholder")}
               icon={<Mail size={16} />}
             />
 
@@ -431,7 +434,7 @@ function PasswordResetModal({
               icon={!loading && <ArrowRight size={16} />}
               className="py-3"
             >
-              {loading ? "Enviando..." : "Enviar enlace"}
+              {loading ? t("login.reset.loading") : t("login.reset.submit")}
             </PrimaryButton>
           </form>
         </div>
@@ -441,6 +444,7 @@ function PasswordResetModal({
 }
 
 function SocialLoginButtons({ onSocialLogin }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-3 flex flex-col gap-3">
       <button
@@ -454,7 +458,7 @@ function SocialLoginButtons({ onSocialLogin }) {
           <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
           <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
         </svg>
-        Continuar con Google
+        {t("login.social.google")}
       </button>
 
       <button
@@ -465,7 +469,7 @@ function SocialLoginButtons({ onSocialLogin }) {
         <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
-        Continuar con Facebook
+        {t("login.social.facebook")}
       </button>
     </div>
   );

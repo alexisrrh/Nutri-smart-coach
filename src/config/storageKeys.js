@@ -9,4 +9,5 @@ export const STORAGE_KEYS = {
   FOOD_ANALYSIS_PROCESS: "food_analysis_process",
   CHECKIN_PROCESS: "checkin_process",
   LEGAL_CONSENT: "nutricoach_legal_consent",
+  LANGUAGE: "nutrismart-language",
 };

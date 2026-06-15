@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { BrainCircuit, CircleSlash2, Sparkles, TimerReset } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
@@ -9,6 +10,7 @@ import { getAiUsagePlanLabel, isPremiumUser } from "../../services/aiUsageServic
 export function SettingsAi() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const provider = getProviderLabel(user);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,27 +49,27 @@ export function SettingsAi() {
   const planLabel = getAiUsagePlanLabel(profile);
   const usageRows = [
     {
-      label: "Análisis de comida",
-      free: "3/día",
-      premium: "20/día",
+      label: t("settings.ai.rows.food.label"),
+      free: t("settings.ai.rows.food.free"),
+      premium: t("settings.ai.rows.food.premium"),
     },
     {
-      label: "Dietas IA",
-      free: "1/semana",
-      premium: "5/día",
+      label: t("settings.ai.rows.diet.label"),
+      free: t("settings.ai.rows.diet.free"),
+      premium: t("settings.ai.rows.diet.premium"),
     },
     {
-      label: "Check-ins IA",
-      free: "1/semana",
-      premium: "1/día",
+      label: t("settings.ai.rows.checkin.label"),
+      free: t("settings.ai.rows.checkin.free"),
+      premium: t("settings.ai.rows.checkin.premium"),
     },
   ];
 
   return (
     <SettingsScreenShell
-      badge="AI"
-      title="IA y nutrición"
-      subtitle="Núcleo vivo, recursos asignados y capas futuras del sistema."
+      badge={t("settings.ai.badge")}
+      title={t("settings.ai.title")}
+      subtitle={t("settings.ai.subtitle")}
       onBack={() => navigate("/perfil")}
     >
       <div className="space-y-2.5 pb-5">
@@ -81,8 +83,8 @@ export function SettingsAi() {
 
         <SettingsCard
           icon={<TimerReset size={16} />}
-          title="Límites y control"
-          description="Asignación oficial de recursos por plan para estabilidad, coste y respuesta consistente."
+          title={t("settings.ai.limits.title")}
+          description={t("settings.ai.limits.desc")}
         >
           <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_88%,transparent)_0%,color-mix(in_srgb,var(--app-card)_92%,transparent)_100%)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_14px_34px_rgba(0,0,0,0.12)]">
             <div
@@ -107,8 +109,8 @@ export function SettingsAi() {
 
         <SettingsCard
           icon={<Sparkles size={16} />}
-          title="Futuras capas"
-          description="Evolución prevista sin romper la base actual ni la lectura premium."
+          title={t("settings.ai.future.title")}
+          description={t("settings.ai.future.desc")}
         >
           <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-border)_72%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent)_0%,color-mix(in_srgb,var(--app-card)_94%,transparent)_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_40px_rgba(0,0,0,0.12)]">
             <div
@@ -128,13 +130,15 @@ export function SettingsAi() {
 
         <SettingsCard
           icon={<CircleSlash2 size={16} />}
-          title="Plataforma"
-          description="La arquitectura actual permanece intacta: misma cuenta, misma seguridad, misma base."
+          title={t("settings.ai.platform.title")}
+          description={t("settings.ai.platform.desc")}
         >
           <div className="flex flex-wrap gap-1.5">
             <InfoChip>{planLabel}</InfoChip>
-            <InfoChip>{premium ? "Límites ampliados" : "Límites Free"}</InfoChip>
-            <InfoChip>Proveedor {provider}</InfoChip>
+            <InfoChip>{premium ? t("settings.ai.core.premiumValue") : t("settings.ai.core.freeValue")}</InfoChip>
+            <InfoChip>
+              {t("settings.ai.core.provider")} {provider}
+            </InfoChip>
           </div>
         </SettingsCard>
       </div>
@@ -151,15 +155,16 @@ function getProviderLabel(user) {
 }
 
 function AiCorePanel({ loading, planLabel, premium, provider, usageRows }) {
+  const { t } = useTranslation();
   return (
     <SettingsCard
       icon={<BrainCircuit size={16} />}
-      title="Núcleo IA"
-      description="Estado vivo del motor nutricional con materiales suaves y sincronización estable."
+      title={t("settings.ai.core.title")}
+      description={t("settings.ai.core.desc")}
       right={
         <span className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--app-border)_80%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_92%,transparent)_0%,transparent_100%)] px-2.5 py-1 text-[9px] font-medium tracking-[0.12em] text-[var(--app-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
           <span className="ai-core-live-dot h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_12px_var(--app-glow)]" />
-          Live
+          {t("settings.ai.core.live")}
         </span>
       }
     >
@@ -176,15 +181,15 @@ function AiCorePanel({ loading, planLabel, premium, provider, usageRows }) {
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--app-muted)]">
-              {loading ? "Sincronizando perfil..." : planLabel}
+              {loading ? t("settings.ai.core.syncing") : planLabel}
             </p>
             <h3 className="mt-2 text-[21px] font-semibold tracking-tight text-[var(--app-text)]">
-              {premium ? "Premium activo" : "Plan Free activo"}
+              {premium ? t("settings.ai.core.premium") : t("settings.ai.core.free")}
             </h3>
             <p className="mt-2 max-w-[23rem] text-[13px] font-medium leading-5 text-[var(--app-muted)]">
               {premium
-                ? "Tu perfil refleja los límites Premium oficiales y una cola prioritaria para una experiencia más ágil."
-                : "Tu perfil refleja los límites oficiales del plan Free con la misma base estable."}
+                ? t("settings.ai.core.premiumDesc")
+                : t("settings.ai.core.freeDesc")}
             </p>
           </div>
 
@@ -198,9 +203,9 @@ function AiCorePanel({ loading, planLabel, premium, provider, usageRows }) {
         </div>
 
         <div className="relative z-10 mt-4 grid gap-1.5 sm:grid-cols-3">
-          <AiStat label="Motor" value={premium ? "Premium" : "Free"} accent={premium} />
-          <AiStat label="Sincronización" value="Estable" />
-          <AiStat label="Análisis" value={premium ? "Prioritarios" : "Preparados"} accent />
+          <AiStat label={t("settings.ai.core.motor")} value={premium ? t("settings.ai.core.premiumValue") : t("settings.ai.core.freeValue")} accent={premium} />
+          <AiStat label={t("settings.ai.core.sync")} value={t("settings.ai.core.stable")} />
+          <AiStat label={t("settings.ai.core.analysis")} value={premium ? t("settings.ai.core.priority") : t("settings.ai.core.prepared")} accent />
         </div>
 
         <div className="relative z-10 mt-3 flex flex-wrap items-center gap-1.5">

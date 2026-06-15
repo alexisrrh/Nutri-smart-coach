@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Camera,
@@ -9,14 +10,14 @@ import {
 } from "lucide-react";
 
 export default function BottomNav() {
+  const { t } = useTranslation();
   const items = [
-    { to: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
-    { to: "/foto-comida", label: "Scan", Icon: Camera },
-    { to: "/checkin", label: "Checkin", Icon:  MonitorCheck},
-     { to: "/rutinas", label: "Rutinas", Icon: Dumbbell},
-    { to: "/plan-comidas", label: "Dieta", Icon: Utensils},
-    { to: "/perfil", label: "Perfil", Icon: UserRound },
-    
+    { to: "/dashboard", label: t("bottomNav.home"), Icon: LayoutDashboard },
+    { to: "/foto-comida", label: t("bottomNav.scan"), Icon: Camera },
+    { to: "/checkin", label: t("bottomNav.checkin"), Icon: MonitorCheck },
+    { to: "/rutinas", label: t("bottomNav.routines"), Icon: Dumbbell },
+    { to: "/plan-comidas", label: t("navigation.mealPlanShort"), Icon: Utensils },
+    { to: "/perfil", label: t("bottomNav.profile"), Icon: UserRound },
   ];
 
   return (

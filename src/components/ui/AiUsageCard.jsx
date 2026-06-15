@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Crown, Sparkles, Timer } from "lucide-react";
 import {
   formatAiUsageCounter,
-  formatAiUsageDetail,
-  formatAiUsageMessage,
-  getAiUsagePeriodLabel,
+  normalizeAiUsageState,
   isPremiumUsage,
 } from "../../services/aiUsageService";
 import { trackEvent } from "../../services/analytics";
@@ -22,12 +21,14 @@ export default function AiUsageCard({
   type,
   usage,
 }) {
+  const { t } = useTranslation();
   const premium = isPremiumUsage(usage, profile);
+  const normalizedUsage = normalizeAiUsageState(type, usage, profile);
   const Icon = premium ? Crown : ICON_BY_TYPE[type] || Sparkles;
-  const title = formatAiUsageMessage(type, usage, profile);
-  const detail = formatAiUsageDetail(type, usage, profile);
+  const title = getUsageTitle({ type, premium, usage: normalizedUsage, profile, t });
+  const detail = getUsageDetail({ type, premium, usage: normalizedUsage, profile, t });
   const counter = formatAiUsageCounter(type, usage, profile);
-  const periodLabel = getAiUsagePeriodLabel(type, usage, profile);
+  const periodLabel = getUsagePeriodLabel(normalizedUsage, premium, t);
 
   return (
     <SurfaceCard
@@ -58,7 +59,7 @@ export default function AiUsageCard({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Uso IA {periodLabel}
+              {t("food.usage.badge", { periodLabel })}
             </span>
             <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
               {counter}
@@ -84,10 +85,10 @@ export default function AiUsageCard({
             >
               <span className="min-w-0">
                 <span className="block text-[11px] font-semibold leading-4 text-[var(--app-text)]">
-                  Hazte Premium y sube a 20 análisis IA/día.
+                  {t("food.usage.ctaTitle")}
                 </span>
                 <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  Hazte Premium
+                  {t("food.usage.ctaBadge")}
                 </span>
               </span>
 
@@ -100,4 +101,45 @@ export default function AiUsageCard({
       </div>
     </SurfaceCard>
   );
+}
+
+function getUsagePeriodLabel(usage, premium, t) {
+  const period = usage?.period === "week" ? "week" : "day";
+  if (premium) return t("food.usage.period.premium");
+  return period === "week" ? t("food.usage.period.week") : t("food.usage.period.day");
+}
+
+function getUsageTitle({ type, premium, usage, t }) {
+  const remaining = Number(usage?.remaining || 0);
+  const period = usage?.period === "week" ? "week" : "day";
+  const periodText = period === "week" ? t("food.usage.periodText.week") : t("food.usage.periodText.day");
+  const reset = usage?.resetAt ? t("food.usage.resetAt", { time: usage.resetAt }) : t("food.usage.resetFallback");
+
+  if (premium) return t("food.usage.premium.title");
+  if (!usage) return t("food.usage.syncing.title");
+  if (usage.isLimitReached) return t("food.usage.limitReached.title", { periodText, reset });
+
+  if (type === "food_analysis") {
+    return remaining === 1
+      ? t("food.usage.remaining.food.one", { periodText })
+      : t("food.usage.remaining.food.many", { remaining, periodText });
+  }
+
+  if (type === "diet_generation") {
+    return remaining === 1
+      ? t("food.usage.remaining.diet.one", { periodText })
+      : t("food.usage.remaining.diet.many", { remaining, periodText });
+  }
+
+  return t("food.usage.remaining.checkin", { remaining, periodText });
+}
+
+function getUsageDetail({ premium, usage, t }) {
+  if (premium) return t("food.usage.premium.detail");
+  if (!usage) return t("food.usage.syncing.detail");
+  if (usage.isFallback) return t("food.usage.fallback.detail");
+  if (usage.isLimitReached) return t("food.usage.limitReached.detail", { reset: usage.resetAt ? t("food.usage.resetAt", { time: usage.resetAt }) : t("food.usage.resetFallback") });
+
+  const resetText = usage?.period === "week" ? t("food.usage.reset.week") : t("food.usage.reset.day");
+  return t("food.usage.available.detail", { resetText, resetTime: usage?.resetAt ? t("food.usage.resetAt", { time: usage.resetAt }) : t("food.usage.resetFallback") });
 }

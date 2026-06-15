@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
@@ -62,6 +63,9 @@ function getInitialDashboardSnapshot() {
 export function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const dashboardLocale = i18n.resolvedLanguage?.startsWith("en") ? "en" : "es";
+
   const initialSnapshot = useMemo(() => getInitialDashboardSnapshot(), []);
   const renderStartRef = useRef(DASHBOARD_IMPORT_STARTED_AT);
   const paintLoggedRef = useRef(false);
@@ -177,7 +181,7 @@ export function Dashboard() {
         null;
 
       if (!userId) {
-        setLoadError("Sesión no válida. Vuelve a iniciar sesión.");
+        setLoadError(t("dashboard.errors.sessionInvalid"));
         return;
       }
 
@@ -197,19 +201,20 @@ export function Dashboard() {
         setLoadError(
           formatDashboardError(
             dashboardData.errors[0],
-            dashboardData.errors.length
+            dashboardData.errors.length,
+            t
           )
         );
       } else {
         setLoadError("");
       }
     } catch (error) {
-      setLoadError(formatDashboardError(error, 1));
+      setLoadError(formatDashboardError(error, 1, t));
     } finally {
       setLoadingData(false);
       setSyncing(false);
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -307,8 +312,10 @@ export function Dashboard() {
       getTodayWorkoutRecommendation({
         profile,
         completedToday: todayWorkouts.length > 0,
+        locale: dashboardLocale,
+        t,
       }),
-    [profile, todayWorkouts.length]
+    [dashboardLocale, profile, t, todayWorkouts.length]
   );
 
   const gamificationActivity = useMemo(
@@ -352,22 +359,23 @@ export function Dashboard() {
       totalMeals: initialSnapshot.meals.length,
       totalCheckins: initialSnapshot.checkins.length,
       totalWorkouts: workoutCompletions.length,
-    })
+    }, dashboardLocale, t)
   );
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setGamification(syncGamificationState(gamificationActivity));
+      setGamification(syncGamificationState(gamificationActivity, dashboardLocale, t));
     }, 0);
 
     return () => clearTimeout(timeoutId);
-  }, [gamificationActivity]);
+  }, [dashboardLocale, gamificationActivity, t]);
 
   const smartTip = getSmartTip(
     totals,
     goals,
     todayMeals.length,
-    Boolean(activeDiet)
+    Boolean(activeDiet),
+    t
   );
   const premiumSource = premiumStatus || profile;
   const isPremium = Boolean(
@@ -395,6 +403,7 @@ export function Dashboard() {
         protein: totals.protein,
         proteinGoal: goals.protein,
         firstName,
+        t,
       }),
     [
       todayMeals.length,
@@ -403,6 +412,7 @@ export function Dashboard() {
       totals.protein,
       goals.protein,
       firstName,
+      t,
     ]
   );
 
@@ -425,7 +435,7 @@ export function Dashboard() {
           ) : (
             <div className="flex flex-col gap-1.5">
               {syncing ? (
-                <DashboardSyncBanner message="Sincronizando..." />
+                <DashboardSyncBanner message={t("common.loading")} />
               ) : null}
 
               {loadError ? (
@@ -516,6 +526,7 @@ function DailyProgressSkeleton() {
 }
 
 function DashboardSyncBanner({ message, onRetry }) {
+  const { t } = useTranslation();
   return (
     <section
       className="relative overflow-hidden rounded-[0.9rem] border px-2 py-1.5 shadow-[0_10px_28px_var(--app-glow)]"
@@ -546,7 +557,7 @@ function DashboardSyncBanner({ message, onRetry }) {
 
         <div className="min-w-0 flex-1">
           <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Sincronización
+            {t("dashboard.sync.label")}
           </p>
 
           <p className="mt-0.5 text-[11px] font-bold leading-[1.2] text-[var(--app-muted)]">
@@ -564,7 +575,7 @@ function DashboardSyncBanner({ message, onRetry }) {
               color: "var(--app-primary)",
             }}
           >
-            Reintentar
+            {t("dashboard.sync.retry")}
           </button>
         ) : null}
       </div>
@@ -573,6 +584,7 @@ function DashboardSyncBanner({ message, onRetry }) {
 }
 
 function DashboardMotivationCard({ message }) {
+  const { t } = useTranslation();
   return (
     <section
       className="relative overflow-hidden rounded-[0.9rem] border px-2 py-1.5 shadow-[0_10px_28px_var(--app-glow)]"
@@ -603,7 +615,7 @@ function DashboardMotivationCard({ message }) {
 
         <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Impulso IA
+            {t("dashboard.motivation.label")}
           </p>
 
           <p className="mt-0.5 line-clamp-1 text-[11px] font-bold leading-[1.2] text-[var(--app-muted)]">
@@ -616,16 +628,17 @@ function DashboardMotivationCard({ message }) {
 }
 
 function PremiumDashboardCard({ isPremium, onPress }) {
-  const title = isPremium ? "Premium activo" : "Progresa más rápido";
+  const { t } = useTranslation();
+  const title = isPremium ? t("dashboard.premium.activeTitle") : t("dashboard.premium.upgradeTitle");
   const subtitle = isPremium
-    ? "Tus límites ampliados están activos."
-    : "Seguimiento inteligente y planes avanzados para mejorar tus resultados.";
-  const buttonLabel = isPremium ? "Gestionar plan" : "Mejorar mi plan";
+    ? t("dashboard.premium.activeSubtitle")
+    : t("dashboard.premium.upgradeSubtitle");
+  const buttonLabel = isPremium ? t("dashboard.premium.manage") : t("dashboard.premium.upgrade");
   const benefits = [
-    { icon: Target, label: "Dietas personalizadas" },
-    { icon: UtensilsCrossed, label: "Resultados más rápidos" },
-    { icon: BarChart3, label: "Más constancia" },
-    { icon: CheckCircle2, label: "Funciones exclusivas" },
+    { icon: Target, label: t("dashboard.premium.benefits.personalized") },
+    { icon: UtensilsCrossed, label: t("dashboard.premium.benefits.faster") },
+    { icon: BarChart3, label: t("dashboard.premium.benefits.consistent") },
+    { icon: CheckCircle2, label: t("dashboard.premium.benefits.exclusive") },
   ];
 
   return (
@@ -713,6 +726,7 @@ function PremiumDashboardCard({ isPremium, onPress }) {
 }
 
 function DashboardWorkoutRecommendationCard({ recommendation, navigate }) {
+  const { t } = useTranslation();
   return (
     <section
       className="relative overflow-hidden rounded-[0.9rem] border px-2.5 py-2 shadow-[0_10px_28px_var(--app-glow)]"
@@ -732,7 +746,7 @@ function DashboardWorkoutRecommendationCard({ recommendation, navigate }) {
       <div className="relative z-10 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Entreno recomendado hoy
+            {t("dashboard.workout.title")}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <h2 className="text-[17px] font-black leading-none text-[var(--app-text)]">
@@ -745,7 +759,7 @@ function DashboardWorkoutRecommendationCard({ recommendation, navigate }) {
 
           <p className="mt-1 line-clamp-1 text-[11px] font-bold text-[var(--app-muted)]">
             {recommendation.completedToday
-              ? "Entreno completado hoy"
+              ? t("dashboard.workout.completedToday")
               : recommendation.exerciseNames.join(" · ")}
           </p>
         </div>
@@ -757,14 +771,14 @@ function DashboardWorkoutRecommendationCard({ recommendation, navigate }) {
           }
           className="shrink-0 rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)] transition active:scale-[0.98]"
         >
-          Ver rutina
+          {t("dashboard.workout.button")}
         </button>
       </div>
     </section>
   );
 }
 
-function formatDashboardError(error, count) {
+function formatDashboardError(error, count, t) {
   const message = String(error?.message || error || "").toLowerCase();
   const online = typeof navigator === "undefined" ? true : navigator.onLine;
 
@@ -774,7 +788,7 @@ function formatDashboardError(error, count) {
     message.includes("token") ||
     message.includes("auth")
   ) {
-    return "Sesión no válida. Vuelve a iniciar sesión.";
+    return t("dashboard.errors.sessionInvalid");
   }
 
   if (
@@ -784,18 +798,18 @@ function formatDashboardError(error, count) {
     message.includes("fetch") ||
     message.includes("network")
   ) {
-    return "Sin conexión. Mostramos lo último guardado y puedes reintentar.";
+    return t("dashboard.errors.offline");
   }
 
   if (message.includes("timeout") || message.includes("aborted")) {
-    return "La sincronización está tardando demasiado. Inténtalo otra vez.";
+    return t("dashboard.errors.timeout");
   }
 
   if (count > 1) {
-    return "No pudimos sincronizar algunos datos. Reintenta para actualizar el dashboard.";
+    return t("dashboard.errors.multi");
   }
 
-  return "No pudimos sincronizar el dashboard ahora mismo. Reintenta en unos segundos.";
+  return t("dashboard.errors.generic");
 }
 
 function getDashboardMotivationMessage({
@@ -805,6 +819,7 @@ function getDashboardMotivationMessage({
   protein,
   proteinGoal,
   firstName,
+  t,
 }) {
   const name = firstName ? `${firstName}, ` : "";
   const proteinProgress =
@@ -813,41 +828,67 @@ function getDashboardMotivationMessage({
       : 0;
 
   if (nutritionScore >= 8) {
-    return `${name}vas por buen camino: mantén esta racha.`;
+    return `${name}${t("dashboard.motivation.goodPace")}`;
   }
 
   if (mealsCount > 0 && proteinProgress >= 0.6) {
-    return "Buen avance hoy. Cada registro te da más control semanal.";
+    return t("dashboard.motivation.goodProgress");
   }
 
   if (mealsCount > 0) {
-    return "Cada comida registrada mejora tu claridad para decidir mejor.";
+    return t("dashboard.motivation.mealProgress");
   }
 
   if (hasActiveDiet) {
-    return "Completa tu próxima comida y mantén tu semana activa.";
+    return t("dashboard.motivation.activeDiet");
   }
 
-  return "Hoy es buen día para empezar con una acción pequeña.";
+  return t("dashboard.motivation.startSmall");
 }
 
-function getTodayWorkoutRecommendation({ profile, completedToday }) {
+function getTodayWorkoutRecommendation({ profile, completedToday, locale = "es", t }) {
   const weekday = new Date().getDay();
+  const isEnglish = locale === "en";
   const schedule = {
-    0: { muscle: "Abdomen", label: "Abdomen / descanso activo" },
-    1: { muscle: "Pecho", label: "Pecho" },
-    2: { muscle: "Espalda", label: "Espalda" },
-    3: { muscle: "Piernas", label: "Piernas" },
-    4: { muscle: "Hombros", label: "Hombros" },
-    5: { muscle: "Glúteos", label: "Glúteos" },
-    6: { muscle: "Bíceps", label: "Brazos" },
+    0: {
+      muscle: isEnglish ? "Abs" : "Abdomen",
+      label: t("dashboard.workout.muscles.abs"),
+      exerciseKey: "abs",
+    },
+    1: {
+      muscle: isEnglish ? "Chest" : "Pecho",
+      label: t("dashboard.workout.muscles.chest"),
+      exerciseKey: "chest",
+    },
+    2: {
+      muscle: isEnglish ? "Back" : "Espalda",
+      label: t("dashboard.workout.muscles.back"),
+      exerciseKey: "back",
+    },
+    3: {
+      muscle: isEnglish ? "Legs" : "Piernas",
+      label: t("dashboard.workout.muscles.legs"),
+      exerciseKey: "legs",
+    },
+    4: {
+      muscle: isEnglish ? "Shoulders" : "Hombros",
+      label: t("dashboard.workout.muscles.shoulders"),
+      exerciseKey: "shoulders",
+    },
+    5: {
+      muscle: isEnglish ? "Glutes" : "Glúteos",
+      label: t("dashboard.workout.muscles.glutes"),
+      exerciseKey: "glutes",
+    },
+    6: { muscle: isEnglish ? "Arms" : "Bíceps", label: t("dashboard.workout.muscles.arms"), exerciseKey: "arms" },
   };
   const today = schedule[weekday] || schedule[1];
-  const level = getRecommendedWorkoutLevel(profile);
-  const exerciseNames =
-    DASHBOARD_WORKOUT_EXERCISE_HINTS[today.label] ||
-    DASHBOARD_WORKOUT_EXERCISE_HINTS[today.muscle] ||
-    DASHBOARD_WORKOUT_EXERCISE_HINTS.General;
+  const level = getRecommendedWorkoutLevel(profile, t);
+  const exerciseNamesRaw = t(`dashboard.workout.exerciseHints.${today.exerciseKey}`, {
+    returnObjects: true,
+    defaultValue: [],
+  });
+  const exerciseNames = Array.isArray(exerciseNamesRaw) ? exerciseNamesRaw : [];
 
   return {
     muscle: today.label,
@@ -858,25 +899,19 @@ function getTodayWorkoutRecommendation({ profile, completedToday }) {
   };
 }
 
-const DASHBOARD_WORKOUT_EXERCISE_HINTS = {
-  "Abdomen / descanso activo": ["Plancha", "Crunch controlado", "Movilidad"],
-  Pecho: ["Press", "Flexiones", "Aperturas"],
-  Espalda: ["Remo", "Jalón", "Peso muerto"],
-  Piernas: ["Sentadilla", "Zancadas", "Prensa"],
-  Hombros: ["Press militar", "Elevaciones", "Face pull"],
-  Glúteos: ["Hip thrust", "Puente", "Patada de glúteo"],
-  Brazos: ["Curl bíceps", "Fondos", "Extensión tríceps"],
-  General: ["Fuerza base", "Core", "Movilidad"],
-};
-
-function getRecommendedWorkoutLevel(profile) {
+function getRecommendedWorkoutLevel(profile, t) {
   const activity =
     profile?.activity_level || profile?.activity || profile?.actividad || "";
 
-  if (activity === "high" || activity === "alta") return "Avanzado";
-  if (activity === "moderate" || activity === "moderada") return "Intermedio";
+  if (activity === "high" || activity === "alta") {
+    return t("dashboard.workout.levels.advanced");
+  }
 
-  return "Principiante";
+  if (activity === "moderate" || activity === "moderada") {
+    return t("dashboard.workout.levels.intermediate");
+  }
+
+  return t("dashboard.workout.levels.beginner");
 }
 
 function getDailyMealGoal({ dietPlan, profile }) {

@@ -1,4 +1,5 @@
 import { Dumbbell, Flame, Sparkles, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import AIScoreRing from "./AIScoreRing";
 import AIOrb from "./AIOrb";
@@ -13,6 +14,7 @@ export default function AIHeroCard({
   todayMeals,
   dailyMealGoal = 4,
 }) {
+  const { t } = useTranslation();
   return (
     <section
       className="relative overflow-hidden rounded-[1.1rem] border p-[0.7rem] shadow-[0_18px_60px_var(--app-glow)]"
@@ -37,13 +39,13 @@ export default function AIHeroCard({
         <div className="flex items-start justify-between gap-1">
           <div>
             <p className="pt-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              Tu coach de hoy
+              {t("dashboard.header.title")}
             </p>
 
             <h1 className="mt-0.5 text-[26px] font-black leading-none tracking-tight text-[var(--app-text)]">
-              Hola,{" "}
+              {t("dashboard.header.greeting")}{" "}
               <span className="text-[var(--app-primary)]">
-                {firstName || "crack"}
+                {firstName || t("dashboard.header.fallbackName")}
               </span>
             </h1>
 
@@ -68,11 +70,11 @@ export default function AIHeroCard({
             <div>
               <p className="mb-0.5 flex items-center gap-2 text-[12px] font-black uppercase tracking-widest text-[var(--app-muted)]">
                 <Sparkles size={9} className="text-[var(--app-primary)]" />
-                AI Score
+                {t("dashboard.hero.aiScore")}
               </p>
 
               <p className="max-w-[170px] text-[12px] leading-[1.25] text-[var(--app-muted)]">
-                Según tus comidas y actividad diaria.
+                {t("dashboard.hero.aiScoreHint")}
               </p>
             </div>
 
@@ -85,7 +87,7 @@ export default function AIHeroCard({
         <div className="mb-1.5 grid grid-cols-3 gap-1 pb-2">
           <QuickInlineStat
             icon={<Flame size={12} />}
-            label="Kcal"
+            label={t("dashboard.hero.kcal")}
             current={totals.calories}
             goal={goals.calories}
             unit=""
@@ -94,7 +96,7 @@ export default function AIHeroCard({
 
           <QuickInlineStat
             icon={<Dumbbell size={12} />}
-            label="Proteína"
+            label={t("dashboard.hero.protein")}
             current={totals.protein}
             goal={goals.protein}
             unit="g"
@@ -103,7 +105,7 @@ export default function AIHeroCard({
 
           <QuickInlineStat
             icon={<TrendingUp size={12} />}
-            label="Comidas"
+            label={t("dashboard.hero.meals")}
             current={todayMeals.length}
             goal={dailyMealGoal}
             unit=""
@@ -113,8 +115,8 @@ export default function AIHeroCard({
         <div className="flex justify-center ">
           <HeroActionButton
             primary
-            title="Escanear calorías"
-            subtitle="Analizar comida"
+            title={t("dashboard.hero.scanCalories")}
+            subtitle={t("dashboard.hero.analyzeFood")}
             icon="/icons/scan-icon.png"
             onClick={() => navigate("/foto-comida")}
           />
@@ -131,6 +133,7 @@ function QuickInlineStat({
   unit = "",
   accent = "text-[var(--app-text)]",
 }) {
+  const { t } = useTranslation();
   const safeGoal = Number(goal || 0);
   const safeCurrent = Number(current || 0);
 
@@ -162,8 +165,8 @@ function QuickInlineStat({
 
         <p className="shrink-0 text-[8px] font-bold text-[var(--app-muted)]">
           {left > 0
-            ? `Faltan ${Math.round(left)}${unit}`
-            : "Completado"}
+            ? t("dashboard.hero.left", { count: Math.round(left), unit })
+            : t("dashboard.hero.completed")}
         </p>
       </div>
 

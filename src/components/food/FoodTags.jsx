@@ -5,11 +5,13 @@ import {
   Sparkles,
   Wheat,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FoodTags({ result }) {
+  const { t } = useTranslation();
   if (!result) return null;
 
-  const tags = buildTags(result);
+  const tags = buildTags(result, t);
 
   if (tags.length === 0) return null;
 
@@ -35,7 +37,7 @@ export default function FoodTags({ result }) {
   );
 }
 
-function buildTags(result) {
+function buildTags(result, t) {
   const protein = Number(result.protein || 0);
   const calories = Number(result.calories || 0);
   const carbs = Number(result.carbs || 0);
@@ -46,7 +48,7 @@ function buildTags(result) {
 
   if (protein >= 25) {
     tags.push({
-      label: "Alta proteína",
+      label: t("food.tags.highProtein"),
       icon: <Beef size={10} />,
       color:
         "border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]",
@@ -55,7 +57,7 @@ function buildTags(result) {
 
   if (carbs <= 25) {
     tags.push({
-      label: "Low carb",
+      label: t("food.tags.lowCarb"),
       icon: <Wheat size={10} />,
       color:
         "border-cyan-400/15 bg-cyan-400/10 text-cyan-300",
@@ -64,7 +66,7 @@ function buildTags(result) {
 
   if (calories <= 550) {
     tags.push({
-      label: "Ligera",
+      label: t("food.tags.light"),
       icon: <Flame size={10} />,
       color:
         "border-orange-400/15 bg-orange-400/10 text-orange-300",
@@ -73,7 +75,7 @@ function buildTags(result) {
 
   if (fat <= 18) {
     tags.push({
-      label: "Baja grasa",
+      label: t("food.tags.lowFat"),
       icon: <ShieldCheck size={10} />,
       color:
         "border-yellow-400/15 bg-yellow-400/10 text-yellow-300",
@@ -82,7 +84,7 @@ function buildTags(result) {
 
   if (score >= 8) {
     tags.push({
-      label: "IA recomienda",
+      label: t("food.tags.aiRecommends"),
       icon: <Sparkles size={10} />,
       color:
         "border-purple-400/15 bg-purple-400/10 text-purple-300",

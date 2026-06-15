@@ -1,0 +1,918 @@
+{
+  "common": {
+    "back": "Volver",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "loading": "Cargando...",
+    "active": "Activo",
+    "available": "Disponible",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfService": "Términos del servicio"
+  },
+  "login": {
+    "brand": "Nutri Smart Coach",
+    "title": "Entra",
+    "subtitle": "Continúa con tus calorías, dietas y progreso en un solo panel.",
+    "emailLabel": "Correo",
+    "passwordLabel": "Contraseña",
+    "emailPlaceholder": "tu@email.com",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "submit": "Iniciar sesión",
+    "loading": "Iniciando...",
+    "newHere": "¿Nuevo aquí?",
+    "createAccount": "Crear cuenta",
+    "privacyNote": "Privacidad segura · Datos protegidos · IA nutricional",
+    "errors": {
+      "invalidCredentials": "El correo o la contraseña no son válidos.",
+      "connect": "Error al conectar: ",
+      "callbackInvalid": "callback inválido",
+      "resetRequired": "Introduce tu email para enviarte el enlace.",
+      "resetFailed": "No pudimos enviar el enlace: ",
+      "resetSuccess": "Te enviamos un enlace para restablecer tu contraseña.",
+      "callbackFailed": "No pudimos completar el inicio de sesión: ",
+      "createProfileFailed": "No se pudo crear el perfil del usuario."
+    },
+    "reset": {
+      "eyebrow": "Recuperación segura",
+      "title": "Restablecer contraseña",
+      "subtitle": "Te enviaremos un enlace privado para crear una nueva contraseña.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "submit": "Enviar enlace",
+      "loading": "Enviando...",
+      "close": "Cerrar"
+    },
+    "social": {
+      "google": "Continuar con Google",
+      "facebook": "Continuar con Facebook"
+    }
+  },
+  "register": {
+    "title": "Crea tu plan inteligente",
+    "subtitle": "Empieza con objetivos claros, análisis visual y progreso guiado por IA.",
+    "nameLabel": "Nombre",
+    "emailLabel": "Correo",
+    "passwordLabel": "Contraseña",
+    "namePlaceholder": "Ej. Alexis Rodríguez",
+    "emailPlaceholder": "tu@email.com",
+    "passwordPlaceholder": "Mínimo 6 caracteres",
+    "invitationQuestion": "¿Tienes un código de invitación?",
+    "invitationSubtitle": "Desbloquea pruebas Premium y recompensas.",
+    "invitationPlaceholder": "Introduce tu código",
+    "invitationApply": "Aplicar código",
+    "invitationValidating": "Validando...",
+    "creatorCodeApplied": "Código de creador aplicado",
+    "creatorBonusLine1": "Tus 15 días Premium gratis se activarán al crear tu cuenta.",
+    "creatorBonusLine2": "15 días Premium gratis por invitación de creador.",
+    "policyCheckbox": "Acepto las políticas y condiciones de NutriSmart Coach",
+    "submit": "→ Crear cuenta gratis",
+    "loading": "Creando cuenta...",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "signIn": "Iniciar sesión",
+    "errors": {
+      "completeFields": "Completa todos los campos.",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+      "policiesRequired": "Debes aceptar las políticas y condiciones de NutriSmartCoach.",
+      "signUpFailed": "Error al crear la cuenta: ",
+      "profileFailed": "Error creando el perfil.",
+      "invalidReferral": "El código de invitación no es válido o ya no está disponible.",
+      "callbackFailed": "No pudimos completar el inicio de sesión: ",
+      "callbackInvalid": "callback inválido",
+      "connect": "Error al conectar: "
+    },
+    "social": {
+      "google": "Continuar con Google",
+      "facebook": "Continuar con Facebook"
+    }
+  },
+  "dashboard": {
+    "header": {
+      "title": "Tu coach de hoy",
+      "syncing": "SINCRONIZANDO...",
+      "active": "IA ACTIVA",
+      "fallbackName": "crack",
+      "greeting": "Hola,"
+    },
+    "sync": {
+      "label": "Sincronización",
+      "retry": "Reintentar"
+    },
+    "motivation": {
+      "label": "Impulso IA",
+      "goodPace": "vas por buen camino: mantén esta racha.",
+      "goodProgress": "Buen avance hoy. Cada registro te da más control semanal.",
+      "mealProgress": "Cada comida registrada mejora tu claridad para decidir mejor.",
+      "activeDiet": "Completa tu próxima comida y mantén tu semana activa.",
+      "startSmall": "Hoy es buen día para empezar con una acción pequeña."
+    },
+    "premium": {
+      "activeTitle": "Premium activo",
+      "upgradeTitle": "Progresa más rápido",
+      "activeSubtitle": "Tus límites ampliados están activos.",
+      "upgradeSubtitle": "Seguimiento inteligente y planes avanzados para mejorar tus resultados.",
+      "manage": "Gestionar plan",
+      "upgrade": "Mejorar mi plan",
+      "benefits": {
+        "personalized": "Dietas personalizadas",
+        "faster": "Resultados más rápidos",
+        "consistent": "Más constancia",
+        "exclusive": "Funciones exclusivas"
+      }
+    },
+    "ai": {
+      "orbLabel": "IA",
+      "smartTip": {
+        "noDiet": "Genera tu dieta IA para activar recomendaciones inteligentes.",
+        "firstMeal": "Escanea tu primera comida para activar el análisis nutricional.",
+        "lowProtein": "Proteína baja. Prioriza pollo, huevos o yogur griego.",
+        "overCalories": "Has superado tus calorías objetivo hoy.",
+        "goodProgress": "Buen progreso. Mantén constancia y registra tus comidas."
+      },
+      "insight": {
+        "badge": "Consejo IA",
+        "nextStep": "Próximo paso recomendado",
+        "status": {
+          "configure": "Configurar",
+          "pending": "Pendiente",
+          "excellent": "Excelente",
+          "improvable": "Mejorable",
+          "attention": "Atención"
+        },
+        "noDiet": {
+          "title": "Primero crea tu plan base",
+          "text": "Aún no tienes una dieta activa. Cuando crees tu plan semanal, Nutri Smart podrá comparar tus comidas contra una meta real.",
+          "action": "Crea una dieta IA desde la sección Plan para recibir recomendaciones más precisas."
+        },
+        "noMeals": {
+          "title": "Activa el seguimiento de hoy",
+          "text": "Todavía no has escaneado comidas hoy. Cuando subas tu primera foto, verás cuántas calorías llevas y cuánto te falta.",
+          "action": "Escanea tu primera comida para empezar a completar tu objetivo diario."
+        },
+        "excellent": {
+          "title": "Vas muy bien hoy",
+          "text": "Tus comidas van alineadas con tu objetivo. Mantener este ritmo hará que tu progreso semanal sea más fácil de sostener.",
+          "action": "Sigue priorizando proteína y evita calorías extra innecesarias."
+        },
+        "improvable": {
+          "title": "Puedes mejorar la próxima comida",
+          "text": "La IA detecta que aún puedes mejorar alguna métrica importante de hoy.",
+          "action": "Haz tu próxima comida más alta en proteína y escanéala para ajustar mejor tu día."
+        },
+        "attention": {
+          "title": "Vamos a corregir el rumbo",
+          "text": "Tu día todavía no está alineado con el objetivo, pero puedes mejorarlo con tu próxima comida.",
+          "action": "Elige una comida más limpia, alta en proteína y escanéala antes de cerrar el día."
+        }
+      }
+    },
+    "tools": {
+      "badge": "IA"
+    },
+    "workout": {
+      "title": "Entreno recomendado hoy",
+      "completedToday": "Entreno completado hoy",
+      "button": "Ver rutina",
+      "levels": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado"
+      },
+      "muscles": {
+        "abs": "Abdomen / descanso activo",
+        "chest": "Pecho",
+        "back": "Espalda",
+        "legs": "Piernas",
+        "shoulders": "Hombros",
+        "glutes": "Glúteos",
+        "arms": "Brazos",
+        "general": "General"
+      },
+      "exerciseHints": {
+        "abs": ["Plancha", "Crunch controlado", "Movilidad"],
+        "chest": ["Press", "Flexiones", "Aperturas"],
+        "back": ["Remo", "Jalón", "Peso muerto"],
+        "legs": ["Sentadilla", "Zancadas", "Prensa"],
+        "shoulders": ["Press militar", "Elevaciones", "Face pull"],
+        "glutes": ["Hip thrust", "Puente", "Patada de glúteo"],
+        "arms": ["Curl bíceps", "Fondos", "Extensión tríceps"],
+        "general": ["Fuerza base", "Core", "Movilidad"]
+      }
+    },
+    "progress": {
+      "badge": "Progreso diario",
+      "title": "Tu progreso de hoy",
+      "current": "Progreso",
+      "level": "Nivel {{level}}",
+      "summary": "Resumen",
+      "streakDays": "días seguidos",
+      "quick": {
+        "protein": "Proteína",
+        "kcal": "Kcal",
+        "status": "Estado",
+        "active": "Activo",
+        "pending": "Pend."
+      },
+      "summaryMessages": {
+        "workoutAndNutrition": "Entreno completado y nutrición activa hoy.",
+        "workoutOnly": "Entreno completado. Buen punto para sostener la racha.",
+        "proteinAndMeals": "Hoy vas muy bien. Mantén el ritmo.",
+        "proteinMissing": "Te faltan {{proteinMissing}}g de proteína.",
+        "streak": "Llevas {{currentStreak}} días seguidos.",
+        "activeDiet": "Tienes el plan listo: {{dailyMealGoal}} comidas marcadas para hoy.",
+        "startSmall": "Empieza con una comida o check-in pequeño hoy."
+      },
+      "items": {
+        "diet": "Dieta",
+        "protein": "Proteína",
+        "workout": "Entreno",
+        "checkin": "Check-in"
+      }
+    },
+    "achievements": {
+      "firstMeal": "Primera comida analizada",
+      "threeDayStreak": "3 días seguidos",
+      "firstCheckin": "Primer check-in",
+      "firstWorkout": "Primer entreno completado"
+    },
+    "errors": {
+      "sessionInvalid": "Sesión no válida. Vuelve a iniciar sesión.",
+      "offline": "Sin conexión. Mostramos lo último guardado y puedes reintentar.",
+      "timeout": "La sincronización está tardando demasiado. Inténtalo otra vez.",
+      "multi": "No pudimos sincronizar algunos datos. Reintenta para actualizar el dashboard.",
+      "generic": "No pudimos sincronizar el dashboard ahora mismo. Reintenta en unos segundos."
+    },
+    "actions": {
+      "moreTools": "Más herramientas",
+      "continuePlan": "Continúa tu plan",
+      "planDiet": "Plan dieta",
+      "planDietDesc": "Dieta personalizada",
+      "checkinPhoto": "Check-in foto",
+      "checkinPhotoDesc": "Físico con foto",
+      "routines": "Rutinas",
+      "routinesDesc": "Rutina semanal",
+      "exercises": "Ejercicios",
+      "exercisesDesc": "Ejercicios por músculo",
+      "history": "Historial",
+      "historyDesc": "Comidas guardadas",
+      "progress": "Progreso",
+      "progressDesc": "Peso y medidas"
+    },
+    "hero": {
+      "aiScore": "Puntuación IA",
+      "aiScoreHint": "Según tus comidas y actividad diaria.",
+      "scanCalories": "Escanear calorías",
+      "analyzeFood": "Analizar comida",
+      "kcal": "Kcal",
+      "protein": "Proteína",
+      "meals": "Comidas",
+      "left": "Faltan {{count}}{{unit}}",
+      "completed": "Completado"
+    },
+    "summary": {
+      "quick": "Resumen rápido",
+      "latest": "Tus últimos registros",
+      "lastMeal": "Última comida escaneada",
+      "noMeal": "Aún no has escaneado comida",
+      "mealHelp": "Sube una foto para empezar a completar tus calorías de hoy.",
+      "mealRecorded": "Registrada",
+      "mealPending": "Pendiente",
+      "lastCheckin": "Último check-in corporal",
+      "noCheckin": "Sin check-in todavía",
+      "checkinHelp": "Registra una foto para comparar tu check-in físico.",
+      "checkinUpdated": "Actualizado",
+      "checkinPending": "Pendiente",
+      "noFatEstimate": "sin estimación de grasa",
+      "history": "Historial",
+      "historyDesc": "Comidas guardadas",
+      "progress": "Progreso",
+      "progressDesc": "Peso y medidas"
+    }
+  },
+  "premium": {
+    "common": {
+      "back": "Volver"
+    },
+    "native": {
+      "stores": {
+        "appStore": "App Store",
+        "googlePlay": "Google Play",
+        "generic": "tu tienda"
+      },
+      "purchaseTitle": "Compra en {{store}}",
+      "purchaseDescription": "En esta app, Premium se activa desde {{store}}. No necesitas salir de NutriSmart Coach para completar la compra cuando esté disponible.",
+      "availabilityMessage": "Estamos terminando la compra desde {{store}}. Cuando esté lista podrás activar Premium desde esta misma pantalla.",
+      "pending": {
+        "apple": "Compra en App Store próximamente",
+        "google": "Compra en Google Play próximamente",
+        "generic": "Disponible próximamente"
+      }
+    },
+    "hero": {
+      "billingBadge": "PAGO SEGURO",
+      "premiumTag": "PREMIUM",
+      "titleActive": "Premium activo",
+      "titleDefault": "Consigue resultados más rápido",
+      "subtitleActive": "Tus nuevos límites oficiales y herramientas avanzadas ya están activos.",
+      "subtitleDefault": "Más capacidad diaria para analizar, ajustar y seguir tu progreso sin quedarte corto.",
+      "chips": {
+        "active": {
+          "analysis": "20 análisis IA al día",
+          "diets": "5 dietas IA al día",
+          "checkins": "1 check-in IA al día",
+          "tracking": "Seguimiento avanzado"
+        },
+        "free": {
+          "analysis": "3 análisis IA al día",
+          "diets": "1 dieta IA por semana",
+          "checkins": "1 check-in IA por semana",
+          "changes": "Cambios ilimitados"
+        }
+      }
+    },
+    "status": {
+      "badge": "Estado",
+      "activeTitle": "Premium activo",
+      "activeDescription": "Tus nuevos límites oficiales y herramientas avanzadas están activos.",
+      "manageSubscription": "Gestionar suscripción",
+      "source": {
+        "stripe": "Gestionado por Stripe",
+        "apple": "Gestionado por App Store",
+        "google": "Gestionado por Google Play",
+        "manual": "Activado por el equipo"
+      },
+      "features": {
+        "analysis": "20 análisis IA diarios",
+        "diets": "5 dietas IA diarias",
+        "checkins": "1 check-in IA diario",
+        "tracking": "Seguimiento avanzado"
+      },
+      "native": {
+        "apple": "Gestiona tu suscripción desde App Store.",
+        "google": "Gestiona tu suscripción desde Google Play.",
+        "manual": "Tu acceso Premium está activado por el equipo de NutriSmart Coach."
+      }
+    },
+    "checkout": {
+      "badge": "Suscripción",
+      "title": "Activa Premium",
+      "description": "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach.",
+      "success": "Pago recibido. Confirmamos la suscripción con Stripe.",
+      "cancelled": "Pago cancelado. Puedes retomarlo cuando quieras.",
+      "opening": "Abriendo...",
+      "monthlyLabel": "Premium mensual",
+      "monthlyPrice": "7,99 €/mes",
+      "secure": "Pago seguro",
+      "mostPopular": "Más popular",
+      "yearlyLabel": "Premium anual",
+      "yearlyPrice": "59,99 €/año",
+      "yearlyEquivalent": "Equivale a 4,99€/mes",
+      "yearlySave": "Ahorra 37%",
+      "activate": "Activar Premium"
+    },
+    "trial": {
+      "creator": "Con código de creador: 15 días gratis",
+      "free": "Prueba Premium gratis 7 días",
+      "disclaimer": "Se requiere método de pago. Cancela cuando quieras antes de que termine la prueba."
+    },
+    "comparison": {
+      "badge": "Gratis vs Premium",
+      "title": "Gratis vs Premium",
+      "subtitle": "Compara los límites reales del plan Free frente al nuevo Premium oficial.",
+      "free": "Gratis",
+      "premium": "Premium",
+      "rows": {
+        "analysis": "Análisis IA",
+        "diets": "Dietas IA",
+        "checkins": "Check-ins IA",
+        "mealChanges": "Cambiar comidas",
+        "personalization": "Personalización",
+        "tracking": "Seguimiento",
+        "recommendations": "Recomendaciones IA",
+        "history": "Historial"
+      },
+      "values": {
+        "free": {
+          "analysis": "3/día",
+          "diets": "1/semana",
+          "checkins": "1/semana",
+          "mealChanges": "❌",
+          "personalization": "Básica",
+          "tracking": "Básico",
+          "recommendations": "Básicas",
+          "history": "Limitado"
+        },
+        "premium": {
+          "analysis": "20/día",
+          "diets": "5/día",
+          "checkins": "1/día",
+          "mealChanges": "✅",
+          "personalization": "Avanzada",
+          "tracking": "Avanzado",
+          "recommendations": "Avanzadas",
+          "history": "Completo"
+        }
+      }
+    },
+    "errors": {
+      "loadStatus": "consultar el estado premium",
+      "noCheckoutSession": "Stripe no devolvió una sesión de pago.",
+      "createCheckout": "crear la sesión de pago",
+      "noPortalSession": "Stripe no devolvió el portal de cliente.",
+      "openPortal": "abrir el portal de cliente"
+    },
+    "referralBanner": {
+      "badge": "CÓDIGO APLICADO",
+      "title": "Código aplicado",
+      "creatorTitle": "Código de creador aplicado",
+      "headline": "{{title}}: obtendrás {{trialDays}} días Premium gratis.",
+      "description": "Se requiere método de pago y puedes cancelar antes del primer cobro."
+    }
+  },
+  "bottomNav": {
+    "home": "Inicio",
+    "scan": "Scan",
+    "checkin": "Check-in",
+    "routines": "Rutinas",
+    "diet": "Dieta",
+    "profile": "Perfil"
+  },
+  "navigation": {
+    "mealPlan": "Meal Plan",
+    "mealPlanShort": "DIETA"
+  },
+  "settings": {
+    "common": {
+      "back": "Volver"
+    },
+    "theme": {
+      "badge": "THEME",
+      "title": "Personalización",
+      "subtitle": "Personaliza la apariencia de NutriSmartCoach.",
+      "themesTitle": "Temas",
+      "themesDesc": "Selecciona una piel visual premium.",
+      "languageTitle": "Idioma",
+      "languageDesc": "Selecciona el idioma de la app.",
+      "activeTheme": "THEME ACTIVO",
+      "active": "Activo",
+      "available": "Disponible",
+      "live": "LIVE",
+      "current": "Actual",
+      "status": "Estado",
+      "synced": "Sincronizado",
+      "hero": {
+        "active": "Theme activo",
+        "title": "Ajusta la piel visual sin perder la lectura premium ni la jerarquía del sistema."
+      },
+      "themeTones": {
+        "emerald": "Activo",
+        "dark": "Sobrio",
+        "white": "Claro",
+        "rose": "Futurista",
+        "blue": "Tech",
+        "purple": "Pro"
+      }
+    },
+    "profile": {
+      "badge": "Perfil",
+      "title": "Mi perfil",
+      "loadingSubtitle": "Cargando tus datos personales.",
+      "subtitle": "Ajusta tus datos base para personalizar macros, progreso y recomendaciones.",
+      "loadError": "No se pudo cargar el perfil.",
+      "noUser": "No hay usuario conectado.",
+      "saveError": "No se pudo guardar el perfil.",
+      "saved": "Perfil actualizado correctamente.",
+      "data": "Datos básicos",
+      "dataDesc": "Perfil, edad y medidas base.",
+      "compact": "Compacto",
+      "name": "Nombre",
+      "age": "Edad",
+      "weight": "Peso",
+      "height": "Altura",
+      "gender": "Género",
+      "system": "Sistema metabólico",
+      "systemDesc": "Alinea el motor con tu meta real.",
+      "core": "Core",
+      "goal": "Objetivo",
+      "activity": "Actividad",
+      "nutrition": "Nutrición",
+      "nutritionDesc": "Define tu frecuencia diaria de comidas.",
+      "rhythm": "Ritmo",
+      "mealsPerDay": "Comidas al día",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "genderOptions": {
+        "male": "Hombre",
+        "female": "Mujer"
+      },
+      "goalOptions": {
+        "lose": "Perder grasa",
+        "gain": "Ganar músculo",
+        "maintain": "Mantener peso"
+      },
+      "activityOptions": {
+        "low": "Sedentario",
+        "moderate": "Moderada",
+        "high": "Alta"
+      },
+      "goals": {
+        "lose": "Perder grasa",
+        "gain": "Ganar músculo",
+        "maintain": "Mantener peso"
+      },
+      "activityValues": {
+        "low": "Sedentario",
+        "moderate": "Moderada",
+        "high": "Alta"
+      },
+      "corePanel": {
+        "badge": "AI Profile Core",
+        "title": "Perfil sincronizado",
+        "subtitle": "Tus datos ya están alineados con el motor de recomendaciones para recalcular macros y ritmo diario.",
+        "live": "Live",
+        "objective": "Objetivo activo",
+        "kcalObjective": "Kcal objetivo",
+        "activity": "Actividad",
+        "status": "Estado",
+        "synced": "Perfil sincronizado",
+        "coreActive": "Núcleo activo",
+        "coreBody": "El perfil ya está listo para guiar tus recomendaciones."
+      }
+    },
+    "ai": {
+      "badge": "AI",
+      "title": "IA y nutrición",
+      "subtitle": "Núcleo vivo, recursos asignados y capas futuras del sistema.",
+      "core": {
+        "title": "Núcleo IA",
+        "desc": "Estado vivo del motor nutricional con materiales suaves y sincronización estable.",
+        "live": "Live",
+        "syncing": "Sincronizando perfil...",
+        "premium": "Premium activo",
+        "free": "Plan Free activo",
+        "premiumDesc": "Tu perfil refleja los límites Premium oficiales y una cola prioritaria para una experiencia más ágil.",
+        "freeDesc": "Tu perfil refleja los límites oficiales del plan Free con la misma base estable.",
+        "motor": "Motor",
+        "sync": "Sincronización",
+        "analysis": "Análisis",
+        "premiumValue": "Premium",
+        "freeValue": "Free",
+        "stable": "Estable",
+        "priority": "Prioritarios",
+        "prepared": "Preparados",
+        "provider": "Proveedor"
+      },
+      "limits": {
+        "title": "Límites y control",
+        "desc": "Asignación oficial de recursos por plan para estabilidad, coste y respuesta consistente."
+      },
+      "future": {
+        "title": "Futuras capas",
+        "desc": "Evolución prevista sin romper la base actual ni la lectura premium."
+      },
+      "platform": {
+        "title": "Plataforma",
+        "desc": "La arquitectura actual permanece intacta: misma cuenta, misma seguridad, misma base."
+      },
+      "rows": {
+        "food": {
+          "label": "Análisis de comida",
+          "free": "3/día",
+          "premium": "20/día"
+        },
+        "diet": {
+          "label": "Dietas IA",
+          "free": "1/semana",
+          "premium": "5/día"
+        },
+        "checkin": {
+          "label": "Check-ins IA",
+          "free": "1/semana",
+          "premium": "1/día"
+        }
+      },
+      "roadmap": {
+        "motor": {
+          "label": "Motor adaptativo",
+          "copy": "Más contexto con la misma base de datos y la misma seguridad."
+        },
+        "context": {
+          "label": "Análisis contextual",
+          "copy": "Recomendaciones más precisas sin añadir ruido visual."
+        },
+        "layers": {
+          "label": "Capas futuras",
+          "copy": "La UI ya respira como un sistema extensible y vivo."
+        }
+      }
+    },
+    "legal": {
+      "badge": "Legal",
+      "title": "Privacidad y legal",
+      "subtitle": "Trust center para revisar políticas y gestionar tus datos con transparencia.",
+      "trust": {
+        "title": "Trust Center",
+        "desc": "Datos protegidos, políticas activas y control de tu información.",
+        "protected": "Protegido",
+        "policies": "Políticas activas",
+        "management": "Gestión de datos disponible",
+        "transparency": "Transparencia legal"
+      },
+      "control": {
+        "title": "Control y transparencia",
+        "desc": "Tus datos siguen bajo tu control y puedes revisarlos cuando quieras.",
+        "line1": "Tus datos siguen bajo tu control.",
+        "line2": "Puedes revisar políticas o solicitar eliminación cuando lo necesites."
+      },
+      "privacy": "Política de privacidad",
+      "terms": "Términos del servicio",
+      "deleteAccount": "Eliminar cuenta / datos",
+      "privacyDesc": "Cómo tratamos tus datos y fotos.",
+      "termsDesc": "Condiciones de uso de la plataforma.",
+      "deleteDesc": "Solicitud de borrado de tu cuenta."
+    },
+    "security": {
+      "badge": "Seguridad",
+      "title": "Security Center",
+      "subtitle": "Acceso protegido, sesión sincronizada y control de tu cuenta.",
+      "account": {
+        "title": "Cuenta protegida",
+        "desc": "Estado actual de acceso y sincronización de sesión.",
+        "protected": "Protegida",
+        "sessionSynced": "Sesión sincronizada",
+        "socialActive": "Acceso social activo",
+        "localActive": "Acceso local activo",
+        "socialDesc": "Tu cuenta usa un proveedor externo para iniciar sesión con seguridad.",
+        "localDesc": "Tu contraseña local controla el acceso principal a esta cuenta.",
+        "session": "Sesión",
+        "status": "Estado",
+        "active": "Activa"
+      },
+      "actions": {
+        "title": "Contraseña y salida",
+        "desc": "Gestiona tu acceso local o cierra la sesión activa.",
+        "changePassword": "Cambiar contraseña",
+        "changePasswordDesc": "Actualizar contraseña local.",
+        "socialManagedDesc": "Gestionada por tu proveedor social.",
+        "logout": "Cerrar sesión",
+        "logoutDesc": "Salir de este dispositivo.",
+        "controlTitle": "Control activo",
+        "controlBody": "Puedes actualizar tu contraseña cuando quieras. Si usas un proveedor social, el acceso sigue gestionado por tu cuenta externa."
+      },
+      "password": {
+        "title": "Cambiar contraseña",
+        "desc": "Actualiza tu contraseña local de acceso.",
+        "local": "Acceso seguro",
+        "social": "Acceso social",
+        "invalidEmail": "Introduce un correo electrónico válido.",
+        "emailLabel": "Correo",
+        "emailPlaceholder": "tu@email.com",
+        "sending": "Enviando...",
+        "submit": "Enviar enlace",
+        "socialInfo": "Tu cuenta usa inicio de sesión social. La contraseña se gestiona desde tu proveedor.",
+        "sessionExpired": "Tu sesión ha caducado. Vuelve a iniciar sesión para solicitar el enlace.",
+        "success": "Te enviamos un enlace seguro para cambiar tu contraseña.",
+        "passwordResetError": "No pudimos enviar el enlace: "
+      },
+      "logout": {
+        "title": "Cerrar sesión",
+        "desc": "Se cerrará tu sesión en este dispositivo. Podrás volver a entrar cuando quieras.",
+        "cancel": "Cancelar",
+        "confirm": "Cerrar sesión",
+        "accessSecure": "Acceso seguro",
+        "sessionActive": "Sesión activa",
+        "yes": "Sí"
+      }
+    }
+  },
+  "scan": {
+    "hero": {
+      "badge": "ESCÁNER NUTRICIONAL IA",
+      "live": "LIVE",
+      "titleTop": "Escanea",
+      "titleBottom": "calorías",
+      "subtitle": "Foto clara, macros y score en segundos."
+    },
+    "loader": {
+      "title": "Analizando comida",
+      "badge": "ESCANEO IA",
+      "previewAlt": "Analizando comida",
+      "processing": "Procesando con IA",
+      "steps": {
+        "detecting": "Detectando",
+        "macros": "Macros",
+        "quality": "Calidad",
+        "result": "Resultado"
+      }
+    }
+  },
+  "food": {
+    "usage": {
+      "planNotice": "Plan Free: {{free}} análisis IA/día. Premium: {{premium}} análisis IA/día.",
+      "badge": "Uso IA {{periodLabel}}",
+      "ctaTitle": "Hazte Premium y sube a 20 análisis IA/día.",
+      "ctaBadge": "Hazte Premium",
+      "period": {
+        "premium": "Premium",
+        "week": "semanal",
+        "day": "diario"
+      },
+      "periodText": {
+        "week": "semanal",
+        "day": "diario"
+      },
+      "resetAt": "hoy a {{time}}",
+      "resetFallback": "pronto",
+      "premium": {
+        "title": "IA premium activa",
+        "detail": "Tus límites ampliados ya están activos."
+      },
+      "syncing": {
+        "title": "Sincronizando límites...",
+        "detail": "Estamos comprobando tu plan y cupos de IA."
+      },
+      "fallback": {
+        "detail": "No pudimos sincronizar tu cupo. Mostramos límites Free."
+      },
+      "limitReached": {
+        "title": "Límite {{periodText}} alcanzado · se reinicia {{reset}}",
+        "detail": "Puedes continuar cuando se reinicie el cupo."
+      },
+      "remaining": {
+        "food": {
+          "one": "Te queda 1 análisis IA {{periodText}}",
+          "many": "Te quedan {{remaining}} análisis IA {{periodText}}"
+        },
+        "diet": {
+          "one": "Te queda 1 generación de dieta {{periodText}}",
+          "many": "Te quedan {{remaining}} generaciones de dieta {{periodText}}"
+        },
+        "checkin": "Te quedan {{remaining}} check-ins IA {{periodText}}"
+      },
+      "available": {
+        "detail": "Se reinicia {{resetText}} a {{resetTime}}"
+      },
+      "reset": {
+        "week": "la próxima semana",
+        "day": "hoy"
+      }
+    },
+    "errors": {
+      "profileLoadFailed": "No se pudo cargar el perfil para metas:",
+      "limit": {
+        "label": "Límite IA",
+        "title": "Has alcanzado tu límite de IA",
+        "description": "Tu cupo se reactivará al iniciar el siguiente periodo o puedes ampliar límites con Premium."
+      },
+      "rate": {
+        "label": "Pausa breve",
+        "title": "Espera unos segundos antes de volver a intentarlo",
+        "description": "La IA necesita un pequeño margen entre solicitudes."
+      },
+      "image": {
+        "label": "Imagen",
+        "title": "La imagen es demasiado grande",
+        "description": "Intenta con una foto más ligera o tomada con menor resolución."
+      },
+      "network": {
+        "label": "Conexión",
+        "title": "La conexión no respondió",
+        "description": "Revisa tu red o inténtalo de nuevo en unos instantes."
+      },
+      "generic": {
+        "label": "Aviso",
+        "title": "No se pudo completar la acción",
+        "description": "Inténtalo de nuevo en unos segundos."
+      }
+    },
+    "actions": {
+      "analyzeAnother": "Analizar otra comida",
+      "discardAnalysis": "Descartar análisis"
+    },
+    "upload": {
+      "previewAlt": "Vista previa de la comida",
+      "photoReady": "Foto lista",
+      "imageReady": "Imagen preparada",
+      "tapToChange": "Toca la imagen para cambiarla.",
+      "title": "Sube tu comida",
+      "subtitle": "Usa buena luz y que el plato se vea completo.",
+      "optionalDescription": "Descripción opcional",
+      "optionalDescriptionHelp": "Añade detalles para mejorar la precisión",
+      "placeholder": "Ej: 2 arepas pequeñas con queso, pollo a la plancha, salsa y ensalada",
+      "analyzing": "ANALIZANDO...",
+      "analyze": "ANALIZAR COMIDA",
+      "subcta": "IA nutricional + macros",
+      "helper": "Detecta calorías, proteína y calidad nutricional"
+    },
+    "goal": {
+      "title": "Objetivo de hoy",
+      "badge": "EN VIVO",
+      "calories": "Calorías",
+      "protein": "Proteína",
+      "subtitle": "Sigue registrando comidas para completar tus objetivos diarios."
+    },
+    "insights": {
+      "title": "Hallazgos IA",
+      "badge": "IA",
+      "goalTitles": {
+        "bulk": "Volumen limpio",
+        "fatLoss": "Déficit controlado",
+        "maintain": "Equilibrio diario",
+        "recomp": "Recomposición",
+        "general": "Análisis fitness"
+      },
+      "goalInsights": {
+        "bulk": "Prioriza proteína y recuperación para ganar masa muscular sin frenar tu rendimiento.",
+        "fatLoss": "Prioriza saciedad y control de calorías para mantener el déficit sin perder adherencia.",
+        "maintain": "Mantén un equilibrio entre energía, proteína y porción para sostener el peso actual.",
+        "recomp": "Busca proteína alta y calorías razonables para mejorar composición corporal sin extremos.",
+        "general": "Ajusta porción y proteína según tu objetivo actual."
+      },
+      "lowProtein": {
+        "title": "Proteína baja",
+        "text": "Añade pollo, huevos, atún, yogur griego o proteína magra."
+      },
+      "highCalories": {
+        "title": "Alta en calorías",
+        "text": "Reduce salsas, fritos o porción de carbohidratos."
+      },
+      "nextStep": {
+        "title": "Siguiente mejora",
+        "text": "Mantén proteína alta y controla la porción."
+      }
+    },
+    "swap": {
+      "title": "Ajuste IA",
+      "badge": "IA"
+    },
+    "history": {
+      "badge": "Historial IA",
+      "title": "Últimos escaneos",
+      "count": "{{count}} comidas",
+      "mealAlt": "Comida",
+      "mealFallback": "Comida",
+      "kcal": "kcal",
+      "protein": "Prot",
+      "recent": "Reciente"
+    },
+    "tags": {
+      "highProtein": "Alta proteína",
+      "lowCarb": "Carbo bajo",
+      "light": "Ligera",
+      "lowFat": "Baja grasa",
+      "aiRecommends": "IA recomienda"
+    },
+    "recentMeals": {
+      "title": "Escaneos recientes",
+      "badge": "HISTORIAL",
+      "noPhoto": "Sin foto",
+      "mealFallback": "Comida",
+      "kcal": "kcal",
+      "recent": "Reciente"
+    }
+  },
+  "foodResult": {
+    "analyzedFoodAlt": "Comida analizada",
+    "noImage": "Sin imagen",
+    "aiScan": "ESCANEO IA",
+    "score": "puntuación",
+    "detectedFood": "Comida detectada",
+    "energy": "Energía",
+    "proteinLabel": "proteína",
+    "macros": {
+      "protein": "Prot",
+      "carbs": "Carbo",
+      "fat": "Grasas"
+    },
+    "verdict": "Veredicto IA",
+    "advice": {
+      "bulk": {
+        "goodBase": "Buena base para volumen. Proteína y energía bien alineadas.",
+        "lowProtein": "Para volumen, sube proteína y prioriza recuperación.",
+        "lowCalories": "Puede quedarse corta para volumen. Añade más energía útil.",
+        "goodOption": "Buena opción para ganar músculo. Ajusta porción si hace falta."
+      },
+      "fatLoss": {
+        "highCalories": "Alta en calorías para déficit. Ajusta porción o salsas.",
+        "lowProtein": "Baja en proteína. Añade saciedad con una fuente magra.",
+        "goodOption": "Buena opción para control de calorías y saciedad."
+      },
+      "maintain": {
+        "goodOption": "Buena opción para mantener. Equilibrada y fácil de encajar.",
+        "correct": "Comida correcta. Ajusta porción y proteína si hace falta."
+      },
+      "recomp": {
+        "goodOption": "Muy útil para recomposición: proteína alta y energía controlada.",
+        "lowProtein": "En recomposición conviene subir proteína para proteger masa muscular.",
+        "medium": "Buen encaje para recomposición. Mantén proteína alta y porción medida."
+      },
+      "generic": {
+        "goodOption": "Buena opción. Mantén una porción controlada.",
+        "lowProtein": "Baja en proteína. Añade una fuente magra.",
+        "highCalories": "Alta en calorías. Reduce salsas o fritos.",
+        "acceptable": "Comida aceptable. Ajusta porción y proteína."
+      }
+    }
+  }
+}

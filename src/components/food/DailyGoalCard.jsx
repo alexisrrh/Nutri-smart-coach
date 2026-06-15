@@ -1,6 +1,8 @@
 import { Flame, Dumbbell, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DailyGoalCard({ totals, goals }) {
+  const { t } = useTranslation();
   const caloriesPercent = Math.min(
     100,
     Math.round((totals.calories / goals.calories) * 100)
@@ -24,19 +26,19 @@ export default function DailyGoalCard({ totals, goals }) {
           <Sparkles size={13} className="text-[var(--app-primary)]" />
 
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-            Objetivo de hoy
+            {t("food.goal.title")}
           </p>
         </div>
 
         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--app-muted)]">
-          LIVE
+          {t("food.goal.badge")}
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <GoalItem
           icon={<Flame size={13} />}
-          label="Calorías"
+          label={t("food.goal.calories")}
           value={totals.calories}
           goal={goals.calories}
           percent={caloriesPercent}
@@ -45,7 +47,7 @@ export default function DailyGoalCard({ totals, goals }) {
 
         <GoalItem
           icon={<Dumbbell size={13} />}
-          label="Proteína"
+          label={t("food.goal.protein")}
           value={totals.protein}
           goal={goals.protein}
           percent={proteinPercent}
@@ -54,7 +56,7 @@ export default function DailyGoalCard({ totals, goals }) {
       </div>
 
       <p className="mt-2 text-xs leading-4 text-[var(--app-muted)]">
-        Sigue registrando comidas para completar tus objetivos diarios.
+        {t("food.goal.subtitle")}
       </p>
     </section>
   );

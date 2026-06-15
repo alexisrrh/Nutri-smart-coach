@@ -1,7 +1,9 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function SmartSwapCard({ result }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   if (!result) return null;
@@ -27,12 +29,12 @@ export default function SmartSwapCard({ result }) {
           <Sparkles size={12} className="text-[var(--app-primary)]" />
 
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-            Ajuste IA
+            {t("food.swap.title")}
           </p>
         </div>
 
         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--app-muted)]">
-          Smart
+          {t("food.swap.badge")}
         </span>
       </div>
 
