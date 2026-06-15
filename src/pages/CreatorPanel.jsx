@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock3, LoaderCircle, Megaphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AppShell, MetaBadge, StatusBox } from "../components/ui";
 import CreatorProgramCard from "../components/profile/CreatorProgramCard";
 import { useAuth } from "../context/useAuth";
@@ -7,21 +8,24 @@ import {
   getCreatorPanelCache,
   loadCreatorStatus,
 } from "../services/creatorService";
+import "../i18n";
 
 export function CreatorPanel() {
   const { user, loadingAuth } = useAuth();
   const userId = user?.id || null;
+  const { t } = useTranslation();
 
   return (
     <CreatorPanelContent
       key={userId || "anonymous"}
       userId={userId}
       loadingAuth={loadingAuth}
+      t={t}
     />
   );
 }
 
-function CreatorPanelContent({ userId, loadingAuth }) {
+function CreatorPanelContent({ userId, loadingAuth, t }) {
   const initialCachedStatus = useMemo(
     () => (userId ? getCreatorPanelCache(userId) : null),
     [userId]
@@ -49,7 +53,7 @@ function CreatorPanelContent({ userId, loadingAuth }) {
       } catch (error) {
         if (!active) return;
         if (!initialCachedStatus) {
-          setLoadError(error.message || "No se pudo cargar el panel de creadores.");
+          setLoadError(error.message || t("creatorPanel.errors.load"));
         }
       } finally {
         if (active) {
@@ -62,7 +66,7 @@ function CreatorPanelContent({ userId, loadingAuth }) {
     return () => {
       active = false;
     };
-  }, [initialCachedStatus, userId]);
+  }, [initialCachedStatus, userId, t]);
 
   const isApproved = panelData?.status === "approved";
   const showInitialSkeleton = (loadingAuth || loadingStatus) && !panelData;
@@ -84,8 +88,8 @@ function CreatorPanelContent({ userId, loadingAuth }) {
 
         <div className="relative z-10 flex w-full flex-col gap-2.5">
           {showInitialSkeleton ? (
-            <CreatorPanelSkeleton />
-          ) : (
+              <CreatorPanelSkeleton />
+            ) : (
             <>
               {loadError && !panelData ? (
                 <StatusBox type="error" className="px-2.5 py-1.5 text-[11px] leading-4">
@@ -94,9 +98,9 @@ function CreatorPanelContent({ userId, loadingAuth }) {
               ) : null}
 
               {isApproved ? (
-                <ApprovedHeader refreshing={refreshing} />
+                <ApprovedHeader refreshing={refreshing} t={t} />
               ) : (
-                <MarketingHeader />
+                <MarketingHeader t={t} />
               )}
 
               {panelData ? (
@@ -114,7 +118,7 @@ function CreatorPanelContent({ userId, loadingAuth }) {
   );
 }
 
-function MarketingHeader() {
+function MarketingHeader({ t }) {
   return (
     <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
       <div
@@ -131,9 +135,9 @@ function MarketingHeader() {
             <Megaphone size={18} />
           </div>
           <div className="min-w-0">
-            <MetaBadge variant="neutral">PROGRAMA DE PARTNERS</MetaBadge>
+            <MetaBadge variant="neutral">{t("creatorPanel.marketing.badge")}</MetaBadge>
             <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-              Gana dinero recomendando NutriSmart Coach
+              {t("creatorPanel.marketing.title")}
             </h1>
           </div>
         </div>
@@ -146,7 +150,7 @@ function MarketingHeader() {
               </span>
             </div>
             <p className="min-w-0 text-left text-[11px] font-black leading-4 text-[var(--app-text)] sm:text-[12px]">
-              Comisión por cada suscripción Premium válida
+              {t("creatorPanel.marketing.commission")}
             </p>
           </div>
         </div>
@@ -155,14 +159,14 @@ function MarketingHeader() {
           <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,#38bdf8_14%,transparent)] text-[#38bdf8]">
             <Clock3 size={10} />
           </span>
-          Solicitudes revisadas en 24-72 horas.
+          {t("creatorPanel.marketing.reviewTime")}
         </div>
       </div>
     </header>
   );
 }
 
-function ApprovedHeader({ refreshing = false }) {
+function ApprovedHeader({ refreshing = false, t }) {
   return (
     <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
       <div
@@ -175,17 +179,17 @@ function ApprovedHeader({ refreshing = false }) {
 
       <div className="relative z-10 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <MetaBadge variant="neutral">ACTIVO</MetaBadge>
+          <MetaBadge variant="neutral">{t("creatorPanel.status.active")}</MetaBadge>
           <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-            Panel de Partner
+            {t("creatorPanel.approved.title")}
           </h1>
           <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            Gestiona tu código, ganancias y pagos.
+            {t("creatorPanel.approved.subtitle")}
           </p>
           {refreshing ? (
             <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[color-mix(in_srgb,#38bdf8_8%,var(--app-surface))] px-2 py-1 text-[9px] font-black uppercase tracking-[0.04em] text-[var(--app-muted)]">
               <LoaderCircle size={10} className="animate-spin text-[#38bdf8]" />
-              Actualizando
+              {t("creatorPanel.approved.refreshing")}
             </div>
           ) : null}
         </div>
@@ -198,6 +202,7 @@ function ApprovedHeader({ refreshing = false }) {
 }
 
 function CreatorPanelSkeleton() {
+  const { t } = useTranslation();
   return (
     <>
       <header className="relative overflow-hidden rounded-[1.35rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_94%,#07130f),color-mix(in_srgb,var(--app-surface)_88%,#101008))] p-2.5 shadow-[0_18px_54px_var(--app-glow)]">
@@ -213,12 +218,12 @@ function CreatorPanelSkeleton() {
             <Clock3 size={18} className="animate-pulse" />
           </div>
           <div className="min-w-0">
-            <MetaBadge variant="neutral">CARGANDO</MetaBadge>
+            <MetaBadge variant="neutral">{t("creatorPanel.loading.badge")}</MetaBadge>
             <h1 className="mt-1.5 text-[17px] font-black leading-tight text-[var(--app-text)]">
-              Preparando panel...
+              {t("creatorPanel.loading.title")}
             </h1>
             <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-              Estamos comprobando tu acceso.
+              {t("creatorPanel.loading.subtitle")}
             </p>
           </div>
         </div>

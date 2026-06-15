@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   CalendarDays,
@@ -26,6 +27,8 @@ import { getStrengthProgressSummary } from "../services/strengthProgressService"
 
 export function Progress() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage?.startsWith("en") ? "en-US" : "es-ES";
   const [activeView, setActiveView] = useState("resumen");
   const [selectedCheckin, setSelectedCheckin] = useState(null);
   const {
@@ -77,7 +80,7 @@ export function Progress() {
             }}
           >
             <ArrowLeft size={11} />
-            Dashboard
+            {t("progress.backToDashboard")}
           </button>
 
           <SurfaceCard
@@ -105,13 +108,13 @@ export function Progress() {
                 }}
               >
                 <Sparkles size={10} />
-                Evolución IA
+                {t("progress.badge")}
               </div>
               <h1 className="text-[21px] font-black leading-[0.95] tracking-tight text-[var(--app-text)]">
-                Progreso
+                {t("progress.title")}
               </h1>
               <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
-                Peso, fotos y tendencia corporal.
+                {t("progress.subtitle")}
               </p>
             </div>
 
@@ -136,7 +139,7 @@ export function Progress() {
           >
             <div>
               <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                Peso actual
+                {t("progress.currentWeight")}
               </p>
               <p className="mt-1 text-[36px] font-black leading-none tracking-tight text-[var(--app-text)]">
                 {stats.currentWeight || "--"}
@@ -148,9 +151,9 @@ export function Progress() {
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-1.5">
-            <SnapshotChip label="Inicio" value={stats.firstWeight || "--"} unit="kg" />
-            <SnapshotChip label="Registros" value={stats.totalLogs} />
-            <SnapshotChip label="Últ. cambio" value={formatSignedKg(stats.weeklyChange)} />
+            <SnapshotChip label={t("progress.start")} value={stats.firstWeight || "--"} unit="kg" />
+            <SnapshotChip label={t("progress.records")} value={stats.totalLogs} />
+            <SnapshotChip label={t("progress.lastChange")} value={formatSignedKg(stats.weeklyChange)} />
           </div>
           </div>
         </SurfaceCard>
@@ -167,7 +170,7 @@ export function Progress() {
 
             {usingCache && !errorMessage && (
               <StatusBox type="info">
-                Mostrando progreso guardado en este dispositivo.
+                {t("progress.cacheNotice")}
               </StatusBox>
             )}
 
@@ -181,6 +184,7 @@ export function Progress() {
                 <StrengthProgressSection
                   summary={strengthSummary}
                   onAction={() => navigate("/rutinas")}
+                  locale={locale}
                 />
               </>
             )}
@@ -189,6 +193,7 @@ export function Progress() {
               <ProgressVisualCompare
                 firstCheckin={stats.firstCheckin}
                 latestCheckin={stats.latestCheckin}
+                locale={locale}
               />
             )}
 
@@ -204,6 +209,7 @@ export function Progress() {
                 onDelete={setCheckinToDelete}
                 onSelect={setSelectedCheckin}
                 onEmptyAction={() => navigate("/checkin")}
+                locale={locale}
               />
             )}
           </div>
@@ -213,16 +219,17 @@ export function Progress() {
           <CheckinDetailSheet
             checkin={selectedCheckin}
             onClose={() => setSelectedCheckin(null)}
+            locale={locale}
           />
         )}
 
         <ConfirmDialog
           open={Boolean(checkinToDelete)}
           variant="danger"
-          title="Eliminar check-in"
-          description="Se eliminara este registro de progreso y su foto asociada. Esta accion no se puede deshacer."
-          cancelLabel="Cancelar"
-          confirmLabel="Eliminar"
+          title={t("progress.deleteDialog.title")}
+          description={t("progress.deleteDialog.description")}
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("progress.deleteDialog.confirm")}
           onCancel={() => setCheckinToDelete(null)}
           onConfirm={() => handleDeleteCheckin(checkinToDelete)}
         />
@@ -232,11 +239,12 @@ export function Progress() {
 }
 
 function ProgressViewTabs({ activeView, setActiveView }) {
+  const { t } = useTranslation();
   const views = [
-    { id: "resumen", label: "Resumen", icon: Sparkles },
-    { id: "fotos", label: "Fotos", icon: Scale },
-    { id: "grafica", label: "Gráfica", icon: ChartNoAxesColumnIncreasing },
-    { id: "historial", label: "Hist.", icon: CalendarDays },
+    { id: "resumen", label: t("progress.tabs.summary"), icon: Sparkles },
+    { id: "fotos", label: t("progress.tabs.photos"), icon: Scale },
+    { id: "grafica", label: t("progress.tabs.chart"), icon: ChartNoAxesColumnIncreasing },
+    { id: "historial", label: t("progress.tabs.history"), icon: CalendarDays },
   ];
 
   return (
@@ -292,31 +300,32 @@ function SnapshotChip({ label, value, unit = "" }) {
 }
 
 function ProgressStatsGrid({ stats }) {
+  const { t } = useTranslation();
   const compactStats = [
     {
       icon: Scale,
-      label: "Actual",
+      label: t("progress.stats.current"),
       value: stats.currentWeight || "--",
       unit: "kg",
       tone: "text-[var(--app-primary)]",
     },
     {
       icon: Target,
-      label: "Inicio",
+      label: t("progress.stats.start"),
       value: stats.firstWeight || "--",
       unit: "kg",
       tone: "text-[var(--app-muted)]",
     },
     {
       icon: stats.direction === "down" ? TrendingDown : TrendingUp,
-      label: "Cambio",
+      label: t("progress.stats.change"),
       value: stats.change > 0 ? `+${stats.change}` : stats.change || "--",
       unit: "kg",
       tone: stats.direction === "down" ? "text-[var(--app-primary)]" : "text-[#d9c7a4]",
     },
     {
       icon: ChartNoAxesColumnIncreasing,
-      label: "Registros",
+      label: t("progress.stats.records"),
       value: stats.totalLogs,
       unit: "",
       tone: "text-[var(--app-muted)]",
@@ -361,6 +370,7 @@ function ProgressStatsGrid({ stats }) {
 }
 
 function MiniWeightSparkline({ checkins }) {
+  const { t } = useTranslation();
   const weightLogs = checkins
     .filter((checkin) => Number(checkin.weight) > 0)
     .slice(0, 8)
@@ -381,7 +391,7 @@ function MiniWeightSparkline({ checkins }) {
           viewBox="0 0 150 40"
           className="h-full w-full"
           role="img"
-          aria-label="Mini gráfica de peso"
+          aria-label={t("progress.chart.miniWeightAria")}
         >
           <path
             d="M 4 10 H 146 M 4 28 H 146"
@@ -400,7 +410,7 @@ function MiniWeightSparkline({ checkins }) {
         </svg>
       ) : (
         <div className="grid h-full place-items-center text-[9px] font-medium text-[var(--app-muted)]">
-          Sin tendencia
+          {t("progress.chart.noTrend")}
         </div>
       )}
     </div>
@@ -414,17 +424,18 @@ function ProgressHistorySection({
   onEmptyAction,
   onDelete,
   onSelect,
+  locale,
 }) {
+  const { t } = useTranslation();
   return (
     <SurfaceCard className="border border-[var(--app-border)] bg-[#07170f]/95 p-2.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            {sortedCheckinsDesc.length} registro
-            {sortedCheckinsDesc.length !== 1 ? "s" : ""}
+            {t("progress.history.count", { count: sortedCheckinsDesc.length })}
           </p>
           <h2 className="mt-0.5 text-[15px] font-black uppercase italic tracking-tight text-[var(--app-text)]">
-            Historial
+            {t("progress.history.title")}
           </h2>
         </div>
 
@@ -447,6 +458,7 @@ function ProgressHistorySection({
               deleting={deletingId === checkin.id}
               onDelete={onDelete}
               onSelect={onSelect}
+              locale={locale}
             />
           ))}
         </div>
@@ -463,7 +475,9 @@ function CheckinHistoryCard({
   deleting = false,
   onDelete,
   onSelect,
+  locale,
 }) {
+  const { t } = useTranslation();
   const image = getCheckinImage(checkin);
   const weight = Number(checkin.weight) || 0;
   const weightDiff = getCheckinWeightDiff(checkin, previous);
@@ -488,11 +502,11 @@ function CheckinHistoryCard({
       className="cursor-pointer overflow-hidden border border-[var(--app-border)] bg-[#07170f]/95 p-0 shadow-[0_10px_28px_var(--app-glow)] transition hover:border-[var(--app-border)] hover:bg-[#0a1d15]"
     >
       <div className="grid grid-cols-[52px_1fr] gap-2 rounded-2xl px-1 py-1.5">
-        <div className="relative h-[58px] overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)]">
+          <div className="relative h-[58px] overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)]">
           {image ? (
             <img
               src={image}
-              alt="Check-in de progreso"
+              alt={t("progress.history.checkinImageAlt")}
               className="h-full w-full object-contain p-1.5"
             />
           ) : (
@@ -510,7 +524,7 @@ function CheckinHistoryCard({
               onDelete?.(checkin);
             }}
             disabled={deleting}
-            aria-label="Eliminar check-in"
+            aria-label={t("progress.history.deleteAria")}
             className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-[var(--app-surface)] text-[var(--app-muted)] backdrop-blur transition hover:text-red-100 disabled:opacity-50"
           >
             <Trash2 size={10} />
@@ -521,10 +535,10 @@ function CheckinHistoryCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)]">
-                {formatCheckinDate(checkin.created_at || checkin.createdAt)}
+                {formatCheckinDate(checkin.created_at || checkin.createdAt, locale)}
               </p>
               <h3 className="mt-0.5 truncate text-[18px] font-black text-[var(--app-text)]">
-                {weight ? `${weight} kg` : "Peso pendiente"}
+                {weight ? `${weight} kg` : t("progress.history.pendingWeight")}
               </h3>
             </div>
 
@@ -545,10 +559,10 @@ function CheckinHistoryCard({
 
           <div className="mt-1.5 flex flex-wrap gap-1">
             {bodyFatRange && (
-              <CheckinMetricPill label="Grasa" value={bodyFatRange} />
+              <CheckinMetricPill label={t("progress.history.fat")} value={bodyFatRange} />
             )}
             {checkin.confidence ? (
-              <CheckinMetricPill label="Conf." value={`${checkin.confidence}%`} />
+              <CheckinMetricPill label={t("progress.history.confidence")} value={`${checkin.confidence}%`} />
             ) : null}
           </div>
 
@@ -572,7 +586,8 @@ function CheckinMetricPill({ label, value }) {
   );
 }
 
-function CheckinDetailSheet({ checkin, onClose }) {
+function CheckinDetailSheet({ checkin, onClose, locale }) {
+  const { t } = useTranslation();
   const image = getCheckinImage(checkin);
 
   return (
@@ -586,7 +601,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="Análisis completo del check-in"
+        aria-label={t("progress.detail.ariaLabel")}
         className="fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] z-[9999] mx-auto w-full max-w-[430px] px-2"
         onClick={(event) => event.stopPropagation()}
       >
@@ -594,17 +609,17 @@ function CheckinDetailSheet({ checkin, onClose }) {
           <div className="mb-2 flex items-center justify-between">
             <div>
               <p className="inline-flex rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                {formatCheckinDate(checkin.created_at || checkin.createdAt)}
+                {formatCheckinDate(checkin.created_at || checkin.createdAt, locale)}
               </p>
               <h3 className="mt-1 text-base font-black uppercase italic leading-none text-[var(--app-text)]">
-                Detalle corporal
+                {t("progress.detail.title")}
               </h3>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              aria-label="Cerrar análisis"
+              aria-label={t("progress.detail.closeAria")}
               className="grid h-7 w-7 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
             >
               <X size={13} />
@@ -616,7 +631,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
               <div className="relative h-[124px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)]">
                 <img
                   src={image}
-                  alt="Check-in seleccionado"
+                  alt={t("progress.detail.selectedImageAlt")}
                   className="h-full w-full object-contain p-2"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
@@ -626,20 +641,20 @@ function CheckinDetailSheet({ checkin, onClose }) {
                 <div className="grid place-items-center">
                   <Scale size={16} className="text-[var(--app-primary)]" />
                   <p className="mt-1 text-[8px] font-black uppercase text-[var(--app-muted)]">
-                    Sin foto
+                    {t("progress.detail.noPhoto")}
                   </p>
                 </div>
               </div>
             )}
 
             <div className="min-w-0 flex-1 space-y-1">
-              <SheetStatRow label="Peso" value={checkin.weight ? `${checkin.weight} kg` : "—"} />
-              <SheetStatRow label="Grasa" value={checkin.body_fat_range || "—"} />
+              <SheetStatRow label={t("progress.detail.weight")} value={checkin.weight ? `${checkin.weight} kg` : "—"} />
+              <SheetStatRow label={t("progress.detail.fat")} value={checkin.body_fat_range || "—"} />
               <SheetStatRow
-                label="Confianza"
+                label={t("progress.detail.confidence")}
                 value={checkin.confidence ? `${checkin.confidence}%` : "—"}
               />
-              <SheetStatRow label="Estado" value={checkin.visual_changes ? "Con insight" : "Sin insight"} />
+              <SheetStatRow label={t("progress.detail.status")} value={checkin.visual_changes ? t("progress.detail.withInsight") : t("progress.detail.withoutInsight")} />
             </div>
           </div>
 
@@ -647,7 +662,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
             {checkin.visual_changes && (
               <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Cambios visuales
+                  {t("progress.detail.visualChanges")}
                 </p>
                 <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
                   {checkin.visual_changes}
@@ -658,7 +673,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
             {checkin.recommendation && (
               <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Recomendación
+                  {t("progress.detail.recommendation")}
                 </p>
                 <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
                   {checkin.recommendation}
@@ -673,6 +688,7 @@ function CheckinDetailSheet({ checkin, onClose }) {
 }
 
 function ProgressAIInsights({ latestCheckin, previousCheckin }) {
+  const { t } = useTranslation();
   const visualChanges = latestCheckin?.visual_changes || "";
   const recommendation = latestCheckin?.recommendation || "";
   const bodyFatRange = latestCheckin?.body_fat_range || "";
@@ -687,31 +703,31 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
         <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]">
           <Sparkles size={13} />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            {previousCheckin ? "Comparación IA" : "Análisis IA"}
+            {previousCheckin ? t("progress.ai.comparison") : t("progress.ai.analysis")}
           </p>
-          <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
-            Insight de progreso
+          <h2 className="mt-0.5 break-words text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
+            {t("progress.ai.title")}
           </h2>
 
           {hasAnalysis ? (
-            <p className="mt-1 line-clamp-3 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-              {visualChanges || recommendation || "Análisis disponible para tu último check-in."}
+            <p className="mt-1 break-words whitespace-normal text-[11px] font-medium leading-4 text-[var(--app-muted)]">
+              {visualChanges || recommendation || t("progress.ai.available")}
             </p>
           ) : (
-            <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-              Haz un check-in con foto para ver un resumen IA de tu evolución.
+            <p className="mt-1 break-words whitespace-normal text-[11px] font-medium leading-4 text-[var(--app-muted)]">
+              {t("progress.ai.empty")}
             </p>
           )}
 
           {(bodyFatRange || confidence) && (
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:flex-wrap">
               {bodyFatRange && (
-                <AIInsightChip label="Grasa estimada" value={bodyFatRange} />
+                <AIInsightChip label={t("progress.ai.estimatedFat")} value={bodyFatRange} />
               )}
               {confidence && (
-                <AIInsightChip label="Confianza" value={`${confidence}%`} />
+                <AIInsightChip label={t("progress.ai.confidence")} value={`${confidence}%`} />
               )}
             </div>
           )}
@@ -721,14 +737,15 @@ function ProgressAIInsights({ latestCheckin, previousCheckin }) {
   );
 }
 
-function StrengthProgressSection({ summary, onAction }) {
+function StrengthProgressSection({ summary, onAction, locale }) {
+  const { t } = useTranslation();
   if (!summary?.items?.length) {
     return (
       <PremiumEmptyState
         icon={ChartNoAxesColumnIncreasing}
-        title="Tu evolución de fuerza aparecerá aquí"
-        description="Completa entrenamientos con peso para ver mejoras reales por ejercicio y volumen total."
-        actionLabel="Empezar rutina"
+        title={t("progress.strength.emptyTitle")}
+        description={t("progress.strength.emptyDescription")}
+        actionLabel={t("progress.strength.action")}
         onAction={onAction}
       />
     );
@@ -739,18 +756,18 @@ function StrengthProgressSection({ summary, onAction }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Fuerza
+            {t("progress.strength.badge")}
           </p>
           <h3 className="mt-1 text-[15px] font-black leading-none text-[var(--app-text)]">
-            Evolución de fuerza
+            {t("progress.strength.title")}
           </h3>
           <p className="mt-1 text-[10px] leading-4 text-[var(--app-muted)]">
-            Hasta 5 ejercicios con historial real de volumen y peso.
+            {t("progress.strength.subtitle")}
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-right">
           <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-            Ejercicios
+            {t("progress.strength.exercises")}
           </p>
           <p className="text-[14px] font-black text-[var(--app-primary)]">
             {summary.totalExercises}
@@ -769,8 +786,8 @@ function StrengthProgressSection({ summary, onAction }) {
                 <p className="truncate text-[11px] font-black text-[var(--app-text)]">
                   {item.name}
                 </p>
-                <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  {item.muscle || "Fuerza"}
+              <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
+                  {item.muscle || t("progress.strength.defaultMuscle")}
                 </p>
               </div>
               <span className="shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
@@ -779,14 +796,14 @@ function StrengthProgressSection({ summary, onAction }) {
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <MetricRow label="Inicio" value={item.initialWeight || "--"} unit="kg" />
-              <MetricRow label="Actual" value={item.currentWeight || "--"} unit="kg" />
-              <MetricRow label="Mejor" value={item.bestWeight || "--"} unit="kg" />
-              <MetricRow label="Volumen" value={item.totalVolume || 0} unit="kg" />
+              <MetricRow label={t("progress.strength.start")} value={item.initialWeight || "--"} unit="kg" />
+              <MetricRow label={t("progress.strength.current")} value={item.currentWeight || "--"} unit="kg" />
+              <MetricRow label={t("progress.strength.best")} value={item.bestWeight || "--"} unit="kg" />
+              <MetricRow label={t("progress.strength.volume")} value={item.totalVolume || 0} unit="kg" />
             </div>
 
             <p className="mt-1.5 text-[9px] font-medium text-[var(--app-muted)]">
-              Última fecha: {formatCheckinDate(item.lastCompletedAt)}
+              {t("progress.strength.lastDate")} {formatCheckinDate(item.lastCompletedAt, locale)}
             </p>
           </div>
         ))}
@@ -825,17 +842,18 @@ function SheetStatRow({ label, value }) {
 
 function AIInsightChip({ label, value }) {
   return (
-    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1">
-      <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
+    <div className="inline-flex max-w-full flex-wrap items-start gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1">
+      <p className="min-w-0 break-words whitespace-normal text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
         {label}
       </p>
 
-      <p className="truncate text-[9px] font-black text-[var(--app-text)]">{value}</p>
+      <p className="min-w-0 break-words whitespace-normal text-[9px] font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }
 
 function ProgressWeightChart({ checkins }) {
+  const { t } = useTranslation();
   const weightLogs = checkins
     .filter((checkin) => Number(checkin.weight) > 0)
     .slice()
@@ -854,10 +872,10 @@ function ProgressWeightChart({ checkins }) {
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Check-ins
+            {t("progress.chart.badge")}
           </p>
           <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
-            Evolución de peso
+            {t("progress.chart.title")}
           </h2>
         </div>
 
@@ -867,9 +885,9 @@ function ProgressWeightChart({ checkins }) {
       {canChart ? (
         <>
           <div className="grid grid-cols-3 gap-1.5">
-            <WeightSummaryChip label="Inicial" value={`${firstWeight} kg`} />
-            <WeightSummaryChip label="Actual" value={`${latestWeight} kg`} />
-            <WeightSummaryChip label="Cambio" value={formatSignedKg(totalChange)} />
+            <WeightSummaryChip label={t("progress.chart.start")} value={`${firstWeight} kg`} />
+            <WeightSummaryChip label={t("progress.chart.current")} value={`${latestWeight} kg`} />
+            <WeightSummaryChip label={t("progress.chart.change")} value={formatSignedKg(totalChange)} />
           </div>
 
           <div className="mt-2 overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
@@ -877,7 +895,7 @@ function ProgressWeightChart({ checkins }) {
               viewBox="0 0 320 150"
               className="h-[112px] w-full"
               role="img"
-              aria-label="Gráfico de evolución de peso"
+              aria-label={t("progress.chart.weightAria")}
             >
               <path
                 d="M 16 24 H 304 M 16 75 H 304 M 16 126 H 304"
@@ -920,7 +938,7 @@ function ProgressWeightChart({ checkins }) {
               <ChartNoAxesColumnIncreasing size={14} />
             </div>
             <p className="text-[11px] font-bold leading-4 text-[var(--app-muted)]">
-              Necesitas al menos 2 check-ins con peso para ver la tendencia.
+              {t("progress.chart.empty")}
             </p>
           </div>
         </SurfaceCard>
@@ -943,7 +961,8 @@ function WeightSummaryChip({ label, value }) {
   );
 }
 
-function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
+function ProgressVisualCompare({ firstCheckin, latestCheckin, locale }) {
+  const { t } = useTranslation();
   const firstImage = getCheckinImage(firstCheckin);
   const latestImage = getCheckinImage(latestCheckin);
   const canCompare =
@@ -958,10 +977,10 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Check-ins
+            {t("progress.compare.badge")}
           </p>
           <h2 className="mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">
-            Tu evolución
+            {t("progress.compare.title")}
           </h2>
         </div>
 
@@ -970,17 +989,19 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
 
       {canCompare ? (
         <div className="grid grid-cols-2 gap-1.5">
-          <ProgressPhotoTile
-            label="Inicial"
+            <ProgressPhotoTile
+              label={t("progress.compare.start")}
             image={firstImage}
             date={firstCheckin.created_at || firstCheckin.createdAt}
+            locale={locale}
           />
 
           <ProgressPhotoTile
-            label="Actual"
+            label={t("progress.compare.current")}
             image={latestImage}
             date={latestCheckin.created_at || latestCheckin.createdAt}
             active
+            locale={locale}
           />
         </div>
       ) : (
@@ -990,7 +1011,7 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
               <Sparkles size={14} />
             </div>
             <p className="text-[11px] font-bold leading-4 text-[var(--app-muted)]">
-              Necesitas más check-ins para comparar evolución.
+              {t("progress.compare.empty")}
             </p>
           </div>
         </SurfaceCard>
@@ -999,7 +1020,8 @@ function ProgressVisualCompare({ firstCheckin, latestCheckin }) {
   );
 }
 
-function ProgressPhotoTile({ label, image, date, active = false }) {
+function ProgressPhotoTile({ label, image, date, locale, active = false }) {
+  const { t } = useTranslation();
   return (
     <div
       className={`overflow-hidden rounded-xl border bg-[var(--app-surface)] ${
@@ -1009,7 +1031,7 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
       <div className="relative aspect-[4/5] overflow-hidden bg-[var(--app-surface)]">
         <img
           src={image}
-          alt={`Foto ${label.toLowerCase()} de progreso`}
+          alt={t("progress.compare.photoAlt", { label })}
           className="h-full w-full object-contain p-2"
         />
 
@@ -1021,7 +1043,7 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
 
         <div className="absolute bottom-1.5 left-1.5 right-1.5 rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 backdrop-blur">
           <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-            {formatCheckinDate(date)}
+            {formatCheckinDate(date, locale)}
           </p>
         </div>
       </div>
@@ -1030,12 +1052,13 @@ function ProgressPhotoTile({ label, image, date, active = false }) {
 }
 
 function EmptyState({ onAction }) {
+  const { t } = useTranslation();
   return (
     <PremiumEmptyState
       icon={Scale}
-      title="Tu progreso aparecerá aquí"
-      description="Guarda tu primer check-in para empezar a comparar peso, fotos y cambios corporales."
-      actionLabel="Crear check-in"
+      title={t("progress.empty.title")}
+      description={t("progress.empty.description")}
+      actionLabel={t("progress.empty.action")}
       onAction={onAction}
       className="py-8"
     />
@@ -1059,10 +1082,9 @@ function getCheckinImage(checkin) {
   );
 }
 
-function formatCheckinDate(date) {
-  if (!date) return "Sin fecha";
-
-  return new Date(date).toLocaleDateString("es-ES", {
+function formatCheckinDate(date, locale = "es-ES") {
+  if (!date) return locale.startsWith("en") ? "No date" : "Sin fecha";
+  return new Date(date).toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",

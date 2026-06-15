@@ -10,6 +10,151 @@
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos del servicio"
   },
+  "progress": {
+    "backToDashboard": "Panel",
+    "badge": "Evolución IA",
+    "title": "Progreso",
+    "subtitle": "Peso, fotos y tendencia corporal.",
+    "currentWeight": "Peso actual",
+    "start": "Inicio",
+    "records": "Registros",
+    "lastChange": "Últ. cambio",
+    "cacheNotice": "Mostrando progreso guardado en este dispositivo.",
+    "deleteDialog": {
+      "title": "Eliminar check-in",
+      "description": "Se eliminará este registro de progreso y su foto asociada. Esta acción no se puede deshacer.",
+      "confirm": "Eliminar"
+    },
+    "tabs": {
+      "summary": "Resumen",
+      "photos": "Fotos",
+      "chart": "Gráfica",
+      "history": "Hist."
+    },
+    "stats": {
+      "current": "Actual",
+      "start": "Inicio",
+      "change": "Cambio",
+      "records": "Registros"
+    },
+    "chart": {
+      "miniWeightAria": "Mini gráfica de peso",
+      "noTrend": "Sin tendencia",
+      "badge": "Registros",
+      "title": "Evolución de peso",
+      "start": "Inicial",
+      "current": "Actual",
+      "change": "Cambio",
+      "weightAria": "Gráfico de evolución de peso",
+      "empty": "Necesitas al menos 2 check-ins con peso para ver la tendencia."
+    },
+    "history": {
+      "count_one": "{{count}} registro",
+      "count_other": "{{count}} registros",
+      "title": "Historial",
+      "checkinImageAlt": "Check-in de progreso",
+      "deleteAria": "Eliminar check-in",
+      "pendingWeight": "Peso pendiente",
+      "fat": "Grasa",
+      "confidence": "Conf."
+    },
+    "detail": {
+      "ariaLabel": "Análisis completo del check-in",
+      "title": "Detalle corporal",
+      "closeAria": "Cerrar análisis",
+      "noPhoto": "Sin foto",
+      "weight": "Peso",
+      "fat": "Grasa",
+      "confidence": "Confianza",
+      "status": "Estado",
+      "withInsight": "Con insight",
+      "withoutInsight": "Sin insight",
+      "visualChanges": "Cambios visuales",
+      "recommendation": "Recomendación",
+      "selectedImageAlt": "Check-in seleccionado"
+    },
+    "ai": {
+      "comparison": "Comparación IA",
+      "analysis": "Análisis IA",
+      "title": "Insight de progreso",
+      "available": "Análisis disponible para tu último check-in.",
+      "empty": "Haz un check-in con foto para ver un resumen IA de tu evolución.",
+      "estimatedFat": "Grasa estimada",
+      "confidence": "Confianza"
+    },
+    "strength": {
+      "emptyTitle": "Tu evolución de fuerza aparecerá aquí",
+      "emptyDescription": "Completa entrenamientos con peso para ver mejoras reales por ejercicio y volumen total.",
+      "action": "Empezar rutina",
+      "badge": "Fuerza",
+      "title": "Evolución de fuerza",
+      "subtitle": "Hasta 5 ejercicios con historial real de volumen y peso.",
+      "exercises": "Ejercicios",
+      "defaultMuscle": "Fuerza",
+      "start": "Inicio",
+      "current": "Actual",
+      "best": "Mejor",
+      "volume": "Volumen",
+      "lastDate": "Última fecha:"
+    },
+    "compare": {
+      "badge": "Registros",
+      "title": "Tu evolución",
+      "start": "Inicial",
+      "current": "Actual",
+      "empty": "Necesitas más check-ins para comparar evolución.",
+      "photoAlt": "Foto {{label}} de progreso"
+    },
+    "empty": {
+      "title": "Tu progreso aparecerá aquí",
+      "description": "Guarda tu primer check-in para empezar a comparar peso, fotos y cambios corporales.",
+      "action": "Crear check-in"
+    }
+  },
+  "resetPassword": {
+    "badge": "Acceso seguro",
+    "backToLogin": "Volver",
+    "brand": "Nutri Smart Coach",
+    "title": "Nueva contraseña",
+    "subtitle": "Crea una contraseña segura para volver a entrar en tu cuenta.",
+    "fields": {
+      "password": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña"
+    },
+    "placeholders": {
+      "password": "Mínimo 6 caracteres",
+      "confirmPassword": "Repite tu contraseña"
+    },
+    "loading": "Actualizando...",
+    "submit": "Actualizar contraseña",
+    "goLogin": "Ir al inicio",
+    "success": "Contraseña actualizada correctamente.",
+    "errors": {
+      "minLength": "La nueva contraseña debe tener al menos 6 caracteres.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "invalidLink": "El enlace ha caducado o no es válido. Solicita uno nuevo desde Iniciar sesión.",
+      "updateFailed": "No pudimos actualizar tu contraseña: {{error}}"
+    }
+  },
+  "mealItem": {
+    "done": "✔ Hecho",
+    "mark": "Marcar",
+    "macros": {
+      "calories": "Calorías",
+      "protein": "Proteína",
+      "carbs": "Carbs",
+      "fat": "Grasas"
+    }
+  },
+  "dayCard": {
+    "progress": "Progreso: {{completed}} / {{total}} comidas ({{percent}}%)",
+    "macros": {
+      "calories": "{{value}} kcal",
+      "protein": "{{value}}g",
+      "carbs": "{{value}}g",
+      "fat": "{{value}}g"
+    }
+  },
   "login": {
     "brand": "Nutri Smart Coach",
     "title": "Entra",
@@ -320,6 +465,400 @@
       "historyDesc": "Comidas guardadas",
       "progress": "Progreso",
       "progressDesc": "Peso y medidas"
+    }
+  },
+  "profile": {
+    "cards": {
+      "profile": {
+        "title": "Datos personales",
+        "description": "Objetivo, nivel y macros."
+      },
+      "creatorPanel": {
+        "title": "Panel de Creadores",
+        "description": "Gana dinero con tu comunidad."
+      },
+      "ai": {
+        "title": "IA y Nutrición",
+        "description": "Asistente nutricional y recomendaciones."
+      },
+      "premium": {
+        "title": "Premium",
+        "description": "Límites ampliados y acceso oficial."
+      },
+      "customization": {
+        "title": "Personalización",
+        "description": "Ajusta el estilo visual de la app."
+      },
+      "legal": {
+        "title": "Privacidad y legal",
+        "description": "Consulta políticas, términos y datos legales."
+      },
+      "security": {
+        "title": "Cuenta y seguridad",
+        "description": "Contraseña, sesión y seguridad."
+      }
+    },
+    "progress": {
+      "badge": "PROGRESO",
+      "levelLabel": "Nivel {{level}}",
+      "loading": "Calculando tu progreso...",
+      "xpLabel": "{{xp}} XP · faltan {{remainingXp}} para el nivel {{nextLevel}}",
+      "nextLevel": "Próximo nivel",
+      "nextMilestone": "Tu siguiente hito",
+      "nextMilestoneDescription": "Te faltan {{remainingXp}} XP para avanzar.",
+      "streak": "Racha de {{streak}} días",
+      "meals": "{{count}} comidas",
+      "checkins": "{{count}} check-ins",
+      "workouts": "{{count}} entrenos",
+      "center": "Centro de progreso"
+    }
+  },
+  "progressHub": {
+    "badge": "CENTRO DE PROGRESO",
+    "title": "Sala de evolución",
+    "subtitle": "Historial, misiones y logros con datos reales.",
+    "back": "Volver",
+    "currentLevel": {
+      "badge": "Nivel actual",
+      "levelLabel": "Nivel {{level}}",
+      "loading": "Calculando tu nivel...",
+      "xpAccumulated": "Has acumulado {{xp}} XP."
+    },
+    "progress": {
+      "title": "Progreso hacia el siguiente nivel"
+    },
+    "missions": {
+      "title": "Misiones para Nivel {{nextLevel}}",
+      "subtitle": "Completa objetivos para desbloquear el siguiente nivel.",
+      "meals": "Comidas",
+      "checkins": "Check-ins",
+      "workouts": "Entrenos",
+      "diets": "Dietas",
+      "completed": "Completado",
+      "remaining": "Faltan {{remaining}}"
+    },
+    "streak": {
+      "title": "Racha actual",
+      "subtitle": "Cadena de días consecutivos con actividad.",
+      "value": "{{days}} días",
+      "active": "Tu racha actual está activa."
+    },
+    "achievements": {
+      "unlockedTitle": "Logros desbloqueados",
+      "unlockedSubtitle": "Recompensas ya ganadas dentro de tu historial.",
+      "lockedTitle": "Próximos logros",
+      "lockedSubtitle": "Recompensas futuras y bloqueadas.",
+      "unlocked": "Desbloqueado",
+      "locked": "Bloqueado",
+      "emptyTitle": "Sin logros aún",
+      "emptyDescription": "Sigue acumulando actividad para desbloquear tus primeras recompensas.",
+      "first_meal": {
+        "label": "Primera comida analizada",
+        "description": "Analiza tu primera comida."
+      },
+      "meals_10": {
+        "label": "10 comidas analizadas",
+        "description": "Mantén el ritmo con 10 análisis de comida."
+      },
+      "first_checkin": {
+        "label": "Primer check-in",
+        "description": "Completa tu primer check-in corporal."
+      },
+      "checkins_5": {
+        "label": "5 check-ins completados",
+        "description": "Refuerza la constancia con 5 check-ins."
+      },
+      "first_workout": {
+        "label": "Primer entreno completado",
+        "description": "Completa tu primer entrenamiento."
+      },
+      "workouts_5": {
+        "label": "5 entrenos completados",
+        "description": "Suma 5 sesiones completadas."
+      },
+      "first_diet": {
+        "label": "Primera dieta creada",
+        "description": "Genera tu primera dieta IA."
+      },
+      "streak_3": {
+        "label": "3 días seguidos",
+        "description": "Mantén 3 días consecutivos de actividad."
+      },
+      "streak_7": {
+        "label": "7 días seguidos",
+        "description": "Consigue una semana completa de constancia."
+      },
+      "level_2": {
+        "label": "Nivel 2",
+        "description": "Alcanza el Nivel 2."
+      },
+      "level_3": {
+        "label": "Nivel 3",
+        "description": "Alcanza el Nivel 3."
+      },
+      "level_4": {
+        "label": "Nivel 4",
+        "description": "Alcanza el Nivel 4."
+      },
+      "level_5": {
+        "label": "Nivel 5",
+        "description": "Alcanza el Nivel 5."
+      }
+    },
+    "conditions": {
+      "level": "Alcanza el nivel {{target}}",
+      "streak": "Mantén {{target}} días seguidos",
+      "mealsCount": "Analiza {{target}} comidas",
+      "checkinsCount": "Completa {{target}} check-ins",
+      "workoutsCount": "Completa {{target}} entrenos",
+      "dietPlansCount": "Genera {{target}} dietas",
+      "locked": "Requisitos pendientes"
+    }
+  },
+  "creatorPanel": {
+    "platform": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube",
+      "other": "Otro"
+    },
+    "marketing": {
+      "badge": "PROGRAMA DE CREADORES",
+      "title": "Gana dinero con tu comunidad",
+      "commission": "30% de comisión durante 12 meses",
+      "reviewTime": "Respuesta en 24-72 horas"
+    },
+    "loading": {
+      "badge": "Cargando",
+      "title": "Estamos preparando tu panel",
+      "subtitle": "Comprobamos tu estado, tu código y tu progreso como creador.",
+      "panel": "Cargando panel..."
+    },
+    "approved": {
+      "title": "Panel de creadores activo",
+      "subtitle": "Tu código está listo para compartir y generar ingresos.",
+      "refreshing": "Actualizando métricas..."
+    },
+    "status": {
+      "active": "ACTIVO"
+    },
+    "cta": {
+      "join": "Crear código",
+      "replyTime": "Respuesta en 24-72 horas"
+    },
+    "application": {
+      "title": "Crear código",
+      "subtitle": "Cuéntanos dónde compartes contenido y revisaremos tu solicitud.",
+      "platform": "Plataforma",
+      "profile": "Perfil",
+      "profilePlaceholder": "Tu usuario o enlace público",
+      "followers": "Seguidores",
+      "proof": "Prueba opcional",
+      "proofPlaceholder": "Enlace a una publicación, bio o captura",
+      "followersHint": "Necesitas al menos 5.000 seguidores para solicitar el acceso."
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "sending": "Enviando...",
+      "send": "Enviar solicitud",
+      "requestAgain": "Solicitar de nuevo",
+      "retry": "Reintentar",
+      "copy": "Copiar",
+      "share": "Compartir",
+      "saving": "Guardando...",
+      "saveCode": "Guardar código"
+    },
+    "rejected": {
+      "title": "Solicitud rechazada",
+      "subtitle": "Puedes volver a enviarla cuando actualices tu perfil o tu actividad."
+    },
+    "profileRequired": {
+      "title": "Antes de activar tu código...",
+      "subtitle": "Debes completar tu perfil para compartir tu código de creador.",
+      "cta": "Completar perfil"
+    },
+    "earnings": {
+      "title": "Ingresos",
+      "total": "Total",
+      "available": "Disponible",
+      "withdrawalHint": "Umbral de retiro: {{amount}}"
+    },
+    "code": {
+      "title": "Código de creador",
+      "customized": "Personalizado",
+      "edit": "Editar código",
+      "subtitle": "Comparte tu código con tu comunidad.",
+      "trialDays": "15 días gratis",
+      "commission": "30% comisión"
+    },
+    "stats": {
+      "usersWithCode": "Usuarios con código",
+      "premiumActive": "Premium activos",
+      "commissionAccumulated": "Comisión acumulada",
+      "availableToWithdraw": "Disponible para retirar"
+    },
+    "payments": {
+      "title": "Pagos",
+      "statusLabel": "Estado:",
+      "ready": "Listo para solicitar",
+      "pending": "Solicitud pendiente",
+      "waiting": "Esperando mínimo",
+      "available": "Disponible",
+      "pendingBadge": "PENDIENTE",
+      "waitingBadge": "ESPERANDO",
+      "pendingToConfirm": "Pendiente por confirmar",
+      "minimumWithdrawal": "Mínimo de retiro",
+      "pendingRequest": "Solicitud en curso",
+      "requested": "Solicitud enviada",
+      "requestWithdrawal": "Solicitar retiro"
+    },
+    "history": {
+      "title": "Historial de comisiones",
+      "payment": "Pago"
+    },
+    "performance": {
+      "title": "Rendimiento",
+      "linkClicks": "Clicks del enlace",
+      "registrations": "Registros",
+      "premium": "Premium",
+      "conversion": "Conversión"
+    },
+    "terms": {
+      "summary": "Los pagos se calculan sobre suscripciones confirmadas y se revisan según las condiciones del programa."
+    },
+    "activation": {
+      "title": "Activando tu código",
+      "subtitle": "Estamos finalizando la configuración. Si ya está listo, vuelve a intentarlo."
+    },
+    "codeEditor": {
+      "badge": "Editor",
+      "title": "Personalizar código",
+      "subtitle": "Elige un código fácil de compartir.",
+      "label": "Nuevo código",
+      "placeholder": "ALEXISFIT"
+    },
+    "review": {
+      "title": "Solicitud en revisión",
+      "subtitle": "Tu solicitud está siendo revisada por el equipo.",
+      "steps": {
+        "received": "Recibida",
+        "reviewing": "Revisando",
+        "approval": "Aprobación"
+      },
+      "back": "Volver"
+    },
+    "eligibility": {
+      "title": "Requisitos",
+      "items": {
+        "followers": "Mínimo 5.000 seguidores",
+        "publicProfile": "Perfil público activo",
+        "originalContent": "Contenido original y activo",
+        "rules": "Cumplimiento de las normas"
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "steps": "5 pasos",
+      "step1": "Solicita el acceso",
+      "step2": "Verificamos tu perfil",
+      "step3": "Creamos tu código",
+      "step4": "Compártelo con tu comunidad",
+      "step5": "Gana comisiones"
+    },
+    "earningsPotential": {
+      "title": "Potencial de ingresos",
+      "subtitle": "Calcula una estimación aproximada según tu comunidad.",
+      "premiumGenerated": "Premium generados",
+      "estimatedCommission": "Comisión estimada",
+      "footer": "La estimación depende de los usuarios que terminen su suscripción.",
+      "sliderAria": "Premium generados"
+    },
+    "benefits": {
+      "title": "Qué obtienes",
+      "commission": "30% de comisión",
+      "code": "Código personalizado",
+      "dashboard": "Panel con métricas",
+      "tracking": "Seguimiento de clics"
+    },
+    "verification": {
+      "title": "Verificación",
+      "items": {
+        "manual": "Revisión manual",
+        "antifraud": "Anti-fraude",
+        "payments": "Pagos confirmados",
+        "conversions": "Conversiones reales"
+      }
+    },
+    "legal": {
+      "title": "Condiciones legales",
+      "items": {
+        "acceptance": "Aceptas las reglas del programa.",
+        "terms": "Aceptas los términos del programa.",
+        "fraud": "No se permite fraude ni abuso.",
+        "responsibilities": "Eres responsable del contenido y la promoción."
+      },
+      "acceptTerms": "Acepto los términos y condiciones",
+      "viewTerms": "Ver términos"
+    },
+    "errors": {
+      "termsRequired": "Debes aceptar los términos para continuar.",
+      "load": "No pudimos cargar el panel de creadores.",
+      "submitApplication": "No pudimos enviar tu solicitud.",
+      "copyCode": "No pudimos copiar el código.",
+      "shareCode": "No pudimos compartir el código.",
+      "requestWithdrawal": "No pudimos solicitar el retiro.",
+      "updateCode": "No pudimos actualizar el código."
+    },
+    "success": {
+      "applicationSubmitted": "Solicitud enviada correctamente.",
+      "codeCopied": "Código copiado.",
+      "withdrawalRequested": "Solicitud enviada.",
+      "codeUpdated": "Código actualizado."
+    }
+  },
+  "referralReward": {
+    "banner": {
+      "badge": "CÓDIGO APLICADO",
+      "title": "Código aplicado",
+      "creatorTitle": "Código de creador aplicado",
+      "headline": "{{title}}: obtendrás {{trialDays}} días Premium gratis.",
+      "description": "Se requiere método de pago y puedes cancelar antes del primer cobro."
+    },
+    "shareTitle": "NutriSmart Coach",
+    "shareText": "Únete con mi código {{code}} y consigue {{trialDays}} días Premium gratis.",
+    "card": {
+      "badge": "RECOMPENSA PREMIUM",
+      "title": "Gana 1 mes Premium gratis",
+      "subtitle": "Consigue 1 mes Premium gratis al invitar a 3 amigos Premium.",
+      "heroHint": "Comparte tu código y gana recompensas cuando tus invitados se activen.",
+      "loading": "Cargando recompensa...",
+      "generating": "Generando...",
+      "createCode": "Crear mi código",
+      "invitedTrial": "Invitado: 7 días Premium gratis.",
+      "copy": "Copiar código",
+      "share": "Compartir",
+      "hideCode": "Ocultar código",
+      "progress": "{{current}}/{{total}} amigos Premium",
+      "confirmedPaymentsText": "Cuentan los pagos Premium confirmados.",
+      "rewardUnlockedTitle": "Recompensa desbloqueada",
+      "rewardUnlockedBody": "Ya tienes 1 mes Premium gratis disponible.",
+      "claiming": "Reclamando...",
+      "claimReward": "Reclamar recompensa",
+      "viewCode": "Ver código",
+      "noCodeRule": "Crea tu código para empezar a invitar amigos."
+    },
+    "success": {
+      "codeCreated": "Código creado correctamente.",
+      "rewardClaimed": "Recompensa reclamada.",
+      "codeCopied": "Código copiado.",
+      "copiedToShare": "Texto copiado para compartir."
+    },
+    "errors": {
+      "loadStats": "No pudimos cargar tus estadísticas.",
+      "createCode": "No pudimos crear tu código.",
+      "claimReward": "No pudimos reclamar la recompensa.",
+      "copyCode": "No pudimos copiar el código.",
+      "prepareShare": "No pudimos preparar el contenido para compartir."
     }
   },
   "premium": {

@@ -10,6 +10,151 @@
     "privacyPolicy": "Privacy policy",
     "termsOfService": "Terms of service"
   },
+  "progress": {
+    "backToDashboard": "Dashboard",
+    "badge": "AI evolution",
+    "title": "Progress",
+    "subtitle": "Weight, photos and body trend.",
+    "currentWeight": "Current weight",
+    "start": "Start",
+    "records": "Records",
+    "lastChange": "Last change",
+    "cacheNotice": "Showing progress saved on this device.",
+    "deleteDialog": {
+      "title": "Delete check-in",
+      "description": "This progress record and its associated photo will be deleted. This action cannot be undone.",
+      "confirm": "Delete"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "photos": "Photos",
+      "chart": "Chart",
+      "history": "History"
+    },
+    "stats": {
+      "current": "Current",
+      "start": "Start",
+      "change": "Change",
+      "records": "Records"
+    },
+    "chart": {
+      "miniWeightAria": "Mini weight chart",
+      "noTrend": "No trend",
+      "badge": "Check-ins",
+      "title": "Weight progress",
+      "start": "Initial",
+      "current": "Current",
+      "change": "Change",
+      "weightAria": "Weight progress chart",
+      "empty": "You need at least 2 weight check-ins to see the trend."
+    },
+    "history": {
+      "count_one": "{{count}} record",
+      "count_other": "{{count}} records",
+      "title": "History",
+      "checkinImageAlt": "Progress check-in",
+      "deleteAria": "Delete check-in",
+      "pendingWeight": "Weight pending",
+      "fat": "Fat",
+      "confidence": "Conf."
+    },
+    "detail": {
+      "ariaLabel": "Full check-in analysis",
+      "title": "Body detail",
+      "closeAria": "Close analysis",
+      "noPhoto": "No photo",
+      "weight": "Weight",
+      "fat": "Fat",
+      "confidence": "Confidence",
+      "status": "Status",
+      "withInsight": "With insight",
+      "withoutInsight": "Without insight",
+      "visualChanges": "Visual changes",
+      "recommendation": "Recommendation",
+      "selectedImageAlt": "Selected check-in"
+    },
+    "ai": {
+      "comparison": "AI comparison",
+      "analysis": "AI analysis",
+      "title": "Progress insight",
+      "available": "Analysis available for your latest check-in.",
+      "empty": "Upload a photo check-in to see an AI summary of your progress.",
+      "estimatedFat": "Estimated fat",
+      "confidence": "Confidence"
+    },
+    "strength": {
+      "emptyTitle": "Your strength progress will appear here",
+      "emptyDescription": "Complete weighted workouts to see real improvements by exercise and total volume.",
+      "action": "Start routine",
+      "badge": "Strength",
+      "title": "Strength progress",
+      "subtitle": "Up to 5 exercises with real volume and weight history.",
+      "exercises": "Exercises",
+      "defaultMuscle": "Strength",
+      "start": "Start",
+      "current": "Current",
+      "best": "Best",
+      "volume": "Volume",
+      "lastDate": "Last date:"
+    },
+    "compare": {
+      "badge": "Check-ins",
+      "title": "Your progress",
+      "start": "Initial",
+      "current": "Current",
+      "empty": "You need more check-ins to compare progress.",
+      "photoAlt": "{{label}} progress photo"
+    },
+    "empty": {
+      "title": "Your progress will appear here",
+      "description": "Save your first check-in to start comparing weight, photos and body changes.",
+      "action": "Create check-in"
+    }
+  },
+  "resetPassword": {
+    "badge": "Secure access",
+    "backToLogin": "Login",
+    "brand": "Nutri Smart Coach",
+    "title": "New password",
+    "subtitle": "Create a secure password to get back into your account.",
+    "fields": {
+      "password": "New password",
+      "confirmPassword": "Confirm password"
+    },
+    "placeholders": {
+      "password": "At least 6 characters",
+      "confirmPassword": "Repeat your password"
+    },
+    "loading": "Updating...",
+    "submit": "Update password",
+    "goLogin": "Go to login",
+    "success": "Password updated successfully.",
+    "errors": {
+      "minLength": "The new password must be at least 6 characters long.",
+      "mismatch": "Passwords do not match.",
+      "invalidLink": "The link has expired or is not valid. Request a new one from Login.",
+      "updateFailed": "We could not update your password: {{error}}"
+    }
+  },
+  "mealItem": {
+    "done": "✔ Done",
+    "mark": "Mark",
+    "macros": {
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    }
+  },
+  "dayCard": {
+    "progress": "Progress: {{completed}} / {{total}} meals ({{percent}}%)",
+    "macros": {
+      "calories": "{{value}} kcal",
+      "protein": "{{value}}g",
+      "carbs": "{{value}}g",
+      "fat": "{{value}}g"
+    }
+  },
   "login": {
     "brand": "Nutri Smart Coach",
     "title": "Sign in",
@@ -320,6 +465,400 @@
       "historyDesc": "Saved meals",
       "progress": "Progress",
       "progressDesc": "Weight and measurements"
+    }
+  },
+  "profile": {
+    "cards": {
+      "profile": {
+        "title": "Personal data",
+        "description": "Goal, level and macros."
+      },
+      "creatorPanel": {
+        "title": "Creator Panel",
+        "description": "Earn money with your community."
+      },
+      "ai": {
+        "title": "AI & Nutrition",
+        "description": "Nutrition assistant and recommendations."
+      },
+      "premium": {
+        "title": "Premium",
+        "description": "Expanded limits and official access."
+      },
+      "customization": {
+        "title": "Customization",
+        "description": "Adjust the app visual style."
+      },
+      "legal": {
+        "title": "Privacy & legal",
+        "description": "Check policies, terms and legal data."
+      },
+      "security": {
+        "title": "Account & security",
+        "description": "Password, session and security."
+      }
+    },
+    "progress": {
+      "badge": "PROGRESS",
+      "levelLabel": "Level {{level}}",
+      "loading": "Calculating your progress...",
+      "xpLabel": "{{xp}} XP · {{remainingXp}} left for level {{nextLevel}}",
+      "nextLevel": "Next level",
+      "nextMilestone": "Your next milestone",
+      "nextMilestoneDescription": "You need {{remainingXp}} XP to move forward.",
+      "streak": "{{streak}}-day streak",
+      "meals": "{{count}} meals",
+      "checkins": "{{count}} check-ins",
+      "workouts": "{{count}} workouts",
+      "center": "Progress hub"
+    }
+  },
+  "progressHub": {
+    "badge": "PROGRESS HUB",
+    "title": "Evolution room",
+    "subtitle": "History, missions and achievements with real data.",
+    "back": "Back",
+    "currentLevel": {
+      "badge": "Current level",
+      "levelLabel": "Level {{level}}",
+      "loading": "Calculating your level...",
+      "xpAccumulated": "You have earned {{xp}} XP."
+    },
+    "progress": {
+      "title": "Progress toward the next level"
+    },
+    "missions": {
+      "title": "Missions for Level {{nextLevel}}",
+      "subtitle": "Complete goals to unlock the next level.",
+      "meals": "Meals",
+      "checkins": "Check-ins",
+      "workouts": "Workouts",
+      "diets": "Diets",
+      "completed": "Completed",
+      "remaining": "{{remaining}} left"
+    },
+    "streak": {
+      "title": "Current streak",
+      "subtitle": "Consecutive days with activity.",
+      "value": "{{days}} days",
+      "active": "Your current streak is active."
+    },
+    "achievements": {
+      "unlockedTitle": "Unlocked achievements",
+      "unlockedSubtitle": "Rewards already earned in your history.",
+      "lockedTitle": "Upcoming achievements",
+      "lockedSubtitle": "Future and locked rewards.",
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "emptyTitle": "No achievements yet",
+      "emptyDescription": "Keep building activity to unlock your first rewards.",
+      "first_meal": {
+        "label": "First meal analyzed",
+        "description": "Analyze your first meal."
+      },
+      "meals_10": {
+        "label": "10 meals analyzed",
+        "description": "Keep the pace with 10 meal analyses."
+      },
+      "first_checkin": {
+        "label": "First check-in",
+        "description": "Complete your first body check-in."
+      },
+      "checkins_5": {
+        "label": "5 check-ins completed",
+        "description": "Build consistency with 5 check-ins."
+      },
+      "first_workout": {
+        "label": "First workout completed",
+        "description": "Complete your first workout."
+      },
+      "workouts_5": {
+        "label": "5 workouts completed",
+        "description": "Add 5 completed sessions."
+      },
+      "first_diet": {
+        "label": "First meal plan created",
+        "description": "Generate your first AI meal plan."
+      },
+      "streak_3": {
+        "label": "3-day streak",
+        "description": "Keep activity going for 3 straight days."
+      },
+      "streak_7": {
+        "label": "7-day streak",
+        "description": "Earn a full week of consistency."
+      },
+      "level_2": {
+        "label": "Level 2",
+        "description": "Reach Level 2."
+      },
+      "level_3": {
+        "label": "Level 3",
+        "description": "Reach Level 3."
+      },
+      "level_4": {
+        "label": "Level 4",
+        "description": "Reach Level 4."
+      },
+      "level_5": {
+        "label": "Level 5",
+        "description": "Reach Level 5."
+      }
+    },
+    "conditions": {
+      "level": "Reach level {{target}}",
+      "streak": "Keep a {{target}}-day streak",
+      "mealsCount": "Analyze {{target}} meals",
+      "checkinsCount": "Complete {{target}} check-ins",
+      "workoutsCount": "Complete {{target}} workouts",
+      "dietPlansCount": "Generate {{target}} meal plans",
+      "locked": "Requirements pending"
+    }
+  },
+  "creatorPanel": {
+    "platform": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube",
+      "other": "Other"
+    },
+    "marketing": {
+      "badge": "CREATOR PROGRAM",
+      "title": "Earn money with your community",
+      "commission": "30% commission for 12 months",
+      "reviewTime": "Reply in 24-72 hours"
+    },
+    "loading": {
+      "badge": "Loading",
+      "title": "We are preparing your panel",
+      "subtitle": "We are checking your status, your code and your creator progress.",
+      "panel": "Loading panel..."
+    },
+    "approved": {
+      "title": "Creator panel active",
+      "subtitle": "Your code is ready to share and generate income.",
+      "refreshing": "Refreshing metrics..."
+    },
+    "status": {
+      "active": "ACTIVE"
+    },
+    "cta": {
+      "join": "Create code",
+      "replyTime": "Reply in 24-72 hours"
+    },
+    "application": {
+      "title": "Create code",
+      "subtitle": "Tell us where you share content and we will review your request.",
+      "platform": "Platform",
+      "profile": "Profile",
+      "profilePlaceholder": "Your username or public link",
+      "followers": "Followers",
+      "proof": "Optional proof",
+      "proofPlaceholder": "A link to a post, bio or screenshot",
+      "followersHint": "You need at least 5,000 followers to request access."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "send": "Send request",
+      "requestAgain": "Request again",
+      "retry": "Retry",
+      "copy": "Copy",
+      "share": "Share",
+      "saving": "Saving...",
+      "saveCode": "Save code"
+    },
+    "rejected": {
+      "title": "Request rejected",
+      "subtitle": "You can submit it again when you update your profile or activity."
+    },
+    "profileRequired": {
+      "title": "Before activating your code...",
+      "subtitle": "You must complete your profile to share your creator code.",
+      "cta": "Complete profile"
+    },
+    "earnings": {
+      "title": "Earnings",
+      "total": "Total",
+      "available": "Available",
+      "withdrawalHint": "Withdrawal threshold: {{amount}}"
+    },
+    "code": {
+      "title": "Creator code",
+      "customized": "Customized",
+      "edit": "Edit code",
+      "subtitle": "Share your code with your community.",
+      "trialDays": "15 free days",
+      "commission": "30% commission"
+    },
+    "stats": {
+      "usersWithCode": "Users with code",
+      "premiumActive": "Premium active",
+      "commissionAccumulated": "Accumulated commission",
+      "availableToWithdraw": "Available to withdraw"
+    },
+    "payments": {
+      "title": "Payments",
+      "statusLabel": "Status:",
+      "ready": "Ready to request",
+      "pending": "Pending request",
+      "waiting": "Waiting for minimum",
+      "available": "Available",
+      "pendingBadge": "PENDING",
+      "waitingBadge": "WAITING",
+      "pendingToConfirm": "Pending to confirm",
+      "minimumWithdrawal": "Minimum withdrawal",
+      "pendingRequest": "Request in progress",
+      "requested": "Request sent",
+      "requestWithdrawal": "Request withdrawal"
+    },
+    "history": {
+      "title": "Commission history",
+      "payment": "Payment"
+    },
+    "performance": {
+      "title": "Performance",
+      "linkClicks": "Link clicks",
+      "registrations": "Registrations",
+      "premium": "Premium",
+      "conversion": "Conversion"
+    },
+    "terms": {
+      "summary": "Payments are calculated on confirmed subscriptions and reviewed according to the program conditions."
+    },
+    "activation": {
+      "title": "Activating your code",
+      "subtitle": "We are finishing setup. If it is already ready, try again."
+    },
+    "codeEditor": {
+      "badge": "Editor",
+      "title": "Customize code",
+      "subtitle": "Choose an easy-to-share code.",
+      "label": "New code",
+      "placeholder": "ALEXISFIT"
+    },
+    "review": {
+      "title": "Request under review",
+      "subtitle": "Your request is being reviewed by the team.",
+      "steps": {
+        "received": "Received",
+        "reviewing": "Reviewing",
+        "approval": "Approval"
+      },
+      "back": "Back"
+    },
+    "eligibility": {
+      "title": "Requirements",
+      "items": {
+        "followers": "At least 5,000 followers",
+        "publicProfile": "Active public profile",
+        "originalContent": "Original and active content",
+        "rules": "Rule compliance"
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "steps": "5 steps",
+      "step1": "Request access",
+      "step2": "We verify your profile",
+      "step3": "We create your code",
+      "step4": "Share it with your community",
+      "step5": "Earn commissions"
+    },
+    "earningsPotential": {
+      "title": "Earning potential",
+      "subtitle": "Estimate your approximate income based on your community.",
+      "premiumGenerated": "Premium generated",
+      "estimatedCommission": "Estimated commission",
+      "footer": "The estimate depends on the users who finish their subscription.",
+      "sliderAria": "Premium generated"
+    },
+    "benefits": {
+      "title": "What you get",
+      "commission": "30% commission",
+      "code": "Custom code",
+      "dashboard": "Metrics dashboard",
+      "tracking": "Click tracking"
+    },
+    "verification": {
+      "title": "Verification",
+      "items": {
+        "manual": "Manual review",
+        "antifraud": "Anti-fraud",
+        "payments": "Confirmed payments",
+        "conversions": "Real conversions"
+      }
+    },
+    "legal": {
+      "title": "Legal terms",
+      "items": {
+        "acceptance": "You accept the program rules.",
+        "terms": "You accept the program terms.",
+        "fraud": "Fraud and abuse are not allowed.",
+        "responsibilities": "You are responsible for content and promotion."
+      },
+      "acceptTerms": "I accept the terms and conditions",
+      "viewTerms": "View terms"
+    },
+    "errors": {
+      "termsRequired": "You must accept the terms to continue.",
+      "load": "We could not load the creator panel.",
+      "submitApplication": "We could not submit your request.",
+      "copyCode": "We could not copy the code.",
+      "shareCode": "We could not share the code.",
+      "requestWithdrawal": "We could not request the withdrawal.",
+      "updateCode": "We could not update the code."
+    },
+    "success": {
+      "applicationSubmitted": "Request submitted successfully.",
+      "codeCopied": "Code copied.",
+      "withdrawalRequested": "Request sent.",
+      "codeUpdated": "Code updated."
+    }
+  },
+  "referralReward": {
+    "banner": {
+      "badge": "CODE APPLIED",
+      "title": "Code applied",
+      "creatorTitle": "Creator code applied",
+      "headline": "{{title}}: you will get {{trialDays}} free Premium days.",
+      "description": "A payment method is required and you can cancel before the first charge."
+    },
+    "shareTitle": "NutriSmart Coach",
+    "shareText": "Join with my code {{code}} and get {{trialDays}} free Premium days.",
+    "card": {
+      "badge": "PREMIUM REWARD",
+      "title": "Earn 1 free Premium month",
+      "subtitle": "Get 1 free Premium month by inviting 3 Premium friends.",
+      "heroHint": "Share your code and earn rewards when your invites activate.",
+      "loading": "Loading reward...",
+      "generating": "Generating...",
+      "createCode": "Create my code",
+      "invitedTrial": "Invitee: 7 free Premium days.",
+      "copy": "Copy code",
+      "share": "Share",
+      "hideCode": "Hide code",
+      "progress": "{{current}}/{{total}} Premium friends",
+      "confirmedPaymentsText": "Confirmed Premium payments count.",
+      "rewardUnlockedTitle": "Reward unlocked",
+      "rewardUnlockedBody": "You already have 1 free Premium month available.",
+      "claiming": "Claiming...",
+      "claimReward": "Claim reward",
+      "viewCode": "View code",
+      "noCodeRule": "Create your code to start inviting friends."
+    },
+    "success": {
+      "codeCreated": "Code created successfully.",
+      "rewardClaimed": "Reward claimed.",
+      "codeCopied": "Code copied.",
+      "copiedToShare": "Text copied for sharing."
+    },
+    "errors": {
+      "loadStats": "We could not load your stats.",
+      "createCode": "We could not create your code.",
+      "claimReward": "We could not claim the reward.",
+      "copyCode": "We could not copy the code.",
+      "prepareShare": "We could not prepare the share content."
     }
   },
   "premium": {

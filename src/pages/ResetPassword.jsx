@@ -18,9 +18,11 @@ import {
   SurfaceCard,
 } from "../components/ui";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from "react-i18next";
 
 export function ResetPassword() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     password: "",
     confirmPassword: "",
@@ -39,12 +41,12 @@ export function ResetPassword() {
     setSuccess("");
 
     if (form.password.length < 6) {
-      setError("La nueva contraseña debe tener al menos 6 caracteres.");
+      setError(t("resetPassword.errors.minLength"));
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError(t("resetPassword.errors.mismatch"));
       return;
     }
 
@@ -57,13 +59,13 @@ export function ResetPassword() {
     setLoading(false);
 
     if (updateError) {
-      setError(getResetPasswordErrorMessage(updateError));
+      setError(getResetPasswordErrorMessage(updateError, t));
       return;
     }
 
     await supabase.auth.signOut({ scope: "local" });
     setForm({ password: "", confirmPassword: "" });
-    setSuccess("Contraseña actualizada correctamente.");
+    setSuccess(t("resetPassword.success"));
   }
 
   return (
@@ -75,11 +77,11 @@ export function ResetPassword() {
             icon={<ArrowLeft size={14} />}
             className="w-auto px-2.5 py-1.5 text-[10px]"
           >
-            Login
+            {t("resetPassword.backToLogin")}
           </SecondaryButton>
 
           <MetaBadge icon={<Sparkles size={12} />} className="px-2.5 py-1">
-            Acceso seguro
+            {t("resetPassword.badge")}
           </MetaBadge>
         </div>
 
@@ -95,16 +97,16 @@ export function ResetPassword() {
 
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Nutri Smart Coach
+                  {t("resetPassword.brand")}
                 </p>
                 <h1 className="mt-1 text-[26px] font-black uppercase italic leading-none tracking-tight text-[var(--app-text)]">
-                  Nueva contraseña
+                  {t("resetPassword.title")}
                 </h1>
               </div>
             </div>
 
             <p className="mx-auto mb-4 max-w-[20rem] text-center text-sm font-medium leading-5 text-[var(--app-muted)]">
-              Crea una contraseña segura para volver a entrar en tu cuenta.
+              {t("resetPassword.subtitle")}
             </p>
 
             {error ? (
@@ -121,22 +123,22 @@ export function ResetPassword() {
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <Input
-                label="Nueva contraseña"
+                label={t("resetPassword.fields.password")}
                 name="password"
                 type="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t("resetPassword.placeholders.password")}
                 icon={<Lock size={16} />}
               />
 
               <Input
-                label="Confirmar contraseña"
+                label={t("resetPassword.fields.confirmPassword")}
                 name="confirmPassword"
                 type="password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                placeholder="Repite tu contraseña"
+                placeholder={t("resetPassword.placeholders.confirmPassword")}
                 icon={<ShieldCheck size={16} />}
               />
 
@@ -146,7 +148,7 @@ export function ResetPassword() {
                 type="submit"
                 className="py-3"
               >
-                {loading ? "Actualizando..." : "Actualizar contraseña"}
+                {loading ? t("resetPassword.loading") : t("resetPassword.submit")}
               </PrimaryButton>
             </form>
 
@@ -154,7 +156,7 @@ export function ResetPassword() {
               to="/login"
               className="mt-3 flex w-full items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--app-muted)] transition hover:text-[var(--app-text)] active:scale-[0.98]"
             >
-              Ir al login
+              {t("resetPassword.goLogin")}
             </Link>
           </div>
         </SurfaceCard>
@@ -163,14 +165,14 @@ export function ResetPassword() {
   );
 }
 
-function getResetPasswordErrorMessage(error) {
+function getResetPasswordErrorMessage(error, t) {
   const message = String(error?.message || "").toLowerCase();
 
   if (message.includes("session") || message.includes("jwt")) {
-    return "El enlace ha caducado o no es válido. Solicita uno nuevo desde Login.";
+    return t("resetPassword.errors.invalidLink");
   }
 
-  return "No pudimos actualizar tu contraseña: " + error.message;
+  return t("resetPassword.errors.updateFailed", { error: error.message });
 }
 
 function Input({ label, icon, ...props }) {

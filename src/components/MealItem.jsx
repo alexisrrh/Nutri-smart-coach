@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Flame, Beef, Wheat, Droplets, Clock } from "lucide-react";
 
 export default function MealItem({
@@ -7,6 +8,7 @@ export default function MealItem({
   progress,
   toggleMeal,
 }) {
+  const { t } = useTranslation();
   const image = getMealImage(meal.food);
   const key = `${day}-${index}`;
   const done = progress[key];
@@ -43,7 +45,7 @@ export default function MealItem({
                   : "bg-[var(--app-primary-soft)] text-[var(--app-text)] hover:bg-[var(--app-primary-soft)]"
               }`}
             >
-              {done ? "✔ Hecho" : "Marcar"}
+              {done ? t("mealItem.done") : t("mealItem.mark")}
             </button>
           </div>
 
@@ -58,10 +60,10 @@ export default function MealItem({
       </div>
 
       <div className="grid grid-cols-2 gap-3 p-4 md:grid-cols-4">
-        <MiniMacro icon={<Flame size={16} />} title="Calorías" value={`${meal.calories} kcal`} />
-        <MiniMacro icon={<Beef size={16} />} title="Proteína" value={`${meal.protein} g`} />
-        <MiniMacro icon={<Wheat size={16} />} title="Carbs" value={`${meal.carbs} g`} />
-        <MiniMacro icon={<Droplets size={16} />} title="Grasas" value={`${meal.fat} g`} />
+        <MiniMacro icon={<Flame size={16} />} title={t("mealItem.macros.calories")} value={`${meal.calories} kcal`} />
+        <MiniMacro icon={<Beef size={16} />} title={t("mealItem.macros.protein")} value={`${meal.protein} g`} />
+        <MiniMacro icon={<Wheat size={16} />} title={t("mealItem.macros.carbs")} value={`${meal.carbs} g`} />
+        <MiniMacro icon={<Droplets size={16} />} title={t("mealItem.macros.fat")} value={`${meal.fat} g`} />
       </div>
     </div>
   );

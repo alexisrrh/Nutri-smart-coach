@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Camera,
   Dumbbell,
@@ -16,9 +17,11 @@ import {
 import { useProgressSummary } from "../hooks/progress/useProgressSummary";
 import { AppShell, MetaBadge } from "../components/ui";
 import ReferralInviteCard from "../components/profile/ReferralInviteCard";
+import "../i18n";
 
 export function ProfileSetup() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { summary: progressSummary, loading: loadingProgress } =
     useProgressSummary();
 
@@ -50,47 +53,47 @@ export function ProfileSetup() {
           <div className="space-y-2">
             <NavCard
               icon={<UserRound size={16} />}
-              title="Mi perfil"
-              description="Datos personales, objetivo, nivel y macros."
+              title={t("profile.cards.profile.title")}
+              description={t("profile.cards.profile.description")}
               onClick={() => navigate("/settings/profile")}
             />
                 <NavCard
               icon={<Megaphone size={16} />}
-              title="Panel de Creadores"
-              description="Gana dinero con tu comunidad."
+              title={t("profile.cards.creatorPanel.title")}
+              description={t("profile.cards.creatorPanel.description")}
               onClick={() => navigate("/creator-panel")}
               animatedIcon
               titleClassName="bg-[linear-gradient(90deg,#F5D76E,#D4AF37,#F5D76E)] bg-clip-text text-transparent"
             />
             <NavCard
               icon={<BrainCircuit size={16} />}
-              title="IA y Nutrición"
-              description="Asistente nutricional y recomendaciones."
+              title={t("profile.cards.ai.title")}
+              description={t("profile.cards.ai.description")}
               onClick={() => navigate("/settings/ai")}
             />
         
             <NavCard
               icon={<Sparkles size={16} />}
-              title="Premium"
-              description="Gestión de tu plan y beneficios."
+              title={t("profile.cards.premium.title")}
+              description={t("profile.cards.premium.description")}
               onClick={() => navigate("/premium")}
             />
             <NavCard
               icon={<Palette size={16} />}
-              title="Personalización"
-              description="Apariencia, temas y accesos."
+              title={t("profile.cards.customization.title")}
+              description={t("profile.cards.customization.description")}
               onClick={() => navigate("/settings/theme")}
             />
             <NavCard
               icon={<ShieldCheck size={16} />}
-              title="Privacidad y legal"
-              description="Política, términos y eliminación de datos."
+              title={t("profile.cards.legal.title")}
+              description={t("profile.cards.legal.description")}
               onClick={() => navigate("/settings/legal")}
             />
             <NavCard
               icon={<KeyRound size={16} />}
-              title="Cuenta y seguridad"
-              description="Contraseña, proveedor y cierre de sesión."
+              title={t("profile.cards.security.title")}
+              description={t("profile.cards.security.description")}
               onClick={() => navigate("/settings/security")}
             />
           </div>
@@ -145,6 +148,7 @@ function NavCard({
 }
 
 function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
+  const { t } = useTranslation();
   const xp = progress?.xp ?? 0;
   const remainingXp = progress?.remainingXp ?? 0;
   const nextLevel = progress?.nextLevel ?? 5;
@@ -170,15 +174,15 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <MetaBadge variant="neutral" icon={<BrainCircuit size={11} />}>
-              PROGRESO
+              {t("profile.progress.badge")}
             </MetaBadge>
             <h2 className="mt-1.5 text-[14px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
-              Nivel {level}
+              {t("profile.progress.levelLabel", { level })}
             </h2>
             <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
               {loading
-                ? "Sincronizando progreso..."
-                : `${xp} XP · ${remainingXp} XP para Nivel ${nextLevel}`}
+                ? t("profile.progress.loading")
+                : t("profile.progress.xpLabel", { xp, remainingXp, nextLevel })}
             </p>
           </div>
         </div>
@@ -208,7 +212,7 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
                 {percent}%
               </div>
               <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                Nivel {level}
+                {t("profile.progress.levelLabel", { level })}
               </p>
             </div>
           </div>
@@ -216,13 +220,13 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Próximo nivel
+                  {t("profile.progress.nextLevel")}
                 </p>
                 <p className="mt-1 text-[12px] font-black text-[var(--app-text)]">
-                  Tu siguiente hito
+                  {t("profile.progress.nextMilestone")}
                 </p>
                 <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-                  {remainingXp} XP para el siguiente nivel
+                  {t("profile.progress.nextMilestoneDescription", { remainingXp })}
                 </p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
@@ -238,18 +242,18 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <ProgressStatChip icon={Flame} label={`Racha ${streak}`} />
+              <ProgressStatChip icon={Flame} label={t("profile.progress.streak", { streak })} />
               <ProgressStatChip
                 icon={UtensilsCrossed}
-                label={`${mealsCount} comidas`}
+                label={t("profile.progress.meals", { count: mealsCount })}
               />
               <ProgressStatChip
                 icon={Camera}
-                label={`${checkinsCount} check-ins`}
+                label={t("profile.progress.checkins", { count: checkinsCount })}
               />
               <ProgressStatChip
                 icon={Dumbbell}
-                label={`${workoutsCount} entrenos`}
+                label={t("profile.progress.workouts", { count: workoutsCount })}
               />
             </div>
           </div>
@@ -261,7 +265,7 @@ function ProgressAndAchievementsCard({ loading, onOpenProgress, progress }) {
           className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_92%,transparent))] px-3 py-2 text-[10px] font-semibold tracking-[0.03em] text-[var(--app-text)] shadow-[0_8px_18px_color-mix(in_srgb,var(--app-primary)_18%,transparent),inset_0_1px_0_rgba(255,255,255,0.04)] transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_22px_color-mix(in_srgb,var(--app-primary)_22%,transparent),inset_0_1px_0_rgba(255,255,255,0.05)] active:scale-[0.985]"
         >
           <Sparkles size={12} className="text-[var(--app-primary)] items-center" />
-          <span>Centro de progreso</span>
+          <span>{t("profile.progress.center")}</span>
           <ChevronDown size={11} className="-rotate-90 text-[var(--app-primary)]" />
         </button>
       </div>

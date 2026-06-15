@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -13,9 +14,11 @@ import {
 } from "lucide-react";
 import { AppShell, MetaBadge } from "../components/ui";
 import { useProgressSummary } from "../hooks/progress/useProgressSummary";
+import "../i18n";
 
 export function ProgressHub() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { summary: progress, loading: loadingProgress } = useProgressSummary();
 
   const progressSnapshot = progress || DEFAULT_PROGRESS_SNAPSHOT;
@@ -29,28 +32,28 @@ export function ProgressHub() {
     {
       id: "meals",
       icon: UtensilsCrossed,
-      label: "Comidas",
+      label: t("progressHub.missions.meals"),
       current: nextLevelGoals.meals.current,
       required: nextLevelGoals.meals.required,
     },
     {
       id: "checkins",
       icon: Camera,
-      label: "Check-ins",
+      label: t("progressHub.missions.checkins"),
       current: nextLevelGoals.checkins.current,
       required: nextLevelGoals.checkins.required,
     },
     {
       id: "workouts",
       icon: Dumbbell,
-      label: "Entrenamientos",
+      label: t("progressHub.missions.workouts"),
       current: nextLevelGoals.workouts.current,
       required: nextLevelGoals.workouts.required,
     },
     {
       id: "diets",
       icon: Flame,
-      label: "Dietas",
+      label: t("progressHub.missions.diets"),
       current: nextLevelGoals.diets.current,
       required: nextLevelGoals.diets.required,
     },
@@ -78,13 +81,13 @@ export function ProgressHub() {
             <div className="relative z-10 flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <MetaBadge variant="neutral" icon={<Sparkles size={11} />}>
-                  CENTRO DE PROGRESO
+                    {t("progressHub.badge")}
                 </MetaBadge>
                 <h1 className="mt-1.5 text-[18px] font-black leading-none tracking-tight text-[var(--app-text)]">
-                  Sala de evolución
+                  {t("progressHub.title")}
                 </h1>
                 <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                  Historial, misiones y logros con datos reales.
+                  {t("progressHub.subtitle")}
                 </p>
               </div>
 
@@ -92,9 +95,9 @@ export function ProgressHub() {
                 type="button"
                 onClick={() => navigate("/perfil")}
                 className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_86%,transparent),color-mix(in_srgb,var(--app-card)_92%,transparent))] px-2.5 py-1 text-[9px] font-semibold tracking-[0.03em] text-[var(--app-text)] shadow-[0_8px_18px_color-mix(in_srgb,var(--app-primary)_14%,transparent)] transition duration-200 hover:-translate-y-[1px] active:scale-[0.985]"
-              >
+                >
                 <ArrowLeft size={11} className="text-[var(--app-primary)]" />
-                Volver
+                {t("progressHub.back")}
               </button>
             </div>
           </header>
@@ -113,15 +116,17 @@ export function ProgressHub() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <MetaBadge variant="neutral" icon={<Target size={11} />}>
-                    Nivel actual
+                    {t("progressHub.currentLevel.badge")}
                   </MetaBadge>
                   <h2 className="mt-1.5 text-[14px] font-semibold leading-tight tracking-tight text-[var(--app-text)]">
-                    Nivel {progressSnapshot.level}
+                    {t("progressHub.currentLevel.levelLabel", { level: progressSnapshot.level })}
                   </h2>
                   <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
                     {loadingProgress
-                      ? "Sincronizando progreso..."
-                      : `${progressSnapshot.xp} XP acumulado`}
+                      ? t("progressHub.currentLevel.loading")
+                      : t("progressHub.currentLevel.xpAccumulated", {
+                          xp: progressSnapshot.xp,
+                        })}
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
@@ -154,14 +159,14 @@ export function ProgressHub() {
                       {progressSnapshot.percent}%
                     </div>
                     <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                      Nivel {progressSnapshot.level}
+                      {t("progressHub.currentLevel.levelLabel", { level: progressSnapshot.level })}
                     </p>
                   </div>
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                    Progreso hacia el siguiente nivel
+                    {t("progressHub.progress.title")}
                   </p>
                   <div className="relative mt-2 h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-surface)_90%,transparent)]">
                     <div
@@ -179,10 +184,12 @@ export function ProgressHub() {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Misiones para Nivel {progressSnapshot.nextLevel}
+                  {t("progressHub.missions.title", {
+                    nextLevel: progressSnapshot.nextLevel,
+                  })}
                 </p>
                 <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                  Completa objetivos para desbloquear el siguiente nivel.
+                  {t("progressHub.missions.subtitle")}
                 </p>
               </div>
               <Target size={14} className="text-[var(--app-primary)]" />
@@ -199,10 +206,10 @@ export function ProgressHub() {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Racha actual
+                  {t("progressHub.streak.title")}
                 </p>
               <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                Cadena de días consecutivos con actividad.
+                {t("progressHub.streak.subtitle")}
               </p>
               </div>
               <Flame size={14} className="text-[var(--app-primary)]" />
@@ -212,10 +219,10 @@ export function ProgressHub() {
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-[18px] font-black leading-none text-[var(--app-text)]">
-                    {counters.streak} días
+                    {t("progressHub.streak.value", { days: counters.streak })}
                   </p>
                   <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                    Tu racha actual está activa.
+                    {t("progressHub.streak.active")}
                   </p>
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-[1.1rem] border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)] progress-trophy-glow">
@@ -229,10 +236,10 @@ export function ProgressHub() {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Logros desbloqueados
+                  {t("progressHub.achievements.unlockedTitle")}
                 </p>
                 <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                  Recompensas ya ganadas dentro de tu historial.
+                  {t("progressHub.achievements.unlockedSubtitle")}
                 </p>
               </div>
               <BadgeCheck size={14} className="text-[var(--app-primary)]" />
@@ -257,10 +264,10 @@ export function ProgressHub() {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                  Próximos logros
+                  {t("progressHub.achievements.lockedTitle")}
                 </p>
                 <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                  Recompensas futuras y bloqueadas hasta que completes objetivos.
+                  {t("progressHub.achievements.lockedSubtitle")}
                 </p>
               </div>
               <Lock size={14} className="text-[var(--app-primary)]" />
@@ -296,6 +303,7 @@ function DecorativeParticles() {
 }
 
 function MissionCard({ mission }) {
+  const { t } = useTranslation();
   const required = Math.max(1, Number(mission.required) || 1);
   const current = Math.max(0, Number(mission.current) || 0);
   const completed = current >= required;
@@ -347,37 +355,36 @@ function MissionCard({ mission }) {
           <p
             className={[
               "mt-0.5 text-[9px] font-medium leading-4",
-              completed
-                ? "text-[var(--app-primary)]"
-                : "text-[var(--app-muted)]",
+              completed ? "text-[var(--app-primary)]" : "text-[var(--app-muted)]",
             ].join(" ")}
           >
-            {completed ? "Completado" : `Faltan ${remaining}`}
+            {completed
+              ? t("progressHub.missions.completed")
+              : t("progressHub.missions.remaining", { remaining })}
           </p>
 
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-surface)_90%,transparent)]">
-  <div
-    className="relative h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_55%,white))] shadow-[0_0_10px_var(--app-glow)] transition-all duration-700"
-    style={{
-      width: `${progress}%`,
-    }}
-  >
-    <span className="absolute inset-y-0 right-0 w-6 bg-white/30 blur-[2px]" />
-  </div>
-</div>
+            <div
+              className="relative h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_55%,white))] shadow-[0_0_10px_var(--app-glow)] transition-all duration-700"
+              style={{ width: `${progress}%` }}
+            >
+              <span className="absolute inset-y-0 right-0 w-6 bg-white/30 blur-[2px]" />
+            </div>
           </div>
         </div>
       </div>
-
+    </div>
   );
 }
 
 function AchievementCard({ achievement, unlocked }) {
+  const { t } = useTranslation();
   const progressPercent = Math.max(
     0,
     Math.min(100, Math.round((achievement.current / achievement.target) * 100))
   );
   const AchievementIcon = ACHIEVEMENT_ICON_MAP[achievement.metric] || Trophy;
+  const localizedAchievement = getProgressHubAchievementCopy(t, achievement);
 
   return (
     <div
@@ -404,10 +411,10 @@ function AchievementCard({ achievement, unlocked }) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[11px] font-black leading-tight text-[var(--app-text)]">
-                {achievement.label}
+                {localizedAchievement.label}
               </p>
               <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-                {achievement.description}
+                {localizedAchievement.description}
               </p>
             </div>
 
@@ -419,7 +426,9 @@ function AchievementCard({ achievement, unlocked }) {
                   : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]",
               ].join(" ")}
             >
-              {unlocked ? "Desbloqueado" : `${achievement.current}/${achievement.target}`}
+              {unlocked
+                ? t("progressHub.achievements.unlocked")
+                : `${achievement.current}/${achievement.target}`}
             </span>
           </div>
 
@@ -442,8 +451,10 @@ function AchievementCard({ achievement, unlocked }) {
 }
 
 function LockedRewardCard({ achievement }) {
+  const { t } = useTranslation();
   const AchievementIcon = ACHIEVEMENT_ICON_MAP[achievement.metric] || Trophy;
-  const conditionLabel = getLockedRewardCondition(achievement);
+  const conditionLabel = getLockedRewardCondition(achievement, t);
+  const localizedAchievement = getProgressHubAchievementCopy(t, achievement);
 
   return (
     <div className="relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_84%,transparent),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
@@ -459,7 +470,7 @@ function LockedRewardCard({ achievement }) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[11px] font-black leading-tight text-[var(--app-text)]">
-                {achievement.label}
+                {localizedAchievement.label}
               </p>
               <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
                 {conditionLabel}
@@ -467,12 +478,12 @@ function LockedRewardCard({ achievement }) {
             </div>
 
             <span className="inline-flex shrink-0 items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
-              Bloqueado
+              {t("progressHub.achievements.locked")}
             </span>
           </div>
 
           <p className="mt-1 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-            {achievement.description}
+            {localizedAchievement.description}
           </p>
         </div>
       </div>
@@ -481,6 +492,7 @@ function LockedRewardCard({ achievement }) {
 }
 
 function LockedAchievementsEmptyState({ locked = true }) {
+  const { t } = useTranslation();
   return (
     <div
       className={[
@@ -496,10 +508,10 @@ function LockedAchievementsEmptyState({ locked = true }) {
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-black leading-tight text-[var(--app-text)]">
-            Sin logros visibles todavía
+            {t("progressHub.achievements.emptyTitle")}
           </p>
           <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-            Sigue acumulando actividad para ver nuevas recompensas.
+            {t("progressHub.achievements.emptyDescription")}
           </p>
         </div>
       </div>
@@ -507,32 +519,41 @@ function LockedAchievementsEmptyState({ locked = true }) {
   );
 }
 
-function getLockedRewardCondition(achievement) {
+function getLockedRewardCondition(achievement, t) {
   if (achievement.metric === "level") {
-    return `Alcanza Nivel ${achievement.target}`;
+    return t("progressHub.conditions.level", { target: achievement.target });
   }
 
   if (achievement.metric === "streak") {
-    return `Completa ${achievement.target} días seguidos`;
+    return t("progressHub.conditions.streak", { target: achievement.target });
   }
 
   if (achievement.metric === "mealsCount") {
-    return `Analiza ${achievement.target} comidas`;
+    return t("progressHub.conditions.mealsCount", { target: achievement.target });
   }
 
   if (achievement.metric === "checkinsCount") {
-    return `Completa ${achievement.target} check-ins`;
+    return t("progressHub.conditions.checkinsCount", { target: achievement.target });
   }
 
   if (achievement.metric === "workoutsCount") {
-    return `Termina ${achievement.target} entrenos`;
+    return t("progressHub.conditions.workoutsCount", { target: achievement.target });
   }
 
   if (achievement.metric === "dietPlansCount") {
-    return `Genera ${achievement.target} dietas`;
+    return t("progressHub.conditions.dietPlansCount", { target: achievement.target });
   }
 
-  return "Bloqueado";
+  return t("progressHub.conditions.locked");
+}
+
+function getProgressHubAchievementCopy(t, achievement) {
+  const key = `progressHub.achievements.${achievement.id}`;
+
+  return {
+    label: t(`${key}.label`, { defaultValue: achievement.label }),
+    description: t(`${key}.description`, { defaultValue: achievement.description }),
+  };
 }
 
 const ACHIEVEMENT_ICON_MAP = {

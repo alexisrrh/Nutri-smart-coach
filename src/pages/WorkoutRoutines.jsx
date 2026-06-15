@@ -888,7 +888,7 @@ function CustomRoutinesSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 px-2 py-3 backdrop-blur-md"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60  px-2 py-3 backdrop-blur-md"
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 12px)",
         paddingBottom:
@@ -1656,7 +1656,7 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
   const visibleMistakes = (exercise.mistakes || []).slice(0, 2);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 px-2 pb-[calc(var(--bottom-nav-space)+24px)] backdrop-blur-md">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-2 pb-[calc(var(--bottom-nav-space)+24px)] backdrop-blur-md">
       <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
         <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] flex-col">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
