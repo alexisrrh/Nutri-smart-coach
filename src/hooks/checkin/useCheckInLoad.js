@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../../lib/supabase";
 import {
   getCheckinProcessState,
@@ -8,6 +9,7 @@ import {
 import { getCachedProfile } from "../../services/profileService";
 
 export function useCheckInLoad() {
+  const { t } = useTranslation();
   const isMountedRef = useRef(true);
 
   const [profile, setProfile] = useState(null);
@@ -21,7 +23,9 @@ export function useCheckInLoad() {
 
   const [error, setError] = useState(() => {
     const storedState = getCheckinProcessState();
-    return storedState.status === "error" ? storedState.error || "" : "";
+    return storedState.status === "error"
+      ? localizeCheckinError(storedState.error || "", t)
+      : "";
   });
 
   const [selectedCheckin, setSelectedCheckin] = useState(null);
@@ -41,7 +45,7 @@ export function useCheckInLoad() {
 
     if (userError || !user) {
       if (isMountedRef.current) {
-        setError("Necesitas iniciar sesión para guardar tu check-in físico.");
+        setError(t("checkin.errors.loginRequired"));
         setInitialLoading(false);
       }
       return;
@@ -60,14 +64,14 @@ export function useCheckInLoad() {
       console.error(err);
 
       if (isMountedRef.current) {
-        setError("No se pudo cargar el historial de check-ins.");
+        setError(t("checkin.errors.loadHistory"));
       }
     } finally {
       if (isMountedRef.current) {
         setInitialLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -88,8 +92,7 @@ export function useCheckInLoad() {
             ...storedState,
             status: "error",
             updatedAt: new Date().toISOString(),
-            error:
-              "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.",
+            error: t("checkin.errors.aiTimeout"),
           };
 
           setCheckinProcessState(staleState);
@@ -113,7 +116,7 @@ export function useCheckInLoad() {
 
       if (storedState.status === "error" && storedState.error) {
         setLoading(false);
-        setError(storedState.error);
+        setError(localizeCheckinError(storedState.error, t));
       }
     });
 
@@ -121,7 +124,7 @@ export function useCheckInLoad() {
       cancelled = true;
       isMountedRef.current = false;
     };
-  }, [loadData]);
+  }, [loadData, t]);
 
   useEffect(() => {
     if (!loading) return;
@@ -148,14 +151,16 @@ export function useCheckInLoad() {
       }
 
       if (storedState.status === "error") {
-        setError(storedState.error || "No se pudo guardar el check-in.");
+        setError(
+          localizeCheckinError(storedState.error || t("checkin.errors.saveFailed"), t)
+        );
         setLoading(false);
         clearInterval(intervalId);
       }
     }, 1200);
 
     return () => clearInterval(intervalId);
-  }, [loading]);
+  }, [loading, t]);
 
   return {
     error,
@@ -195,4 +200,44 @@ function mergeCheckinsIntoHistory(history, checkin) {
   );
 
   return [checkin, ...nextHistory];
+}
+
+function localizeCheckinError(message, t) {
+  const normalized = String(message || "").toLowerCase();
+
+  if (!normalized) return "";
+  if (
+    normalized.includes("guardar tu check-in") ||
+    normalized.includes("save the check-in") ||
+    normalized.includes("guardar el check-in") ||
+    normalized.includes("save a check-in")
+  ) {
+    return t("checkin.errors.saveFailed");
+  }
+
+  if (
+    normalized.includes("historial de check-ins") ||
+    normalized.includes("check-in history") ||
+    normalized.includes("loading check-ins")
+  ) {
+    return t("checkin.errors.loadHistory");
+  }
+
+  if (
+    normalized.includes("iniciar sesión") ||
+    normalized.includes("sign in") ||
+    normalized.includes("sign in to save")
+  ) {
+    return t("checkin.errors.loginRequired");
+  }
+
+  if (
+    normalized.includes("tardando demasiado") ||
+    normalized.includes("taking too long") ||
+    normalized.includes("too long")
+  ) {
+    return t("checkin.errors.aiTimeout");
+  }
+
+  return message;
 }

@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, ScanLine, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CheckInLoader({ loading }) {
+  const { t } = useTranslation();
   const [percent, setPercent] = useState(8);
 
-  const steps = ["Foto", "Postura", "Análisis", "Resultado"];
+  const steps = [
+    t("checkin.loader.steps.photo"),
+    t("checkin.loader.steps.posture"),
+    t("checkin.loader.steps.analysis"),
+    t("checkin.loader.steps.result"),
+  ];
 
   useEffect(() => {
     if (!loading) return;
@@ -40,11 +47,11 @@ export function CheckInLoader({ loading }) {
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Analizando físico
+            {t("checkin.loader.title")}
           </p>
 
           <h3 className="mt-0.5 text-base font-black uppercase italic">
-            AI Body Scan
+            {t("checkin.loader.subtitle")}
           </h3>
         </div>
 
@@ -68,7 +75,7 @@ export function CheckInLoader({ loading }) {
             </p>
 
             <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
-              Procesando con IA
+              {t("checkin.loader.processing")}
             </p>
           </div>
         </div>

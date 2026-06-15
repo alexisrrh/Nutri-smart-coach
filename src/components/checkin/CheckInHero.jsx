@@ -1,6 +1,9 @@
 import { Sparkles, ScanFace } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CheckInHero({ profile }) {
+  const { t } = useTranslation();
+
   return (
     <div className="relative overflow-hidden rounded-[32px] border border-[var(--app-border)] bg-[var(--app-card)] px-4 py-3 shadow-2xl shadow-black/20">
       <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
@@ -8,7 +11,7 @@ export function CheckInHero({ profile }) {
       <div className="relative z-10">
         <div className="mb-3 inline-flex items-center gap-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-[var(--app-primary)]">
           <Sparkles size={12} />
-          AI Body Analysis
+          {t("checkin.hero.badge")}
         </div>
 
         <div className="flex items-start gap-3">
@@ -21,17 +24,17 @@ export function CheckInHero({ profile }) {
 
           <div className="min-w-0 flex-1">
             <h1 className="text-[28px] font-black uppercase italic leading-[0.9] tracking-tight text-[var(--app-text)] sm:text-4xl">
-              Check-in corporal
+              {t("checkin.hero.title")}
             </h1>
 
             <p className="mt-2 text-[11px] leading-5 text-[var(--app-muted)]">
-              Analiza tu físico y compara tu progreso semanal con IA.
+              {t("checkin.hero.subtitle")}
             </p>
 
             <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-              Objetivo
+              {t("checkin.hero.objectiveLabel")}
               <span className="text-[var(--app-primary)]">
-                {profile?.goal || "Activo"}
+                {profile?.goal || t("checkin.hero.objectiveFallback")}
               </span>
             </div>
           </div>

@@ -1,9 +1,21 @@
 import { useEffect } from "react";
 import { Check, TriangleAlert, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ExerciseMediaFrame from "./ExerciseMediaFrame";
 import { getExerciseMedia } from "../../services/exerciseMediaService";
+import {
+  getWorkoutLanguage,
+  translateEquipmentLabel,
+  translateExerciseDescription,
+  translateExerciseName,
+  translateLevelLabel,
+  translateMuscleLabel,
+  translateWorkoutText,
+} from "../../utils/workoutI18n";
 
 export default function ExerciseDetailSheet({ exercise, onClose }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const media = getExerciseMedia(exercise);
   const hasRealMedia = Boolean(media?.localGif);
 
@@ -29,20 +41,20 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
           <header className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--app-border)] px-3 py-[7px]">
             <div className="min-w-0">
               <p className="text-[7px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                Ficha del ejercicio
+                {t("exercises.detail.badge")}
               </p>
               <h2 className="mt-0.5 line-clamp-2 text-[16px] font-black leading-[1.05] text-[var(--app-text)]">
-                {exercise.name}
+                {translateExerciseName(exercise, language)}
               </h2>
               <p className="mt-1 line-clamp-1 text-[9px] font-semibold text-[var(--app-muted)]">
-                {exercise.muscle}
+                {translateMuscleLabel(exercise.muscle, language)}
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
               className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
-              aria-label="Cerrar ficha"
+              aria-label={t("exercises.detail.close")}
             >
               <X size={13} />
             </button>
@@ -60,47 +72,51 @@ export default function ExerciseDetailSheet({ exercise, onClose }) {
             />
 
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <TinyChip>{exercise.muscle}</TinyChip>
-              <TinyChip>{exercise.equipment}</TinyChip>
-              <TinyChip>{exercise.difficulty}</TinyChip>
+              <TinyChip>{translateMuscleLabel(exercise.muscle, language)}</TinyChip>
+              <TinyChip>{translateEquipmentLabel(exercise.equipment, language)}</TinyChip>
+              <TinyChip>{translateLevelLabel(exercise.difficulty, language)}</TinyChip>
             </div>
 
             <div className="mt-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
               <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-                Prescripción
+                {t("exercises.detail.prescription")}
               </p>
               <p className="mt-[3px] text-[11px] font-semibold leading-4 text-[var(--app-text)]">
-                {exercise.sets} series • {exercise.reps} reps • {exercise.rest}
+                {t("exercises.detail.prescriptionValue", {
+                  sets: exercise.sets,
+                  reps: exercise.reps,
+                  rest: exercise.rest,
+                })}
               </p>
             </div>
 
             <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
               <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Descripción
+                {t("exercises.detail.description")}
               </p>
               <p className="mt-[3px] line-clamp-2 text-[10.5px] leading-4 text-[var(--app-text)]">
-                {exercise.description}
+                {translateExerciseDescription(exercise, language)}
               </p>
             </section>
 
             <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
               <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Tips
+                {t("exercises.detail.tips")}
               </p>
               <div className="mt-1 grid gap-1">
                 {tips.map((tip) => (
-                  <MiniRow key={tip} icon={<Check size={10} />} text={tip} tone="tip" />
+                  <MiniRow key={tip} icon={<Check size={10} />} text={tip} tone="tip" language={language} />
                 ))}
               </div>
             </section>
 
             <section className="mt-2 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-[7px]">
               <p className="text-[7px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Errores comunes
+                {t("exercises.detail.mistakes")}
               </p>
               <div className="mt-1 grid gap-1">
                 {mistakes.map((mistake) => (
-                  <MiniRow key={mistake} icon={<TriangleAlert size={10} />} text={mistake} tone="error" />
+                  <MiniRow key={mistake} icon={<TriangleAlert size={10} />} text={mistake} tone="error" language={language} />
                 ))}
               </div>
             </section>
@@ -119,7 +135,7 @@ function TinyChip({ children }) {
   );
 }
 
-function MiniRow({ icon, text, tone = "tip" }) {
+function MiniRow({ icon, text, tone = "tip", language }) {
   const toneClasses =
     tone === "error"
       ? "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)]"
@@ -127,7 +143,7 @@ function MiniRow({ icon, text, tone = "tip" }) {
   return (
     <div className={`flex items-start gap-2 rounded-[0.8rem] border px-2 py-1 ${toneClasses}`}>
       <span className="mt-0.5 shrink-0 text-[var(--app-primary)]">{icon}</span>
-      <p className="text-[10px] leading-4">{text}</p>
+      <p className="text-[10px] leading-4">{translateWorkoutText(text, language)}</p>
     </div>
   );
 }

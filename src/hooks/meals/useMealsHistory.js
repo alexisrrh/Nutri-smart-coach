@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import { getCachedMeals, listMeals } from "../../services/mealService";
 
 export function useMealsHistory() {
   const toast = useToast();
+  const { t } = useTranslation();
   const [meals, setMeals] = useState(getCachedMeals);
   const [remoteError, setRemoteError] = useState("");
 
@@ -21,12 +23,10 @@ export function useMealsHistory() {
       setMeals(await listMeals(user.id));
     } catch (error) {
       console.error("Error cargando comidas remotas:", error);
-      toast.error("No se pudo cargar el historial.");
-      setRemoteError(
-        "Sin conexión con el historial remoto. Mostrando datos guardados en este dispositivo."
-      );
+      toast.error(t("meals.errors.loadHistoryToast"));
+      setRemoteError(t("meals.errors.remoteHistory"));
     }
-  }, [toast]);
+  }, [t, toast]);
 
   useEffect(() => {
     Promise.resolve().then(() => {

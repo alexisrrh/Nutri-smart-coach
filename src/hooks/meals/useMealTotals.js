@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 export function useMealTotals({
   meals,
@@ -6,6 +7,8 @@ export function useMealTotals({
   filter,
   search,
 }) {
+  const { t } = useTranslation();
+
   const totals = useMemo(() => {
     return filteredMeals.reduce(
       (acc, meal) => {
@@ -39,6 +42,7 @@ export function useMealTotals({
         search,
         scoredMealsCount,
         recommendedMealsCount,
+        t,
       }),
     [
       filteredMeals.length,
@@ -48,6 +52,7 @@ export function useMealTotals({
       search,
       scoredMealsCount,
       recommendedMealsCount,
+      t,
     ]
   );
 
@@ -67,38 +72,39 @@ function getMealsMotivationMessage({
   search,
   scoredMealsCount,
   recommendedMealsCount,
+  t,
 }) {
   if (search && filteredCount === 0) {
-    return "Prueba otro término para revisar tus registros.";
+    return t("meals.motivation.searchEmpty");
   }
 
   if (totalCount === 0) {
-    return "Escanea una comida para empezar a construir tu historial.";
+    return t("meals.motivation.empty");
   }
 
   if (filteredCount === 0) {
-    return "Tu historial tiene datos; cambia el filtro para ver más comidas.";
+    return t("meals.motivation.filteredEmpty");
   }
 
   if (recommendedMealsCount > 0) {
-    return "Revisar tus análisis te ayuda a decidir con más intención.";
+    return t("meals.motivation.recommendation");
   }
 
   if (scoredMealsCount >= 3) {
-    return "Tu historial empieza a mostrar patrones útiles.";
+    return t("meals.motivation.patterns");
   }
 
   if (filter === "today") {
-    return "Cada comida registrada mejora tu control nutricional.";
+    return t("meals.motivation.today");
   }
 
   if (filter === "week") {
-    return "Buen trabajo: estás construyendo conciencia sobre lo que comes.";
+    return t("meals.motivation.week");
   }
 
   if (Number(totals?.protein || 0) > 0 || Number(totals?.calories || 0) > 0) {
-    return "Sigue escaneando: más datos te dan más claridad.";
+    return t("meals.motivation.progress");
   }
 
-  return "Tu historial convierte cada registro en una señal útil.";
+  return t("meals.motivation.default");
 }

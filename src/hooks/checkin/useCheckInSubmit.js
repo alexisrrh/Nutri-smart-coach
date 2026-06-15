@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   extractAiUsageFromError,
@@ -23,6 +24,7 @@ export function useCheckInSubmit({
   onUsageUpdated,
   user,
 }) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
   const clearMessage = useCallback(() => setMessage(""), []);
 
@@ -48,17 +50,17 @@ export function useCheckInSubmit({
     setMessage("");
 
     if (!user) {
-      setError("Necesitas iniciar sesión.");
+      setError(t("checkin.errors.loginRequiredShort"));
       return;
     }
 
     if (!file) {
-      setError("Sube una foto frontal o lateral de cuerpo completo.");
+      setError(t("checkin.errors.photoRequired"));
       return;
     }
 
     if (!form.weight) {
-      setError("Introduce tu peso actual.");
+      setError(t("checkin.errors.weightRequired"));
       return;
     }
 
@@ -112,7 +114,7 @@ export function useCheckInSubmit({
 
       setCheckinProcessState(successState);
 
-      setMessage("Check-in guardado correctamente.");
+      setMessage(t("checkin.success.saved"));
       onUsageUpdated?.(user.id);
     } catch (err) {
       console.error(err);
@@ -122,7 +124,7 @@ export function useCheckInSubmit({
         usageError && err?.status === 429
           ? formatAiUsageMessage("checkin_analysis", usageError)
           : err.message ||
-            "La IA está tardando demasiado. Vuelve a intentarlo en unos segundos.";
+            t("checkin.errors.aiTimeout");
 
       const currentState = getCheckinProcessState();
       const requestId = currentState.requestId || null;
@@ -163,6 +165,7 @@ export function useCheckInSubmit({
     setSheetMode,
     onUsageUpdated,
     user,
+    t,
   ]);
 
   return {

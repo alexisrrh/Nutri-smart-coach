@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronRight, Dumbbell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/ui";
 import ExerciseCard from "../components/exercises/ExerciseCard";
@@ -12,6 +13,11 @@ import {
 import {
   preloadCriticalExerciseMedia,
 } from "../services/exercisePreloadService";
+import {
+  getWorkoutLanguage,
+  translateMuscleLabel,
+  translateWorkoutText,
+} from "../utils/workoutI18n";
 
 const MUSCLE_ICONS = {
   Pecho: "/icons/biblioteca/pecho.png",
@@ -36,8 +42,10 @@ const MUSCLE_DESCRIPTIONS = {
 };
 
 export function ExercisesLibrary() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const initialMuscle = searchParams.get("muscle");
   const recommendedMuscle = EXERCISE_MUSCLES.includes(initialMuscle) ? initialMuscle : "";
   const [selectedMuscle, setSelectedMuscle] = useState("");
@@ -46,7 +54,7 @@ export function ExercisesLibrary() {
   const muscleCards = useMemo(() => {
     const baseCards = EXERCISE_MUSCLES.map((muscle) => ({
       muscle,
-      description: MUSCLE_DESCRIPTIONS[muscle] || "Selecciona un grupo muscular",
+      description: MUSCLE_DESCRIPTIONS[muscle] || t("exerciseLibrary.selectMuscle"),
     }));
 
     if (!recommendedMuscle) {
@@ -59,7 +67,7 @@ export function ExercisesLibrary() {
     }
 
     return [recommended, ...baseCards.filter((item) => item.muscle !== recommendedMuscle)];
-  }, [recommendedMuscle]);
+  }, [recommendedMuscle, t]);
 
   const selectedExercises = useMemo(() => {
     if (!selectedMuscle) return [];
@@ -100,7 +108,7 @@ export function ExercisesLibrary() {
               className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
             >
               <ArrowLeft size={12} />
-              Dashboard
+              {t("exerciseLibrary.backDashboard")}
             </button>
           ) : null}
 
@@ -113,13 +121,13 @@ export function ExercisesLibrary() {
               <div className="relative z-10 flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.58)] px-2 py-0.5 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                    Biblioteca fitness
+                    {t("exerciseLibrary.badge")}
                   </span>
                   <h1 className="mt-1.5 max-w-[15rem] text-[24px] font-semibold leading-[0.96] text-[var(--app-text)] sm:text-[28px]">
-                    Entrena por zona muscular
+                    {t("exerciseLibrary.title")}
                   </h1>
                   <p className="mt-1.5 max-w-[16rem] text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-                    Explora ejercicios visuales y mejora tu técnica.
+                    {t("exerciseLibrary.subtitle")}
                   </p>
                 </div>
 
@@ -127,7 +135,7 @@ export function ExercisesLibrary() {
                   <div className="pointer-events-none absolute inset-0 " />
                   <MediaIcon
                     src="/icons/biblioteca/fitness.png"
-                    alt="Fitness"
+                    alt={t("exerciseLibrary.heroAlt")}
                     className="relative grid h-[112px] w-[112px] place-items-center"
                   />
                 </div>
@@ -140,7 +148,7 @@ export function ExercisesLibrary() {
               className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]"
             >
               <ArrowLeft size={12} />
-              Volver
+              {t("exerciseLibrary.back")}
             </button>
           )}
         </header>
@@ -156,13 +164,13 @@ export function ExercisesLibrary() {
                   <div className="relative z-10 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                        Mis rutinas
+                        {t("exerciseLibrary.myRoutines")}
                       </span>
                       <h2 className="mt-2 text-[17px] font-semibold leading-[1.02] text-[var(--app-text)]">
-                        Crea tu rutina
+                        {t("exerciseLibrary.createRoutine")}
                       </h2>
                       <p className="mt-1.5 max-w-[18rem] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                        Selecciona ejercicios de la biblioteca y crea un entrenamiento a tu medida.
+                        {t("exerciseLibrary.createRoutineDesc")}
                       </p>
                     </div>
                   </div>
@@ -173,14 +181,14 @@ export function ExercisesLibrary() {
                       onClick={() => navigate("/crear-rutina")}
                       className="flex h-9 flex-1 items-center justify-center gap-2 rounded-[0.85rem] bg-[var(--app-primary)] px-3 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_14px_rgba(0,196,255,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
                     >
-                      Crear rutina
+                      {t("exerciseLibrary.createRoutineButton")}
                     </button>
                     <button
                       type="button"
                       onClick={() => navigate("/rutinas")}
                       className="h-9 rounded-[0.85rem] border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.44)] px-3.5 text-[9px] font-semibold tracking-[0.02em] text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.6)] active:scale-[0.98]"
                     >
-                      Ver mis rutinas
+                      {t("exerciseLibrary.viewRoutines")}
                     </button>
                   </div>
                 </section>
@@ -209,13 +217,13 @@ export function ExercisesLibrary() {
                     />
                     <div className="min-w-0">
                       <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                        {selectedMuscle}
+                        {translateMuscleLabel(selectedMuscle, language)}
                       </p>
                       <h2 className="mt-0.5 text-[18px] font-black leading-none text-[var(--app-text)]">
-                        Ejercicios visuales
+                        {t("exerciseLibrary.visualExercises")}
                       </h2>
                       <p className="mt-1 text-[10px] font-bold text-[var(--app-muted)]">
-                        {MUSCLE_DESCRIPTIONS[selectedMuscle]}
+                        {translateWorkoutText(MUSCLE_DESCRIPTIONS[selectedMuscle], language)}
                       </p>
                     </div>
                   </div>
@@ -248,6 +256,8 @@ export function ExercisesLibrary() {
 }
 
 function MuscleCard({ muscle, description, featured = false, onClick }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
     <button
       type="button"
@@ -263,7 +273,7 @@ function MuscleCard({ muscle, description, featured = false, onClick }) {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" />
       {featured ? (
         <span className="absolute left-3 top-2 inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[var(--app-surface)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-          Recomendado hoy
+          {t("exerciseLibrary.recommendedToday")}
         </span>
       ) : null}
 
@@ -280,10 +290,10 @@ function MuscleCard({ muscle, description, featured = false, onClick }) {
 
       <div className="relative z-10 min-w-0 flex-1">
         <h3 className="text-[15px] font-black text-[var(--app-text)]">
-          {muscle}
+          {translateMuscleLabel(muscle, language)}
         </h3>
         <p className="mt-0.5 line-clamp-2 text-[10px] font-bold leading-4 text-[var(--app-muted)]">
-          {description}
+          {translateWorkoutText(description, language)}
         </p>
       </div>
 

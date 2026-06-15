@@ -1,6 +1,11 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export function MealDetailSheet({ meal, onClose, onDelete }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage || i18n.language || "es";
+  const dateLocale = locale === "en" ? "en-US" : "es-ES";
+
   useEffect(() => {
     function handleEscape(event) {
       if (event.key === "Escape") onClose();
@@ -14,12 +19,12 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
   }, [onClose]);
 
   const dateValue = meal?.createdAt || meal?.created_at || new Date(0).toISOString();
-  const date = new Date(dateValue).toLocaleDateString("es-ES", {
+  const date = new Date(dateValue).toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "2-digit",
     month: "long",
   });
-  const time = new Date(dateValue).toLocaleTimeString("es-ES", {
+  const time = new Date(dateValue).toLocaleTimeString(dateLocale, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -42,7 +47,7 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="Detalle de comida"
+        aria-label={t("meals.detail.dialogAria")}
         className="flex max-h-[calc(100dvh-96px)] w-full max-w-[410px] flex-col overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_18px_60px_var(--app-glow)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ animation: "mealSheetIn 220ms ease-out" }}
         onClick={(event) => event.stopPropagation()}
@@ -54,22 +59,22 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
         <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4 pt-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {image && (
             <div className="relative mb-2.5 h-[150px] overflow-hidden rounded-[22px] bg-[var(--app-surface)]">
-              <img src={image} alt={meal.food || "Comida analizada"} className="h-full w-full object-contain" />
+              <img src={image} alt={meal.food || t("meals.detail.mealFallback")} className="h-full w-full object-contain" />
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/85 via-[var(--app-surface)]/14 to-transparent" />
               <div className="absolute left-2 top-2 rounded-full bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] backdrop-blur-xl">
-                Análisis IA
+                {t("meals.detail.imageBadge")}
               </div>
             </div>
           )}
 
           <div className="mb-2.5 flex items-start justify-between gap-2.5">
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                {meal.mealType || "Comida"}
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
+                {meal.mealType || t("meal.defaultNames.meal")}
               </p>
 
               <h3 className="mt-1 line-clamp-2 text-[18px] font-extrabold leading-[1.02] text-[var(--app-text)]">
-                {meal.food || "Comida analizada"}
+                {meal.food || t("meals.detail.mealFallback")}
               </h3>
 
               <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
@@ -81,23 +86,23 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
               <div className="text-center">
                 <p className="text-[20px] font-black leading-none">{score ?? "—"}</p>
                 <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  score
+                  {t("meals.detail.score")}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-1.5">
-            <MetricBox label="Kcal" value={meal.calories} unit="kcal" />
-            <MetricBox label="Proteína" value={meal.protein} unit="g" accent />
-            <MetricBox label="Carbs" value={meal.carbs} unit="g" />
-            <MetricBox label="Grasas" value={meal.fat} unit="g" />
+            <MetricBox label={t("meal.kcal")} value={meal.calories} unit="kcal" />
+            <MetricBox label={t("meal.macros.protein")} value={meal.protein} unit="g" accent />
+            <MetricBox label={t("meal.macros.carbs")} value={meal.carbs} unit="g" />
+            <MetricBox label={t("meal.macros.fat")} value={meal.fat} unit="g" />
           </div>
 
           {meal.recommendation && (
             <div className="mt-2.5 rounded-[20px] bg-[var(--app-primary-soft)] px-2.5 py-2 shadow-[inset_0_0_0_1px_var(--app-border)]">
               <p className="mb-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                Recomendación IA
+                {t("meals.detail.recommendation")}
               </p>
               <p className="line-clamp-3 text-[11px] leading-4 text-[var(--app-muted)]">
                 {meal.recommendation}
@@ -113,7 +118,7 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
               onClick={onDelete}
               className="rounded-2xl bg-red-400/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-red-200 transition active:scale-[0.98] hover:bg-red-400/15"
             >
-              Borrar análisis
+              {t("meals.detail.delete")}
             </button>
 
             <button
@@ -121,7 +126,7 @@ export function MealDetailSheet({ meal, onClose, onDelete }) {
               onClick={onClose}
               className="rounded-2xl bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] transition active:scale-[0.98] hover:bg-[var(--app-primary-soft)]"
             >
-              Cerrar
+              {t("meals.detail.close")}
             </button>
           </div>
         </div>

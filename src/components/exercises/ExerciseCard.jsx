@@ -1,7 +1,18 @@
 import { ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ExerciseMediaFrame from "./ExerciseMediaFrame";
+import {
+  getWorkoutLanguage,
+  translateEquipmentLabel,
+  translateExerciseName,
+  translateLevelLabel,
+  translateMuscleLabel,
+} from "../../utils/workoutI18n";
 
 export default function ExerciseCard({ exercise, onClick }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
+
   return (
     <button
       type="button"
@@ -16,16 +27,16 @@ export default function ExerciseCard({ exercise, onClick }) {
 
       <div className="min-w-0 flex-1">
         <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-          {exercise.muscle}
+          {translateMuscleLabel(exercise.muscle, language)}
         </p>
         <h3 className="truncate text-[13px] font-black text-[var(--app-text)]">
-          {exercise.name}
+          {translateExerciseName(exercise, language)}
         </h3>
         <p className="mt-0.5 truncate text-[9px] font-bold text-[var(--app-muted)]">
-          {exercise.equipment}
+          {translateEquipmentLabel(exercise.equipment, language)}
         </p>
         <p className="mt-0.5 truncate text-[9px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
-          {exercise.difficulty}
+          {translateLevelLabel(exercise.difficulty, language)}
         </p>
       </div>
 

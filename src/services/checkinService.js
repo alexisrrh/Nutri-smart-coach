@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "../config/storageKeys";
+import i18n from "../i18n";
 import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
 import { normalizeCheckin } from "./normalizers";
@@ -79,11 +80,11 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
 
   try {
     const data = await request(`/checkins/${userId}`, {}, {
-      operation: "cargar el historial de check-ins",
+      operation: i18n.t("checkin.operations.loadHistory"),
     });
 
     if (!Array.isArray(data?.checkins)) {
-      throw new Error("Respuesta inválida al cargar check-ins.");
+      throw new Error(i18n.t("checkin.errors.invalidHistoryResponse"));
     }
 
     const remoteCheckins = normalizeCheckins(data.checkins);
@@ -93,7 +94,7 @@ export async function listCheckins(userId, { fallbackToCache = true } = {}) {
   } catch (error) {
     if (fallbackToCache && cachedCheckins.length > 0) return cachedCheckins;
     throw new Error(
-      getFriendlyErrorMessage(error, "cargar el historial de check-ins"),
+      getFriendlyErrorMessage(error, i18n.t("checkin.operations.loadHistory")),
       { cause: error }
     );
   }
@@ -126,13 +127,13 @@ export async function createCheckin({
     },
     {
       timeoutMs: 120000,
-      operation: "guardar un check-in",
+      operation: i18n.t("checkin.operations.save"),
     }
   );
   const checkin = normalizeCheckin(data?.checkin);
 
   if (!checkin) {
-    throw new Error("No se pudo guardar el check-in.");
+    throw new Error(i18n.t("checkin.errors.saveFailed"));
   }
 
   cacheCheckin(userId, checkin);
@@ -142,11 +143,11 @@ export async function createCheckin({
 
 export async function deleteCheckin(checkinId, userId) {
   if (!checkinId) {
-    throw new Error("Falta el check-in a borrar.");
+    throw new Error(i18n.t("checkin.errors.missingDeleteId"));
   }
 
   if (!userId) {
-    throw new Error("Necesitas iniciar sesión para borrar el check-in.");
+    throw new Error(i18n.t("checkin.errors.deleteLoginRequired"));
   }
 
   const data = await request(
@@ -155,7 +156,7 @@ export async function deleteCheckin(checkinId, userId) {
       method: "DELETE",
     },
     {
-      operation: "borrar un check-in",
+      operation: i18n.t("checkin.operations.delete"),
     }
   );
 

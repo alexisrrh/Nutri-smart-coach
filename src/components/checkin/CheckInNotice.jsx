@@ -1,6 +1,9 @@
 import { ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CheckInNotice() {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-[28px] border border-amber-400/20 bg-amber-500/10 p-3">
       <div className="flex items-start gap-2">
@@ -10,8 +13,7 @@ export function CheckInNotice() {
         />
 
         <p className="text-xs leading-5 text-amber-100/80">
-          Usa una foto parecida cada semana: misma luz, distancia y postura.
-          Así el check-in físico será más fácil de comparar.
+          {t("checkin.notice.text")}
         </p>
       </div>
     </div>

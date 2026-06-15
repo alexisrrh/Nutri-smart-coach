@@ -22,11 +22,13 @@ export function shortText(text = "", max = 180) {
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
-export function formatDate(date) {
+import { getCurrentAppLanguage } from "../../i18n";
+
+export function formatDate(date, locale = getCurrentAppLanguage()) {
   if (!date) return "-";
 
   try {
-    return new Date(date).toLocaleDateString("es-ES");
+    return new Date(date).toLocaleDateString(locale || getCurrentAppLanguage());
   } catch {
     return "-";
   }

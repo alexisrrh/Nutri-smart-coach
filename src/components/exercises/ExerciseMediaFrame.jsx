@@ -1,5 +1,6 @@
 import { Dumbbell } from "lucide-react";
 import { memo, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getExerciseMedia,
   getExerciseMediaStatus,
@@ -7,6 +8,12 @@ import {
   isExerciseMediaLoaded,
   setExerciseMediaStatus,
 } from "../../services/exerciseMediaService";
+import {
+  getWorkoutLanguage,
+  translateExerciseName,
+  translateMuscleLabel,
+  translateWorkoutText,
+} from "../../utils/workoutI18n";
 
 function ExerciseMediaFrame({
   exercise,
@@ -14,6 +21,8 @@ function ExerciseMediaFrame({
   showLabels = false,
   variant = "default",
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const media = useMemo(() => getExerciseMedia(exercise), [exercise]);
   const localCandidates = useMemo(
     () => getLocalExerciseCandidates(exercise),
@@ -122,12 +131,15 @@ function ExerciseMediaFrame({
       {showLabels ? (
         <figcaption className="relative border-t border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-surface)_88%,transparent)] px-2.5 py-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge label="Músculo principal" value={exercise?.muscle || "—"} />
             <Badge
-              label="Músculos secundarios"
+              label={t("exercises.media.primaryMuscle")}
+              value={translateMuscleLabel(exercise?.muscle || "—", language)}
+            />
+            <Badge
+              label={t("exercises.media.secondaryMuscles")}
               value={Array.isArray(exercise?.secondaryMuscles) && exercise.secondaryMuscles.length
-                ? exercise.secondaryMuscles.join(" · ")
-                : "Sin secundarios"}
+                ? exercise.secondaryMuscles.map((muscle) => translateMuscleLabel(muscle, language)).join(" · ")
+                : t("exercises.media.noSecondary")}
             />
           </div>
         </figcaption>
@@ -150,6 +162,8 @@ function LoadingOverlay() {
 }
 
 function PlaceholderState({ exercise, media }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
     <div className="relative grid h-full w-full place-items-center">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,var(--app-primary-soft),transparent_40%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.02),transparent_32%)]" />
@@ -159,10 +173,11 @@ function PlaceholderState({ exercise, media }) {
         </div>
         <div>
           <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Sin media
+            {t("exercises.media.noMedia")}
           </p>
           <p className="mt-0.5 text-[10px] font-bold text-[var(--app-muted)]">
-            {exercise?.name || media?.expectedName || "Ejercicio"}
+            {translateExerciseName(exercise, language) ||
+              translateWorkoutText(media?.expectedName || t("exercises.media.exercise"), language)}
           </p>
         </div>
       </div>

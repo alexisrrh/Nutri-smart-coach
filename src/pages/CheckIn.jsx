@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { trackEvent } from "../services/analytics";
 import {
   Camera,
@@ -11,7 +12,7 @@ import {
 import { setCheckinProcessState } from "../services/checkinService";
 import { CheckInAlert } from "../components/checkin/CheckInAlert";
 import { CheckInLoader } from "../components/checkin/CheckInLoader";
-import { getWeightDiff } from "../components/checkin/checkinUtils";
+import { formatDate, getWeightDiff } from "../components/checkin/checkinUtils";
 import {
   AiErrorNotice,
   AppShell,
@@ -24,6 +25,7 @@ import { useCheckInSubmit } from "../hooks/checkin/useCheckInSubmit";
 import { useAiUsageStatus } from "../hooks/useAiUsageStatus";
 
 export function CheckIn() {
+  const { t } = useTranslation();
   const clearMessageRef = useRef(() => {});
 
   const {
@@ -116,6 +118,7 @@ function closeSheet() {
     lastCheckin,
     previousCheckin,
     weightDiff,
+    t,
   });
   
   return (
@@ -139,25 +142,25 @@ function closeSheet() {
               <div className="min-w-0 flex-1">
               <p className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
                 <ScanLine size={10} />
-                CHECK-IN IA
+                {t("checkin.hero.badge")}
               </p>
 
               <h1 className="mt-1.5 whitespace-nowrap text-[21px] font-black leading-none tracking-tight text-[var(--app-text)]">
-                BODY AI SCAN
+                {t("checkin.hero.title")}
               </h1>
 
               <p className="mt-1.25 text-[14px] font-black leading-4 text-[var(--app-primary)]">
-                Haz tu check-in semanal
+                {t("checkin.hero.highlight")}
               </p>
 
               <p className="mt-1 max-w-[25rem] text-[11px] font-medium leading-4 text-[var(--app-muted)]">
-                La IA compara tu cuerpo y detecta tu evolución física.
+                {t("checkin.hero.subtitle")}
               </p>
 
               <div className="mt-2 flex flex-wrap gap-1.5">
-                <HeroChip icon={<Camera size={10} />} label="Foto corporal" />
-                <HeroChip icon={<TrendingUp size={10} />} label="Evolución" />
-                <HeroChip icon={<BrainCircuit size={10} />} label="IA" />
+                <HeroChip icon={<Camera size={10} />} label={t("checkin.hero.chips.photo")} />
+                <HeroChip icon={<TrendingUp size={10} />} label={t("checkin.hero.chips.evolution")} />
+                <HeroChip icon={<BrainCircuit size={10} />} label={t("checkin.hero.chips.ai")} />
               </div>
             </div>
 
@@ -174,7 +177,7 @@ function closeSheet() {
                 </div>
               </div>
               <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[7px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                AI BODY SCAN
+                {t("checkin.hero.scanBadge")}
               </span>
             </div>
           </div>
@@ -194,11 +197,11 @@ function closeSheet() {
           >
             <div className="mb-2 flex items-center justify-between gap-2">
               <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Paso 1
+                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
+                  {t("checkin.form.step1")}
                 </p>
                 <h2 className="text-[16px] font-black leading-tight text-[var(--app-text)]">
-                  FOTO SEMANAL
+                  {t("checkin.form.weeklyPhoto")}
                 </h2>
               </div>
             </div>
@@ -215,7 +218,7 @@ function closeSheet() {
                 <>
                   <img
                     src={preview}
-                    alt="Foto actual"
+                    alt={t("checkin.form.currentPhoto")}
                     className="h-full w-full object-contain p-3"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/42 via-transparent to-transparent" />
@@ -237,10 +240,10 @@ function closeSheet() {
                       <ImagePlus size={22} />
                     </div>
                     <p className="mt-2 text-[12px] font-black uppercase tracking-wide text-[var(--app-text)]">
-                      SUBE TU FOTO SEMANAL
+                      {t("checkin.form.uploadTitle")}
                     </p>
                     <p className="mx-auto mt-0.5 max-w-[220px] text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                      Toca para subir tu foto corporal
+                      {t("checkin.form.uploadHint")}
                     </p>
                   </div>
                 </div>
@@ -263,7 +266,7 @@ function closeSheet() {
                   color: preview ? "var(--app-surface)" : "var(--app-primary)",
                 }}
               >
-                {preview ? "Foto lista" : " "}
+                {preview ? t("checkin.form.photoReady") : " "}
               </div>
             </label>
 
@@ -271,21 +274,21 @@ function closeSheet() {
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <div>
                   <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                    Paso 2
+                    {t("checkin.form.step2")}
                   </p>
                   <h3 className="text-[13px] font-black leading-tight text-[var(--app-text)]">
-                    PESO ACTUAL
+                    {t("checkin.form.currentWeight")}
                   </h3>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-1.5">
                 <InputBox
-                  label="Peso"
+                  label={t("checkin.form.weight")}
                   value={form.weight}
                   onChange={(value) => handleChange("weight", value)}
                   placeholder="72.5"
-                  suffix="kg"
+                  suffix={t("checkin.units.kg")}
                 />
               </div>
 
@@ -295,31 +298,31 @@ function closeSheet() {
                 className="mt-1.5 inline-flex items-center gap-1.5 self-start rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]"
               >
                 <span>{showMeasures ? "−" : "+"}</span>
-                <span>{showMeasures ? "Ocultar medidas" : "Añadir medidas (opcional)"}</span>
+                <span>{showMeasures ? t("checkin.form.hideMeasures") : t("checkin.form.addMeasures")}</span>
               </button>
 
               {showMeasures && (
                 <div className="mt-2 grid grid-cols-3 gap-1.5">
-                  <InputBox
-                    label="Cint."
+                <InputBox
+                    label={t("checkin.form.waist")}
                     value={form.waist}
                     onChange={(value) => handleChange("waist", value)}
                     placeholder="80"
-                    suffix="cm"
+                    suffix={t("checkin.units.cm")}
                   />
                   <InputBox
-                    label="Pecho"
+                    label={t("checkin.form.chest")}
                     value={form.chest}
                     onChange={(value) => handleChange("chest", value)}
                     placeholder="95"
-                    suffix="cm"
+                    suffix={t("checkin.units.cm")}
                   />
                   <InputBox
-                    label="Cadera"
+                    label={t("checkin.form.hips")}
                     value={form.hips}
                     onChange={(value) => handleChange("hips", value)}
                     placeholder="90"
-                    suffix="cm"
+                    suffix={t("checkin.units.cm")}
                   />
                 </div>
               )}
@@ -361,10 +364,10 @@ function closeSheet() {
                 </span>
                 <span className="flex min-w-0 flex-col items-start justify-center text-left">
                     <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
-                      {loading ? "ANALIZANDO..." : "GENERAR INFORME IA"}
+                      {loading ? t("checkin.submit.loading") : t("checkin.submit.cta")}
                     </span>
                     <span className="mt-0.5 text-[10px] font-bold leading-tight text-[var(--app-muted)]">
-                    Informe IA semanal
+                    {t("checkin.submit.subtitle")}
                   </span>
                 </span>
               </span>
@@ -376,9 +379,9 @@ function closeSheet() {
           {!initialLoading && !loading && history.length === 0 ? (
             <PremiumEmptyState
               icon={Camera}
-              title="Tu primer check-in marcará el punto de partida"
-              description="Sube una foto y tu peso para activar el análisis corporal y comparar tu evolución."
-              actionLabel="Subir foto"
+              title={t("checkin.empty.title")}
+              description={t("checkin.empty.description")}
+              actionLabel={t("checkin.empty.action")}
               onAction={() => document.getElementById("checkin-photo")?.click()}
               className="shrink-0 py-4"
             />
@@ -395,10 +398,10 @@ function closeSheet() {
             <div className="mb-2 flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  3. Genera tu informe
+                  {t("checkin.report.step")}
                 </p>
                 <h3 className="text-[17px] font-black leading-tight text-[var(--app-text)]">
-                  Anterior vs actual
+                  {t("checkin.report.title")}
                 </h3>
               </div>
 
@@ -409,23 +412,23 @@ function closeSheet() {
                   color: "var(--app-primary)",
                 }}
               >
-                BLOQUE PRINCIPAL
+                {t("checkin.report.badge")}
               </span>
             </div>
 
             <div className="relative grid grid-cols-2 gap-2">
               <CompareTile
-                title="Anterior"
+                title={t("checkin.compare.previous")}
                 checkin={previousCheckin}
                 image={previousImage}
-                emptyText={history.length ? "Primer check-in" : "Pendiente"}
+                emptyText={history.length ? t("checkin.report.previousFallback") : t("checkin.report.pending")}
                 onClick={() => openCheckinSheet(previousCheckin)}
               />
               <CompareTile
-                title="Actual"
+                title={t("checkin.compare.current")}
                 checkin={lastCheckin}
                 image={preview || lastImage}
-                emptyText="Sube foto"
+                emptyText={t("checkin.report.uploadPhoto")}
                 onClick={() => openCheckinSheet(lastCheckin)}
               />
 
@@ -451,22 +454,28 @@ function closeSheet() {
             }}
           >
             <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-              BODY AI REPORT
+              {t("checkin.aiReport.title")}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               <ReportMetric
-                label="Estado corporal"
-                value={lastCheckin ? "Progreso registrado" : "Sin base"}
+                label={t("checkin.aiReport.stateLabel")}
+                value={lastCheckin ? t("checkin.aiReport.stateValue") : t("checkin.aiReport.noBase")}
               />
               <ReportMetric
-                label="Cambio detectado"
-                value={lastCheckin ? `${weightDiff || "0kg"}` : "—"}
+                label={t("checkin.aiReport.changeLabel")}
+                value={
+                  lastCheckin
+                    ? weightDiff === null
+                      ? t("checkin.timeline.noBase")
+                      : `${weightDiff > 0 ? "+" : ""}${weightDiff}${t("checkin.units.kg")}`
+                    : "—"
+                }
               />
             </div>
 
             <div className="mt-2 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2.5 shadow-[0_0_24px_var(--app-glow)]">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Recomendación IA
+                {t("checkin.aiReport.recommendation")}
               </p>
               <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {aiMotivation}
@@ -537,7 +546,7 @@ function ReportMetric({ label, value }) {
 function CompareTile({ title, checkin, image, emptyText, onClick }) {
   const date = checkin
     ? formatDate(checkin.created_at || checkin.createdAt)
-    : "Sin registro";
+    : "—";
   const weight = checkin?.weight ? `${checkin.weight}kg` : "—";
 
   return (
@@ -594,6 +603,8 @@ function CheckInResultSheet({
   mode = "detail",
   onClose,
 }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     function handleEscape(event) {
       if (event.key === "Escape") onClose();
@@ -614,12 +625,12 @@ function CheckInResultSheet({
     : null;
   const confidenceLabel =
     score === null
-      ? "Confianza pendiente"
+      ? t("checkin.sheet.confidence.pending")
       : score >= 70
-      ? "Confianza alta"
+      ? t("checkin.sheet.confidence.high")
       : score >= 40
-      ? "Confianza media"
-      : "Confianza baja";
+      ? t("checkin.sheet.confidence.medium")
+      : t("checkin.sheet.confidence.low");
   const isLowConfidence = score !== null && score < 20;
   const isFirstCheckin = !previousCheckin;
   const previousConfidenceValue = Number(previousCheckin?.confidence || 0);
@@ -635,11 +646,11 @@ function CheckInResultSheet({
   const streakWeeks = previousCheckin ? 2 : checkin ? 1 : 0;
   const visualChanges =
     checkin.visual_changes ||
-    "La IA revisa grasa corporal, definición y consistencia entre semanas.";
+    t("checkin.sheet.visualChangesFallback");
   const recommendation =
     checkin.recommendation ||
-    "Mantén la misma luz, postura y distancia para comparar mejor la evolución.";
-  const timeline = getCheckinTimelineSummary(checkin, previousCheckin);
+    t("checkin.sheet.recommendationFallback");
+  const timeline = getCheckinTimelineSummary(checkin, previousCheckin, t);
   const detectionText = `${visualChanges} ${recommendation}`.toLowerCase();
   const hasImageIssue =
     isLowConfidence ||
@@ -647,7 +658,11 @@ function CheckInResultSheet({
     detectionText.includes("invalida") ||
     detectionText.includes("borrosa") ||
     detectionText.includes("no pudo") ||
-    detectionText.includes("confianza baja");
+    detectionText.includes("confianza baja") ||
+    detectionText.includes("invalid") ||
+    detectionText.includes("blurry") ||
+    detectionText.includes("could not") ||
+    detectionText.includes("low confidence");
   const detectionBullets = buildDetectionBullets(visualChanges, {
     hasImageIssue,
     isLowConfidence,
@@ -659,8 +674,13 @@ function CheckInResultSheet({
   function buildDetectionBullets(text, context) {
     if (context.hasImageIssue) {
       return [
-        { text: context.isLowConfidence ? "Confianza baja" : "Foto no válida", warning: true },
-        { text: "La imagen necesita mejores condiciones", warning: true },
+        {
+          text: context.isLowConfidence
+            ? t("checkin.sheet.detection.lowConfidence")
+            : t("checkin.sheet.detection.invalidPhoto"),
+          warning: true,
+        },
+        { text: t("checkin.sheet.detection.needsBetterConditions"), warning: true },
       ];
     }
 
@@ -679,41 +699,41 @@ function CheckInResultSheet({
     }
 
     return [
-      { text: "Mejor definición corporal", warning: false },
+      { text: t("checkin.sheet.detection.betterDefinition"), warning: false },
       {
         text:
-          context.previousCheckin && context.weightDiff !== "Sin base"
-            ? "Comparación semanal registrada"
-            : "Punto inicial creado",
+          context.previousCheckin && context.weightDiff !== t("checkin.timeline.noBase")
+            ? t("checkin.sheet.detection.weeklyComparison")
+            : t("checkin.sheet.detection.startingPoint"),
         warning: false,
       },
-      { text: "Consistencia positiva", warning: false },
+      { text: t("checkin.sheet.detection.positiveConsistency"), warning: false },
     ];
   }
 
   function getLowConfidenceReason(changes, nextRecommendation) {
     const source = String(changes || nextRecommendation || "").trim();
     if (!source) {
-      return "La imagen no ofrece suficiente información visual para un análisis fiable.";
+      return t("checkin.sheet.lowConfidenceReasonFallback");
     }
 
     return source.length > 120 ? `${source.slice(0, 117)}...` : source;
   }
 
   function getScoreClass(nextScore) {
-    if (nextScore === null) return "Sin clasificar";
-    if (nextScore <= 39) return "Inicial";
-    if (nextScore <= 59) return "En progreso";
-    if (nextScore <= 79) return "Bueno";
-    if (nextScore <= 89) return "Excelente";
-    return "Élite";
+    if (nextScore === null) return t("checkin.sheet.scoreState.unrated");
+    if (nextScore <= 39) return t("checkin.sheet.scoreState.initial");
+    if (nextScore <= 59) return t("checkin.sheet.scoreState.inProgress");
+    if (nextScore <= 79) return t("checkin.sheet.scoreState.good");
+    if (nextScore <= 89) return t("checkin.sheet.scoreState.excellent");
+    return t("checkin.sheet.scoreState.elite");
   }
 
   function getVisualTrend(delta) {
-    if (delta === null) return "Completa más check-ins para ver tu evolución";
-    if (delta > 2) return "📈 Mejorando";
-    if (delta < -2) return "📉 Retroceso";
-    return "➖ Estable";
+    if (delta === null) return t("checkin.sheet.trend.pending");
+    if (delta > 2) return t("checkin.sheet.trend.improving");
+    if (delta < -2) return t("checkin.sheet.trend.regressing");
+    return t("checkin.sheet.trend.stable");
   }
 
   function formatDelta(delta) {
@@ -754,7 +774,7 @@ function CheckInResultSheet({
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="Análisis IA"
+        aria-label={t("checkin.sheet.ariaLabel")}
         className="flex w-full max-w-[430px] flex-col overflow-hidden rounded-t-[30px] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-18px_56px_var(--app-glow)]"
         onClick={(event) => event.stopPropagation()}
       >
@@ -772,7 +792,7 @@ function CheckInResultSheet({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Body Score IA
+                  {t("checkin.sheet.badge")}
                 </p>
                 <div className="mt-1 flex min-w-0 items-end gap-2">
                   <div className="flex shrink-0 items-end gap-1">
@@ -780,7 +800,7 @@ function CheckInResultSheet({
                       {score ?? "--"}
                     </span>
                     <span className="pb-0.5 text-[11px] font-black text-[var(--app-muted)]">
-                      / 100
+                      {t("checkin.sheet.scoreMax")}
                     </span>
                   </div>
                   <span className="mb-0.5 truncate text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
@@ -801,7 +821,7 @@ function CheckInResultSheet({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Cerrar análisis"
+                aria-label={t("checkin.sheet.closeAria")}
                 className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] transition hover:bg-[var(--app-primary-soft)]"
               >
                 <X size={14} />
@@ -816,11 +836,11 @@ function CheckInResultSheet({
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                  Evolución corporal
+                  {t("checkin.sheet.evolutionTitle")}
                 </p>
                 <h3 className="text-[14px] font-black leading-tight text-[var(--app-text)]">
                   {previousScore === null
-                    ? "Completa más check-ins para ver tu evolución"
+                    ? t("checkin.sheet.evolutionFallback")
                     : trend}
                 </h3>
               </div>
@@ -831,18 +851,18 @@ function CheckInResultSheet({
                   color: "var(--app-primary)",
                 }}
               >
-                🔥 {streakWeeks} semana{streakWeeks === 1 ? "" : "s"}
+                {t("checkin.sheet.streak", { count: streakWeeks })}
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-1">
               {renderEvolutionStat(
-                "Score anterior",
+                t("checkin.sheet.scorePrevious"),
                 previousScore === null ? "—" : `${previousScore}`
               )}
-              {renderEvolutionStat("Score actual", score === null ? "—" : `${score}`)}
+              {renderEvolutionStat(t("checkin.sheet.scoreCurrent"), score === null ? "—" : `${score}`)}
               {renderEvolutionStat(
-                "Diferencia visual",
+                t("checkin.sheet.scoreDelta"),
                 formatDelta(scoreDelta),
                 scoreDelta !== null
               )}
@@ -850,7 +870,7 @@ function CheckInResultSheet({
 
             {previousScore === null ? (
               <p className="mt-1.5 rounded-xl bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-bold leading-3 text-[var(--app-muted)]">
-                Completa más check-ins para ver tu evolución.
+                {t("checkin.sheet.evolutionNote")}
               </p>
             ) : null}
           </section>
@@ -860,12 +880,16 @@ function CheckInResultSheet({
               <div className="relative h-[246px] overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_18px_50px_var(--app-glow)]">
                 <img
                   src={image}
-                  alt={mode === "analysis" ? "Resultado del análisis IA" : "Check-in corporal"}
+                  alt={
+                    mode === "analysis"
+                      ? t("checkin.sheet.analysisImageAlt")
+                      : t("checkin.sheet.detailImageAlt")
+                  }
                   className="h-full w-full object-contain p-3"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--app-bg)]/42 via-transparent to-transparent" />
                 <span className="absolute bottom-3 left-3 rounded-full border border-[var(--app-border)] bg-[var(--app-card)]/86 px-2.5 py-1 text-[8px] font-black uppercase tracking-wide text-[var(--app-primary)] backdrop-blur">
-                  Imagen analizada
+                  {t("checkin.sheet.analyzedImage")}
                 </span>
               </div>
             ) : (
@@ -873,7 +897,7 @@ function CheckInResultSheet({
                 <div>
                   <Camera className="mx-auto mb-2 text-[var(--app-primary)]" size={24} />
                   <p className="text-[10px] font-black uppercase text-[var(--app-muted)]">
-                    Sin foto
+                    {t("checkin.sheet.noPhoto")}
                   </p>
                 </div>
               </div>
@@ -882,16 +906,16 @@ function CheckInResultSheet({
 
           {!isFirstCheckin ? (
             <div className="mb-2 grid grid-cols-3 gap-1.5">
-              <SheetStatRow label="Tiempo" value={timeline.timeAgo} />
-              <SheetStatRow label="Cambio" value={timeline.weightChange} />
-              <SheetStatRow label="Estado" value={timeline.status} />
+              <SheetStatRow label={t("checkin.sheet.timeLabel")} value={timeline.timeAgo} />
+              <SheetStatRow label={t("checkin.sheet.changeLabel")} value={timeline.weightChange} />
+              <SheetStatRow label={t("checkin.sheet.statusLabel")} value={timeline.status} />
             </div>
           ) : null}
 
           <div className="space-y-1.5">
             <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Lo que detectó la IA
+                {t("checkin.sheet.detectedTitle")}
               </p>
               <div className="mt-2 space-y-1.5">
                 {detectionBullets.map((item) => (
@@ -915,7 +939,7 @@ function CheckInResultSheet({
 
             <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Qué significa este resultado
+                {t("checkin.sheet.meaningTitle")}
               </p>
               <p className="mt-1 text-[11px] leading-4 text-[var(--app-muted)]">
                 {recommendation}
@@ -925,18 +949,22 @@ function CheckInResultSheet({
             {isLowConfidence ? (
               <div className="rounded-2xl border border-amber-300/35 bg-amber-300/10 px-2.5 py-2 shadow-[0_12px_28px_rgba(251,191,36,0.12)]">
                 <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-200">
-                  ⚠ La IA no pudo analizar correctamente esta imagen.
+                  {t("checkin.sheet.lowConfidenceTitle")}
                 </p>
                 <div className="mt-2 rounded-xl bg-[var(--app-card)] px-2 py-1.5">
                   <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-                    Motivo
+                    {t("checkin.sheet.reasonTitle")}
                   </p>
                   <p className="mt-1 text-[11px] font-bold leading-4 text-[var(--app-text)]">
                     {issueReason}
                   </p>
                 </div>
                 <div className="mt-2 grid gap-1">
-                  {["Sube una foto real", "Buena iluminación", "Cuerpo completo"].map(
+                  {[
+                    t("checkin.sheet.tips.realPhoto"),
+                    t("checkin.sheet.tips.lighting"),
+                    t("checkin.sheet.tips.fullBody"),
+                  ].map(
                     (step) => (
                       <p
                         key={step}
@@ -953,7 +981,7 @@ function CheckInResultSheet({
             {checkin.notes ? (
               <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-2">
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Nota
+                  {t("checkin.sheet.noteTitle")}
                 </p>
                 <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--app-muted)]">
                   {checkin.notes}
@@ -963,13 +991,13 @@ function CheckInResultSheet({
 
             <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-2">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Próximo paso
+                {t("checkin.sheet.nextStepTitle")}
               </p>
               <div className="mt-2 grid gap-1">
                 {[
-                  "Realiza un nuevo check-in en 7 días",
-                  "Mantén la misma postura para comparar mejor",
-                  "Sigue tu plan actual",
+                  t("checkin.sheet.nextSteps.one"),
+                  t("checkin.sheet.nextSteps.two"),
+                  t("checkin.sheet.nextSteps.three"),
                 ].map((step) => (
                   <p
                     key={step}
@@ -1012,43 +1040,34 @@ function getCheckinImage(checkin) {
   );
 }
 
-function formatDate(date) {
-  if (!date) return "—";
-
-  return new Date(date).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-  });
-}
-
-function getCheckinTimelineSummary(checkin, previousCheckin) {
+function getCheckinTimelineSummary(checkin, previousCheckin, t) {
   const currentDate = checkin?.created_at || checkin?.createdAt;
   const previousDate = previousCheckin?.created_at || previousCheckin?.createdAt;
   const timeAgo = previousDate
-    ? formatDaysBetween(currentDate, previousDate)
-    : "Primer dato";
+    ? formatDaysBetween(currentDate, previousDate, t)
+    : t("checkin.timeline.firstData");
   const currentWeight = Number(checkin?.weight) || 0;
   const previousWeight = Number(previousCheckin?.weight) || 0;
   const weightChange =
     currentWeight && previousWeight
-      ? formatSignedKg(Number((currentWeight - previousWeight).toFixed(1)))
-      : "Sin base";
+      ? formatSignedKg(Number((currentWeight - previousWeight).toFixed(1)), t)
+      : t("checkin.timeline.noBase");
   const status =
     currentWeight && previousWeight && currentWeight < previousWeight
-      ? "Consistencia positiva"
+      ? t("checkin.timeline.positiveConsistency")
       : previousCheckin
-      ? "Ritmo estable"
-      : "Punto inicial";
+      ? t("checkin.timeline.steadyPace")
+      : t("checkin.timeline.startingPoint");
 
   return { timeAgo, weightChange, status };
 }
 
-function formatDaysBetween(currentDate, previousDate) {
+function formatDaysBetween(currentDate, previousDate, t) {
   const currentTime = currentDate ? new Date(currentDate).getTime() : Number.NaN;
   const previousTime = previousDate ? new Date(previousDate).getTime() : Number.NaN;
 
   if (Number.isNaN(currentTime) || Number.isNaN(previousTime)) {
-    return "Hace días";
+    return t("checkin.timeline.daysAgoFallback");
   }
 
   const diffDays = Math.max(
@@ -1056,33 +1075,33 @@ function formatDaysBetween(currentDate, previousDate) {
     Math.round(Math.abs(currentTime - previousTime) / 86400000)
   );
 
-  return `Hace ${diffDays} día${diffDays === 1 ? "" : "s"}`;
+  return t("checkin.timeline.daysAgo", { count: diffDays });
 }
 
-function formatSignedKg(value) {
-  if (!value) return "0kg";
+function formatSignedKg(value, t) {
+  if (!value) return `0${t("checkin.units.kg")}`;
 
-  return `${value > 0 ? "+" : ""}${value}kg`;
+  return `${value > 0 ? "+" : ""}${value}${t("checkin.units.kg")}`;
 }
 
-function getCheckinMotivation({ lastCheckin, previousCheckin, weightDiff }) {
+function getCheckinMotivation({ lastCheckin, previousCheckin, weightDiff, t }) {
   if (!lastCheckin) {
-    return "Tu primer registro marcará el punto de partida.";
+    return t("checkin.motivation.first");
   }
 
   const visualText = String(lastCheckin.visual_changes || "").toLowerCase();
 
-  if (visualText.includes("mejor")) {
-    return "Tu constancia empieza a reflejarse visualmente.";
+  if (visualText.includes("mejor") || visualText.includes("better")) {
+    return t("checkin.motivation.visual");
   }
 
-  if (previousCheckin && weightDiff && weightDiff !== "—") {
-    return "Buen progreso semanal. Mantén el mismo ritmo.";
+  if (previousCheckin && weightDiff && weightDiff !== t("checkin.timeline.noBase")) {
+    return t("checkin.motivation.weekly");
   }
 
   if (previousCheckin) {
-    return "Se empieza a formar una referencia clara de evolución.";
+    return t("checkin.motivation.reference");
   }
 
-  return "Primer check-in guardado. La constancia hará visible el progreso.";
+  return t("checkin.motivation.saved");
 }

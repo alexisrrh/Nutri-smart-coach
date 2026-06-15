@@ -9,6 +9,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EXERCISE_LIBRARY, MUSCLE_GROUPS } from "../data/exerciseLibrary";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell, ConfirmDialog, PremiumEmptyState } from "../components/ui";
@@ -47,6 +48,16 @@ import {
   shareCustomWorkoutWeek,
 } from "../services/customWorkoutService";
 import { supabase } from "../lib/supabase";
+import {
+  getWorkoutLanguage,
+  translateEquipmentLabel,
+  translateFocusLabel,
+  translateGoalLabel,
+  translateLevelLabel,
+  translateMuscleLabel,
+  translateRoutineDay,
+  translateWorkoutText,
+} from "../utils/workoutI18n";
 
 const SHARED_ROUTINE_BASE_URL = "https://nutrismartcoach.com/rutina";
 const routineActionBaseClass =
@@ -87,6 +98,8 @@ async function copyTextToClipboard(text) {
 }
 
 export function WorkoutRoutines() {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialMuscle = getInitialMuscle(searchParams);
@@ -281,7 +294,7 @@ export function WorkoutRoutines() {
 
   async function handleShareWeeklyCollection() {
     if (!customRoutines.length) {
-      toast.error("No hay rutinas para compartir.");
+      toast.error(translateWorkoutText("No hay rutinas para compartir.", language));
       return;
     }
 
@@ -293,7 +306,9 @@ export function WorkoutRoutines() {
       } = await supabase.auth.getUser();
 
       if (!user?.id) {
-        toast.error("Necesitas iniciar sesión para compartir esta semana.");
+        toast.error(
+          translateWorkoutText("Necesitas iniciar sesión para compartir esta semana.", language)
+        );
         return;
       }
 
@@ -301,26 +316,26 @@ export function WorkoutRoutines() {
       const sharedWeek = await shareCustomWorkoutWeek(user.id, customRoutines);
       const shareUrl = buildSharedWeekUrl(sharedWeek.share_id);
       const payload = {
-        title: "Mi semana de entrenamiento",
-        text: "Mira mi semana de entrenamiento personalizada.",
+        title: translateWorkoutText("Mi semana de entrenamiento", language),
+        text: translateWorkoutText("Mira mi semana de entrenamiento personalizada.", language),
         url: shareUrl,
       };
 
       if (navigator.share) {
         await navigator.share(payload);
-        toast.success("Semana compartida.");
+        toast.success(translateWorkoutText("Semana compartida.", language));
         return;
       }
 
       const copied = await copyTextToClipboard(shareUrl);
       if (!copied) {
-        throw new Error("No se pudo copiar el enlace.");
+        throw new Error(translateWorkoutText("No se pudo copiar el enlace.", language));
       }
 
-      toast.success("Enlace copiado. Comparte tu semana.");
+      toast.success(translateWorkoutText("Enlace copiado. Comparte tu semana.", language));
     } catch (error) {
       console.error("Error compartiendo semana de rutinas:", error);
-      toast.error(error.message || "No se pudo compartir la semana.");
+      toast.error(error.message || translateWorkoutText("No se pudo compartir la semana.", language));
     } finally {
       setSharingWeek(false);
     }
@@ -363,7 +378,7 @@ export function WorkoutRoutines() {
 
     const customDay = {
       id: routine.id,
-      day: "Personalizada",
+      day: translateWorkoutText("Personalizada", language),
       name: routine.name,
       routineId: routine.id,
       routineName: routine.name,
@@ -372,9 +387,16 @@ export function WorkoutRoutines() {
       goal: routine.goal || selectedGoal,
       level: routine.level || selectedLevel,
       focus: routine.focus || firstDay.muscles?.[0] || "General",
-      duration: "45 min",
-      warmupItems: ["5 min cardio suave", "Movilidad articular", "Activación ligera"],
-      finalItems: ["Estiramiento breve", "Respiración y recuperación"],
+      duration: translateWorkoutText("45 min", language),
+      warmupItems: [
+        translateWorkoutText("5 min cardio suave", language),
+        translateWorkoutText("Movilidad articular", language),
+        translateWorkoutText("Activación ligera", language),
+      ],
+      finalItems: [
+        translateWorkoutText("Estiramiento breve", language),
+        translateWorkoutText("Respiración y recuperación", language),
+      ],
       exercises: (firstDay.exercises || []).map((customExercise) => {
         const fullExercise = EXERCISE_LIBRARY.find(
           (exercise) => exercise.id === customExercise.exerciseId
@@ -437,13 +459,13 @@ export function WorkoutRoutines() {
             <div className="relative z-10 flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-                  Entrenamientos
+                  {t("workouts.hero.badge")}
                 </p>
                 <h1 className="mt-0.5 text-[20px] font-black leading-none text-[var(--app-text)]">
-                  Rutinas
+                  {t("workouts.hero.title")}
                 </h1>
                 <p className={`mt-1 ${routineSubtitleClass}`}>
-                  Tu plan semanal de entrenamiento
+                  {t("workouts.hero.subtitle")}
                 </p>
               </div>
 
@@ -461,7 +483,7 @@ export function WorkoutRoutines() {
         </header>
 
    <main className="w-full max-w-full overflow-x-hidden">
-          <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
+        <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
             <AIPerformanceCore
               planStats={planStats}
               workoutCompletions={workoutCompletions}
@@ -608,11 +630,14 @@ export function WorkoutRoutines() {
       <div className="relative z-[100]">
         <ConfirmDialog
           open={Boolean(routinePendingDelete)}
-          title="Eliminar rutina"
-          description="Esta acción eliminará tu rutina personalizada y no se puede deshacer."
-          confirmLabel="Eliminar rutina"
-          cancelLabel="Cancelar"
-          variant="danger"
+      title={translateWorkoutText("Eliminar rutina", language)}
+      description={translateWorkoutText(
+        "Esta acción eliminará tu rutina personalizada y no se puede deshacer.",
+        language
+      )}
+      confirmLabel={translateWorkoutText("Eliminar rutina", language)}
+      cancelLabel={translateWorkoutText("Cancelar", language)}
+      variant="danger"
           onCancel={handleCancelDeleteCustomRoutine}
           onConfirm={handleConfirmDeleteCustomRoutine}
         />
@@ -627,6 +652,7 @@ function CustomRoutinesSection({
   onCreate,
   onOpen,
 }) {
+  const { t } = useTranslation();
   const count = routines.length;
 
   return (
@@ -639,25 +665,25 @@ function CustomRoutinesSection({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-semibold tracking-[0.12em] text-[var(--app-primary)]">
-                Mis rutinas
+                {t("workouts.custom.badge")}
               </span>
               <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_62%,var(--app-muted))]">
                 {count > 0
-                  ? `${count} guardadas`
-                  : "Sin rutinas"}
+                  ? t("workouts.custom.savedCount", { count })
+                  : t("workouts.custom.emptyBadge")}
               </span>
             </div>
 
             <h2 className="mt-2.5 text-[18px] font-semibold leading-[1.02] text-[var(--app-text)]">
-              Mis rutinas
+              {t("workouts.custom.title")}
             </h2>
 
             <p className={`mt-1.5 max-w-[22rem] ${routineSubtitleClass}`}>
               {loading
-                ? "Sincronizando tus rutinas..."
+                ? t("workouts.custom.loading")
                 : count > 0
-                  ? `${count} rutinas guardadas`
-                  : "No tienes rutinas todavía. Crea tu primera rutina aquí."}
+                  ? t("workouts.custom.savedSummary", { count })
+                  : t("workouts.custom.emptyDescription")}
             </p>
           </div>
         </div>
@@ -668,7 +694,7 @@ function CustomRoutinesSection({
             onClick={onCreate}
             className={routinePrimaryActionClass}
           >
-            Crear rutina
+            {t("workouts.custom.create")}
           </button>
 
           <button
@@ -676,7 +702,7 @@ function CustomRoutinesSection({
             onClick={onOpen}
             className={routineSecondaryActionClass}
           >
-            Ver rutinas
+            {t("workouts.custom.open")}
             <ChevronRight size={11} />
           </button>
         </div>
@@ -690,14 +716,17 @@ function AIPerformanceCore({
   workoutCompletions,
   workoutSessions,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const coreStats = useMemo(
     () =>
       getAIPerformanceCoreStats({
         planStats,
         workoutCompletions,
         workoutSessions,
+        language,
       }),
-    [planStats, workoutCompletions, workoutSessions]
+    [language, planStats, workoutCompletions, workoutSessions]
   );
   const active = coreStats.hasData;
 
@@ -775,7 +804,7 @@ function AIPerformanceCore({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_72%,transparent)] px-2 py-1 text-[7px] font-bold uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              AI Performance Core
+              {t("workouts.core.badge")}
             </span>
             <span
               className={[
@@ -788,12 +817,12 @@ function AIPerformanceCore({
           </div>
 
           <h2 className="mt-2 text-[18px] font-semibold leading-tight text-[var(--app-text)]">
-            AI Performance Core
+            {t("workouts.core.title")}
           </h2>
           <p className={`mt-1 max-w-[17.5rem] ${routineSubtitleClass}`}>
             {active
-              ? "Tu evolución está siendo analizada en tiempo real."
-              : "Completa tu primer entrenamiento para activar el análisis inteligente."}
+              ? t("workouts.core.active")
+              : t("workouts.core.inactive")}
           </p>
         </div>
       </div>
@@ -853,6 +882,8 @@ function CustomRoutinesSheet({
   sharingWeek,
   workoutSessions,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const count = routines.length;
 
   return (
@@ -876,21 +907,21 @@ function CustomRoutinesSheet({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-bold tracking-[0.12em] text-[var(--app-primary)]">
-                    Rutinas personalizadas
+                <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[rgba(8,16,26,0.74)] px-2.5 py-1 text-[7px] font-bold tracking-[0.12em] text-[var(--app-primary)]">
+                    {t("workouts.customSheet.badge")}
                   </span>
                   <span className="inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_62%,var(--app-muted))]">
                     {routines.length > 0
-                      ? `${routines.length} guardadas`
-                      : "Sin rutinas"}
+                      ? t("workouts.customSheet.savedCount", { count: routines.length })
+                      : t("workouts.customSheet.emptyBadge")}
                   </span>
                 </div>
 
                 <h2 className="mt-2 text-[18px] font-semibold leading-none text-[var(--app-text)]">
-                  Mis rutinas
+                  {t("workouts.customSheet.title")}
                 </h2>
                 <p className={`mt-1 max-w-[18rem] ${routineSubtitleClass}`}>
-                  Guarda, abre o comparte tus rutinas sin mezclarla con la rutina semanal.
+                  {t("workouts.customSheet.subtitle")}
                 </p>
               </div>
 
@@ -908,7 +939,7 @@ function CustomRoutinesSheet({
                   onClick={onShareWeek}
                   disabled={!count || sharingWeek}
                   className="mt-1 grid h-10 w-10 place-items-center rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[rgba(8,16,26,0.52)] text-[var(--app-primary)] shadow-[0_0_14px_rgba(0,196,255,0.12)] transition duration-150 hover:bg-[rgba(8,16,26,0.7)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Compartir semana"
+                  aria-label={t("workouts.customSheet.shareAria")}
                 >
                   <Share2 size={15} />
                 </button>
@@ -921,9 +952,9 @@ function CustomRoutinesSheet({
               {routines.length === 0 ? (
                 <PremiumEmptyState
                   icon={Sparkles}
-                  title="No tienes rutinas disponibles"
-                  description="Crea tu primera rutina personalizada y empieza a entrenar a tu manera."
-                  actionLabel="+ Crear rutina"
+                  title={t("workouts.customSheet.emptyTitle")}
+                  description={t("workouts.customSheet.emptyDescription")}
+                  actionLabel={t("workouts.customSheet.create")}
                   onAction={onCreate}
                 />
               ) : routines.map((routine) => {
@@ -935,15 +966,18 @@ function CustomRoutinesSheet({
                 const muscles =
                   firstDay?.muscles?.join(" + ") ||
                   routine.focus ||
-                  "General";
+                  t("workouts.common.general");
                 const lastUsedLabel = getRoutineLastUsedLabel(
                   routine,
-                  workoutSessions
+                  workoutSessions,
+                  t,
+                  language
                 );
                 const routineName = formatRoutineDisplayName(
-                  routine.name || "Rutina personalizada"
+                  translateWorkoutText(routine.name || t("workouts.common.customRoutine"), language),
+                  language
                 );
-                const publicLabel = routine.is_public ? "Pública" : "Privada";
+                const publicLabel = routine.is_public ? t("workouts.common.public") : t("workouts.common.private");
 
                 return (
                   <article
@@ -956,30 +990,30 @@ function CustomRoutinesSheet({
                       <div className="mb-2 flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="text-[7px] font-semibold tracking-[0.12em] text-[var(--app-primary)]">
-                            Creada por ti
+                            {t("workouts.customSheet.createdByYou")}
                           </p>
                           <h3 className="mt-1 text-[15px] font-semibold leading-[1.05] text-[var(--app-text)]">
                             {routineName}
                           </h3>
                           <p className="mt-1 text-[8px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
-                            {publicLabel}
+                            {translateWorkoutText(publicLabel, language)}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-1.5">
-                        <InfoChip label={muscles} />
-                        <InfoChip label={routine.level || "Nivel libre"} />
-                        <InfoChip label={`${exerciseCount} ejercicios`} />
+                        <InfoChip label={translateWorkoutText(muscles, language)} />
+                        <InfoChip label={translateWorkoutText(routine.level || "Nivel libre", language)} />
+                        <InfoChip label={translateWorkoutText(`${exerciseCount} ejercicios`, language)} />
                         {getRoutineEstimatedDurationLabel(routine) ? (
                           <InfoChip
-                            label={getRoutineEstimatedDurationLabel(routine)}
+                            label={translateWorkoutText(getRoutineEstimatedDurationLabel(routine, language), language)}
                           />
                         ) : null}
                       </div>
 
                       <p className={`mt-2 ${routineSecondaryTextClass}`}>
-                        {lastUsedLabel || "Aún no usada"}
+                        {lastUsedLabel || translateWorkoutText("Aún no usada", language)}
                       </p>
 
                       <div className="mt-2.5">
@@ -989,7 +1023,7 @@ function CustomRoutinesSheet({
                           className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[linear-gradient(135deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_76%,#7df5ff))] text-[10px] font-semibold tracking-[0.01em] text-[var(--app-surface)] shadow-[0_10px_20px_rgba(0,196,255,0.2)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
                         >
                           <Play size={14} />
-                          Iniciar entrenamiento
+                          {t("workouts.customSheet.start")}
                         </button>
                       </div>
 
@@ -999,7 +1033,7 @@ function CustomRoutinesSheet({
                           onClick={() => onEdit?.(routine.id)}
                           className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[rgba(8,16,26,0.26)] px-3 text-[8px] font-semibold text-[var(--app-primary)] transition duration-150 hover:bg-[rgba(8,16,26,0.42)] active:scale-[0.98]"
                         >
-                          Editar rutina
+                          {t("workouts.customSheet.edit")}
                         </button>
 
                         <button
@@ -1008,7 +1042,7 @@ function CustomRoutinesSheet({
                           className="inline-flex h-7 items-center justify-center gap-1.5 rounded-full border border-transparent bg-transparent px-2 text-[8px] font-semibold tracking-[0.02em] text-[color:color-mix(in_srgb,#ff8a98_78%,var(--app-primary))] transition duration-150 hover:bg-[rgba(255,107,122,0.08)] active:scale-[0.98]"
                         >
                           <Trash2 size={11} />
-                          Eliminar
+                          {t("workouts.customSheet.delete")}
                         </button>
                       </div>
                     </div>
@@ -1023,7 +1057,7 @@ function CustomRoutinesSheet({
   );
 }
 
-function getRoutineLastUsedLabel(routine, sessions) {
+function getRoutineLastUsedLabel(routine, sessions, t, language) {
   const lastSession = (sessions || []).find((session) => {
     const routineId =
       session?.routineId || session?.routine_id || session?.day?.routineId;
@@ -1051,13 +1085,18 @@ function getRoutineLastUsedLabel(routine, sessions) {
   const parsedDate = new Date(rawDate);
   if (Number.isNaN(parsedDate.getTime())) return null;
 
-  return `Último uso · ${parsedDate.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-  })}`;
+  return getWorkoutLanguage(language) === "en"
+    ? `Last used · ${parsedDate.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+      })}`
+    : `Último uso · ${parsedDate.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "short",
+      })}`;
 }
 
-function getRoutineEstimatedDurationLabel(routine) {
+function getRoutineEstimatedDurationLabel(routine, language) {
   const firstDay = Array.isArray(routine?.days) ? routine.days[0] : null;
   const explicitDuration = firstDay?.duration || routine?.duration;
 
@@ -1072,20 +1111,26 @@ function getRoutineEstimatedDurationLabel(routine) {
   if (!exerciseCount) return null;
 
   const estimatedMinutes = Math.max(20, Math.min(90, exerciseCount * 8));
-  return `${estimatedMinutes} min aprox.`;
+  return getWorkoutLanguage(language) === "en"
+    ? `${estimatedMinutes} min approx.`
+    : `${estimatedMinutes} min aprox.`;
 }
 
-function formatRoutineDisplayName(name) {
-  if (!name || typeof name !== "string") return "Rutina personalizada";
+function formatRoutineDisplayName(name, language) {
+  if (!name || typeof name !== "string") {
+    return getWorkoutLanguage(language) === "en" ? "Custom routine" : "Rutina personalizada";
+  }
 
   return name
     .trim()
     .split(/\s+/)
-    .map((word) =>
-      word.length > 1
+    .map((word) => {
+      if (/^[A-Z0-9/.-]+$/.test(word)) return word;
+
+      return word.length > 1
         ? `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
-        : word.toUpperCase()
-    )
+        : word.toUpperCase();
+    })
     .join(" ");
 }
 
@@ -1110,11 +1155,15 @@ function IAWeeklyRoutineCard({
   selectedGoal,
   selectedLevel,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const progress = planConfirmed ? planStats.weeklyProgress : 0;
   const remainingText = planConfirmed
-    ? `${planStats.completedCount}/${daysPerWeek} completadas`
-    : "Aún no generaste tu rutina automática";
-  const primaryLabel = planConfirmed ? "Continuar rutina" : "Generar rutina IA";
+    ? translateWorkoutText(`${planStats.completedCount}/${daysPerWeek} completadas`, language)
+    : translateWorkoutText("Aún no generaste tu rutina automática", language);
+  const primaryLabel = planConfirmed
+    ? translateWorkoutText("Continuar rutina", language)
+    : translateWorkoutText("Generar rutina IA", language);
 
   return (
     <section className="relative overflow-hidden rounded-[1.15rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--app-card)_90%,#08131b),var(--app-card))] p-3 shadow-[0_12px_26px_rgba(0,0,0,0.14)]">
@@ -1126,22 +1175,22 @@ function IAWeeklyRoutineCard({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2.5 py-1 text-[7px] font-extrabold tracking-[0.12em] text-[var(--app-primary)]">
-                Generada con IA
+                {translateWorkoutText("Generada con IA", language)}
               </span>
             </div>
 
             <h2 className="mt-2 text-[18px] font-semibold leading-[1.02] text-[var(--app-text)]">
-              Rutina semanal IA
+              {translateWorkoutText("Rutina semanal IA", language)}
             </h2>
 
             <p className={`mt-1.5 max-w-[22rem] ${routineSubtitleClass}`}>
-              La app crea una rutina semanal automáticamente según tu nivel, objetivo y progreso.
+              {translateWorkoutText("La app crea una rutina semanal automáticamente según tu nivel, objetivo y progreso.", language)}
             </p>
 
             <div className="mt-3 grid gap-1.5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                  Progreso semanal
+                  {translateWorkoutText("Progreso semanal", language)}
                 </p>
                 <p className="text-[10px] font-semibold leading-tight text-[var(--app-text)]">{remainingText}</p>
               </div>
@@ -1155,27 +1204,27 @@ function IAWeeklyRoutineCard({
 
               {planConfirmed ? (
                 <p className={routineSecondaryTextClass}>
-                  {planStats.planName || planMeta?.planName || "Tu rutina automática"}
+                  {translateWorkoutText(planStats.planName || planMeta?.planName || "Tu rutina automática", language)}
                 </p>
               ) : (
                 <p className={routineSecondaryTextClass}>
-                  La app creará tu rutina según tu nivel, objetivo y progreso.
+                  {translateWorkoutText("La app creará tu rutina según tu nivel, objetivo y progreso.", language)}
                 </p>
               )}
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <span className={routinePillClass}>
-                {selectedLevel}
+                {translateWorkoutText(selectedLevel, language)}
               </span>
               <span className={routinePillClass}>
-                {selectedGoal}
+                {translateWorkoutText(selectedGoal, language)}
               </span>
               <span className={routinePillClass}>
-                {selectedFocus}
+                {translateWorkoutText(selectedFocus, language)}
               </span>
               <span className={routinePillClass}>
-                {daysPerWeek} días
+                {translateWorkoutText(`${daysPerWeek} días`, language)}
               </span>
             </div>
           </div>
@@ -1206,7 +1255,7 @@ function IAWeeklyRoutineCard({
             onClick={onAdjust}
             className={routineSecondaryActionClass}
           >
-            Ajustar plan
+            {t("workouts.plan.adjust")}
           </button>
         </div>
       </div>
@@ -1225,6 +1274,8 @@ function WeeklyRoutineSheet({
   selectedGoal,
   selectedLevel,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
   <div className="fixed inset-0 z-[85] overflow-y-auto bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+8px)] pt-3 backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 <section className="mx-auto w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
@@ -1232,13 +1283,13 @@ function WeeklyRoutineSheet({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2 py-0.5 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-primary)]">
-                  Rutina IA semanal
+                  {t("workouts.weekly.badge")}
                 </span>
                 <h2 className="mt-2 text-[20px] font-black leading-none text-[var(--app-text)]">
-                  Tu semana completa
+                  {t("workouts.weekly.title")}
                 </h2>
                 <p className={`mt-1 max-w-[20rem] ${routineSubtitleClass}`}>
-                  Revisa cada día y comienza tu siguiente entrenamiento cuando quieras.
+                  {t("workouts.weekly.subtitle")}
                 </p>
               </div>
 
@@ -1254,10 +1305,13 @@ function WeeklyRoutineSheet({
             <div className="mt-2 grid gap-2 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                  Progreso semanal
+                  {t("workouts.weekly.progress")}
                 </p>
                 <p className="text-[9px] font-semibold text-[var(--app-text)]">
-                  {planStats.completedCount}/{days.length} completadas
+                  {t("workouts.weekly.completed", {
+                    completed: planStats.completedCount,
+                    total: days.length,
+                  })}
                 </p>
               </div>
 
@@ -1290,7 +1344,7 @@ function WeeklyRoutineSheet({
                 return (
                   <WeeklyRoutineDayCard
                     key={day.id}
-                    day={day}
+                    day={translateRoutineDay(day, language)}
                     locked={locked}
                     onOpen={() => onOpenDay(day)}
                     onStart={() => onStartDayWorkout(day)}
@@ -1320,8 +1374,10 @@ function WeeklyRoutineDayCard({
   onToggle,
   status,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const complete = status === "completado";
-  const statusLabel = getDayStatusLabel(status);
+  const statusLabel = getDayStatusLabel(status, t, language);
 
   return (
     <article
@@ -1353,13 +1409,15 @@ function WeeklyRoutineDayCard({
 
               <div className="min-w-0 flex-1">
                   <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                    Día {day.day}
+                    {t("workouts.weekly.dayLabel", { day: day.day })}
                   </p>
                   <h3 className="mt-0.5 line-clamp-2 text-[13px] font-semibold leading-[1.05] text-[var(--app-text)]">
-                    {day.muscles.join(" + ")}
+                    {Array.isArray(day.muscles)
+                      ? day.muscles.map((muscle) => translateMuscleLabel(muscle, language)).join(" + ")
+                      : day.muscles}
                   </h3>
                   <p className={`mt-0.5 ${routineSecondaryTextClass}`}>
-                    {day.duration}
+                    {translateWorkoutText(day.duration, language)}
                   </p>
               </div>
             </div>
@@ -1382,16 +1440,20 @@ function WeeklyRoutineDayCard({
             className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[0.9rem] bg-[var(--app-primary)] text-[8px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_16px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
           >
             <Play size={12} />
-            Comenzar
+            {translateWorkoutText("Comenzar", language)}
           </button>
 
           <button
             type="button"
             onClick={onToggle}
             className="h-10 rounded-[0.9rem] border border-[var(--app-border)] bg-[rgba(8,16,26,0.46)] px-3.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)] transition duration-150 hover:bg-[rgba(8,16,26,0.58)] active:scale-[0.98]"
-            aria-label={complete ? "Desmarcar entrenamiento" : "Marcar entrenamiento"}
+            aria-label={
+              complete
+                ? translateWorkoutText("Desmarcar entrenamiento", language)
+                : translateWorkoutText("Marcar entrenamiento", language)
+            }
           >
-            {complete ? "Hecho" : "Marcar"}
+            {complete ? t("workouts.weekly.done") : t("workouts.weekly.mark")}
           </button>
         </div>
       </div>
@@ -1400,6 +1462,8 @@ function WeeklyRoutineDayCard({
 }
 
 function WorkoutHistoryCard({ session, compact = false }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const completedExercisesCount = getCompletedExercisesCount(session);
   const exerciseNames = getCompletedExerciseNames(session);
 
@@ -1408,34 +1472,34 @@ function WorkoutHistoryCard({ session, compact = false }) {
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-            {formatSessionDate(session)}
+            {formatSessionDate(session, language)}
           </p>
           <h3 className="mt-0.5 truncate text-[13px] font-black text-[var(--app-text)]">
-            {session.dayName || "Entrenamiento"}
+            {translateWorkoutText(session.dayName || t("workouts.history.card.sessionFallback"), language)}
           </h3>
           <p className={`mt-0.5 truncate ${routineSecondaryTextClass}`}>
-            {formatMuscles(session.muscles)}
+            {formatMuscles(session.muscles, language, t)}
           </p>
         </div>
         <div className="shrink-0 text-right">
           <p className="text-[11px] font-black text-[var(--app-text)]">
-            {session.duration} min
+            {translateWorkoutText(`${session.duration} min`, language)}
           </p>
           <p className="mt-0.5 text-[9px] font-black text-[var(--app-primary)]">
-            {session.caloriesEstimate} kcal
+            {translateWorkoutText(`${session.caloriesEstimate} kcal`, language)}
           </p>
         </div>
       </div>
 
       <div className="mt-1.5 flex flex-wrap gap-1">
-        <HistoryPill>{completedExercisesCount} ejercicios</HistoryPill>
-        <HistoryPill>{session.duration} min</HistoryPill>
+        <HistoryPill>{translateWorkoutText(`${completedExercisesCount} ejercicios`, language)}</HistoryPill>
+        <HistoryPill>{translateWorkoutText(`${session.duration} min`, language)}</HistoryPill>
       </div>
 
       {!compact && exerciseNames.length ? (
         <div className="mt-2 border-t border-[var(--app-border)] pt-2">
           <p className={`line-clamp-2 ${routineSecondaryTextClass}`}>
-            {exerciseNames.join(" · ")}
+            {translateWorkoutText(exerciseNames.join(" · "), language)}
           </p>
         </div>
       ) : null}
@@ -1461,6 +1525,8 @@ function DayDetailSheet({
   onStart,
   onSkip,
 }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-sm">
       <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-12px_38px_rgba(0,0,0,0.42)]">
@@ -1474,32 +1540,33 @@ function DayDetailSheet({
               >
                 <ArrowLeft size={14} />
               </button>
-              <button
-                type="button"
-                onClick={onSkip}
-                className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)] transition duration-150 hover:text-[var(--app-text)]"
-              >
-                Saltar
-              </button>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-muted)] transition duration-150 hover:text-[var(--app-text)]"
+            >
+                {t("workouts.day.skip")}
+            </button>
             </div>
 
             <p className="mt-2 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-              Día {day.day} · {day.duration}
+              {t("workouts.day.dayDuration", { day: day.day, duration: day.duration })}
             </p>
             <h2 className="mt-0.5 break-words text-[20px] font-semibold leading-tight text-[var(--app-text)] line-clamp-2">
-              {day.name}
+              {translateWorkoutText(day.name, language)}
             </h2>
           </div>
 
           <div className="min-h-0 overflow-y-auto px-2.5 pb-3 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <RoutineBlock
-              title="Calentamiento"
-              items={day.warmupItems || getWarmupItems(day)}
+              title={t("workouts.day.warmup")}
+              items={day.warmupItems || getWarmupItems(day, language)}
+              language={language}
             />
 
             <div className="mt-2.5">
               <p className="px-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Ejercicios
+                {t("workouts.day.exercises")}
               </p>
               <div className="mt-1.5 grid gap-1">
                 {exercises.map((exercise) => (
@@ -1515,8 +1582,9 @@ function DayDetailSheet({
             </div>
 
             <RoutineBlock
-              title="Final"
-              items={day.finalItems || ["Estiramiento breve", "Respiración y recuperación"]}
+              title={t("workouts.day.finish")}
+              items={day.finalItems || [t("workouts.day.finishItems.one"), t("workouts.day.finishItems.two")]}
+              language={language}
             />
 
             <button
@@ -1525,7 +1593,7 @@ function DayDetailSheet({
               className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-4 text-[10px] font-semibold tracking-[0.02em] text-[var(--app-surface)] shadow-[0_8px_18px_rgba(0,196,255,0.14)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
             >
               <Play size={16} />
-              Comenzar entrenamiento
+              {t("workouts.day.start")}
             </button>
           </div>
         </div>
@@ -1535,6 +1603,8 @@ function DayDetailSheet({
 }
 
 function ExerciseListItem({ exercise, goal, level, onClick }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const prescription = getExercisePrescription(exercise, level, goal);
 
   return (
@@ -1543,16 +1613,16 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
       onClick={onClick}
       className="flex min-h-[62px] items-center gap-2 rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1.5 text-left transition duration-150 hover:bg-[rgba(8,16,26,0.48)] active:scale-[0.99]"
     >
-      <ExerciseMediaFrame exercise={exercise} variant="thumb" className="h-11 w-11 shrink-0" />
+        <ExerciseMediaFrame exercise={exercise} variant="thumb" className="h-11 w-11 shrink-0" />
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-[13px] font-semibold text-[var(--app-text)]">
-          {exercise.name}
+          {translateWorkoutText(exercise.name, language)}
         </h3>
         <p className={`mt-0.5 ${routineSecondaryTextClass}`}>
-          {prescription.sets} x {prescription.reps}
+          {t("workouts.day.setsReps", { sets: prescription.sets, reps: prescription.reps })}
         </p>
         <p className="mt-0.5 text-[9px] font-medium tracking-[0.01em] text-[color:color-mix(in_srgb,var(--app-text)_58%,var(--app-muted))]">
-          Descanso {prescription.rest}
+          {t("workouts.day.rest", { rest: prescription.rest })}
         </p>
       </div>
       <ChevronRight size={14} className="text-[var(--app-primary)]" />
@@ -1561,6 +1631,8 @@ function ExerciseListItem({ exercise, goal, level, onClick }) {
 }
 
 function RoutineBlock({ title, items }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
     <section className="mt-2.5 first:mt-0">
       <p className="px-0.5 text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
@@ -1568,7 +1640,7 @@ function RoutineBlock({ title, items }) {
       </p>
       <div className="mt-1 rounded-[0.85rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5">
         <p className="truncate text-[11px] font-medium text-[var(--app-text)]">
-          {items.join(" · ")}
+          {translateWorkoutText(items.join(" · "), language)}
         </p>
       </div>
     </section>
@@ -1576,6 +1648,8 @@ function RoutineBlock({ title, items }) {
 }
 
 function ExerciseSheet({ exercise, goal, level, onClose }) {
+  const { t, i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const prescription = getExercisePrescription(exercise, level, goal);
   const visibleTips = (exercise.tips || []).slice(0, 2);
   const hiddenTipsCount = Math.max(0, (exercise.tips || []).length - visibleTips.length);
@@ -1587,14 +1661,14 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
         <div className="flex max-h-[calc(100dvh-var(--bottom-nav-space)-28px)] flex-col">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-primary)]">
-                {exercise.muscle}
+            <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1 text-[8px] font-semibold tracking-[0.02em] text-[var(--app-primary)]">
+                {translateMuscleLabel(exercise.muscle, language)}
               </span>
               <button
                 type="button"
                 onClick={onClose}
                 className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition hover:text-[var(--app-text)]"
-                aria-label="Cerrar ejercicio"
+                aria-label={t("workouts.exercise.close")}
               >
                 <X size={14} />
               </button>
@@ -1609,30 +1683,30 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
             />
 
             <h2 className="mt-2 line-clamp-2 text-[22px] font-black leading-[1.05] text-[var(--app-text)]">
-              {exercise.name}
+              {translateWorkoutText(exercise.name, language)}
             </h2>
             <p className={`mt-1 line-clamp-2 ${routineSubtitleClass}`}>
-              {exercise.description}
+              {translateWorkoutText(exercise.description, language)}
             </p>
 
             <div className="mt-2 flex gap-1.5">
-              <SheetChip label="Series" value={prescription.sets} />
-              <SheetChip label="Reps" value={prescription.reps} />
-              <SheetChip label="Descanso" value={prescription.rest} />
+              <SheetChip label={t("workouts.exercise.sets")} value={prescription.sets} />
+              <SheetChip label={t("workouts.exercise.reps")} value={prescription.reps} />
+              <SheetChip label={t("workouts.exercise.rest")} value={prescription.rest} />
             </div>
 
             <div className="mt-2 flex flex-wrap gap-1.5">
-              <InfoPill>{exercise.muscle}</InfoPill>
-              <InfoPill>{exercise.equipment}</InfoPill>
+              <InfoPill>{translateMuscleLabel(exercise.muscle, language)}</InfoPill>
+              <InfoPill>{translateEquipmentLabel(exercise.equipment, language)}</InfoPill>
             </div>
 
-            <CompactInfo title="Tips" items={visibleTips} />
+            <CompactInfo title={t("workouts.exercise.tips")} items={visibleTips} language={language} />
             {hiddenTipsCount > 0 ? (
               <p className="mt-1 px-0.5 text-[10px] font-black text-[var(--app-primary)]">
-                Ver más ({hiddenTipsCount})
+                {t("workouts.exercise.more", { count: hiddenTipsCount })}
               </p>
             ) : null}
-            <CompactInfo title="Errores comunes" items={visibleMistakes} clamp />
+            <CompactInfo title={t("workouts.exercise.mistakes")} items={visibleMistakes} clamp language={language} />
           </div>
         </div>
       </section>
@@ -1640,7 +1714,7 @@ function ExerciseSheet({ exercise, goal, level, onClose }) {
   );
 }
 
-function SelectFilter({ label, value, options, onChange }) {
+function SelectFilter({ label, value, options, onChange, language }) {
   return (
     <label className="block">
       <span className="mb-1 block text-[9px] font-semibold tracking-[0.08em] text-[var(--app-muted)]">
@@ -1653,11 +1727,20 @@ function SelectFilter({ label, value, options, onChange }) {
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {translateOption(option, language)}
           </option>
         ))}
       </select>
     </label>
+  );
+}
+
+function translateOption(option, language) {
+  return (
+    translateLevelLabel(option, language) ||
+    translateGoalLabel(option, language) ||
+    translateFocusLabel(option, language) ||
+    option
   );
 }
 
@@ -1682,7 +1765,7 @@ function InfoPill({ children }) {
   );
 }
 
-function CompactInfo({ title, items, clamp = false }) {
+function CompactInfo({ title, items, clamp = false, language }) {
   if (!items?.length) return null;
 
   return (
@@ -1699,7 +1782,7 @@ function CompactInfo({ title, items, clamp = false }) {
               clamp ? "line-clamp-1" : "line-clamp-2",
             ].join(" ")}
           >
-            {item}
+            {translateWorkoutText(item, language)}
           </p>
         ))}
       </div>
@@ -1711,6 +1794,7 @@ function getAIPerformanceCoreStats({
   planStats,
   workoutCompletions,
   workoutSessions,
+  language,
 }) {
   const sessions = Array.isArray(workoutSessions) ? workoutSessions : [];
   const completions = Array.isArray(workoutCompletions) ? workoutCompletions : [];
@@ -1735,22 +1819,28 @@ function getAIPerformanceCoreStats({
     hasData,
     metrics: [
       {
-        label: "Racha actual",
-        value: hasData ? formatStreakValue(currentStreak) : "Sin activar",
+        label: getWorkoutLanguage(language) === "en" ? "Current streak" : "Racha actual",
+        value: hasData
+          ? formatStreakValue(currentStreak, language)
+          : (getWorkoutLanguage(language) === "en" ? "Inactive" : "Sin activar"),
       },
       {
-        label: "Esta semana",
-        value: hasData ? `${weeklySessions} sesiones` : "0 sesiones",
+        label: getWorkoutLanguage(language) === "en" ? "This week" : "Esta semana",
+        value: hasData
+          ? translateWorkoutText(`${weeklySessions} sesiones`, language)
+          : (getWorkoutLanguage(language) === "en" ? "0 sessions" : "0 sesiones"),
       },
       {
-        label: "Volumen total",
-        value: totalVolume > 0 ? formatVolumeValue(totalVolume) : "Sin kg",
+        label: getWorkoutLanguage(language) === "en" ? "Total volume" : "Volumen total",
+        value: totalVolume > 0
+          ? formatVolumeValue(totalVolume, language)
+          : (getWorkoutLanguage(language) === "en" ? "No kg" : "Sin kg"),
       },
       {
-        label: "Mejor mejora",
+        label: getWorkoutLanguage(language) === "en" ? "Best improvement" : "Mejor mejora",
         value: bestImprovement
-          ? `${bestImprovement.name} +${formatCompactNumber(bestImprovement.difference)} kg`
-          : "Sin PR aún",
+          ? `${translateWorkoutText(bestImprovement.name, language)} +${formatCompactNumber(bestImprovement.difference)} kg`
+          : (getWorkoutLanguage(language) === "en" ? "No PR yet" : "Sin PR aún"),
       },
     ],
   };
@@ -1839,7 +1929,11 @@ function getCurrentWeekStart() {
   return weekStart;
 }
 
-function formatStreakValue(value) {
+function formatStreakValue(value, language) {
+  if (getWorkoutLanguage(language) === "en") {
+    return value === 1 ? "1 day" : `${value} days`;
+  }
+
   return value === 1 ? "1 día" : `${value} días`;
 }
 
@@ -1880,8 +1974,16 @@ function normalizeQueryValue(value) {
     .trim();
 }
 
-function getWarmupItems(day) {
+function getWarmupItems(day, language) {
   const mainMuscle = day?.muscles?.[0] || "zona principal";
+
+  if (getWorkoutLanguage(language) === "en") {
+    return [
+      "5 min light cardio",
+      `Mobility for ${translateWorkoutText(mainMuscle.toLowerCase(), language)}`,
+      "Light activation",
+    ];
+  }
 
   return [
     "5 min cardio suave",
@@ -1903,21 +2005,23 @@ function getCompletedExerciseNames(session) {
     .filter(Boolean);
 }
 
-function formatSessionDate(session) {
+function formatSessionDate(session, language) {
   const date = new Date(session.completedAt || `${session.date}T00:00:00`);
 
-  if (Number.isNaN(date.getTime())) return session.date || "Sin fecha";
+  if (Number.isNaN(date.getTime())) return session.date || (getWorkoutLanguage(language) === "en" ? "No date" : "Sin fecha");
 
-  return new Intl.DateTimeFormat("es-ES", {
+  return new Intl.DateTimeFormat(getWorkoutLanguage(language) === "en" ? "en-GB" : "es-ES", {
     day: "2-digit",
     month: "short",
   }).format(date);
 }
 
-function formatMuscles(muscles) {
-  if (!muscles?.length) return "Músculos no registrados";
+function formatMuscles(muscles, language) {
+  if (!muscles?.length) {
+    return getWorkoutLanguage(language) === "en" ? "Muscles not recorded" : "Músculos no registrados";
+  }
 
-  return muscles.join(" + ");
+  return muscles.map((muscle) => translateMuscleLabel(muscle, language)).join(" + ");
 }
 
 function getDayStatus({ completion, isToday, locked }) {
@@ -1927,11 +2031,11 @@ function getDayStatus({ completion, isToday, locked }) {
   return "pendiente";
 }
 
-function getDayStatusLabel(status) {
-  if (status === "completado") return "Hecho";
-  if (status === "iniciado") return "Hoy";
-  if (status === "bloqueado") return "Bloqueado";
-  return "Pendiente";
+function getDayStatusLabel(status, t, language) {
+  if (status === "completado") return translateWorkoutText("Hecho", language);
+  if (status === "iniciado") return translateWorkoutText("Hoy", language);
+  if (status === "bloqueado") return translateWorkoutText("Bloqueado", language);
+  return translateWorkoutText("Pendiente", language);
 }
 
 function getDayStatusClass(status) {

@@ -1,17 +1,20 @@
 import { Beef, Droplets, Flame, Sparkles, Wheat } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SurfaceCard } from "../ui";
 
 export function MacroSummary({ totals, mealsCount }) {
+  const { t } = useTranslation();
+
   return (
     <SurfaceCard className="p-2" radius="lg">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Resumen
+            {t("meals.summary.title")}
           </p>
 
           <p className="mt-0.5 text-[11px] text-[var(--app-muted)]">
-            {mealsCount} análisis filtrado{mealsCount !== 1 ? "s" : ""}
+            {t("meals.summary.filtered", { count: mealsCount })}
           </p>
         </div>
 
@@ -21,16 +24,18 @@ export function MacroSummary({ totals, mealsCount }) {
       </div>
 
       <div className="grid grid-cols-4 gap-1">
-        <SummaryChip icon={<Flame size={11} />} title="Kcal" value={totals.calories} />
-        <SummaryChip icon={<Beef size={11} />} title="Prot" value={totals.protein} unit="g" />
-        <SummaryChip icon={<Wheat size={11} />} title="Carbs" value={totals.carbs} unit="g" />
-        <SummaryChip icon={<Droplets size={11} />} title="Grasa" value={totals.fat} unit="g" />
+        <SummaryChip icon={<Flame size={11} />} title={t("meal.kcal")} value={totals.calories} />
+        <SummaryChip icon={<Beef size={11} />} title={t("meal.macros.protein")} value={totals.protein} unit="g" />
+        <SummaryChip icon={<Wheat size={11} />} title={t("meal.macros.carbs")} value={totals.carbs} unit="g" />
+        <SummaryChip icon={<Droplets size={11} />} title={t("meal.macros.fat")} value={totals.fat} unit="g" />
       </div>
     </SurfaceCard>
   );
 }
 
 export function MealsMotivationCard({ message }) {
+  const { t } = useTranslation();
+
   return (
     <section className="relative overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1.5 shadow-[0_14px_42px_var(--app-glow)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,color-mix(in_srgb,var(--app-primary)_10%,transparent),transparent_40%),radial-gradient(circle_at_100%_50%,color-mix(in_srgb,var(--app-primary)_14%,transparent),transparent_34%)]" />
@@ -42,7 +47,7 @@ export function MealsMotivationCard({ message }) {
 
         <div className="min-w-0">
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Coach IA
+            {t("meals.motivation.badge")}
           </p>
           <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-muted)]">
             {message}

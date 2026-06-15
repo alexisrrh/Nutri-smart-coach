@@ -1,7 +1,9 @@
 import { Camera, History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatDate } from "./checkinUtils";
 
 export function CheckInHistory({ history = [], loading = false, onSelect }) {
+  const { t } = useTranslation();
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-[var(--app-border)] bg-[#091710] px-3 py-3 shadow-2xl shadow-black/20">
       <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
@@ -10,29 +12,29 @@ export function CheckInHistory({ history = [], loading = false, onSelect }) {
         <div className="flex items-center gap-2">
           <History size={15} className="text-[var(--app-primary)]" />
           <h3 className="text-sm font-black uppercase italic leading-none">
-            Timeline semanal
+            {t("checkin.history.title")}
           </h3>
         </div>
 
         <span className="text-[10px] font-black text-slate-500">
-          {history.length} registros
+          {t("checkin.history.records", { count: history.length })}
         </span>
       </div>
 
       {loading ? (
         <p className="relative z-10 text-[10px] text-slate-400">
-          Cargando historial...
+          {t("checkin.history.loading")}
         </p>
       ) : history.length === 0 ? (
         <div className="relative z-10 rounded-[24px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-4 text-center">
           <Camera className="mx-auto mb-2 text-[var(--app-primary)]" size={22} />
 
           <p className="text-[10px] font-black uppercase text-[var(--app-text)]">
-            Sin historial
+            {t("checkin.history.emptyTitle")}
           </p>
 
           <p className="mt-1 text-[10px] text-slate-500">
-            Guarda tu primer check-in.
+            {t("checkin.history.emptyDescription")}
           </p>
         </div>
       ) : (
@@ -52,6 +54,8 @@ export function CheckInHistory({ history = [], loading = false, onSelect }) {
 }
 
 function HistoryCard({ item, index, onClick }) {
+  const { t } = useTranslation();
+
   return (
     <button
       type="button"
@@ -61,18 +65,18 @@ function HistoryCard({ item, index, onClick }) {
       {item.image_url ? (
         <img
           src={item.image_url}
-          alt="Check-in"
+          alt={t("checkin.history.alt")}
           className="h-[78px] w-full object-cover"
         />
       ) : (
         <div className="grid h-[78px] place-items-center bg-[var(--app-surface)] text-[10px] text-slate-500">
-          Sin foto
+          {t("checkin.history.noPhoto")}
         </div>
       )}
 
       <div className="p-2">
         <p className="text-[10px] font-black uppercase text-[var(--app-primary)]">
-          Reg {index + 1}
+          {t("checkin.history.recordLabel", { index: index + 1 })}
         </p>
 
         <p className="mt-1 text-[10px] text-slate-500">

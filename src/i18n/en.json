@@ -1202,5 +1202,517 @@
         "recovery": "Good for recovery"
       }
     }
+  },
+  "checkin": {
+    "hero": {
+      "badge": "AI CHECK-IN",
+      "title": "BODY AI SCAN",
+      "highlight": "Make your weekly check-in",
+      "subtitle": "AI compares your body and detects your physical evolution.",
+      "chips": {
+        "photo": "Body photo",
+        "evolution": "Evolution",
+        "ai": "AI"
+      },
+      "scanBadge": "AI BODY SCAN",
+      "objectiveLabel": "Goal",
+      "objectiveFallback": "Active"
+    },
+    "form": {
+      "badge": "BODY CHECK-IN",
+      "title": "Upload your body photo",
+      "photoType": "Front / side",
+      "step1": "Step 1",
+      "weeklyPhoto": "WEEKLY PHOTO",
+      "uploadTitle": "UPLOAD YOUR WEEKLY PHOTO",
+      "uploadHint": "Tap to upload your body photo",
+      "currentPhoto": "Current photo",
+      "previewAlt": "Check-in preview",
+      "changeHint": "Tap to change it.",
+      "photoReady": "Photo ready",
+      "uploadButton": "Upload photo",
+      "changeButton": "Change photo",
+      "analyzing": "ANALYZING...",
+      "analyze": "Analyze body with AI",
+      "step2": "Step 2",
+      "currentWeight": "CURRENT WEIGHT",
+      "weightSection": "Current weight",
+      "weight": "Weight",
+      "addMeasures": "Add measurements (optional)",
+      "hideMeasures": "Hide measurements",
+      "optionalMeasures": "Optional measurements",
+      "waist": "Waist",
+      "chest": "Chest",
+      "hips": "Hips",
+      "note": "Note",
+      "notePlaceholder": "Ex: trained 4 days, better energy..."
+    },
+    "submit": {
+      "cta": "GENERATE AI REPORT",
+      "loading": "ANALYZING...",
+      "subtitle": "Weekly AI report"
+    },
+    "empty": {
+      "title": "Your first check-in will mark the starting point",
+      "description": "Upload a photo and your weight to activate body analysis and compare your progress.",
+      "action": "Upload photo"
+    },
+    "report": {
+      "step": "3. Generate your report",
+      "title": "Before vs current",
+      "badge": "MAIN BLOCK",
+      "previous": "Before",
+      "previousFallback": "First check-in",
+      "pending": "Pending",
+      "current": "Current",
+      "uploadPhoto": "Upload photo"
+    },
+    "aiReport": {
+      "title": "BODY AI REPORT",
+      "stateLabel": "Body status",
+      "stateValue": "Progress registered",
+      "noBase": "No baseline",
+      "changeLabel": "Detected change",
+      "recommendation": "AI recommendation"
+    },
+    "compare": {
+      "title": "Weekly comparison",
+      "subtitle": "Previous week / Current week",
+      "badge": "Visual AI",
+      "previous": "Previous week",
+      "current": "Current week",
+      "emptyTitle": "Comparison pending",
+      "emptyDescription": "You need two check-ins with photos to compare weeks.",
+      "active": "Current"
+    },
+    "history": {
+      "title": "Weekly timeline",
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "loading": "Loading history...",
+      "emptyTitle": "No history",
+      "emptyDescription": "Save your first check-in.",
+      "alt": "Check-in",
+      "noPhoto": "No photo",
+      "recordLabel": "Rec {{index}}"
+    },
+    "loader": {
+      "title": "Analyzing body",
+      "subtitle": "AI Body Scan",
+      "processing": "Processing with AI",
+      "steps": {
+        "photo": "Photo",
+        "posture": "Posture",
+        "analysis": "Analysis",
+        "result": "Result"
+      }
+    },
+    "analysis": {
+      "title": "AI Analysis",
+      "visualChangesFallback": "AI reviews body fat changes, definition and consistency between weeks.",
+      "recommendationFallback": "Keep the same light, posture and distance to compare your progress better.",
+      "goalFallback": "Progress",
+      "noEstimable": "Not estimable",
+      "metrics": {
+        "progress": "Progress",
+        "confidence": "Confidence",
+        "fat": "Fat"
+      },
+      "progress": {
+        "pending": "Pending",
+        "favor": "In your favor",
+        "adjusting": "Adjusting"
+      },
+      "recommendation": "Recommendation",
+      "openFull": "View full analysis"
+    },
+    "status": {
+      "title": "Current result",
+      "subtitle": "Body AI",
+      "noEstimable": "Not estimable",
+      "pending": "Pending",
+      "improving": "Improving",
+      "adjusting": "Adjusting",
+      "labels": {
+        "fat": "Fat",
+        "confidence": "Confidence",
+        "definition": "Definition",
+        "change": "Change"
+      }
+    },
+    "detail": {
+      "analysisTitle": "Full analysis",
+      "detailTitle": "Record detail",
+      "analysisSubtitle": "Full result of the latest photo.",
+      "detailSubtitle": "Complete weekly check-in information.",
+      "analysisBadge": "AI Analysis",
+      "detailBadge": "Body record",
+      "imageAlt": "Body check-in",
+      "noPhoto": "No photo",
+      "close": "Close",
+      "noEstimable": "Not estimable",
+      "metrics": {
+        "weight": "Weight",
+        "waist": "Waist",
+        "chest": "Chest",
+        "hips": "Hips",
+        "fat": "Estimated fat",
+        "confidence": "Confidence"
+      },
+      "changesTitle": "Detected changes",
+      "changesFallback": "AI reviews body fat, definition and consistency between weeks.",
+      "recommendationTitle": "Recommendation",
+      "recommendationFallback": "Keep the same light, posture and distance to compare your progress better.",
+      "noteTitle": "Note"
+    },
+    "sheet": {
+      "ariaLabel": "AI analysis",
+      "badge": "Body Score IA",
+      "scoreMax": "/ 100",
+      "closeAria": "Close analysis",
+      "confidence": {
+        "pending": "Confidence pending",
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "evolutionTitle": "Body evolution",
+      "evolutionFallback": "Complete more check-ins to see your progress",
+      "streak_one": "🔥 {{count}} week",
+      "streak_other": "🔥 {{count}} weeks",
+      "scorePrevious": "Previous score",
+      "scoreCurrent": "Current score",
+      "scoreDelta": "Visual difference",
+      "evolutionNote": "Complete more check-ins to see your progress.",
+      "analysisImageAlt": "AI analysis result",
+      "detailImageAlt": "Body check-in",
+      "analyzedImage": "Analyzed image",
+      "noPhoto": "No photo",
+      "timeLabel": "Time",
+      "changeLabel": "Change",
+      "statusLabel": "Status",
+      "detectedTitle": "What the AI detected",
+      "meaningTitle": "What this result means",
+      "lowConfidenceTitle": "⚠ The AI could not correctly analyze this image.",
+      "reasonTitle": "Reason",
+      "tips": {
+        "realPhoto": "Upload a real photo",
+        "lighting": "Good lighting",
+        "fullBody": "Full body"
+      },
+      "noteTitle": "Note",
+      "nextStepTitle": "Next step",
+      "nextSteps": {
+        "one": "Do a new check-in in 7 days",
+        "two": "Keep the same posture to compare better",
+        "three": "Follow your current plan"
+      },
+      "visualChangesFallback": "AI reviews body fat changes, definition and consistency between weeks.",
+      "recommendationFallback": "Keep the same light, posture and distance to compare your progress better.",
+      "lowConfidenceReasonFallback": "The image does not provide enough visual information for a reliable analysis.",
+      "detection": {
+        "lowConfidence": "Low confidence",
+        "invalidPhoto": "Invalid photo",
+        "needsBetterConditions": "The image needs better conditions",
+        "betterDefinition": "Better body definition",
+        "weeklyComparison": "Weekly comparison registered",
+        "startingPoint": "Starting point created",
+        "positiveConsistency": "Positive consistency"
+      },
+      "scoreState": {
+        "unrated": "Unrated",
+        "initial": "Initial",
+        "inProgress": "In progress",
+        "good": "Good",
+        "excellent": "Excellent",
+        "elite": "Elite"
+      },
+      "trend": {
+        "pending": "Complete more check-ins to see your progress",
+        "improving": "📈 Improving",
+        "regressing": "📉 Regressing",
+        "stable": "➖ Stable"
+      }
+    },
+    "timeline": {
+      "firstData": "First record",
+      "noBase": "No baseline",
+      "positiveConsistency": "Positive consistency",
+      "steadyPace": "Steady pace",
+      "startingPoint": "Starting point",
+      "daysAgoFallback": "A few days ago",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
+    },
+    "motivation": {
+      "first": "Your first record will mark the starting point.",
+      "visual": "Your consistency is starting to show visually.",
+      "weekly": "Good weekly progress. Keep the same pace.",
+      "reference": "A clear evolution reference is starting to form.",
+      "saved": "First check-in saved. Consistency will make progress visible."
+    },
+    "notice": {
+      "text": "Use a similar photo every week: same light, distance and posture. That way the body check-in will be easier to compare."
+    },
+    "operations": {
+      "loadHistory": "load check-in history",
+      "save": "save a check-in",
+      "delete": "delete a check-in"
+    },
+    "success": {
+      "saved": "Check-in saved successfully."
+    },
+    "units": {
+      "kg": "kg",
+      "cm": "cm"
+    },
+    "errors": {
+      "loginRequired": "You need to sign in to save your body check-in.",
+      "loginRequiredShort": "You need to sign in.",
+      "photoRequired": "Upload a full-body front or side photo.",
+      "weightRequired": "Enter your current weight.",
+      "loadHistory": "Could not load check-in history.",
+      "invalidHistoryResponse": "Invalid response while loading check-ins.",
+      "aiTimeout": "The AI is taking too long. Try again in a few seconds.",
+      "saveFailed": "Could not save the check-in.",
+      "mustBeImage": "The file must be an image.",
+      "optimizeFailed": "Could not optimize the image. Try a lighter photo.",
+      "heicTooHeavy": "The HEIC image is too large.",
+      "imageStillTooHeavy": "The image is still too large.",
+      "processImageFailed": "Could not process the image.",
+      "compressImageFailed": "Could not compress the image.",
+      "loadImageFailed": "Could not load the image.",
+      "missingDeleteId": "Missing check-in to delete.",
+      "deleteLoginRequired": "You need to sign in to delete the check-in."
+    }
+  },
+  "meals": {
+    "history": {
+      "badge": "AI HISTORY",
+      "title": "History",
+      "subtitle": "Your analyzed meals.",
+      "back": "Back",
+      "scan": "Scan",
+      "searchPlaceholder": "Search meal...",
+      "timelineTitle": "AI Timeline",
+      "timelineShown_one": "{{count}} meal shown",
+      "timelineShown_other": "{{count}} meals shown",
+      "clear": "Clear"
+    },
+    "filters": {
+      "today": "Today",
+      "week": "Week",
+      "all": "All"
+    },
+    "summary": {
+      "title": "Summary",
+      "filtered_one": "{{count}} filtered analysis",
+      "filtered_other": "{{count}} filtered analyses"
+    },
+    "motivation": {
+      "badge": "AI COACH",
+      "searchEmpty": "Try another term to review your records.",
+      "empty": "Scan a meal to start building your history.",
+      "filteredEmpty": "Your history has data; change the filter to see more meals.",
+      "recommendation": "Reviewing your analyses helps you decide with more intention.",
+      "patterns": "Your history is starting to show useful patterns.",
+      "today": "Every meal you log improves your nutrition control.",
+      "week": "Good job: you are building awareness of what you eat.",
+      "progress": "Keep scanning: more data gives you more clarity.",
+      "default": "Your history turns every record into a useful signal."
+    },
+    "empty": {
+      "title": "Analyze your first meal",
+      "description": "Your nutrition history will appear here with calories, macros and insights from each dish.",
+      "action": "Scan meal"
+    },
+    "card": {
+      "scoreLabel": "Score",
+      "aiAnalysis": "AI Analysis",
+      "deleteMealAria": "Delete meal",
+      "mealFallback": "Analyzed meal"
+    },
+    "detail": {
+      "dialogAria": "Meal detail",
+      "imageBadge": "AI Analysis",
+      "score": "Score",
+      "recommendation": "AI Recommendation",
+      "delete": "Delete analysis",
+      "close": "Close",
+      "mealFallback": "Analyzed meal"
+    },
+    "confirm": {
+      "title": "Delete history",
+      "description": "All meals saved in your history will be deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "errors": {
+      "loadHistoryToast": "Could not load history.",
+      "remoteHistory": "No connection to the remote history. Showing data saved on this device.",
+      "noUserDelete": "No signed-in user to delete this meal.",
+      "deleteMealToast": "Could not delete the meal.",
+      "deleteMealRemote": "Could not delete it remotely. The local history remains intact.",
+      "noUserClear": "No signed-in user to delete the remote history.",
+      "clearMealsToast": "Could not delete the history.",
+      "clearMealsRemote": "Could not delete the remote history. The local history remains intact."
+    },
+    "success": {
+      "deleteMeal": "Meal removed from history.",
+      "clearMeals": "Meal history cleared."
+    }
+  },
+  "exerciseLibrary": {
+    "backDashboard": "Dashboard",
+    "badge": "FITNESS LIBRARY",
+    "title": "Train by muscle group",
+    "subtitle": "Explore visual exercises and improve your technique.",
+    "heroAlt": "Fitness library",
+    "back": "Back",
+    "myRoutines": "MY ROUTINES",
+    "createRoutine": "Create your routine",
+    "createRoutineDesc": "Select exercises from the library and build a custom workout.",
+    "createRoutineButton": "Create routine",
+    "viewRoutines": "View my routines",
+    "visualExercises": "Visual exercises",
+    "selectMuscle": "Select a muscle group",
+    "recommendedToday": "RECOMMENDED TODAY"
+  },
+  "exercises": {
+    "detail": {
+      "badge": "EXERCISE",
+      "prescription": "PRESCRIPTION",
+      "prescriptionValue": "Sets: {{sets}} · Reps: {{reps}} · Rest: {{rest}}",
+      "description": "DESCRIPTION",
+      "tips": "TIPS",
+      "mistakes": "MISTAKES",
+      "close": "Close sheet"
+    },
+    "media": {
+      "primaryMuscle": "Primary muscle",
+      "secondaryMuscles": "Secondary muscles",
+      "noSecondary": "No secondary muscles",
+      "noMedia": "No media",
+      "exercise": "Exercise"
+    }
+  },
+  "workouts": {
+    "common": {
+      "general": "General",
+      "customRoutine": "Custom routine",
+      "public": "Public",
+      "private": "Private"
+    },
+    "config": {
+      "badge": "ROUTINES",
+      "subtitle": "Set up your ideal routine based on your goal and schedule.",
+      "setup": "Set up your weekly plan",
+      "level": "Level",
+      "focus": "Focus",
+      "daysQuestion": "How many days do you train?",
+      "recommended": "Recommended",
+      "generate": "Generate routine"
+    },
+    "core": {
+      "badge": "ACTIVE PLAN",
+      "title": "Your automatic routine",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "hero": {
+      "badge": "AI ROUTINES",
+      "title": "AI weekly routine",
+      "subtitle": "The app automatically creates a weekly routine based on your level, goal and progress."
+    },
+    "today": {
+      "badge": "TODAY",
+      "today": "Today's workout",
+      "completed": "Completed",
+      "start": "Start"
+    },
+    "weekly": {
+      "badge": "WEEK",
+      "title": "Your training week",
+      "subtitle": "Track your progress day by day.",
+      "progress": "Weekly progress",
+      "completed": "{{count}} completed",
+      "dayLabel": "Day {{day}}",
+      "done": "Done",
+      "mark": "Mark"
+    },
+    "plan": {
+      "badge": "ACTIVE PLAN",
+      "adjust": "Adjust plan",
+      "days": "days",
+      "progress": "Progress"
+    },
+    "custom": {
+      "badge": "CUSTOM ROUTINES",
+      "title": "Your custom routines",
+      "loading": "Loading routines...",
+      "savedCount": "{{count}} saved routines",
+      "emptyBadge": "No routines",
+      "savedSummary": "{{count}} routines ready to use",
+      "emptyDescription": "Your custom routines will appear here.",
+      "create": "Create routine",
+      "open": "Open"
+    },
+    "customSheet": {
+      "badge": "CUSTOM ROUTINES",
+      "title": "Saved routines",
+      "subtitle": "Manage, share or delete your custom routines.",
+      "shareAria": "Share week",
+      "savedCount": "{{count}} saved routines",
+      "emptyBadge": "No routines",
+      "emptyTitle": "You have no routines yet",
+      "emptyDescription": "Create a routine to see it here.",
+      "create": "Create routine",
+      "createdByYou": "Created by you",
+      "start": "Start",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "history": {
+      "card": {
+        "sessionFallback": "Session"
+      },
+      "preview": {
+        "title": "Routine history",
+        "action": "View history",
+        "button": "Open history",
+        "emptyTitle": "No sessions yet",
+        "emptyDescription": "Complete a session to see it here."
+      },
+      "sheet": {
+        "badge": "HISTORY",
+        "title": "Saved sessions",
+        "close": "Close",
+        "emptyTitle": "No sessions",
+        "emptyDescription": "Your completed workouts will appear here."
+      }
+    },
+    "day": {
+      "skip": "Skip",
+      "dayDuration": "Day {{day}} · {{duration}}",
+      "warmup": "Warm-up",
+      "exercises": "Exercises",
+      "finish": "Finish",
+      "finishItems": {
+        "one": "Finish with a light stretch",
+        "two": "Breathe and recover"
+      },
+      "start": "Start",
+      "setsReps": "Sets: {{sets}} · Reps: {{reps}}",
+      "rest": "Rest: {{rest}}"
+    },
+    "exercise": {
+      "close": "Close sheet",
+      "sets": "Sets",
+      "reps": "Reps",
+      "rest": "Rest",
+      "tips": "Tips",
+      "mistakes": "Mistakes",
+      "more": "And {{count}} more tips"
+    }
   }
 }

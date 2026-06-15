@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const TARGET_SIZE = 1.2 * 1024 * 1024;
 const MAX_IMAGE_SIDE = 900;
 const COMPRESSION_QUALITIES = [0.7, 0.62, 0.55, 0.48];
 
 export function useCheckInUpload({ setError, setMessage = () => {} }) {
+  const { t } = useTranslation();
   const previewRef = useRef(null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -20,7 +23,7 @@ export function useCheckInUpload({ setError, setMessage = () => {} }) {
     if (!selectedFile) return;
 
     if (!selectedFile.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen.");
+      setError(t("checkin.errors.mustBeImage"));
       return;
     }
 
@@ -45,9 +48,7 @@ export function useCheckInUpload({ setError, setMessage = () => {} }) {
       }
       setFile(null);
       setPreview(null);
-      setError(
-        "No se pudo optimizar la imagen. Intenta con una foto más ligera."
-      );
+      setError(t("checkin.errors.optimizeFailed"));
     } finally {
       e.target.value = "";
     }
@@ -76,7 +77,7 @@ export function useCheckInUpload({ setError, setMessage = () => {} }) {
 async function prepareCheckInImage(file) {
   if (isHeicImage(file)) {
     if (file.size <= TARGET_SIZE) return file;
-    throw new Error("La imagen HEIC es demasiado pesada.");
+    throw new Error(i18n.t("checkin.errors.heicTooHeavy"));
   }
 
   for (const quality of COMPRESSION_QUALITIES) {
@@ -87,7 +88,7 @@ async function prepareCheckInImage(file) {
     }
   }
 
-  throw new Error("La imagen sigue siendo demasiado pesada.");
+  throw new Error(i18n.t("checkin.errors.imageStillTooHeavy"));
 }
 
 function isHeicImage(file) {
@@ -116,7 +117,7 @@ function compressImage(file, quality = 0.7) {
       const ctx = canvas.getContext("2d");
 
       if (!ctx) {
-        reject(new Error("No se pudo procesar la imagen."));
+        reject(new Error(i18n.t("checkin.errors.processImageFailed")));
         return;
       }
 
@@ -125,7 +126,7 @@ function compressImage(file, quality = 0.7) {
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error("No se pudo comprimir la imagen."));
+            reject(new Error(i18n.t("checkin.errors.compressImageFailed")));
             return;
           }
 
@@ -143,7 +144,7 @@ function compressImage(file, quality = 0.7) {
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("No se pudo cargar la imagen."));
+      reject(new Error(i18n.t("checkin.errors.loadImageFailed")));
     };
 
     image.src = objectUrl;

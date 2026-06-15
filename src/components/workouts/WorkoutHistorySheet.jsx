@@ -1,7 +1,9 @@
 import { Activity, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PremiumEmptyState } from "../ui";
 
 export function WorkoutHistorySheet({ sessions, onClose, WorkoutHistoryCard }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 px-2 pb-[var(--bottom-nav-space)] backdrop-blur-sm">
       <section className="max-h-[calc(100dvh-var(--bottom-nav-space)-10px)] w-full max-w-[430px] overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-12px_38px_rgba(0,0,0,0.42)]">
@@ -10,17 +12,17 @@ export function WorkoutHistorySheet({ sessions, onClose, WorkoutHistoryCard }) {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  Progreso reciente
+                  {t("workouts.history.sheet.badge")}
                 </p>
                 <h2 className="mt-0.5 text-[20px] font-black leading-none text-[var(--app-text)]">
-                  Historial
+                  {t("workouts.history.sheet.title")}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
-                aria-label="Cerrar historial"
+                aria-label={t("workouts.history.sheet.close")}
               >
                 <X size={14} />
               </button>
@@ -35,13 +37,13 @@ export function WorkoutHistorySheet({ sessions, onClose, WorkoutHistoryCard }) {
                 ))}
               </div>
             ) : (
-              <PremiumEmptyState
-                icon={Activity}
-                title="Aún no has registrado entrenamientos"
-                description="Completa una sesión para activar tu historial, volumen y señales de rendimiento."
-                className="py-5"
-              />
-            )}
+                <PremiumEmptyState
+                  icon={Activity}
+                  title={t("workouts.history.sheet.emptyTitle")}
+                  description={t("workouts.history.sheet.emptyDescription")}
+                  className="py-5"
+                />
+              )}
           </div>
         </div>
       </section>

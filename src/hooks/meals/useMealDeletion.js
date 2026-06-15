@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import {
@@ -14,6 +15,7 @@ export function useMealDeletion({
   setRemoteError,
 }) {
   const toast = useToast();
+  const { t } = useTranslation();
   const [deletingId, setDeletingId] = useState("");
 
   const deleteMeal = useCallback(
@@ -33,11 +35,11 @@ export function useMealDeletion({
           } = await supabase.auth.getUser();
 
           if (!user?.id) {
-            throw new Error("No hay usuario conectado para borrar esta comida.");
+            throw new Error(t("meals.errors.noUserDelete"));
           }
 
           await deleteRemoteMeal(mealId, user.id);
-          toast.success("Comida eliminada del historial.");
+          toast.success(t("meals.success.deleteMeal"));
         }
 
         const updated = removeMealFromCache(mealToDelete);
@@ -47,16 +49,16 @@ export function useMealDeletion({
         }
       } catch (error) {
         console.error("Error borrando comida:", error);
-        toast.error("No se pudo borrar la comida.");
+        toast.error(t("meals.errors.deleteMealToast"));
         setRemoteError(
           error?.message ||
-            "No se pudo borrar en remoto. El historial local se mantiene intacto."
+            t("meals.errors.deleteMealRemote")
         );
       } finally {
         setDeletingId("");
       }
     },
-    [selectedMeal, setMeals, setRemoteError, setSelectedMeal, toast]
+    [selectedMeal, setMeals, setRemoteError, setSelectedMeal, t, toast]
   );
 
   const clearMeals = useCallback(async () => {
@@ -68,7 +70,7 @@ export function useMealDeletion({
       } = await supabase.auth.getUser();
 
       if (!user?.id) {
-        throw new Error("No hay usuario conectado para borrar el historial remoto.");
+        throw new Error(t("meals.errors.noUserClear"));
       }
 
       await clearRemoteMeals(user.id);
@@ -77,16 +79,16 @@ export function useMealDeletion({
       if (selectedMeal) {
         setSelectedMeal(null);
       }
-      toast.success("Historial de comidas borrado.");
+      toast.success(t("meals.success.clearMeals"));
     } catch (error) {
       console.error("Error limpiando historial:", error);
-      toast.error("No se pudo borrar el historial.");
+      toast.error(t("meals.errors.clearMealsToast"));
       setRemoteError(
         error?.message ||
-          "No se pudo borrar el historial remoto. El historial local se mantiene intacto."
+          t("meals.errors.clearMealsRemote")
       );
     }
-  }, [selectedMeal, setMeals, setRemoteError, setSelectedMeal, toast]);
+  }, [selectedMeal, setMeals, setRemoteError, setSelectedMeal, t, toast]);
 
   return {
     deletingId,
