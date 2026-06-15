@@ -1,3 +1,5 @@
+import i18n from "../../i18n";
+
 const MAX_REFERRAL_REWARDS = 3;
 const REFERRAL_NORMAL_TRIAL_DAYS = 7;
 
@@ -38,11 +40,11 @@ export function getReferralInviteCardViewModel({
     latestReward: stats?.latestReward || null,
     progressValue,
     progressPercent,
-    title: "Gana 1 mes Premium gratis",
-    badge: "RECOMPENSA PREMIUM",
-    subtitle: "Comparte tu código y suma amigos Premium.",
-    noCodeRule: "3 pagos Premium confirmados = 1 mes gratis",
-    confirmedPaymentsText: "Solo cuentan los pagos Premium confirmados.",
+    title: i18n.t("referralReward.card.title"),
+    badge: i18n.t("referralReward.card.badge"),
+    subtitle: i18n.t("referralReward.card.subtitle"),
+    noCodeRule: i18n.t("referralReward.card.noCodeRule"),
+    confirmedPaymentsText: i18n.t("referralReward.card.confirmedPaymentsText"),
     maxReferralRewards: MAX_REFERRAL_REWARDS,
     nextMilestone: Number(stats?.nextMilestone ?? MAX_REFERRAL_REWARDS),
   };
@@ -52,7 +54,10 @@ export function buildReferralInviteShareText(referralCode) {
   const safeCode = String(referralCode || "").trim();
   const safeTrialDays = REFERRAL_NORMAL_TRIAL_DAYS;
 
-  return `Únete a NutriSmart Coach con mi código ${safeCode} y consigue ${safeTrialDays} días Premium gratis.`;
+  return i18n.t("referralReward.shareText", {
+    code: safeCode,
+    trialDays: safeTrialDays,
+  });
 }
 
 // TODO: los códigos de creador, sus 15 días gratis, comisiones y métricas

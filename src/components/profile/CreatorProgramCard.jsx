@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import {
   AlertCircle,
@@ -21,6 +22,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getCurrentAppLanguage } from "../../i18n";
 import { trackEvent } from "../../services/analytics";
 import {
   buildCreatorShareText,
@@ -46,10 +48,10 @@ import {
 import { validateCreatorCodeEditInput } from "./creatorCodeEditValidation";
 
 const PLATFORM_OPTIONS = [
-  { value: "instagram", label: "Instagram" },
-  { value: "tiktok", label: "TikTok" },
-  { value: "youtube", label: "YouTube" },
-  { value: "other", label: "Otro" },
+  { value: "instagram", labelKey: "creatorPanel.platform.instagram" },
+  { value: "tiktok", labelKey: "creatorPanel.platform.tiktok" },
+  { value: "youtube", labelKey: "creatorPanel.platform.youtube" },
+  { value: "other", labelKey: "creatorPanel.platform.other" },
 ];
 
 const INITIAL_FORM = {
@@ -95,6 +97,7 @@ export function CreatorProgramCardView({
   onCancelCodeEditor,
   onSaveCodeEditor,
 }) {
+  const { t } = useTranslation();
   const isApproved = status === "approved";
   const isPending = status === "pending";
   const isRejected = status === "rejected";
@@ -157,8 +160,8 @@ export function CreatorProgramCardView({
   );
   const minimumFollowersMet = Number(formState.followersCount || 0) >= 5000;
   const requiresTerms = (isEmpty || isRejected || formVisible) && !isApproved && !isPending;
-  const visibleFormError =
-    formError && formError !== "No se pudo completar la solicitud." ? formError : "";
+  const termsError = t("creatorPanel.errors.termsRequired");
+  const visibleFormError = formError && formError !== termsError ? formError : "";
 
   return (
     <>
@@ -191,7 +194,7 @@ export function CreatorProgramCardView({
           <div className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2.5">
             <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--app-muted)]">
               <LoaderCircle size={12} className="animate-spin text-[var(--app-primary)]" />
-              <span>Cargando panel de creadores...</span>
+              <span>{t("creatorPanel.loading.panel")}</span>
             </div>
           </div>
         ) : null}
@@ -218,9 +221,9 @@ export function CreatorProgramCardView({
                   onClick={onStartRequest}
                 >
                   <span className="flex min-w-0 flex-col items-start leading-tight">
-                    <span className="whitespace-nowrap">Unirme al programa</span>
+                    <span className="whitespace-nowrap">{t("creatorPanel.cta.join")}</span>
                     <span className="mt-0.5 text-[8px] font-bold normal-case tracking-normal opacity-80">
-                      Respuesta en 24-72 horas
+                      {t("creatorPanel.cta.replyTime")}
                     </span>
                   </span>
                 </PrimaryButton>
@@ -240,15 +243,15 @@ export function CreatorProgramCardView({
           >
             <div className="grid min-w-0 gap-0.5">
               <h2 className="text-[13px] font-black leading-tight text-[var(--app-text)]">
-                Solicitud de acceso
+                {t("creatorPanel.application.title")}
               </h2>
               <p className="min-w-0 break-words text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                Revisaremos tu perfil antes de activar tu código.
+                {t("creatorPanel.application.subtitle")}
               </p>
             </div>
 
             <div className="grid gap-1.5 sm:grid-cols-2">
-              <FormField label="Plataforma">
+              <FormField label={t("creatorPanel.application.platform")}>
                 <select
                   value={formState.socialPlatform}
                   onChange={(event) =>
@@ -263,13 +266,13 @@ export function CreatorProgramCardView({
                 >
                   {PLATFORM_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.labelKey)}
                     </option>
                   ))}
                 </select>
               </FormField>
 
-              <FormField label="Perfil">
+              <FormField label={t("creatorPanel.application.profile")}>
                 <input
                   value={formState.socialHandle}
                   onChange={(event) =>
@@ -281,13 +284,13 @@ export function CreatorProgramCardView({
                   className={fieldControlClass(
                     "h-11 py-0 text-[12px] font-semibold placeholder:text-[var(--app-muted)]"
                   )}
-                  placeholder="@tu_usuario o enlace"
+                  placeholder={t("creatorPanel.application.profilePlaceholder")}
                 />
               </FormField>
             </div>
 
             <div className="grid gap-1.5 sm:grid-cols-2">
-              <FormField label="Seguidores">
+              <FormField label={t("creatorPanel.application.followers")}>
                 <input
                   type="number"
                   min="0"
@@ -305,7 +308,7 @@ export function CreatorProgramCardView({
                 />
               </FormField>
 
-              <FormField label="Prueba opcional">
+              <FormField label={t("creatorPanel.application.proof")}>
                 <input
                   value={formState.proofUrl}
                   onChange={(event) =>
@@ -317,14 +320,14 @@ export function CreatorProgramCardView({
                   className={fieldControlClass(
                     "h-11 py-0 text-[12px] font-semibold placeholder:text-[var(--app-muted)]"
                   )}
-                  placeholder="Enlace o media kit"
+                  placeholder={t("creatorPanel.application.proofPlaceholder")}
                 />
               </FormField>
             </div>
 
             {!minimumFollowersMet ? (
               <StatusBox type="info" className="px-2 py-1.5 text-[10px] leading-4 break-words">
-                Puedes enviar tu solicitud aunque aún no superes los 5.000 seguidores.
+                {t("creatorPanel.application.followersHint")}
               </StatusBox>
             ) : null}
 
@@ -334,7 +337,7 @@ export function CreatorProgramCardView({
                 onClick={onCancelRequest}
                 className="h-10 px-2.5 py-0 text-[10px] normal-case tracking-[0.02em] whitespace-nowrap"
               >
-                Cancelar
+                {t("creatorPanel.actions.cancel")}
               </SecondaryButton>
 
               <PrimaryButton
@@ -343,7 +346,7 @@ export function CreatorProgramCardView({
                 icon={submitting ? <LoaderCircle size={14} className="animate-spin" /> : <IconCapsule icon={TrendingUp} tone="gold" size="xs" />}
                 className="h-10 px-3 py-0 text-[10px] normal-case tracking-[0.02em] whitespace-nowrap shadow-[0_0_30px_color-mix(in_srgb,#D4AF37_24%,transparent),0_0_24px_color-mix(in_srgb,var(--app-primary)_24%,transparent),0_10px_22px_var(--app-glow)] disabled:opacity-75 disabled:saturate-75"
               >
-                {submitting ? "Enviando..." : "Enviar"}
+                {submitting ? t("creatorPanel.actions.sending") : t("creatorPanel.actions.send")}
               </PrimaryButton>
             </div>
           </form>
@@ -355,10 +358,10 @@ export function CreatorProgramCardView({
               <IconCapsule icon={AlertCircle} tone="gold" size="sm" />
               <div>
                 <h2 className="text-[14px] font-black leading-tight text-[var(--app-text)]">
-                  Solicitud no aprobada
+                  {t("creatorPanel.rejected.title")}
                 </h2>
                 <p className="mt-1 leading-5">
-                  Puedes corregir el motivo indicado y volver a solicitar acceso al programa.
+                  {t("creatorPanel.rejected.subtitle")}
                 </p>
               </div>
             </div>
@@ -374,7 +377,7 @@ export function CreatorProgramCardView({
               onClick={onRetryRequest}
               className="py-2 text-[10px]"
             >
-              Volver a solicitar
+              {t("creatorPanel.actions.requestAgain")}
             </SecondaryButton>
           </div>
         ) : null}
@@ -390,13 +393,13 @@ export function CreatorProgramCardView({
                       variant="neutral"
                       className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
                     >
-                      ACTIVO
+                      {t("creatorPanel.status.active")}
                     </MetaBadge>
                     <h2 className="mt-1.5 min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
-                      Completa tu perfil
+                      {t("creatorPanel.profileRequired.title")}
                     </h2>
                     <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                      Necesitamos tu nombre para generar un código de creador fácil de recordar.
+                      {t("creatorPanel.profileRequired.subtitle")}
                     </p>
                   </div>
                 </div>
@@ -405,7 +408,7 @@ export function CreatorProgramCardView({
                   to="/settings/profile"
                   className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,#D4AF37_28%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] px-3 py-0 text-[10px] font-black normal-case tracking-normal text-[var(--app-surface)] shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_18%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)] transition active:scale-[0.98]"
                 >
-                  Completar perfil
+                  {t("creatorPanel.profileRequired.cta")}
                 </Link>
               </div>
             ) : null}
@@ -415,24 +418,24 @@ export function CreatorProgramCardView({
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <h2 className="min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
-                      Partner activo
+                      {t("creatorPanel.approved.title")}
                     </h2>
                     <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                      Tu código está listo para compartir y generar ingresos.
+                      {t("creatorPanel.approved.subtitle")}
                     </p>
                   </div>
                   <MetaBadge
                     variant="neutral"
                     className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
                   >
-                    ACTIVO
+                    {t("creatorPanel.status.active")}
                   </MetaBadge>
                 </div>
 
                 <section className="grid gap-1.5 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_8%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-3">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">
-                      Ganancias acumuladas
+                      {t("creatorPanel.earnings.title")}
                     </h3>
                     <IconCapsule icon={Coins} tone="gold" size="xs" />
                   </div>
@@ -440,7 +443,7 @@ export function CreatorProgramCardView({
                     <div className="flex items-end justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
-                          Total
+                          {t("creatorPanel.earnings.total")}
                         </p>
                         <p className="mt-0.5 text-[28px] font-black leading-none tracking-[-0.02em] text-[#D4AF37] sm:text-[30px]">
                           {formatCurrency(totalCommissionAmount)}
@@ -448,7 +451,7 @@ export function CreatorProgramCardView({
                       </div>
                       <div className="min-w-0 text-right">
                         <p className="text-[8px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
-                          Disponible
+                          {t("creatorPanel.earnings.available")}
                         </p>
                         <p className="mt-0.5 text-[15px] font-black leading-none tracking-[-0.01em] text-[#22c55e]">
                           {formatCurrency(availableCommissionAmount)}
@@ -468,7 +471,7 @@ export function CreatorProgramCardView({
                     </div>
                     <div className="flex items-center justify-between gap-2 text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
                       <span>{formatCurrency(availableCommissionAmount)} / {formatCurrency(nextWithdrawalThreshold)}</span>
-                      <span>Necesitas {formatCurrency(nextWithdrawalThreshold)} para solicitar retiro.</span>
+                      <span>{t("creatorPanel.earnings.withdrawalHint", { amount: formatCurrency(nextWithdrawalThreshold) })}</span>
                     </div>
                   </div>
                 </section>
@@ -478,14 +481,14 @@ export function CreatorProgramCardView({
                   <div className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#D4AF37] mb-3">
-                          Código de creador
+                          {t("creatorPanel.code.title")}
                         </p>
                         {creatorCodeCustomized ? (
                           <MetaBadge
                             variant="neutral"
                             className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37] mb-3"
                           >
-                            Personalizado
+                            {t("creatorPanel.code.customized")}
                           </MetaBadge>
                         ) : onEditCode ? (
                           <SecondaryButton
@@ -493,7 +496,7 @@ export function CreatorProgramCardView({
                             onClick={onEditCode}
                             className="h-7 px-2 py-0 text-[8px] normal-case tracking-normal mb-3"
                           >
-                            Editar código
+                            {t("creatorPanel.code.edit")}
                           </SecondaryButton>
                         ) : null}
                       </div>
@@ -503,19 +506,19 @@ export function CreatorProgramCardView({
                         </p>
                       </div>
                       <p className="mt-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                        Comparte tu código con tu comunidad.
+                        {t("creatorPanel.code.subtitle")}
                       </p>
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-1.5">
                       <MetaBadge variant="neutral" className="px-2 py-1 text-[8px]">
-                        15 días
+                        {t("creatorPanel.code.trialDays")}
                       </MetaBadge>
                       <MetaBadge
                         variant="neutral"
                         className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
                       >
-                        30%
+                        {t("creatorPanel.code.commission")}
                       </MetaBadge>
                     </div>
                   </div>
@@ -527,7 +530,7 @@ export function CreatorProgramCardView({
                       icon={<IconCapsule icon={Copy} tone="blue" size="xs" />}
                       className="min-w-0 rounded-full px-2.5 py-1 text-[8px] normal-case tracking-normal min-h-[32px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
                     >
-                      Copiar
+                      {t("creatorPanel.actions.copy")}
                     </SecondaryButton>
 
                     <PrimaryButton
@@ -536,29 +539,29 @@ export function CreatorProgramCardView({
                       icon={<IconCapsule icon={Share2} tone="green" size="xs" />}
                       className="min-w-0 rounded-full px-2.5 py-1 text-[8px] normal-case tracking-normal min-h-[40px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md shadow-[0_0_16px_color-mix(in_srgb,var(--app-primary)_10%,transparent),0_0_18px_color-mix(in_srgb,#D4AF37_12%,transparent)]"
                     >
-                      Compartir
+                      {t("creatorPanel.actions.share")}
                     </PrimaryButton>
                   </div>
                 </section>
 
                 <div className="grid gap-1.25 sm:grid-cols-2">
-                  <CreatorStat icon={Users} tone="blue" label="Usuarios con código" value={registeredUsers} />
-                  <CreatorStat icon={LineChart} tone="blue" label="Premium activos" value={premiumUsers} />
-                  <CreatorStat icon={Coins} tone="gold" label="Comisión acumulada" value={formatCurrency(totalCommissionAmount)} raw />
-                  <CreatorStat icon={Wallet} tone="green" label="Disponible para retirar" value={formatCurrency(availableCommissionAmount)} raw />
+                  <CreatorStat icon={Users} tone="blue" label={t("creatorPanel.stats.usersWithCode")} value={registeredUsers} />
+                  <CreatorStat icon={LineChart} tone="blue" label={t("creatorPanel.stats.premiumActive")} value={premiumUsers} />
+                  <CreatorStat icon={Coins} tone="gold" label={t("creatorPanel.stats.commissionAccumulated")} value={formatCurrency(totalCommissionAmount)} raw />
+                  <CreatorStat icon={Wallet} tone="green" label={t("creatorPanel.stats.availableToWithdraw")} value={formatCurrency(availableCommissionAmount)} raw />
                 </div>
 
                 <section className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#22c55e_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#22c55e_7%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Pagos</h3>
+                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">{t("creatorPanel.payments.title")}</h3>
                       <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-                        Estado:{" "}
+                        {t("creatorPanel.payments.statusLabel")}{" "}
                         {canRequestWithdrawal
-                          ? "Listo para solicitar"
+                          ? t("creatorPanel.payments.ready")
                           : dashboardMetrics?.hasPendingPayoutRequest
-                            ? "Solicitud pendiente"
-                            : "Esperando mínimo"}
+                            ? t("creatorPanel.payments.pending")
+                            : t("creatorPanel.payments.waiting")}
                       </p>
                     </div>
                     <MetaBadge
@@ -566,24 +569,24 @@ export function CreatorProgramCardView({
                       className="border-[color-mix(in_srgb,#22c55e_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#22c55e]"
                     >
                       {canRequestWithdrawal
-                        ? "DISPONIBLE"
+                        ? t("creatorPanel.payments.available")
                         : dashboardMetrics?.hasPendingPayoutRequest
-                          ? "PENDIENTE"
-                          : "ESPERANDO"}
+                          ? t("creatorPanel.payments.pendingBadge")
+                          : t("creatorPanel.payments.waitingBadge")}
                     </MetaBadge>
                   </div>
 
                   <div className="grid gap-1.5 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
                     <div className="flex items-center justify-between gap-2">
-                      <span>Pendiente de confirmar</span>
+                      <span>{t("creatorPanel.payments.pendingToConfirm")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCurrency(pendingCommissionAmount)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span>Disponible</span>
+                      <span>{t("creatorPanel.payments.available")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCurrency(availableCommissionAmount)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span>Mínimo de retiro</span>
+                      <span>{t("creatorPanel.payments.minimumWithdrawal")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCurrency(nextWithdrawalThreshold)}</span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-surface)_85%,transparent)]">
@@ -599,7 +602,7 @@ export function CreatorProgramCardView({
                     </div>
                     {dashboardMetrics?.hasPendingPayoutRequest ? (
                       <p className="text-[9px] font-medium leading-4 text-[#22c55e]">
-                        Tienes una solicitud de retiro pendiente.
+                        {t("creatorPanel.payments.pendingRequest")}
                       </p>
                     ) : null}
                     <PrimaryButton
@@ -609,8 +612,8 @@ export function CreatorProgramCardView({
                       className="mt-1 h-10 py-0 text-[10px] opacity-70 disabled:opacity-60"
                     >
                       {dashboardMetrics?.hasPendingPayoutRequest
-                        ? "Solicitado"
-                        : "Solicitar retiro"}
+                        ? t("creatorPanel.payments.requested")
+                        : t("creatorPanel.payments.requestWithdrawal")}
                     </PrimaryButton>
                   </div>
                 </section>
@@ -618,7 +621,7 @@ export function CreatorProgramCardView({
                 {paymentHistory.length > 0 ? (
                   <section className="grid gap-1.5 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Historial de comisiones</h3>
+                      <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">{t("creatorPanel.history.title")}</h3>
                       <IconCapsule icon={Clock3} tone="purple" size="xs" />
                     </div>
                     <div className="grid gap-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
@@ -628,7 +631,7 @@ export function CreatorProgramCardView({
                           className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5"
                         >
                           <span className="min-w-0 truncate text-[var(--app-text)]">
-                            {payment?.label || payment?.status || "Pago"}
+                            {payment?.label || payment?.status || t("creatorPanel.history.payment")}
                           </span>
                           <span className="shrink-0 font-black text-[var(--app-text)]">
                             {formatCurrency(Number(payment?.amount ?? 0))}
@@ -641,24 +644,24 @@ export function CreatorProgramCardView({
 
                 <section className="grid gap-1.5 rounded-[1rem] border border-[color-mix(in_srgb,#38bdf8_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#38bdf8_7%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] px-2.5 py-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">Rendimiento</h3>
+                    <h3 className="text-[11px] font-black leading-tight text-[var(--app-text)]">{t("creatorPanel.performance.title")}</h3>
                     <IconCapsule icon={TrendingUp} tone="blue" size="xs" />
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
                     <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
-                      <span>Clicks del enlace</span>
+                      <span>{t("creatorPanel.performance.linkClicks")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCount(linkClicks ?? 0)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
-                      <span>Registros</span>
+                      <span>{t("creatorPanel.performance.registrations")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCount(registeredUsers)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
-                      <span>Premium</span>
+                      <span>{t("creatorPanel.performance.premium")}</span>
                       <span className="font-black text-[var(--app-text)]">{formatCount(premiumUsers)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2 rounded-[0.75rem] bg-[var(--app-surface)] px-2 py-1.5">
-                      <span>Conversión</span>
+                      <span>{t("creatorPanel.performance.conversion")}</span>
                       <span className="font-black text-[var(--app-text)]">
                         {registeredUsers > 0 ? `${Math.min(100, Math.round(conversionRate))}%` : "0%"}
                       </span>
@@ -667,7 +670,7 @@ export function CreatorProgramCardView({
                 </section>
 
                 <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)] ml-3">
-                  Tus seguidores reciben 15 días Premium gratis. Tú ganas 30% por cada suscripción Premium válida, hasta 12 pagos por usuario referido.
+                  {t("creatorPanel.terms.summary")}
                 </p>
               </>
             ) : !profileRequired ? (
@@ -679,13 +682,13 @@ export function CreatorProgramCardView({
                       variant="neutral"
                       className="border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] px-2 py-1 text-[8px] text-[#D4AF37]"
                     >
-                      ACTIVO
+                      {t("creatorPanel.status.active")}
                     </MetaBadge>
                     <h2 className="mt-1.5 min-w-0 text-[16px] font-black leading-tight text-[var(--app-text)]">
-                      Estamos activando tu código de creador
+                      {t("creatorPanel.activation.title")}
                     </h2>
                     <p className="mt-0.5 min-w-0 text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-                      Si ya está listo, pulsa reintentar para refrescar el panel.
+                      {t("creatorPanel.activation.subtitle")}
                     </p>
                   </div>
                 </div>
@@ -694,7 +697,7 @@ export function CreatorProgramCardView({
                   onClick={onRetryCodeActivation}
                   className="h-10 px-3 py-0 text-[10px] normal-case tracking-normal"
                 >
-                  Reintentar
+                  {t("creatorPanel.actions.retry")}
                 </SecondaryButton>
               </div>
             ) : null}
@@ -737,6 +740,7 @@ export default function CreatorProgramCard({
   initialStatusData = null,
   skipAutoLoad = false,
 } = {}) {
+  const { t } = useTranslation();
   const toast = useToast();
   const hasInitialStatusData = Boolean(initialStatusData);
   const [loading, setLoading] = useState(!hasInitialStatusData && !skipAutoLoad);
@@ -797,7 +801,7 @@ export default function CreatorProgramCard({
                 setStatusData(refreshedStatus);
               } catch (refreshError) {
                 if (!active) return;
-                setError(refreshError.message || "No se pudo cargar el panel de creadores.");
+                setError(refreshError.message || t("creatorPanel.errors.load"));
               } finally {
                 if (active) setLoading(false);
               }
@@ -817,7 +821,7 @@ export default function CreatorProgramCard({
         }
       } catch (loadError) {
         if (!active) return;
-        setError(loadError.message || "No se pudo cargar el panel de creadores.");
+        setError(loadError.message || t("creatorPanel.errors.load"));
       } finally {
         if (active && !shouldKeepLoading) setLoading(false);
       }
@@ -831,7 +835,7 @@ export default function CreatorProgramCard({
         window.clearTimeout(retryTimer);
       }
     };
-  }, [initialStatusData, skipAutoLoad]);
+  }, [initialStatusData, skipAutoLoad, t]);
 
   const viewState = useMemo(
     () => ({
@@ -851,7 +855,7 @@ export default function CreatorProgramCard({
     setError("");
     setNotice("");
     if (!termsAccepted) {
-      setError("Debes aceptar los términos del programa para continuar.");
+      setError(t("creatorPanel.errors.termsRequired"));
       return;
     }
     setFormVisible(true);
@@ -860,7 +864,7 @@ export default function CreatorProgramCard({
 
   async function handleSubmitApplication(nextFormState) {
     if (!termsAccepted) {
-      setError("Debes aceptar los términos del programa para continuar.");
+      setError(t("creatorPanel.errors.termsRequired"));
       return;
     }
 
@@ -888,10 +892,10 @@ export default function CreatorProgramCard({
         minimumFollowersMet: Boolean(result?.minimumFollowersMet),
       });
       setNotice("");
-      toast.success("Solicitud enviada para revisión manual.");
+      toast.success(t("creatorPanel.success.applicationSubmitted"));
     } catch (submitError) {
-      setError(submitError.message || "No se pudo enviar tu solicitud.");
-      toast.error(submitError.message || "No se pudo enviar tu solicitud.");
+      setError(submitError.message || t("creatorPanel.errors.submitApplication"));
+      toast.error(submitError.message || t("creatorPanel.errors.submitApplication"));
     } finally {
       setSubmitting(false);
     }
@@ -905,10 +909,10 @@ export default function CreatorProgramCard({
       trackEvent("creator_code_copied", {
         code: statusData.creatorCode,
       });
-      toast.success("Código copiado al portapapeles.");
+      toast.success(t("creatorPanel.success.codeCopied"));
     } catch (copyError) {
-      setError(copyError.message || "No se pudo copiar el código.");
-      toast.error(copyError.message || "No se pudo copiar el código.");
+      setError(copyError.message || t("creatorPanel.errors.copyCode"));
+      toast.error(copyError.message || t("creatorPanel.errors.copyCode"));
     }
   }
 
@@ -922,8 +926,8 @@ export default function CreatorProgramCard({
         shareText: buildCreatorShareText(statusData.creatorCode),
       });
     } catch (shareError) {
-      setError(shareError.message || "No se pudo compartir el código.");
-      toast.error(shareError.message || "No se pudo compartir el código.");
+      setError(shareError.message || t("creatorPanel.errors.shareCode"));
+      toast.error(shareError.message || t("creatorPanel.errors.shareCode"));
     }
   }
 
@@ -945,11 +949,11 @@ export default function CreatorProgramCard({
         ...current,
         ...refreshedStatus,
       }));
-      setNotice(payoutResult?.message || "Solicitud de retiro enviada.");
-      toast.success(payoutResult?.message || "Solicitud de retiro enviada.");
+      setNotice(payoutResult?.message || t("creatorPanel.success.withdrawalRequested"));
+      toast.success(payoutResult?.message || t("creatorPanel.success.withdrawalRequested"));
     } catch (withdrawalError) {
-      setError(withdrawalError.message || "No se pudo solicitar el retiro.");
-      toast.error(withdrawalError.message || "No se pudo solicitar el retiro.");
+      setError(withdrawalError.message || t("creatorPanel.errors.requestWithdrawal"));
+      toast.error(withdrawalError.message || t("creatorPanel.errors.requestWithdrawal"));
     } finally {
       setWithdrawalSaving(false);
     }
@@ -1008,10 +1012,10 @@ export default function CreatorProgramCard({
       }));
       setCodeEditorOpen(false);
       setCodeEditorValue("");
-      toast.success("Código actualizado.");
+      toast.success(t("creatorPanel.success.codeUpdated"));
     } catch (saveError) {
-      setCodeEditorError(saveError.message || "No se pudo actualizar el código.");
-      toast.error(saveError.message || "No se pudo actualizar el código.");
+      setCodeEditorError(saveError.message || t("creatorPanel.errors.updateCode"));
+      toast.error(saveError.message || t("creatorPanel.errors.updateCode"));
     } finally {
       setCodeEditorSaving(false);
     }
@@ -1033,8 +1037,8 @@ export default function CreatorProgramCard({
         ...refreshedStatus,
       }));
     } catch (refreshError) {
-      setError(refreshError.message || "No se pudo cargar el panel de creadores.");
-      toast.error(refreshError.message || "No se pudo cargar el panel de creadores.");
+      setError(refreshError.message || t("creatorPanel.errors.load"));
+      toast.error(refreshError.message || t("creatorPanel.errors.load"));
     } finally {
       setLoading(false);
     }
@@ -1093,6 +1097,7 @@ export function CreatorCodeEditorModal({
   onChange,
   onSave,
 }) {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
 
@@ -1117,19 +1122,19 @@ export function CreatorCodeEditorModal({
       >
         <div className="grid gap-1.5">
           <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#D4AF37]">
-            Personalizar código
+            {t("creatorPanel.codeEditor.badge")}
           </p>
           <h2 className="text-[15px] font-black leading-tight text-[var(--app-text)]">
-            Personalizar código
+            {t("creatorPanel.codeEditor.title")}
           </h2>
           <p className="text-[10px] font-medium leading-4 text-[var(--app-muted)]">
-            Puedes cambiar tu código una sola vez. Elige uno fácil de recordar.
+            {t("creatorPanel.codeEditor.subtitle")}
           </p>
         </div>
 
         <div className="mt-3 grid gap-2">
           <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
-            Nuevo código
+            {t("creatorPanel.codeEditor.label")}
             <input
               value={value}
               onChange={(event) => onChange?.(event.target.value)}
@@ -1137,7 +1142,7 @@ export function CreatorCodeEditorModal({
               autoCapitalize="characters"
               spellCheck={false}
               maxLength={20}
-              placeholder="ALEXISFIT"
+              placeholder={t("creatorPanel.codeEditor.placeholder")}
               className={fieldControlClass(
                 "h-11 py-0 text-[12px] font-black tracking-[0.14em] placeholder:text-[var(--app-muted)]"
               )}
@@ -1157,7 +1162,7 @@ export function CreatorCodeEditorModal({
               className="h-10 px-3 py-0 text-[10px] normal-case tracking-normal"
               disabled={saving}
             >
-              Cancelar
+              {t("creatorPanel.actions.cancel")}
             </SecondaryButton>
             <PrimaryButton
               type="button"
@@ -1172,7 +1177,7 @@ export function CreatorCodeEditorModal({
               }
               className="h-10 px-2 py-0 text-[8px] normal-case tracking-normal whitespace-nowrap"
             >
-              {saving ? "Guardando..." : "Guardar código"}
+              {saving ? t("creatorPanel.actions.saving") : t("creatorPanel.actions.saveCode")}
             </PrimaryButton>
           </div>
         </div>
@@ -1188,37 +1193,39 @@ export function CreatorCodeEditorModal({
 }
 
 function ReviewStatus() {
+  const { t } = useTranslation();
   return (
     <section className="grid gap-2 rounded-[1.15rem] border border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_9%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_97%,transparent))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="flex items-start gap-2.5">
         <IconCapsule icon={Clock3} tone="gold" size="lg" />
         <div className="min-w-0">
           <h2 className="text-[16px] font-black leading-tight tracking-tight text-[var(--app-text)]">
-            Solicitud en revisión
+            {t("creatorPanel.review.title")}
           </h2>
           <p className="mt-1 text-[12px] font-semibold leading-5 text-[var(--app-muted)]">
-            Estamos revisando tu perfil. Tiempo estimado: 24-72 horas.
+            {t("creatorPanel.review.subtitle")}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-1">
-        <ReviewStep icon={ShieldCheck} state="done" label="Solicitud recibida" />
-        <ReviewStep icon={Clock3} state="active" label="Perfil en revisión" />
-        <ReviewStep icon={BadgeCheck} state="next" label="Aprobación" />
+        <ReviewStep icon={ShieldCheck} state="done" label={t("creatorPanel.review.steps.received")} />
+        <ReviewStep icon={Clock3} state="active" label={t("creatorPanel.review.steps.reviewing")} />
+        <ReviewStep icon={BadgeCheck} state="next" label={t("creatorPanel.review.steps.approval")} />
       </div>
 
       <Link
         to="/perfil"
         className="inline-flex w-full items-center justify-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] transition active:scale-[0.98] hover:text-[var(--app-text)]"
       >
-        Volver al perfil
+        {t("creatorPanel.review.back")}
       </Link>
     </section>
   );
 }
 
 function ProgramGuide({ showTerms, termsAccepted, onToggleTermsAccepted }) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-1.5">
       <EarningsPotential />
@@ -1228,16 +1235,16 @@ function ProgramGuide({ showTerms, termsAccepted, onToggleTermsAccepted }) {
       <section className="grid gap-1.5 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-[13px] font-black leading-tight text-[var(--app-text)]">
-            ¿Eres elegible?
+            {t("creatorPanel.eligibility.title")}
           </h2>
           <IconCapsule icon={ShieldCheck} tone="green" size="sm" />
         </div>
         <CompactList
           items={[
-            "Más de 5.000 seguidores",
-            "Perfil público",
-            "Contenido original",
-            "Cumplimiento de las normas",
+            t("creatorPanel.eligibility.items.followers"),
+            t("creatorPanel.eligibility.items.publicProfile"),
+            t("creatorPanel.eligibility.items.originalContent"),
+            t("creatorPanel.eligibility.items.rules"),
           ]}
         />
       </section>
@@ -1275,23 +1282,24 @@ function ReviewStep({ icon: Icon, label, state }) {
 }
 
 function HowItWorksCompact() {
+  const { t } = useTranslation();
   return (
     <section className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <h2 className="min-w-0 break-words text-[13px] font-black leading-tight text-[var(--app-text)]">
-          Cómo funciona
+          {t("creatorPanel.howItWorks.title")}
         </h2>
         <span className="text-[8px] font-black uppercase tracking-[0.12em] text-[#D4AF37]">
-          5 pasos
+          {t("creatorPanel.howItWorks.steps")}
         </span>
       </div>
       <ol className="grid grid-cols-5 gap-1">
         {[
-          ["Solicita", BadgeCheck, "gold"],
-          ["Revisamos", ShieldCheck, "green"],
-          ["Activamos", Rocket, "purple"],
-          ["Compartes", Megaphone, "purple"],
-          ["Ganas", Wallet, "gold"],
+          [t("creatorPanel.howItWorks.step1"), BadgeCheck, "gold"],
+          [t("creatorPanel.howItWorks.step2"), ShieldCheck, "green"],
+          [t("creatorPanel.howItWorks.step3"), Rocket, "purple"],
+          [t("creatorPanel.howItWorks.step4"), Megaphone, "purple"],
+          [t("creatorPanel.howItWorks.step5"), Wallet, "gold"],
         ].map(([text, Icon, tone], index) => (
           <li
             key={text}
@@ -1309,6 +1317,7 @@ function HowItWorksCompact() {
 }
 
 function EarningsPotential() {
+  const { t } = useTranslation();
   const audienceSteps = [5, 10, 25, 50, 100];
   const [audienceIndex, setAudienceIndex] = useState(2);
   const audience = audienceSteps[audienceIndex];
@@ -1329,10 +1338,10 @@ function EarningsPotential() {
           <div className="min-w-0">
             <div className="mb-1 inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.08em] text-[#D4AF37]">
               <IconCapsule icon={Wallet} tone="gold" size="xs" />
-              Potencial de ingresos
+              {t("creatorPanel.earningsPotential.title")}
             </div>
             <p className="mt-0.5 break-words text-[9px] font-semibold leading-3 text-[var(--app-muted)]">
-              Basado en suscripciones Premium válidas.
+              {t("creatorPanel.earningsPotential.subtitle")}
             </p>
           </div>
         </div>
@@ -1340,7 +1349,7 @@ function EarningsPotential() {
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                Premium generados
+                {t("creatorPanel.earningsPotential.premiumGenerated")}
               </p>
               <p className="mt-0.5 text-[16px] font-black leading-none text-[var(--app-text)] sm:text-[17px]">
                 {formatCount(audience)}
@@ -1351,7 +1360,7 @@ function EarningsPotential() {
             </div>
             <div className="min-w-0 text-right">
               <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                Comisión estimada
+                {t("creatorPanel.earningsPotential.estimatedCommission")}
               </p>
               <p className="mt-0.5 break-words text-[18px] font-black leading-none text-[#D4AF37] sm:text-[20px]">
                 ≈ {estimatedIncome.toFixed(2)}€/mes
@@ -1365,7 +1374,7 @@ function EarningsPotential() {
             step="1"
             value={audienceIndex}
             onChange={(event) => setAudienceIndex(Number(event.target.value))}
-            aria-label="Premium generados"
+            aria-label={t("creatorPanel.earningsPotential.sliderAria")}
             className="mt-1.5 h-1.5 w-full accent-[#D4AF37]"
           />
           <div className="mt-1 flex justify-between text-[10px] font-black text-[var(--app-muted)]">
@@ -1376,7 +1385,7 @@ function EarningsPotential() {
         </div>
 
         <p className="text-[9px] font-semibold leading-3 text-[var(--app-muted)]">
-          Las comisiones dependen de suscripciones Premium válidas.
+          {t("creatorPanel.earningsPotential.footer")}
         </p>
       </div>
     </section>
@@ -1384,17 +1393,18 @@ function EarningsPotential() {
 }
 
 function WhatYouGetCard() {
+  const { t } = useTranslation();
   const benefits = [
-    ["30% por cada Premium válido", Wallet, "gold"],
-    ["Código exclusivo para tu comunidad", Megaphone, "purple"],
-    ["Dashboard de conversiones", BarChart3, "blue"],
-    ["Seguimiento de comisiones", CreditCard, "blue"],
+    [t("creatorPanel.benefits.commission"), Wallet, "gold"],
+    [t("creatorPanel.benefits.code"), Megaphone, "purple"],
+    [t("creatorPanel.benefits.dashboard"), BarChart3, "blue"],
+    [t("creatorPanel.benefits.tracking"), CreditCard, "blue"],
   ];
 
   return (
     <section className="rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] p-2">
       <h2 className="mb-1.5 min-w-0 break-words text-[13px] font-black leading-tight text-[var(--app-text)]">
-        Lo que obtienes
+        {t("creatorPanel.benefits.title")}
       </h2>
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
         {benefits.map(([label, Icon, tone]) => (
@@ -1414,18 +1424,19 @@ function WhatYouGetCard() {
 }
 
 function VerificationCard() {
+  const { t } = useTranslation();
   return (
     <section className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#D4AF37_9%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-2.5 shadow-[0_0_22px_color-mix(in_srgb,#D4AF37_10%,transparent),inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.08em] text-[#D4AF37]">
         <IconCapsule icon={BadgeCheck} tone="gold" size="xs" />
-        <span className="min-w-0 break-words">Programa verificado</span>
+        <span className="min-w-0 break-words">{t("creatorPanel.verification.title")}</span>
       </div>
       <CompactList
         items={[
-          "Revisión manual",
-          "Sistema antifraude",
-          "Pagos confirmados",
-          "Seguimiento de conversiones",
+          t("creatorPanel.verification.items.manual"),
+          t("creatorPanel.verification.items.antifraud"),
+          t("creatorPanel.verification.items.payments"),
+          t("creatorPanel.verification.items.conversions"),
         ]}
       />
     </section>
@@ -1433,20 +1444,21 @@ function VerificationCard() {
 }
 
 function LegalCard({ showTerms, termsAccepted, onToggleTermsAccepted }) {
+  const { t } = useTranslation();
   return (
     <section className="grid gap-2 rounded-[1rem] border border-[color-mix(in_srgb,#22c55e_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,#22c55e_7%,var(--app-surface)),color-mix(in_srgb,var(--app-card)_96%,transparent))] p-2.5">
       <div className="flex items-center gap-2">
         <IconCapsule icon={ShieldCheck} tone="green" size="md" />
         <h2 className="min-w-0 break-words text-[13px] font-black leading-tight text-[var(--app-text)]">
-          Legal
+          {t("creatorPanel.legal.title")}
         </h2>
       </div>
       <CompactList
         items={[
-          "Aceptación obligatoria",
-          "Términos del programa",
-          "Suspensión por fraude",
-          "Responsabilidades del creador",
+          t("creatorPanel.legal.items.acceptance"),
+          t("creatorPanel.legal.items.terms"),
+          t("creatorPanel.legal.items.fraud"),
+          t("creatorPanel.legal.items.responsibilities"),
         ]}
       />
 
@@ -1459,13 +1471,13 @@ function LegalCard({ showTerms, termsAccepted, onToggleTermsAccepted }) {
               onChange={(event) => onToggleTermsAccepted?.(event.target.checked)}
               className="mt-1 h-4 w-4 shrink-0 accent-[var(--app-primary)]"
             />
-            <span className="break-words">Acepto términos</span>
+            <span className="break-words">{t("creatorPanel.legal.acceptTerms")}</span>
           </label>
           <Link
             to="/creator-terms"
             className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.06em] text-[#D4AF37] transition hover:text-[var(--app-text)]"
           >
-            Ver condiciones completas
+            {t("creatorPanel.legal.viewTerms")}
             <IconCapsule icon={ExternalLink} tone="gold" size="xs" />
           </Link>
         </div>
@@ -1542,16 +1554,18 @@ function FormField({ label, children }) {
 function formatCount(value) {
   const numeric = Number(value || 0);
   if (!Number.isFinite(numeric)) return "0";
-  return new Intl.NumberFormat("es-ES").format(numeric);
+  const locale = getCurrentAppLanguage() === "en" ? "en-GB" : "es-ES";
+  return new Intl.NumberFormat(locale).format(numeric);
 }
 
 function formatCurrency(value) {
   const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return "0,00 €";
-  return `${new Intl.NumberFormat("es-ES", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(numeric)} €`;
+  if (!Number.isFinite(numeric)) return getCurrentAppLanguage() === "en" ? "€0.00" : "0,00 €";
+  const locale = getCurrentAppLanguage() === "en" ? "en-GB" : "es-ES";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+  }).format(numeric);
 }
 
 function formatCompactNumber(value) {

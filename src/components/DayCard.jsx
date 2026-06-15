@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import MealItem from "./MealItem";
 
 export default function DayCard({ day, progress, toggleMeal }) {
+  const { t } = useTranslation();
   const completed = day.meals.filter((_, i) => progress[`${day.day}-${i}`]).length;
   const total = day.meals.length;
   const percent = Math.round((completed / total) * 100);
@@ -25,7 +27,7 @@ export default function DayCard({ day, progress, toggleMeal }) {
         {/* PROGRESO */}
         <div className="mt-4">
           <p className="text-sm text-[var(--app-muted)]">
-            Progreso: {completed} / {total} comidas ({percent}%)
+            {t("dayCard.progress", { completed, total, percent })}
           </p>
 
           <div className="mt-2 h-2 w-full rounded-full bg-[var(--app-primary-soft)]">
@@ -38,10 +40,10 @@ export default function DayCard({ day, progress, toggleMeal }) {
 
         {/* MACROS */}
         <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
-          <Badge>🔥 {totals.calories} kcal</Badge>
-          <Badge>🥩 {totals.protein}g</Badge>
-          <Badge>🍞 {totals.carbs}g</Badge>
-          <Badge>🥑 {totals.fat}g</Badge>
+          <Badge>🔥 {t("dayCard.macros.calories", { value: totals.calories })}</Badge>
+          <Badge>🥩 {t("dayCard.macros.protein", { value: totals.protein })}</Badge>
+          <Badge>🍞 {t("dayCard.macros.carbs", { value: totals.carbs })}</Badge>
+          <Badge>🥑 {t("dayCard.macros.fat", { value: totals.fat })}</Badge>
         </div>
       </div>
 

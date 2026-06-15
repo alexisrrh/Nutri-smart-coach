@@ -15,18 +15,18 @@ export function getPremiumReferralBannerCopy(premiumStatus = null) {
   const isCreator = isCreatorReferral(acquisitionSource, trialSource);
   const trialDays = resolveTrialDays(premiumStatus, isCreator);
   const title = isCreator
-    ? i18n.t("premium.referralBanner.creatorTitle")
-    : i18n.t("premium.referralBanner.title");
+    ? i18n.t("referralReward.banner.creatorTitle")
+    : i18n.t("referralReward.banner.title");
 
   return {
     visible: true,
     title,
     trialDays,
-    headline: i18n.t("premium.referralBanner.headline", {
+    headline: i18n.t("referralReward.banner.headline", {
       title,
       trialDays,
     }),
-    description: i18n.t("premium.referralBanner.description"),
+    description: i18n.t("referralReward.banner.description"),
   };
 }
 

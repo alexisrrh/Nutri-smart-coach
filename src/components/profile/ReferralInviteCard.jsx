@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Copy, Eye, Gift, LoaderCircle, Share2, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { trackEvent } from "../../services/analytics";
 import {
   claimReferralReward,
@@ -18,6 +19,7 @@ import {
   buildReferralInviteShareText,
   getReferralInviteCardViewModel,
 } from "./referralInviteCardViewModel";
+import "../../i18n";
 
 export function ReferralInviteCardView({
   viewModel = getReferralInviteCardViewModel(),
@@ -33,6 +35,7 @@ export function ReferralInviteCardView({
   onExpand,
   onCollapse,
 }) {
+  const { t } = useTranslation();
   const isLoading = Boolean(loading || viewModel.loading);
   const isCreateLoading = Boolean(actionLoading && actionMode === "create");
   const isClaimLoading = Boolean(actionLoading && actionMode === "claim");
@@ -64,7 +67,7 @@ export function ReferralInviteCardView({
             {viewModel.title}
           </h2>
           <p className="max-w-[18rem] text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
-            3 amigos Premium = 1 mes gratis
+            {t("referralReward.card.heroHint")}
           </p>
         </div>
 
@@ -78,7 +81,7 @@ export function ReferralInviteCardView({
           <div className="px-0.5 py-0.25">
             <div className="flex items-center justify-center gap-1 text-[10px] font-semibold text-[var(--app-muted)]">
               <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
-              <span>Cargando código...</span>
+              <span>{t("referralReward.card.loading")}</span>
             </div>
 
             <div className="mt-1 h-3 rounded-full bg-[color-mix(in_srgb,var(--app-border)_30%,transparent)]" />
@@ -90,7 +93,7 @@ export function ReferralInviteCardView({
                 className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,#D4AF37_18%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_78%,black)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--app-muted)] opacity-70"
               >
                 <LoaderCircle size={12} className="animate-spin text-[#D4AF37]" />
-                <span>Generando...</span>
+                <span>{t("referralReward.card.generating")}</span>
               </button>
             </div>
           </div>
@@ -113,7 +116,7 @@ export function ReferralInviteCardView({
                 className="w-full py-1.25 text-[10px]"
                 disabled={loading || actionLoading}
               >
-                {isCreateLoading ? "Generando..." : "Crear mi código"}
+                {isCreateLoading ? t("referralReward.card.generating") : t("referralReward.card.createCode")}
               </PrimaryButton>
             </div>
           </div>
@@ -124,7 +127,7 @@ export function ReferralInviteCardView({
             </div>
 
             <p className="mt-1 text-[9px] font-semibold leading-4 text-[#D4AF37]">
-              Invitado: 7 días Premium gratis.
+              {t("referralReward.card.invitedTrial")}
             </p>
 
             <div className="mt-1.25 grid w-full grid-cols-2 gap-1.25">
@@ -134,7 +137,7 @@ export function ReferralInviteCardView({
                 className="rounded-full px-2.5 py-1 text-[10px] min-h-[38px] border-[color-mix(in_srgb,#D4AF37_22%,var(--app-border))] bg-[color-mix(in_srgb,var(--app-surface)_84%,black)] text-[var(--app-text)] backdrop-blur-md"
                 disabled={loading || actionLoading}
               >
-                Copiar
+                {t("referralReward.card.copy")}
               </SecondaryButton>
 
               <SecondaryButton
@@ -143,7 +146,7 @@ export function ReferralInviteCardView({
                 className="rounded-full px-2.5 py-1 text-[10px] min-h-[38px] border-[color-mix(in_srgb,#D4AF37_28%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_92%,black),color-mix(in_srgb,var(--app-primary)_82%,black))] text-[var(--app-surface)] backdrop-blur-md"
                 disabled={loading || actionLoading}
               >
-                Compartir
+                {t("referralReward.card.share")}
               </SecondaryButton>
             </div>
 
@@ -152,25 +155,28 @@ export function ReferralInviteCardView({
               onClick={onCollapse}
               className="mt-0.75 inline-flex items-center justify-center text-[10px] font-bold text-[#D4AF37] transition hover:opacity-80"
             >
-              Ocultar código
+              {t("referralReward.card.hideCode")}
             </button>
           </div>
         ) : (
           <div className="px-0.5 py-0.25">
             <p className="text-[10px] font-semibold leading-4 text-[var(--app-text)]">
-              {viewModel.progressValue} de {viewModel.maxReferralRewards} amigos Premium
+              {t("referralReward.card.progress", {
+                current: viewModel.progressValue,
+                total: viewModel.maxReferralRewards,
+              })}
             </p>
             <p className="mt-0.25 text-[9px] font-medium leading-4 text-[var(--app-muted)]">
-              Cuentan tras su primer pago confirmado.
+              {viewModel.confirmedPaymentsText}
             </p>
 
             {viewModel.canClaimReward ? (
               <div className="mt-1 rounded-2xl border border-[color-mix(in_srgb,#D4AF37_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_16%,transparent),color-mix(in_srgb,var(--app-surface)_96%,black))] px-2.5 py-1 text-center shadow-[0_0_16px_color-mix(in_srgb,#D4AF37_10%,transparent)]">
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[#D4AF37]">
-                  Recompensa desbloqueada
+                  {t("referralReward.card.rewardUnlockedTitle")}
                 </p>
                 <p className="mt-0.25 text-[10px] font-semibold leading-4 text-[var(--app-text)]">
-                  Has conseguido 1 mes Premium gratis.
+                  {t("referralReward.card.rewardUnlockedBody")}
                 </p>
                 <div className="mt-0.75">
                   <PrimaryButton
@@ -185,7 +191,7 @@ export function ReferralInviteCardView({
                     className="w-full py-1.5 text-[10px]"
                     disabled={loading || actionLoading || !onClaimReward}
                   >
-                    {isClaimLoading ? "Reclamando..." : "Reclamar recompensa"}
+                    {isClaimLoading ? t("referralReward.card.claiming") : t("referralReward.card.claimReward")}
                   </PrimaryButton>
                 </div>
               </div>
@@ -207,7 +213,7 @@ export function ReferralInviteCardView({
               >
                 <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.12),transparent_60%)] opacity-0 transition duration-300 group-hover:opacity-100" />
                 <Eye size={12} className="relative z-10 text-[#D4AF37]" />
-                <span className="relative z-10">Ver código</span>
+                <span className="relative z-10">{t("referralReward.card.viewCode")}</span>
               </button>
             </div>
           </div>
@@ -218,6 +224,7 @@ export function ReferralInviteCardView({
 }
 
 export function ReferralInviteCard({ className = "", initialStats = null }) {
+  const { t } = useTranslation();
   const toast = useToast();
   const [stats, setStats] = useState(() => initialStats);
   const [loading, setLoading] = useState(() => !initialStats);
@@ -239,7 +246,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
         setStats(nextStats);
       } catch (loadError) {
         if (!active) return;
-        setError(loadError.message || "No se pudieron cargar tus referidos.");
+        setError(loadError.message || t("referralReward.errors.loadStats"));
       } finally {
         if (active) setLoading(false);
       }
@@ -252,7 +259,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
     return () => {
       active = false;
     };
-  }, [initialStats]);
+  }, [initialStats, t]);
 
   const viewModel = useMemo(
     () => getReferralInviteCardViewModel({ stats, loading, expanded }),
@@ -267,11 +274,11 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
         ? window.location.origin
         : "/perfil";
     return {
-      title: "NutriSmart Coach",
+      title: t("referralReward.shareTitle"),
       text: buildReferralInviteShareText(viewModel.referralCode),
       url: shareUrl,
     };
-  }, [viewModel.referralCode]);
+  }, [t, viewModel.referralCode]);
 
   async function handleCreateCode({ expandAfterCreate = false } = {}) {
     setActionLoading(true);
@@ -298,7 +305,7 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
         code: nextCode,
       });
 
-      toast.success("Tu código de referido ya está listo.");
+      toast.success(t("referralReward.success.codeCreated"));
 
       if (expandAfterCreate) {
         setExpanded(true);
@@ -306,8 +313,8 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
 
       return nextCode;
     } catch (createError) {
-      setError(createError.message || "No se pudo crear tu código.");
-      toast.error("No se pudo crear tu código de referido.");
+      setError(createError.message || t("referralReward.errors.createCode"));
+      toast.error(t("referralReward.errors.createCode"));
       return null;
     } finally {
       setActionLoading(false);
@@ -341,15 +348,15 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
         rewardId: result?.reward?.id || null,
       });
 
-      toast.success("1 mes Premium añadido a tu cuenta.");
+      toast.success(t("referralReward.success.rewardClaimed"));
 
       return result;
     } catch (claimError) {
       trackEvent("referral_reward_claim_failed", {
-        message: claimError?.message || "No se pudo reclamar la recompensa.",
+        message: claimError?.message || t("referralReward.errors.claimReward"),
       });
-      setError(claimError.message || "No se pudo reclamar la recompensa.");
-      toast.error(claimError.message || "No se pudo reclamar la recompensa.");
+      setError(claimError.message || t("referralReward.errors.claimReward"));
+      toast.error(claimError.message || t("referralReward.errors.claimReward"));
       return null;
     } finally {
       setActionLoading(false);
@@ -365,9 +372,9 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
       trackEvent("referral_code_copied", {
         code: viewModel.referralCode,
       });
-      toast.success("Código copiado al portapapeles.");
+      toast.success(t("referralReward.success.codeCopied"));
     } catch {
-      toast.error("No se pudo copiar el código.");
+      toast.error(t("referralReward.errors.copyCode"));
     }
   }
 
@@ -389,9 +396,9 @@ export function ReferralInviteCard({ className = "", initialStats = null }) {
 
     try {
       await copyTextToClipboard(`${sharePayload.text} ${sharePayload.url}`);
-      toast.info("Copiado para compartir.");
+      toast.info(t("referralReward.success.copiedToShare"));
     } catch {
-      toast.error("No se pudo preparar el mensaje para compartir.");
+      toast.error(t("referralReward.errors.prepareShare"));
     }
   }
 
