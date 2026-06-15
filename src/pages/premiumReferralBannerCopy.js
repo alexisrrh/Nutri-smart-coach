@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 export function getPremiumReferralBannerCopy(premiumStatus = null) {
   if (!premiumStatus || premiumStatus.is_premium) return null;
 
@@ -12,14 +14,19 @@ export function getPremiumReferralBannerCopy(premiumStatus = null) {
     .toLowerCase();
   const isCreator = isCreatorReferral(acquisitionSource, trialSource);
   const trialDays = resolveTrialDays(premiumStatus, isCreator);
-  const title = isCreator ? "Código de creador aplicado" : "Código aplicado";
+  const title = isCreator
+    ? i18n.t("premium.referralBanner.creatorTitle")
+    : i18n.t("premium.referralBanner.title");
 
   return {
     visible: true,
     title,
     trialDays,
-    headline: `${title}: obtendrás ${trialDays} días Premium gratis.`,
-    description: "Se requiere método de pago y puedes cancelar antes del primer cobro.",
+    headline: i18n.t("premium.referralBanner.headline", {
+      title,
+      trialDays,
+    }),
+    description: i18n.t("premium.referralBanner.description"),
   };
 }
 

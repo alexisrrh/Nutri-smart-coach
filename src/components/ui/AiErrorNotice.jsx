@@ -1,4 +1,5 @@
 import { AlertTriangle, Clock3, ImageOff, Sparkles, WifiOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const NOTICE_TYPES = {
   limit: {
@@ -44,9 +45,10 @@ const NOTICE_TYPES = {
 };
 
 export default function AiErrorNotice({ message = "", className = "" }) {
+  const { t } = useTranslation();
   if (!message) return null;
 
-  const notice = getAiErrorNotice(message);
+  const notice = getAiErrorNotice(message, t);
   const Icon = notice.icon;
   const showMessageDetail = notice.showDetail || notice.showResetDetail;
 
@@ -81,7 +83,7 @@ export default function AiErrorNotice({ message = "", className = "" }) {
   );
 }
 
-function getAiErrorNotice(message) {
+function getAiErrorNotice(message, t) {
   const normalized = String(message || "").toLowerCase();
 
   if (
@@ -94,7 +96,7 @@ function getAiErrorNotice(message) {
     normalized.includes("has alcanzado")
   ) {
     return {
-      ...NOTICE_TYPES.limit,
+      ...translateNotice(NOTICE_TYPES.limit, t),
       showResetDetail: normalized.includes("disponible nuevamente"),
     };
   }
@@ -104,7 +106,7 @@ function getAiErrorNotice(message) {
     normalized.includes("segundos") ||
     normalized.includes("rate")
   ) {
-    return NOTICE_TYPES.rate;
+    return translateNotice(NOTICE_TYPES.rate, t);
   }
 
   if (
@@ -115,7 +117,7 @@ function getAiErrorNotice(message) {
       normalized.includes("optimizar") ||
       normalized.includes("preparar"))
   ) {
-    return NOTICE_TYPES.image;
+    return translateNotice(NOTICE_TYPES.image, t);
   }
 
   if (
@@ -127,11 +129,28 @@ function getAiErrorNotice(message) {
     normalized.includes("timeout") ||
     normalized.includes("tardando")
   ) {
-    return NOTICE_TYPES.network;
+    return translateNotice(NOTICE_TYPES.network, t);
   }
 
   return {
-    ...NOTICE_TYPES.generic,
+    ...translateNotice(NOTICE_TYPES.generic, t),
     showDetail: true,
   };
+}
+
+function translateNotice(notice, t) {
+  return {
+    ...notice,
+    label: t(`food.errors.${noticeKey(notice)}.label`),
+    title: t(`food.errors.${noticeKey(notice)}.title`),
+    description: t(`food.errors.${noticeKey(notice)}.description`),
+  };
+}
+
+function noticeKey(notice) {
+  if (notice === NOTICE_TYPES.limit) return "limit";
+  if (notice === NOTICE_TYPES.rate) return "rate";
+  if (notice === NOTICE_TYPES.image) return "image";
+  if (notice === NOTICE_TYPES.network) return "network";
+  return "generic";
 }

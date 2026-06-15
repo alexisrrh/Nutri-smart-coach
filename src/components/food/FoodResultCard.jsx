@@ -1,10 +1,12 @@
 import { Beef, Droplets, Flame, Sparkles, Wheat } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FoodResultCard({ result, preview }) {
+  const { t } = useTranslation();
   if (!result) return null;
 
   const score = Number(result.score || 0);
-  const advice = getShortAdvice(result);
+  const advice = getShortAdvice(result, t);
 
   return (
     <section
@@ -27,12 +29,12 @@ export default function FoodResultCard({ result, preview }) {
           {preview || result.image_url ? (
             <img
               src={preview || result.image_url}
-              alt={result.food || "Comida analizada"}
+              alt={result.food || t("foodResult.analyzedFoodAlt")}
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
             <div className="grid h-full place-items-center text-xs font-black uppercase tracking-widest text-[var(--app-muted)]">
-              Sin imagen
+              {t("foodResult.noImage")}
             </div>
           )}
 
@@ -56,7 +58,7 @@ export default function FoodResultCard({ result, preview }) {
               style={{ backgroundColor: "var(--app-primary)" }}
             />
             <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              AI Scan
+              {t("foodResult.aiScan")}
             </span>
           </div>
 
@@ -72,18 +74,18 @@ export default function FoodResultCard({ result, preview }) {
                 {score}
               </p>
               <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-                score
+                {t("foodResult.score")}
               </p>
             </div>
           </div>
 
           <div className="absolute bottom-2 left-2 right-2">
             <p className="mb-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-              Comida detectada
+              {t("foodResult.detectedFood")}
             </p>
 
             <h2 className="line-clamp-1 text-[15px] font-black leading-tight text-[var(--app-text)] drop-shadow">
-              {result.food || "Comida detectada"}
+              {result.food || t("foodResult.detectedFood")}
             </h2>
           </div>
         </div>
@@ -99,7 +101,7 @@ export default function FoodResultCard({ result, preview }) {
             <div className="mb-1.5 flex items-center gap-1.5 text-[var(--app-primary)]">
               <Flame size={13} />
               <p className="text-[10px] font-black uppercase tracking-[0.14em]">
-                Energía
+                {t("foodResult.energy")}
               </p>
             </div>
 
@@ -121,7 +123,7 @@ export default function FoodResultCard({ result, preview }) {
             }}
           >
             <p className="text-[10px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-              proteína
+              {t("foodResult.proteinLabel")}
             </p>
 
             <p className="mt-1 text-[23px] font-black leading-none text-[var(--app-primary)]">
@@ -132,9 +134,9 @@ export default function FoodResultCard({ result, preview }) {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <MacroMini icon={<Beef size={12} />} label="Prot" value={result.protein} unit="g" />
-          <MacroMini icon={<Wheat size={12} />} label="Carbs" value={result.carbs} unit="g" />
-          <MacroMini icon={<Droplets size={12} />} label="Grasas" value={result.fat} unit="g" />
+          <MacroMini icon={<Beef size={12} />} label={t("foodResult.macros.protein")} value={result.protein} unit="g" />
+          <MacroMini icon={<Wheat size={12} />} label={t("foodResult.macros.carbs")} value={result.carbs} unit="g" />
+          <MacroMini icon={<Droplets size={12} />} label={t("foodResult.macros.fat")} value={result.fat} unit="g" />
         </div>
 
         <div className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
@@ -145,7 +147,7 @@ export default function FoodResultCard({ result, preview }) {
 
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                Veredicto IA
+                {t("foodResult.verdict")}
               </p>
 
               <p className="mt-0.5 text-xs leading-4 text-[var(--app-text)]/85">
@@ -184,7 +186,7 @@ function MacroMini({ icon, label, value, unit }) {
   );
 }
 
-function getShortAdvice(result) {
+function getShortAdvice(result, t) {
   const goal = normalizeFoodGoal(result.goal);
   const score = Number(result.score || 0);
   const protein = Number(result.protein || 0);
@@ -192,48 +194,48 @@ function getShortAdvice(result) {
 
   if (goal === "ganar_musculo") {
     if (protein >= 30 && score >= 8) {
-      return "Buena base para volumen. Proteína y energía bien alineadas.";
+      return t("foodResult.advice.bulk.goodBase");
     }
 
     if (protein < 20) {
-      return "Para volumen, sube proteína y prioriza recuperación.";
+      return t("foodResult.advice.bulk.lowProtein");
     }
 
     if (calories < 350) {
-      return "Puede quedarse corta para volumen. Añade más energía útil.";
+      return t("foodResult.advice.bulk.lowCalories");
     }
 
-    return "Buena opción para ganar músculo. Ajusta porción si hace falta.";
+    return t("foodResult.advice.bulk.goodOption");
   }
 
   if (goal === "perder_grasa") {
-    if (calories > 850) return "Alta en calorías para déficit. Ajusta porción o salsas.";
-    if (protein < 20) return "Baja en proteína. Añade saciedad con una fuente magra.";
-    return "Buena opción para control de calorías y saciedad.";
+    if (calories > 850) return t("foodResult.advice.fatLoss.highCalories");
+    if (protein < 20) return t("foodResult.advice.fatLoss.lowProtein");
+    return t("foodResult.advice.fatLoss.goodOption");
   }
 
   if (goal === "mantener_peso") {
-    if (score >= 8) return "Buena opción para mantener. Equilibrada y fácil de encajar.";
-    return "Comida correcta. Ajusta porción y acompaña con proteína si hace falta.";
+    if (score >= 8) return t("foodResult.advice.maintain.goodOption");
+    return t("foodResult.advice.maintain.correct");
   }
 
   if (goal === "recomposicion") {
     if (protein >= 25 && score >= 8) {
-      return "Muy útil para recomposición: proteína alta y energía controlada.";
+      return t("foodResult.advice.recomp.goodOption");
     }
 
     if (protein < 20) {
-      return "En recomposición conviene subir proteína para proteger masa muscular.";
+      return t("foodResult.advice.recomp.lowProtein");
     }
 
-    return "Buen encaje para recomposición. Mantén proteína alta y porción medida.";
+    return t("foodResult.advice.recomp.medium");
   }
 
-  if (score >= 8) return "Buena opción. Mantén una porción controlada.";
-  if (protein < 20) return "Baja en proteína. Añade una fuente magra.";
-  if (calories > 850) return "Alta en calorías. Reduce salsas o fritos.";
+  if (score >= 8) return t("foodResult.advice.generic.goodOption");
+  if (protein < 20) return t("foodResult.advice.generic.lowProtein");
+  if (calories > 850) return t("foodResult.advice.generic.highCalories");
 
-  return "Comida aceptable. Ajusta porción y proteína.";
+  return t("foodResult.advice.generic.acceptable");
 }
 
 function normalizeFoodGoal(goal) {

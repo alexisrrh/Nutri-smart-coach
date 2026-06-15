@@ -77,9 +77,11 @@ export async function analyzeMeal({
   goal = "perder_grasa",
   userId,
   profileContext = null,
+  language = "es",
 }) {
   const formData = new FormData();
   formData.append("goal", goal);
+  formData.append("language", normalizeAnalysisLanguage(language));
 
   if (image) {
     formData.append("image", image);
@@ -197,4 +199,10 @@ function normalizeFoodAnalysisProcessState(state) {
     result: state.result || null,
     error: state.error || "",
   };
+}
+
+function normalizeAnalysisLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  return normalized.startsWith("en") ? "en" : "es";
 }

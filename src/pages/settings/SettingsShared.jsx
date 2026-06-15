@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AppShell, MetaBadge, SurfaceCard } from "../../components/ui";
 
 export function SettingsScreenShell({
@@ -49,6 +50,7 @@ export function SettingsFrame({ children, className = "", compact = false }) {
 }
 
 export function SettingsHero({ badge, onBack, subtitle, title, trailing }) {
+  const { t } = useTranslation();
   return (
     <SurfaceCard className="relative overflow-hidden p-2.5" radius="lg">
       <div
@@ -77,7 +79,7 @@ export function SettingsHero({ badge, onBack, subtitle, title, trailing }) {
               type="button"
               onClick={onBack}
               className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] transition active:scale-[0.96] hover:text-[var(--app-text)]"
-              aria-label="Volver"
+              aria-label={t("settings.common.back")}
             >
               <ArrowLeft size={15} />
             </button>

@@ -1,4 +1,5 @@
 import { ImagePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FoodUploadCard({
   preview,
@@ -8,6 +9,7 @@ export default function FoodUploadCard({
   analyzeFood,
   loading,
 }) {
+  const { t } = useTranslation();
   const canAnalyze = Boolean(preview || description?.trim());
 
   return (
@@ -18,23 +20,23 @@ export default function FoodUploadCard({
             <>
               <img
                 src={preview}
-                alt="Vista previa comida"
+                alt={t("food.upload.previewAlt")}
                 className="absolute inset-0 h-full w-full object-cover"
               />
 
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)] via-[var(--app-surface)]/20 to-transparent" />
 
               <div className="absolute left-2 top-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)] backdrop-blur-xl">
-                Foto lista
+                {t("food.upload.photoReady")}
               </div>
 
               <div className="absolute bottom-3 left-3 right-3">
                 <p className="text-base font-black uppercase italic text-[var(--app-text)]">
-                  Imagen preparada
+                  {t("food.upload.imageReady")}
                 </p>
 
                 <p className="mt-0.5 text-xs text-[var(--app-muted)]">
-                  Toca la imagen para cambiarla.
+                  {t("food.upload.tapToChange")}
                 </p>
               </div>
             </>
@@ -46,11 +48,11 @@ export default function FoodUploadCard({
                 </div>
 
                 <p className="text-lg font-black uppercase italic text-[var(--app-text)]">
-                  Sube tu comida
+                  {t("food.upload.title")}
                 </p>
 
                 <p className="mx-auto mt-1.5 max-w-[220px] text-xs leading-4 text-[var(--app-muted)]">
-                  Usa buena luz y que el plato se vea completo.
+                  {t("food.upload.subtitle")}
                 </p>
               </div>
             </div>
@@ -68,17 +70,17 @@ export default function FoodUploadCard({
       <div className="mt-2 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-3">
         <div className="mb-1.5">
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            Descripción opcional
+            {t("food.upload.optionalDescription")}
           </p>
           <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
-            Añade detalles para mejorar la precisión
+            {t("food.upload.optionalDescriptionHelp")}
           </p>
         </div>
 
         <textarea
           value={description}
           onChange={(event) => onDescriptionChange?.(event.target.value)}
-          placeholder="Ej: 2 arepas pequeñas con queso, pollo a la plancha, salsa y ensalada"
+          placeholder={t("food.upload.placeholder")}
           rows={3}
           className="min-h-[84px] w-full resize-none rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 text-[12px] leading-5 text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]"
         />
@@ -104,13 +106,13 @@ export default function FoodUploadCard({
 
           <span className="min-w-0 text-left">
             <span className="block text-[12px] font-black uppercase leading-tight tracking-[0.12em] text-[var(--app-text)]">
-              {loading ? "ANALIZANDO..." : "ANALIZAR COMIDA"}
+              {loading ? t("food.upload.analyzing") : t("food.upload.analyze")}
             </span>
             <span className="mt-0.5 block text-[10px] font-bold leading-tight text-[var(--app-text)]/82">
-              IA nutricional + macros
+              {t("food.upload.subcta")}
             </span>
             <span className="mt-1 block text-[9px] font-medium leading-tight text-[var(--app-muted)]">
-              Detecta calorías, proteína y calidad nutricional
+              {t("food.upload.helper")}
             </span>
           </span>
         </span>

@@ -1,6 +1,8 @@
 import { Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardHeader({ loadingData, navigate }) {
+  const { t } = useTranslation();
   return (
     <header className="flex items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
@@ -24,7 +26,7 @@ export default function DashboardHeader({ loadingData, navigate }) {
             <span className="h-2 w-2 animate-pulse rounded-full" style={{ backgroundColor: "var(--app-primary)", boxShadow: "0 0 12px var(--app-glow)" }} />
 
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[var(--app-muted)]">
-              {loadingData ? "SYNCING..." : "AI ACTIVE"}
+              {loadingData ? t("dashboard.header.syncing") : t("dashboard.header.active")}
             </p>
           </div>
         </div>

@@ -15,6 +15,7 @@ import {
 } from "../services/referralOnboardingService";
 import { clearCreatorPanelCache } from "../services/creatorService";
 import { getProfile, saveProfile } from "../services/profileService";
+import { syncAppLanguageFromProfile } from "../i18n";
 import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }) {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }) {
             clearCreatorPanelCache();
           }
           scheduleDashboardWarmup(data.user?.id);
+          void syncAppLanguage(data.user);
           void syncPendingOnboardingArtifacts(data.user);
         }
       } catch (error) {
@@ -74,6 +76,7 @@ export function AuthProvider({ children }) {
         clearCreatorPanelCache();
       }
       scheduleDashboardWarmup(session?.user?.id);
+      void syncAppLanguage(session?.user);
       void syncPendingOnboardingArtifacts(session?.user);
       setLoadingAuth(false);
       }
@@ -195,6 +198,23 @@ async function syncPendingOnboardingArtifacts(user) {
     await applyPendingOAuthReferralCode();
   } catch (error) {
     console.error("No se pudo aplicar el código de invitación pendiente:", error);
+  }
+}
+
+async function syncAppLanguage(user) {
+  try {
+    if (!user?.id) {
+      await syncAppLanguageFromProfile(null, "es");
+      return;
+    }
+
+    const profile = await getProfile(user.id, { fallbackToCache: false }).catch(
+      () => null
+    );
+
+    await syncAppLanguageFromProfile(profile, "es");
+  } catch (error) {
+    console.warn("No se pudo sincronizar el idioma:", error);
   }
 }
 

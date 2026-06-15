@@ -9,6 +9,7 @@ import {
   TimerReset,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AppShell,
@@ -30,19 +31,20 @@ import { isNativeAndroid, loadProducts } from "../services/mobileBillingService"
 import { getPremiumReferralBannerCopy } from "./premiumReferralBannerCopy";
 
 const comparisonRows = [
-  { label: "Análisis IA", free: "3/día", premium: "20/día" },
-  { label: "Dietas IA", free: "1/semana", premium: "5/día" },
-  { label: "Check-ins IA", free: "1/semana", premium: "1/día" },
-  { label: "Cambiar comidas", free: "❌", premium: "✅" },
-  { label: "Personalización", free: "Básica", premium: "Avanzada" },
-  { label: "Seguimiento", free: "Básico", premium: "Avanzado" },
-  { label: "Recomendaciones IA", free: "Básicas", premium: "Avanzadas" },
-  { label: "Historial", free: "Limitado", premium: "Completo" },
+  { key: "analysis" },
+  { key: "diets" },
+  { key: "checkins" },
+  { key: "mealChanges" },
+  { key: "personalization" },
+  { key: "tracking" },
+  { key: "recommendations" },
+  { key: "history" },
 ];
 
 export function Premium() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { user, loadingAuth } = useAuth();
   const [premiumStatus, setPremiumStatus] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
@@ -62,24 +64,24 @@ export function Premium() {
   const referralBannerCopy = getPremiumReferralBannerCopy(premiumStatus);
   const showReferralBanner = Boolean(referralBannerCopy);
   const nativeStoreLabel = isIosPlatform
-    ? "App Store"
+    ? t("premium.native.stores.appStore")
     : isAndroidPlatform
-    ? "Google Play"
-    : "tu tienda";
+    ? t("premium.native.stores.googlePlay")
+    : t("premium.native.stores.generic");
   const premiumSourceLabel = useMemo(() => {
-    if (premiumSource === "stripe") return "Gestionado por Stripe";
-    if (premiumSource === "apple") return "Gestionado por App Store";
-    if (premiumSource === "google") return "Gestionado por Google Play";
-    if (premiumSource === "manual") return "Activado por el equipo";
+    if (premiumSource === "stripe") return t("premium.status.source.stripe");
+    if (premiumSource === "apple") return t("premium.status.source.apple");
+    if (premiumSource === "google") return t("premium.status.source.google");
+    if (premiumSource === "manual") return t("premium.status.source.manual");
 
     return "";
-  }, [premiumSource]);
+  }, [premiumSource, t]);
   const subscriptionTitle = isNativePlatform
-    ? `Compra en ${nativeStoreLabel}`
-    : "Activa Premium";
+    ? t("premium.native.purchaseTitle", { store: nativeStoreLabel })
+    : t("premium.checkout.title");
   const subscriptionDescription = isNativePlatform
-    ? `En esta app, Premium se activa desde ${nativeStoreLabel}. No necesitas salir de NutriSmart Coach para completar la compra cuando esté disponible.`
-    : "Desbloquea los nuevos límites oficiales y las funciones avanzadas de NutriCoach.";
+    ? t("premium.native.purchaseDescription", { store: nativeStoreLabel })
+    : t("premium.checkout.description");
   const hasCreatorReferral = Boolean(
     acquisitionSource === "creator" ||
       acquisitionSource === "influencer" ||
@@ -87,32 +89,33 @@ export function Premium() {
       premiumStatus?.trial_source === "influencer_trial"
   );
   const trialHeadline = hasCreatorReferral
-    ? "Con código de creador: 15 días gratis"
-    : "Prueba Premium gratis 7 días";
-  const trialDisclaimer =
-    "Se requiere método de pago. Cancela cuando quieras antes de que termine la prueba.";
+    ? t("premium.trial.creator")
+    : t("premium.trial.free");
+  const trialDisclaimer = t("premium.trial.disclaimer");
   const nativeAvailabilityMessage = isNativePlatform
-    ? `Estamos terminando la compra desde ${nativeStoreLabel}. Cuando esté lista podrás activar Premium desde esta misma pantalla.`
+    ? t("premium.native.availabilityMessage", { store: nativeStoreLabel })
     : "";
 
-  const heroTitle = isPremium ? "Premium activo" : "Consigue resultados más rápido";
+  const heroTitle = isPremium
+    ? t("premium.hero.titleActive")
+    : t("premium.hero.titleDefault");
   const heroSubtitle = isPremium
-    ? "Tus nuevos límites oficiales y herramientas avanzadas ya están activos."
-    : "Más capacidad diaria para analizar, ajustar y seguir tu progreso sin quedarte corto.";
+    ? t("premium.hero.subtitleActive")
+    : t("premium.hero.subtitleDefault");
   const heroChips = isPremium
     ? [
-        { icon: Bolt, label: "20 análisis IA al día" },
-        { icon: BarChart3, label: "5 dietas IA al día" },
-        { icon: TimerReset, label: "1 check-in IA al día" },
-        { icon: Layers3, label: "Seguimiento avanzado" },
+        { icon: Bolt, label: t("premium.hero.chips.active.analysis") },
+        { icon: BarChart3, label: t("premium.hero.chips.active.diets") },
+        { icon: TimerReset, label: t("premium.hero.chips.active.checkins") },
+        { icon: Layers3, label: t("premium.hero.chips.active.tracking") },
       ]
     : [
-        { icon: Sparkles, label: "3 análisis IA al día" },
-        { icon: BarChart3, label: "1 dieta IA por semana" },
-        { icon: TimerReset, label: "1 check-in IA por semana" },
-        { icon: ArrowLeftRight, label: "Cambios ilimitados" },
+        { icon: Sparkles, label: t("premium.hero.chips.free.analysis") },
+        { icon: BarChart3, label: t("premium.hero.chips.free.diets") },
+        { icon: TimerReset, label: t("premium.hero.chips.free.checkins") },
+        { icon: ArrowLeftRight, label: t("premium.hero.chips.free.changes") },
       ];
-  const billingBadge = "PAGO SEGURO";
+  const billingBadge = t("premium.hero.billingBadge");
 
   useEffect(() => {
     if (checkoutState === "success" && !trackedCheckoutSuccessRef.current) {
@@ -141,7 +144,9 @@ export function Premium() {
         if (isMounted) setPremiumStatus(status);
       } catch (error) {
         if (isMounted) {
-          setErrorMessage(getFriendlyErrorMessage(error, "consultar el estado premium"));
+          setErrorMessage(
+            getFriendlyErrorMessage(error, t("premium.errors.loadStatus"))
+          );
         }
       } finally {
         if (isMounted) setLoadingStatus(false);
@@ -153,7 +158,7 @@ export function Premium() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [user?.id, t]);
 
   useEffect(() => {
     if (!isAndroidPlatform) return undefined;
@@ -175,11 +180,11 @@ export function Premium() {
       setActionLoading(plan);
       const url = await createPremiumCheckoutSession(plan);
 
-      if (!url) throw new Error("Stripe no devolvió una sesión de pago.");
+      if (!url) throw new Error(t("premium.errors.noCheckoutSession"));
 
       window.location.assign(url);
     } catch (error) {
-      setErrorMessage(getFriendlyErrorMessage(error, "crear la sesión de pago"));
+      setErrorMessage(getFriendlyErrorMessage(error, t("premium.errors.createCheckout")));
     } finally {
       setActionLoading("");
     }
@@ -191,22 +196,22 @@ export function Premium() {
       setActionLoading("portal");
       const url = await createCustomerPortalSession();
 
-      if (!url) throw new Error("Stripe no devolvió el portal de cliente.");
+      if (!url) throw new Error(t("premium.errors.noPortalSession"));
 
       window.location.assign(url);
     } catch (error) {
-      setErrorMessage(getFriendlyErrorMessage(error, "abrir el portal de cliente"));
+      setErrorMessage(getFriendlyErrorMessage(error, t("premium.errors.openPortal")));
     } finally {
       setActionLoading("");
     }
   }
 
   return (
-      <AppShell
-   className="overflow-hidden "
-  contentClassName="px-2 pt-2"
-  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
->
+    <AppShell
+      className="overflow-hidden "
+      contentClassName="px-2 pt-2"
+      scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       <div
         className="flex h-full min-h-0 flex-col gap-1"
         style={{ backgroundColor: "var(--app-surface)" }}
@@ -215,10 +220,10 @@ export function Premium() {
         <div className="mx-auto flex w-full max-w-[520px] flex-col gap-2 rounded-[28px] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-card)_94%,#06110e),var(--app-card))] px-2.5 py-2.5 shadow-[0_24px_60px_-18px_var(--app-glow)] md:my-6 md:rounded-[34px] md:border-8 md:px-3 md:py-3">
           <header className="shrink-0">
             <div className="mb-1.5 flex items-center justify-between gap-3">
-              <button
+                <button
                 type="button"
                 onClick={() => navigate(-1)}
-                aria-label="Volver"
+                aria-label={t("premium.common.back")}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-[0.95rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] text-[var(--app-text)] shadow-[0_0_14px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:shadow-[0_0_18px_var(--app-glow)] active:scale-[0.96] active:translate-y-[1px]"
               >
                 <ArrowLeft size={14} />
@@ -239,7 +244,7 @@ export function Premium() {
               />
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.035)_0%,transparent_28%,rgba(0,0,0,0.1)_100%)]" />
 
-              <div className="relative z-10 flex items-start gap-3">
+                <div className="relative z-10 flex items-start gap-3">
                 <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-[1.25rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_90%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] text-[var(--app-primary)] shadow-[0_0_24px_var(--app-glow),inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] bg-[radial-gradient(circle_at_50%_50%,color-mix(in_srgb,var(--app-primary)_18%,transparent),transparent_58%)] opacity-80" />
                   <div className="absolute inset-2 rounded-full border border-[var(--app-primary)]/12 animate-[restOrbPulse_4.5s_ease-in-out_infinite]" />
@@ -249,7 +254,9 @@ export function Premium() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <MetaBadge variant="neutral">PREMIUM</MetaBadge>
+                    <MetaBadge variant="neutral">
+                      {t("premium.hero.premiumTag")}
+                    </MetaBadge>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]" />
                       {billingBadge}
@@ -285,12 +292,12 @@ export function Premium() {
             <SurfaceCard className="p-3" radius="lg" variant="soft">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <MetaBadge variant="neutral">Estado</MetaBadge>
+                  <MetaBadge variant="neutral">{t("premium.status.badge")}</MetaBadge>
                   <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                    Premium activo
+                    {t("premium.status.activeTitle")}
                   </h2>
                   <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                    Tus nuevos límites oficiales y herramientas avanzadas están activos.
+                    {t("premium.status.activeDescription")}
                   </p>
                 </div>
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] shadow-[0_0_16px_var(--app-glow)]">
@@ -300,10 +307,10 @@ export function Premium() {
 
               <div className="mt-3 grid grid-cols-2 gap-1.5">
                 {[
-                  { icon: Bolt, title: "20 análisis IA diarios" },
-                  { icon: BarChart3, title: "5 dietas IA diarias" },
-                  { icon: TimerReset, title: "1 check-in IA diario" },
-                  { icon: Layers3, title: "Seguimiento avanzado" },
+                  { icon: Bolt, title: t("premium.status.features.analysis") },
+                  { icon: BarChart3, title: t("premium.status.features.diets") },
+                  { icon: TimerReset, title: t("premium.status.features.checkins") },
+                  { icon: Layers3, title: t("premium.status.features.tracking") },
                 ].map((item) => {
                   const Icon = item.icon;
 
@@ -330,7 +337,9 @@ export function Premium() {
                     icon={<Sparkles size={14} />}
                     onClick={handleCustomerPortal}
                   >
-                    {actionLoading === "portal" ? "Abriendo..." : "Gestionar suscripción"}
+                    {actionLoading === "portal"
+                      ? t("premium.checkout.opening")
+                      : t("premium.status.manageSubscription")}
                   </PrimaryButton>
                 ) : null}
                 {premiumSource === "stripe" && premiumSourceLabel ? (
@@ -339,13 +348,13 @@ export function Premium() {
                   </p>
                 ) : null}
                 {premiumSource === "apple" ? (
-                  <StatusNotice>Gestiona tu suscripción desde App Store.</StatusNotice>
+                  <StatusNotice>{t("premium.status.native.apple")}</StatusNotice>
                 ) : null}
                 {premiumSource === "google" ? (
-                  <StatusNotice>Gestiona tu suscripción desde Google Play.</StatusNotice>
+                  <StatusNotice>{t("premium.status.native.google")}</StatusNotice>
                 ) : null}
                 {premiumSource === "manual" ? (
-                  <StatusNotice>Tu acceso Premium está activado por el equipo de NutriSmart Coach.</StatusNotice>
+                  <StatusNotice>{t("premium.status.native.manual")}</StatusNotice>
                 ) : null}
               </div>
             </SurfaceCard>
@@ -354,7 +363,7 @@ export function Premium() {
               <SurfaceCard className="p-3" radius="lg" variant="soft">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <MetaBadge variant="neutral">Suscripción</MetaBadge>
+                    <MetaBadge variant="neutral">{t("premium.checkout.badge")}</MetaBadge>
                     <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
                       {subscriptionTitle}
                     </h2>
@@ -365,11 +374,11 @@ export function Premium() {
                 </div>
 
                 {isWebPlatform && checkoutState === "success" ? (
-                  <StatusNotice>Pago recibido. Confirmamos la suscripción con Stripe.</StatusNotice>
+                  <StatusNotice>{t("premium.checkout.success")}</StatusNotice>
                 ) : null}
 
                 {isWebPlatform && checkoutState === "cancelled" ? (
-                  <StatusNotice>Pago cancelado. Puedes retomarlo cuando quieras.</StatusNotice>
+                  <StatusNotice>{t("premium.checkout.cancelled")}</StatusNotice>
                 ) : null}
 
                 {errorMessage ? <StatusNotice tone="error">{errorMessage}</StatusNotice> : null}
@@ -391,38 +400,38 @@ export function Premium() {
                     >
                       <span className="min-w-0">
                         <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                          Premium mensual
+                          {t("premium.checkout.monthlyLabel")}
                         </span>
                         <span className="mt-0.5 block text-[16px] font-black leading-none text-[var(--app-text)]">
-                          7,99 €/mes
+                          {t("premium.checkout.monthlyPrice")}
                         </span>
                       </span>
                       <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_20%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                        Pago seguro
+                        {t("premium.checkout.secure")}
                       </span>
                     </button>
 
                     <div className="relative overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_97%,transparent)_100%)] p-3 shadow-[0_0_22px_var(--app-glow)]">
                       <div className="absolute left-3 top-3">
                         <span className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[var(--app-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                          Más popular
+                          {t("premium.checkout.mostPopular")}
                         </span>
                       </div>
                       <div className="pt-5">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                              Premium anual
+                              {t("premium.checkout.yearlyLabel")}
                             </span>
                             <span className="mt-0.5 block text-[18px] font-black leading-none text-[var(--app-text)]">
-                              59,99 €/año
+                              {t("premium.checkout.yearlyPrice")}
                             </span>
                             <span className="mt-1 block text-[10px] font-medium text-[var(--app-muted)]">
-                              Equivale a 4,99€/mes
+                              {t("premium.checkout.yearlyEquivalent")}
                             </span>
                           </div>
                           <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_24%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_90%,transparent)_0%,color-mix(in_srgb,var(--app-primary-soft)_56%,transparent)_100%)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                            Ahorra 37%
+                          {t("premium.checkout.yearlySave")}
                           </span>
                         </div>
 
@@ -432,7 +441,9 @@ export function Premium() {
                           onClick={() => handleCheckout("yearly")}
                           className="mt-3 transition-all duration-200 ease-out hover:shadow-[0_0_28px_var(--app-glow)] active:scale-[0.97] active:translate-y-[2px] active:brightness-95"
                         >
-                          {actionLoading === "yearly" ? "Abriendo..." : "Activar Premium"}
+                          {actionLoading === "yearly"
+                            ? t("premium.checkout.opening")
+                            : t("premium.checkout.activate")}
                         </PrimaryButton>
                       </div>
                     </div>
@@ -448,10 +459,10 @@ export function Premium() {
                       className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--app-muted)] opacity-70"
                     >
                       {isIosPlatform
-                        ? "Compra en App Store próximamente"
+                        ? t("premium.native.pending.apple")
                         : isAndroidPlatform
-                        ? "Compra en Google Play próximamente"
-                        : "Disponible próximamente"}
+                        ? t("premium.native.pending.google")
+                        : t("premium.native.pending.generic")}
                     </button>
                   </div>
                 )}
@@ -466,12 +477,14 @@ export function Premium() {
                   <SurfaceCard className="p-3" radius="lg" variant="soft">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <MetaBadge variant="neutral">Gratis vs Premium</MetaBadge>
+                        <MetaBadge variant="neutral">
+                          {t("premium.comparison.badge")}
+                        </MetaBadge>
                         <h2 className="mt-1.5 text-[15px] font-semibold tracking-tight text-[var(--app-text)]">
-                          Gratis vs Premium
+                          {t("premium.comparison.title")}
                         </h2>
                         <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
-                          Compara los límites reales del plan Free frente al nuevo Premium oficial.
+                          {t("premium.comparison.subtitle")}
                         </p>
                       </div>
                     </div>
@@ -479,23 +492,25 @@ export function Premium() {
                     <div className="mt-2.5 grid gap-1.5">
                       <div className="grid grid-cols-[1.35fr_.8fr_.95fr] gap-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)] sm:grid-cols-[1.5fr_.75fr_.95fr]">
                         <span />
-                        <span className="text-center">Gratis</span>
-                        <span className="text-center text-[var(--app-primary)]">Premium</span>
+                        <span className="text-center">{t("premium.comparison.free")}</span>
+                        <span className="text-center text-[var(--app-primary)]">
+                          {t("premium.comparison.premium")}
+                        </span>
                       </div>
 
                       {comparisonRows.map((row) => (
                         <div
-                          key={row.label}
+                          key={row.key}
                           className="grid grid-cols-[1.35fr_.8fr_.95fr] items-center gap-1.5 rounded-[0.9rem] border border-[var(--app-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-surface)_92%,transparent)_0%,color-mix(in_srgb,var(--app-card)_96%,transparent)_100%)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] sm:grid-cols-[1.5fr_.75fr_.95fr]"
                         >
                           <span className="min-w-0 text-[10px] font-medium leading-tight text-[var(--app-text)] sm:text-[11px]">
-                            {row.label}
+                            {t(`premium.comparison.rows.${row.key}`)}
                           </span>
                           <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-muted)] sm:text-[9px]">
-                            {row.free}
+                            {t(`premium.comparison.values.free.${row.key}`)}
                           </span>
                           <span className="rounded-full border border-[color-mix(in_srgb,var(--app-primary)_18%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary-soft)_72%,transparent)_0%,color-mix(in_srgb,var(--app-primary-soft)_42%,transparent)_100%)] px-2 py-[3px] text-center text-[8px] font-semibold text-[var(--app-primary)] shadow-[0_0_14px_var(--app-glow)] sm:text-[9px]">
-                            {row.premium}
+                            {t(`premium.comparison.values.premium.${row.key}`)}
                           </span>
                         </div>
                       ))}

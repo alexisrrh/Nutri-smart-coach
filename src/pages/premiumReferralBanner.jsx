@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { getPremiumReferralBannerCopy } from "./premiumReferralBannerCopy";
 
 export function PremiumReferralBanner({ premiumStatus = null }) {
+  const { t } = useTranslation();
   const copy = getPremiumReferralBannerCopy(premiumStatus);
   if (!copy) return null;
 
@@ -13,7 +15,7 @@ export function PremiumReferralBanner({ premiumStatus = null }) {
 
         <div className="min-w-0 flex-1">
           <span className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[var(--app-surface)] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-            CÓDIGO APLICADO
+            {t("premium.referralBanner.badge")}
           </span>
           <h2 className="mt-1.5 text-[14px] font-black leading-tight text-[var(--app-text)]">
             {copy.headline}

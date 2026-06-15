@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, ScanLine, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FoodScannerLoader({ preview }) {
+  const { t } = useTranslation();
   const [percent, setPercent] = useState(8);
 
-  const steps = ["Detectando", "Macros", "Calidad", "Resultado"];
+  const steps = [
+    t("scan.loader.steps.detecting"),
+    t("scan.loader.steps.macros"),
+    t("scan.loader.steps.quality"),
+    t("scan.loader.steps.result"),
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,11 +36,11 @@ export default function FoodScannerLoader({ preview }) {
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Analizando comida
+            {t("scan.loader.title")}
           </p>
 
           <h3 className="mt-0.5 text-base font-black uppercase italic">
-            AI Food Scan
+            {t("scan.loader.badge")}
           </h3>
         </div>
 
@@ -46,7 +53,7 @@ export default function FoodScannerLoader({ preview }) {
         {preview && (
           <img
             src={preview}
-            alt="Analizando comida"
+            alt={t("scan.loader.previewAlt")}
             className="absolute inset-0 h-full w-full object-cover opacity-55"
           />
         )}
@@ -66,7 +73,7 @@ export default function FoodScannerLoader({ preview }) {
             </p>
 
             <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
-              Procesando con IA
+              {t("scan.loader.processing")}
             </p>
           </div>
         </div>

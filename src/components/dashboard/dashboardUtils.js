@@ -8,34 +8,32 @@ export function getSmartTip(
   totals,
   goals,
   mealCount,
-  hasDiet
+  hasDiet,
+  t
 ) {
   if (!hasDiet) {
-    return "Genera tu dieta IA para activar recomendaciones inteligentes.";
+    return t("dashboard.ai.smartTip.noDiet");
   }
 
   if (mealCount === 0) {
-    return "Escanea tu primera comida para activar el análisis nutricional.";
+    return t("dashboard.ai.smartTip.firstMeal");
   }
 
   if (totals.protein < goals.protein * 0.5) {
-    return "Proteína baja. Prioriza pollo, huevos o yogur griego.";
+    return t("dashboard.ai.smartTip.lowProtein");
   }
 
   if (totals.calories > goals.calories) {
-    return "Has superado tus calorías objetivo hoy.";
+    return t("dashboard.ai.smartTip.overCalories");
   }
 
-  return "Buen progreso. Mantén constancia y registra tus comidas.";
+  return t("dashboard.ai.smartTip.goodProgress");
 }
 
 export function getFirstName(name) {
-  if (!name) return "Usuario";
+  if (!name) return "";
 
-  return (
-    String(name).trim().split(" ")[0] ||
-    "Usuario"
-  );
+  return String(name).trim().split(" ")[0] || "";
 }
 
 export function shortText(text, max) {

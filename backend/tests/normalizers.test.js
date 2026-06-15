@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeCheckinAnalysis } from "../normalizers/checkin.normalizer.js";
 import { normalizeFoodAnalysis } from "../normalizers/foodAnalysis.normalizer.js";
+import { buildFoodAnalysisPrompt } from "../prompts/foodAnalysis.prompt.js";
 
 describe("foodAnalysis normalizer", () => {
   it("normalizes valid data", () => {
@@ -25,6 +26,7 @@ describe("foodAnalysis normalizer", () => {
     });
 
     expect(result).toEqual({
+      language: "es",
       food: "Arroz con pollo",
       description: "Buen plato",
       portion_estimate: "1 plato",
@@ -59,6 +61,17 @@ describe("foodAnalysis normalizer", () => {
     expect(result.score).toBe(5);
     expect(result.warning).toBe("");
   });
+
+  it("uses english defaults when language is en", () => {
+    const result = normalizeFoodAnalysis({}, "en");
+
+    expect(result.language).toBe("en");
+    expect(result.food).toBe("Detected meal");
+    expect(result.description).toBe("AI-generated visual analysis.");
+    expect(result.portion_estimate).toBe("Approximate portion not specified.");
+    expect(result.goal_fit).toContain("The meal may fit");
+    expect(result.recommendation).toContain("Approximate estimate");
+  });
 });
 
 describe("checkinAnalysis normalizer", () => {
@@ -87,5 +100,24 @@ describe("checkinAnalysis normalizer", () => {
       "No se pudieron detectar cambios visuales con suficiente claridad."
     );
     expect(result.recommendation).toContain("check-in semanal");
+  });
+});
+
+describe("foodAnalysis prompt", () => {
+  it("injects english language instructions when language is en", () => {
+    const prompt = buildFoodAnalysisPrompt({
+      goal: "ganar_musculo",
+      description: "Grilled chicken and rice",
+      hasImage: true,
+      language: "en",
+      profileContext: {
+        caloriesGoal: 2200,
+        proteinGoal: 160,
+      },
+    });
+
+    expect(prompt).toContain("If language is 'en', return all user-facing text in English.");
+    expect(prompt).toContain("Actual goal: muscle gain");
+    expect(prompt).toContain("User description: Grilled chicken and rice");
   });
 });

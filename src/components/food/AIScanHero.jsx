@@ -1,6 +1,8 @@
 import { Camera } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AIScanHero() {
+  const { t } = useTranslation();
   return (
     <section className="relative shrink-0 overflow-hidden rounded-[24px] border border-[var(--app-border)] bg-[var(--app-card)] p-3 shadow-[0_20px_60px_var(--app-glow)]">
       <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[var(--app-primary-soft)] blur-3xl" />
@@ -8,24 +10,24 @@ export default function AIScanHero() {
       <div className="relative z-10">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            AI Nutrition Scanner
+            {t("scan.hero.badge")}
           </p>
 
           <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)]">
-            LIVE
+            {t("scan.hero.live")}
           </span>
         </div>
 
         <div className="mt-2.5 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-[24px] font-black uppercase italic leading-[0.9] text-[var(--app-text)]">
-              Escanea
+              {t("scan.hero.titleTop")}
               <br />
-              <span className="text-[var(--app-primary)]">calorías</span>
+              <span className="text-[var(--app-primary)]">{t("scan.hero.titleBottom")}</span>
             </h1>
 
             <p className="mt-1.5 max-w-[220px] text-xs leading-4 text-[var(--app-muted)]">
-              Foto clara, macros y score en segundos.
+              {t("scan.hero.subtitle")}
             </p>
           </div>
 

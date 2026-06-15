@@ -1,0 +1,918 @@
+{
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading...",
+    "active": "Active",
+    "available": "Available",
+    "privacyPolicy": "Privacy policy",
+    "termsOfService": "Terms of service"
+  },
+  "login": {
+    "brand": "Nutri Smart Coach",
+    "title": "Sign in",
+    "subtitle": "Continue with your calories, meals and progress in one panel.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "emailPlaceholder": "you@email.com",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Forgot your password?",
+    "submit": "Sign in",
+    "loading": "Signing in...",
+    "newHere": "New here?",
+    "createAccount": "Create account",
+    "privacyNote": "Secure privacy · Protected data · Nutritional AI",
+    "errors": {
+      "invalidCredentials": "Email or password are invalid.",
+      "connect": "Connection error: ",
+      "callbackInvalid": "invalid callback",
+      "resetRequired": "Enter your email to receive the link.",
+      "resetFailed": "We could not send the link: ",
+      "resetSuccess": "We sent you a link to reset your password.",
+      "callbackFailed": "We could not complete the sign-in: ",
+      "createProfileFailed": "We could not create the user profile."
+    },
+    "reset": {
+      "eyebrow": "Secure recovery",
+      "title": "Reset password",
+      "subtitle": "We will send you a private link to create a new password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send link",
+      "loading": "Sending...",
+      "close": "Close"
+    },
+    "social": {
+      "google": "Continue with Google",
+      "facebook": "Continue with Facebook"
+    }
+  },
+  "register": {
+    "title": "Build your smart plan",
+    "subtitle": "Start with clear goals, visual analysis and AI-guided progress.",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "namePlaceholder": "Ex. Alexis Rodríguez",
+    "emailPlaceholder": "you@email.com",
+    "passwordPlaceholder": "At least 6 characters",
+    "invitationQuestion": "Do you have an invite code?",
+    "invitationSubtitle": "Unlock Premium trials and rewards.",
+    "invitationPlaceholder": "Enter your code",
+    "invitationApply": "Apply code",
+    "invitationValidating": "Validating...",
+    "creatorCodeApplied": "Creator code applied",
+    "creatorBonusLine1": "Your 15 free Premium days will activate when you create your account.",
+    "creatorBonusLine2": "15 free Premium days from creator invite.",
+    "policyCheckbox": "I accept the policies and terms of NutriSmart Coach",
+    "submit": "→ Create free account",
+    "loading": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "errors": {
+      "completeFields": "Complete all fields.",
+      "passwordTooShort": "Password must have at least 6 characters.",
+      "policiesRequired": "You must accept the policies and terms of NutriSmartCoach.",
+      "signUpFailed": "Error creating account: ",
+      "profileFailed": "Error creating profile.",
+      "invalidReferral": "The invite code is invalid or no longer available.",
+      "callbackFailed": "We could not complete the sign-in: ",
+      "callbackInvalid": "invalid callback",
+      "connect": "Connection error: "
+    },
+    "social": {
+      "google": "Continue with Google",
+      "facebook": "Continue with Facebook"
+    }
+  },
+  "dashboard": {
+    "header": {
+      "title": "Your coach for today",
+      "syncing": "SYNCING...",
+      "active": "AI ACTIVE",
+      "fallbackName": "champ",
+      "greeting": "Hi,"
+    },
+    "sync": {
+      "label": "Sync",
+      "retry": "Retry"
+    },
+    "motivation": {
+      "label": "AI boost",
+      "goodPace": "you are on the right track: keep the streak going.",
+      "goodProgress": "Good progress today. Every record gives you more weekly control.",
+      "mealProgress": "Every logged meal improves your clarity to make better decisions.",
+      "activeDiet": "Finish your next meal and keep your week active.",
+      "startSmall": "Today is a good day to start with one small action."
+    },
+    "premium": {
+      "activeTitle": "Premium active",
+      "upgradeTitle": "Progress faster",
+      "activeSubtitle": "Your expanded limits are active.",
+      "upgradeSubtitle": "Smart tracking and advanced plans to improve your results.",
+      "manage": "Manage plan",
+      "upgrade": "Upgrade my plan",
+      "benefits": {
+        "personalized": "Personalized meals",
+        "faster": "Faster results",
+        "consistent": "More consistency",
+        "exclusive": "Exclusive features"
+      }
+    },
+    "ai": {
+      "orbLabel": "AI",
+      "smartTip": {
+        "noDiet": "Generate your AI meal plan to unlock smart recommendations.",
+        "firstMeal": "Scan your first meal to unlock nutrition analysis.",
+        "lowProtein": "Protein is low. Prioritize chicken, eggs, or Greek yogurt.",
+        "overCalories": "You have exceeded your calorie target today.",
+        "goodProgress": "Good progress. Stay consistent and keep logging your meals."
+      },
+      "insight": {
+        "badge": "AI Tip",
+        "nextStep": "Recommended next step",
+        "status": {
+          "configure": "Setup",
+          "pending": "Pending",
+          "excellent": "Excellent",
+          "improvable": "Improving",
+          "attention": "Attention"
+        },
+        "noDiet": {
+          "title": "Create your base plan first",
+          "text": "You do not have an active meal plan yet. Once you create your weekly plan, Nutri Smart can compare your meals against a real target.",
+          "action": "Create an AI meal plan from the Plan section to get more accurate recommendations."
+        },
+        "noMeals": {
+          "title": "Activate today's tracking",
+          "text": "You have not scanned any meals today yet. Once you upload your first photo, you will see how many calories you have consumed and what is left.",
+          "action": "Scan your first meal to start filling your daily target."
+        },
+        "excellent": {
+          "title": "You are doing great today",
+          "text": "Your meals are aligned with your target. Keeping this pace will make your weekly progress easier to sustain.",
+          "action": "Keep prioritizing protein and avoid unnecessary extra calories."
+        },
+        "improvable": {
+          "title": "You can improve the next meal",
+          "text": "The AI detects that there is still room to improve an important metric today.",
+          "action": "Make your next meal higher in protein and scan it to fine-tune your day."
+        },
+        "attention": {
+          "title": "Let's get back on track",
+          "text": "Your day is not fully aligned with the goal yet, but you can improve it with your next meal.",
+          "action": "Choose a cleaner meal, high in protein, and scan it before you finish the day."
+        }
+      }
+    },
+    "tools": {
+      "badge": "AI"
+    },
+    "workout": {
+      "title": "Recommended workout today",
+      "completedToday": "Workout completed today",
+      "button": "View routine",
+      "levels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "muscles": {
+        "abs": "Abs / active recovery",
+        "chest": "Chest",
+        "back": "Back",
+        "legs": "Legs",
+        "shoulders": "Shoulders",
+        "glutes": "Glutes",
+        "arms": "Arms",
+        "general": "General"
+      },
+      "exerciseHints": {
+        "abs": ["Plank", "Controlled crunch", "Mobility"],
+        "chest": ["Press", "Push-ups", "Flyes"],
+        "back": ["Row", "Pulldown", "Deadlift"],
+        "legs": ["Squat", "Lunges", "Leg press"],
+        "shoulders": ["Military press", "Raises", "Face pull"],
+        "glutes": ["Hip thrust", "Bridge", "Kickback"],
+        "arms": ["Biceps curl", "Dips", "Triceps extension"],
+        "general": ["Base strength", "Core", "Mobility"]
+      }
+    },
+    "progress": {
+      "badge": "Daily Progress",
+      "title": "Your progress today",
+      "current": "Progress",
+      "level": "Level {{level}}",
+      "summary": "Summary",
+      "streakDays": "days in a row",
+      "quick": {
+        "protein": "Protein",
+        "kcal": "Kcal",
+        "status": "Status",
+        "active": "Active",
+        "pending": "Pend."
+      },
+      "summaryMessages": {
+        "workoutAndNutrition": "Workout completed and nutrition is active today.",
+        "workoutOnly": "Workout completed. A good moment to keep the streak going.",
+        "proteinAndMeals": "You are doing great today. Keep the pace.",
+        "proteinMissing": "You still need {{proteinMissing}}g of protein.",
+        "streak": "You are on a {{currentStreak}}-day streak.",
+        "activeDiet": "Plan ready: {{dailyMealGoal}} meals set for today.",
+        "startSmall": "Start with one meal or a small check-in today."
+      },
+      "items": {
+        "diet": "Diet",
+        "protein": "Protein",
+        "workout": "Workout",
+        "checkin": "Check-in"
+      }
+    },
+    "achievements": {
+      "firstMeal": "First meal analyzed",
+      "threeDayStreak": "3-day streak",
+      "firstCheckin": "First check-in",
+      "firstWorkout": "First workout completed"
+    },
+    "errors": {
+      "sessionInvalid": "Invalid session. Sign in again.",
+      "offline": "No connection. Showing the last saved data and you can retry.",
+      "timeout": "Synchronization is taking too long. Try again.",
+      "multi": "We could not sync some data. Retry to refresh the dashboard.",
+      "generic": "We could not sync the dashboard right now. Try again in a few seconds."
+    },
+    "actions": {
+      "moreTools": "More tools",
+      "continuePlan": "Continue your plan",
+      "planDiet": "Meal plan",
+      "planDietDesc": "Personalized meal plan",
+      "checkinPhoto": "Photo check-in",
+      "checkinPhotoDesc": "Physique with photo",
+      "routines": "Routines",
+      "routinesDesc": "Weekly routine",
+      "exercises": "Exercises",
+      "exercisesDesc": "Exercises by muscle",
+      "history": "History",
+      "historyDesc": "Saved meals",
+      "progress": "Progress",
+      "progressDesc": "Weight and measurements"
+    },
+    "hero": {
+      "aiScore": "AI Score",
+      "aiScoreHint": "Based on your meals and daily activity.",
+      "scanCalories": "Scan calories",
+      "analyzeFood": "Analyze food",
+      "kcal": "Kcal",
+      "protein": "Protein",
+      "meals": "Meals",
+      "left": "{{count}}{{unit}} left",
+      "completed": "Completed"
+    },
+    "summary": {
+      "quick": "Quick overview",
+      "latest": "Your latest records",
+      "lastMeal": "Last scanned meal",
+      "noMeal": "You haven't scanned a meal yet",
+      "mealHelp": "Upload a photo to start filling your calories today.",
+      "mealRecorded": "Recorded",
+      "mealPending": "Pending",
+      "lastCheckin": "Last body check-in",
+      "noCheckin": "No check-in yet",
+      "checkinHelp": "Log a photo to compare your physical check-in.",
+      "checkinUpdated": "Updated",
+      "checkinPending": "Pending",
+      "noFatEstimate": "no fat estimate",
+      "history": "History",
+      "historyDesc": "Saved meals",
+      "progress": "Progress",
+      "progressDesc": "Weight and measurements"
+    }
+  },
+  "premium": {
+    "common": {
+      "back": "Back"
+    },
+    "native": {
+      "stores": {
+        "appStore": "App Store",
+        "googlePlay": "Google Play",
+        "generic": "your store"
+      },
+      "purchaseTitle": "Buy on {{store}}",
+      "purchaseDescription": "In this app, Premium activates from {{store}}. You do not need to leave NutriSmart Coach to complete the purchase when it is available.",
+      "availabilityMessage": "We are finishing the purchase flow from {{store}}. When it is ready, you will be able to activate Premium from this same screen.",
+      "pending": {
+        "apple": "App Store purchase coming soon",
+        "google": "Google Play purchase coming soon",
+        "generic": "Coming soon"
+      }
+    },
+    "hero": {
+      "billingBadge": "SECURE PAYMENT",
+      "premiumTag": "PREMIUM",
+      "titleActive": "Premium active",
+      "titleDefault": "Get results faster",
+      "subtitleActive": "Your official new limits and advanced tools are already active.",
+      "subtitleDefault": "More daily capacity to analyze, adjust and track your progress without running short.",
+      "chips": {
+        "active": {
+          "analysis": "20 AI analyses per day",
+          "diets": "5 AI diets per day",
+          "checkins": "1 AI check-in per day",
+          "tracking": "Advanced tracking"
+        },
+        "free": {
+          "analysis": "3 AI analyses per day",
+          "diets": "1 AI diet per week",
+          "checkins": "1 AI check-in per week",
+          "changes": "Unlimited changes"
+        }
+      }
+    },
+    "status": {
+      "badge": "Status",
+      "activeTitle": "Premium active",
+      "activeDescription": "Your official new limits and advanced tools are active.",
+      "manageSubscription": "Manage subscription",
+      "source": {
+        "stripe": "Managed by Stripe",
+        "apple": "Managed by App Store",
+        "google": "Managed by Google Play",
+        "manual": "Activated by the team"
+      },
+      "features": {
+        "analysis": "20 AI analyses per day",
+        "diets": "5 AI diets per day",
+        "checkins": "1 AI check-in per day",
+        "tracking": "Advanced tracking"
+      },
+      "native": {
+        "apple": "Manage your subscription from the App Store.",
+        "google": "Manage your subscription from Google Play.",
+        "manual": "Your Premium access is activated by the NutriSmart Coach team."
+      }
+    },
+    "checkout": {
+      "badge": "Subscription",
+      "title": "Activate Premium",
+      "description": "Unlock the new official limits and advanced features of NutriCoach.",
+      "success": "Payment received. We are confirming the subscription with Stripe.",
+      "cancelled": "Payment cancelled. You can resume it whenever you want.",
+      "opening": "Opening...",
+      "monthlyLabel": "Monthly Premium",
+      "monthlyPrice": "7.99 €/month",
+      "secure": "Secure payment",
+      "mostPopular": "Most popular",
+      "yearlyLabel": "Annual Premium",
+      "yearlyPrice": "59.99 €/year",
+      "yearlyEquivalent": "Equals 4.99€/month",
+      "yearlySave": "Save 37%",
+      "activate": "Activate Premium"
+    },
+    "trial": {
+      "creator": "With creator code: 15 free days",
+      "free": "7-day free Premium trial",
+      "disclaimer": "Payment method required. Cancel anytime before the trial ends."
+    },
+    "comparison": {
+      "badge": "Free vs Premium",
+      "title": "Free vs Premium",
+      "subtitle": "Compare the real Free plan limits against the new official Premium.",
+      "free": "Free",
+      "premium": "Premium",
+      "rows": {
+        "analysis": "AI analyses",
+        "diets": "AI diets",
+        "checkins": "AI check-ins",
+        "mealChanges": "Meal changes",
+        "personalization": "Personalization",
+        "tracking": "Tracking",
+        "recommendations": "AI recommendations",
+        "history": "History"
+      },
+      "values": {
+        "free": {
+          "analysis": "3/day",
+          "diets": "1/week",
+          "checkins": "1/week",
+          "mealChanges": "❌",
+          "personalization": "Basic",
+          "tracking": "Basic",
+          "recommendations": "Basic",
+          "history": "Limited"
+        },
+        "premium": {
+          "analysis": "20/day",
+          "diets": "5/day",
+          "checkins": "1/day",
+          "mealChanges": "✅",
+          "personalization": "Advanced",
+          "tracking": "Advanced",
+          "recommendations": "Advanced",
+          "history": "Full"
+        }
+      }
+    },
+    "errors": {
+      "loadStatus": "load the premium status",
+      "noCheckoutSession": "Stripe did not return a checkout session.",
+      "createCheckout": "create the checkout session",
+      "noPortalSession": "Stripe did not return the customer portal.",
+      "openPortal": "open the customer portal"
+    },
+    "referralBanner": {
+      "badge": "CODE APPLIED",
+      "title": "Code applied",
+      "creatorTitle": "Creator code applied",
+      "headline": "{{title}}: you will get {{trialDays}} free Premium days.",
+      "description": "A payment method is required and you can cancel before the first charge."
+    }
+  },
+  "bottomNav": {
+    "home": "Home",
+    "scan": "Scan",
+    "checkin": "Check-in",
+    "routines": "Routines",
+    "diet": "Meal plan",
+    "profile": "Profile"
+  },
+  "navigation": {
+    "mealPlan": "Meal Plan",
+    "mealPlanShort": "PLAN"
+  },
+  "settings": {
+    "common": {
+      "back": "Back"
+    },
+    "theme": {
+      "badge": "THEME",
+      "title": "Customization",
+      "subtitle": "Customize NutriSmartCoach appearance.",
+      "themesTitle": "Themes",
+      "themesDesc": "Choose a premium visual skin.",
+      "languageTitle": "Language",
+      "languageDesc": "Choose the app language.",
+      "activeTheme": "ACTIVE THEME",
+      "active": "Active",
+      "available": "Available",
+      "live": "LIVE",
+      "current": "Current",
+      "status": "Status",
+      "synced": "Synced",
+      "hero": {
+        "active": "Active theme",
+        "title": "Adjust the visual skin without losing the premium reading or system hierarchy."
+      },
+      "themeTones": {
+        "emerald": "Active",
+        "dark": "Minimal",
+        "white": "Light",
+        "rose": "Futuristic",
+        "blue": "Tech",
+        "purple": "Pro"
+      }
+    },
+    "profile": {
+      "badge": "Profile",
+      "title": "My profile",
+      "loadingSubtitle": "Loading your personal data.",
+      "subtitle": "Adjust your base data to personalize macros, progress and recommendations.",
+      "loadError": "Could not load the profile.",
+      "noUser": "No user is signed in.",
+      "saveError": "Could not save the profile.",
+      "saved": "Profile updated successfully.",
+      "data": "Basic data",
+      "dataDesc": "Profile, age and base measurements.",
+      "compact": "Compact",
+      "name": "Name",
+      "age": "Age",
+      "weight": "Weight",
+      "height": "Height",
+      "gender": "Gender",
+      "system": "Metabolic system",
+      "systemDesc": "Align the engine with your real goal.",
+      "core": "Core",
+      "goal": "Goal",
+      "activity": "Activity",
+      "nutrition": "Nutrition",
+      "nutritionDesc": "Define your daily meal frequency.",
+      "rhythm": "Rhythm",
+      "mealsPerDay": "Meals per day",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "genderOptions": {
+        "male": "Male",
+        "female": "Female"
+      },
+      "goalOptions": {
+        "lose": "Lose fat",
+        "gain": "Build muscle",
+        "maintain": "Maintain weight"
+      },
+      "activityOptions": {
+        "low": "Sedentary",
+        "moderate": "Moderate",
+        "high": "High"
+      },
+      "goals": {
+        "lose": "Lose fat",
+        "gain": "Build muscle",
+        "maintain": "Maintain weight"
+      },
+      "activityValues": {
+        "low": "Sedentary",
+        "moderate": "Moderate",
+        "high": "High"
+      },
+      "corePanel": {
+        "badge": "AI Profile Core",
+        "title": "Synced profile",
+        "subtitle": "Your data is already aligned with the recommendation engine to recalculate macros and daily rhythm.",
+        "live": "Live",
+        "objective": "Active goal",
+        "kcalObjective": "Kcal target",
+        "activity": "Activity",
+        "status": "Status",
+        "synced": "Profile synced",
+        "coreActive": "Core active",
+        "coreBody": "The profile is ready to guide your recommendations."
+      }
+    },
+    "ai": {
+      "badge": "AI",
+      "title": "AI & nutrition",
+      "subtitle": "Live core, allocated resources and future system layers.",
+      "core": {
+        "title": "AI core",
+        "desc": "Live nutrition engine state with soft materials and stable sync.",
+        "live": "Live",
+        "syncing": "Syncing profile...",
+        "premium": "Premium active",
+        "free": "Free plan active",
+        "premiumDesc": "Your profile reflects the official Premium limits and a priority queue for a faster experience.",
+        "freeDesc": "Your profile reflects the official Free plan limits with the same stable base.",
+        "motor": "Engine",
+        "sync": "Sync",
+        "analysis": "Analysis",
+        "premiumValue": "Premium",
+        "freeValue": "Free",
+        "stable": "Stable",
+        "priority": "Priority",
+        "prepared": "Prepared",
+        "provider": "Provider"
+      },
+      "limits": {
+        "title": "Limits and control",
+        "desc": "Official resource allocation by plan for stability, cost and consistent response."
+      },
+      "future": {
+        "title": "Future layers",
+        "desc": "Planned evolution without breaking the current base or premium reading."
+      },
+      "platform": {
+        "title": "Platform",
+        "desc": "The current architecture remains intact: same account, same security, same base."
+      },
+      "rows": {
+        "food": {
+          "label": "Food analysis",
+          "free": "3/day",
+          "premium": "20/day"
+        },
+        "diet": {
+          "label": "AI diets",
+          "free": "1/week",
+          "premium": "5/day"
+        },
+        "checkin": {
+          "label": "AI check-ins",
+          "free": "1/week",
+          "premium": "1/day"
+        }
+      },
+      "roadmap": {
+        "motor": {
+          "label": "Adaptive engine",
+          "copy": "More context with the same database and the same security."
+        },
+        "context": {
+          "label": "Contextual analysis",
+          "copy": "More precise recommendations without adding visual noise."
+        },
+        "layers": {
+          "label": "Future layers",
+          "copy": "The UI already feels like an extensible and living system."
+        }
+      }
+    },
+    "legal": {
+      "badge": "Legal",
+      "title": "Privacy & legal",
+      "subtitle": "Trust center to review policies and manage your data transparently.",
+      "trust": {
+        "title": "Trust Center",
+        "desc": "Protected data, active policies and control over your information.",
+        "protected": "Protected",
+        "policies": "Active policies",
+        "management": "Data management available",
+        "transparency": "Legal transparency"
+      },
+      "control": {
+        "title": "Control and transparency",
+        "desc": "Your data stays under your control and you can review it whenever you want.",
+        "line1": "Your data stays under your control.",
+        "line2": "You can review policies or request deletion whenever you need."
+      },
+      "privacy": "Privacy policy",
+      "terms": "Terms of service",
+      "deleteAccount": "Delete account / data",
+      "privacyDesc": "How we handle your data and photos.",
+      "termsDesc": "Platform usage conditions.",
+      "deleteDesc": "Request to delete your account."
+    },
+    "security": {
+      "badge": "Security",
+      "title": "Security Center",
+      "subtitle": "Protected access, synced session and control over your account.",
+      "account": {
+        "title": "Protected account",
+        "desc": "Current access state and session sync.",
+        "protected": "Protected",
+        "sessionSynced": "Session synced",
+        "socialActive": "Social access active",
+        "localActive": "Local access active",
+        "socialDesc": "Your account uses an external provider to sign in securely.",
+        "localDesc": "Your local password controls the main access to this account.",
+        "session": "Session",
+        "status": "Status",
+        "active": "Active"
+      },
+      "actions": {
+        "title": "Password and sign out",
+        "desc": "Manage local access or close the current session.",
+        "changePassword": "Change password",
+        "changePasswordDesc": "Update local password.",
+        "socialManagedDesc": "Managed by your social provider.",
+        "logout": "Sign out",
+        "logoutDesc": "Leave this device.",
+        "controlTitle": "Active control",
+        "controlBody": "You can update your password whenever you want. If you use a social provider, access is still managed by your external account."
+      },
+      "password": {
+        "title": "Change password",
+        "desc": "Update your local sign-in password.",
+        "local": "Secure access",
+        "social": "Social access",
+        "invalidEmail": "Enter a valid email address.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "you@email.com",
+        "sending": "Sending...",
+        "submit": "Send link",
+        "socialInfo": "Your account uses social sign-in. Password is managed by your provider.",
+        "sessionExpired": "Your session has expired. Sign in again to request the link.",
+        "success": "We sent you a secure link to change your password.",
+        "passwordResetError": "We could not send the link: "
+      },
+      "logout": {
+        "title": "Sign out",
+        "desc": "Your session will close on this device. You can sign back in anytime.",
+        "cancel": "Cancel",
+        "confirm": "Sign out",
+        "accessSecure": "Secure access",
+        "sessionActive": "Active session",
+        "yes": "Yes"
+      }
+    }
+  },
+  "scan": {
+    "hero": {
+      "badge": "AI NUTRITION SCANNER",
+      "live": "LIVE",
+      "titleTop": "Scan",
+      "titleBottom": "calories",
+      "subtitle": "Clear photo, macros, and score in seconds."
+    },
+    "loader": {
+      "title": "Analyzing meal",
+      "badge": "AI FOOD SCAN",
+      "previewAlt": "Analyzing meal",
+      "processing": "Processing with AI",
+      "steps": {
+        "detecting": "Detecting",
+        "macros": "Macros",
+        "quality": "Quality",
+        "result": "Result"
+      }
+    }
+  },
+  "food": {
+    "usage": {
+      "planNotice": "Free plan: {{free}} AI analyses/day. Premium: {{premium}} AI analyses/day.",
+      "badge": "AI use {{periodLabel}}",
+      "ctaTitle": "Go Premium and unlock 20 AI analyses/day.",
+      "ctaBadge": "Go Premium",
+      "period": {
+        "premium": "Premium",
+        "week": "weekly",
+        "day": "daily"
+      },
+      "periodText": {
+        "week": "weekly",
+        "day": "daily"
+      },
+      "resetAt": "today at {{time}}",
+      "resetFallback": "soon",
+      "premium": {
+        "title": "Premium AI active",
+        "detail": "Your expanded limits are active."
+      },
+      "syncing": {
+        "title": "Syncing limits...",
+        "detail": "We are checking your plan and AI quotas."
+      },
+      "fallback": {
+        "detail": "We couldn't sync your quota. Showing Free limits."
+      },
+      "limitReached": {
+        "title": "{{periodText}} limit reached · resets {{reset}}",
+        "detail": "You can continue when the quota resets."
+      },
+      "remaining": {
+        "food": {
+          "one": "1 AI analysis left {{periodText}}",
+          "many": "{{remaining}} AI analyses left {{periodText}}"
+        },
+        "diet": {
+          "one": "1 diet generation left {{periodText}}",
+          "many": "{{remaining}} diet generations left {{periodText}}"
+        },
+        "checkin": "{{remaining}} AI check-ins left {{periodText}}"
+      },
+      "available": {
+        "detail": "Resets {{resetText}} at {{resetTime}}"
+      },
+      "reset": {
+        "week": "next week",
+        "day": "today"
+      }
+    },
+    "errors": {
+      "profileLoadFailed": "Could not load the profile for goals:",
+      "limit": {
+        "label": "AI limit",
+        "title": "You've reached your AI limit",
+        "description": "Your quota will reset at the start of the next period, or you can expand it with Premium."
+      },
+      "rate": {
+        "label": "Short pause",
+        "title": "Wait a few seconds before trying again",
+        "description": "The AI needs a short gap between requests."
+      },
+      "image": {
+        "label": "Image",
+        "title": "The image is too large",
+        "description": "Try a lighter photo or one taken at a lower resolution."
+      },
+      "network": {
+        "label": "Connection",
+        "title": "The connection didn't respond",
+        "description": "Check your network or try again in a few moments."
+      },
+      "generic": {
+        "label": "Notice",
+        "title": "We couldn't complete the action",
+        "description": "Try again in a few seconds."
+      }
+    },
+    "actions": {
+      "analyzeAnother": "Analyze another meal",
+      "discardAnalysis": "Discard analysis"
+    },
+    "upload": {
+      "previewAlt": "Meal preview",
+      "photoReady": "Photo ready",
+      "imageReady": "Image ready",
+      "tapToChange": "Tap the image to change it.",
+      "title": "Upload your meal",
+      "subtitle": "Use good lighting and keep the plate fully visible.",
+      "optionalDescription": "Optional description",
+      "optionalDescriptionHelp": "Add details to improve accuracy",
+      "placeholder": "Ex: 2 small arepas with cheese, grilled chicken, sauce and salad",
+      "analyzing": "ANALYZING...",
+      "analyze": "ANALYZE MEAL",
+      "subcta": "Nutrition AI + macros",
+      "helper": "Detects calories, protein and nutrition quality"
+    },
+    "goal": {
+      "title": "Today's goal",
+      "badge": "LIVE",
+      "calories": "Calories",
+      "protein": "Protein",
+      "subtitle": "Keep logging meals to complete your daily goals."
+    },
+    "insights": {
+      "title": "AI Insights",
+      "badge": "SMART",
+      "goalTitles": {
+        "bulk": "Clean bulk",
+        "fatLoss": "Controlled deficit",
+        "maintain": "Daily balance",
+        "recomp": "Recomposition",
+        "general": "Fitness analysis"
+      },
+      "goalInsights": {
+        "bulk": "Prioritize protein and recovery to gain muscle without slowing performance.",
+        "fatLoss": "Focus on satiety and calorie control to keep the deficit without losing adherence.",
+        "maintain": "Keep a balance of energy, protein, and portion to hold your current weight.",
+        "recomp": "Aim for high protein and reasonable calories to improve body composition without extremes.",
+        "general": "Adjust portion and protein according to your current goal."
+      },
+      "lowProtein": {
+        "title": "Low protein",
+        "text": "Add chicken, eggs, tuna, Greek yogurt, or lean protein."
+      },
+      "highCalories": {
+        "title": "High in calories",
+        "text": "Reduce sauces, fried items, or the carb portion."
+      },
+      "nextStep": {
+        "title": "Next improvement",
+        "text": "Keep protein high and control the portion."
+      }
+    },
+    "swap": {
+      "title": "AI tweak",
+      "badge": "SMART"
+    },
+    "history": {
+      "badge": "AI history",
+      "title": "Latest scans",
+      "count": "{{count}} meals",
+      "mealAlt": "Meal",
+      "mealFallback": "Meal",
+      "kcal": "kcal",
+      "protein": "Protein",
+      "recent": "Recent"
+    },
+    "tags": {
+      "highProtein": "High protein",
+      "lowCarb": "Low carb",
+      "light": "Light",
+      "lowFat": "Low fat",
+      "aiRecommends": "AI recommends"
+    },
+    "recentMeals": {
+      "title": "Recent scans",
+      "badge": "HISTORY",
+      "noPhoto": "No photo",
+      "mealFallback": "Meal",
+      "kcal": "kcal",
+      "recent": "Recent"
+    }
+  },
+  "foodResult": {
+    "analyzedFoodAlt": "Analyzed meal",
+    "noImage": "No image",
+    "aiScan": "AI Scan",
+    "score": "score",
+    "detectedFood": "Detected meal",
+    "energy": "Energy",
+    "proteinLabel": "protein",
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    },
+    "verdict": "AI verdict",
+    "advice": {
+      "bulk": {
+        "goodBase": "Good bulking base. Protein and energy are well aligned.",
+        "lowProtein": "For bulking, raise protein and prioritize recovery.",
+        "lowCalories": "It may be too light for bulking. Add more useful energy.",
+        "goodOption": "Good option for muscle gain. Adjust the portion if needed."
+      },
+      "fatLoss": {
+        "highCalories": "High in calories for a deficit. Adjust portion or sauces.",
+        "lowProtein": "Low in protein. Add satiety with a lean source.",
+        "goodOption": "Good option for calorie control and satiety."
+      },
+      "maintain": {
+        "goodOption": "Good option for maintenance. Balanced and easy to fit in.",
+        "correct": "Solid meal. Adjust portion and protein if needed."
+      },
+      "recomp": {
+        "goodOption": "Very useful for recomposition: high protein and controlled energy.",
+        "lowProtein": "For recomposition, increase protein to protect lean mass.",
+        "medium": "Good fit for recomposition. Keep protein high and portion measured."
+      },
+      "generic": {
+        "goodOption": "Good option. Keep the portion controlled.",
+        "lowProtein": "Low in protein. Add a lean source.",
+        "highCalories": "High in calories. Reduce sauces or fried ingredients.",
+        "acceptable": "Acceptable meal. Adjust portion and protein."
+      }
+    }
+  }
+}

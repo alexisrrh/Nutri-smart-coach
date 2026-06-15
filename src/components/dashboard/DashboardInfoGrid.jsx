@@ -1,4 +1,5 @@
 import { Camera, CalendarCheck, History, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardInfoGrid({
   lastMeal,
@@ -6,6 +7,7 @@ export default function DashboardInfoGrid({
   navigate,
   shortText,
 }) {
+  const { t, i18n } = useTranslation();
   const hasMeal = Boolean(lastMeal);
   const hasCheckin = Boolean(lastCheckin);
 
@@ -13,43 +15,43 @@ export default function DashboardInfoGrid({
     <section className="space-y-3">
       <div className="px-1">
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]/60">
-          Resumen rápido
+          {t("dashboard.summary.quick")}
         </p>
 
         <h3 className="mt-1 text-lg font-black text-[var(--app-text)]">
-          Tus últimos registros
+          {t("dashboard.summary.latest")}
         </h3>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
         <InfoRow
           icon={<Camera size={18} />}
-          title="Última comida escaneada"
-          value={hasMeal ? shortText(lastMeal?.food || "Comida registrada", 34) : "Aún no has escaneado comida"}
+          title={t("dashboard.summary.lastMeal")}
+          value={hasMeal ? shortText(lastMeal?.food || t("dashboard.summary.lastMeal"), 34) : t("dashboard.summary.noMeal")}
           detail={
             hasMeal
               ? `${Math.round(lastMeal.calories || 0)} kcal · ${Math.round(
                   lastMeal.protein || 0
-                )}g proteína`
-              : "Sube una foto para empezar a completar tus calorías de hoy."
+                )}g ${t("dashboard.hero.protein").toLowerCase()}`
+              : t("dashboard.summary.mealHelp")
           }
-          badge={hasMeal ? "Registrada" : "Pendiente"}
+          badge={hasMeal ? t("dashboard.summary.mealRecorded") : t("dashboard.summary.mealPending")}
           active={hasMeal}
           onClick={() => navigate(hasMeal ? "/comidas" : "/foto-comida")}
         />
 
         <InfoRow
           icon={<Trophy size={18} />}
-          title="Último check-in corporal"
-          value={hasCheckin ? `${lastCheckin.weight || "-"} kg` : "Sin check-in todavía"}
+          title={t("dashboard.summary.lastCheckin")}
+          value={hasCheckin ? `${lastCheckin.weight || "-"} kg` : t("dashboard.summary.noCheckin")}
           detail={
             hasCheckin
-              ? `${formatDate(lastCheckin.created_at)} · ${
-                  lastCheckin.body_fat_range || "sin estimación de grasa"
+              ? `${formatDate(lastCheckin.created_at, i18n.resolvedLanguage || i18n.language)} · ${
+                  lastCheckin.body_fat_range || t("dashboard.summary.noFatEstimate")
                 }`
-              : "Registra una foto para comparar tu check-in físico."
+              : t("dashboard.summary.checkinHelp")
           }
-          badge={hasCheckin ? "Actualizado" : "Pendiente"}
+          badge={hasCheckin ? t("dashboard.summary.checkinUpdated") : t("dashboard.summary.checkinPending")}
           active={hasCheckin}
           onClick={() => navigate("/checkin")}
         />
@@ -62,10 +64,10 @@ export default function DashboardInfoGrid({
         >
             <History size={18} className="text-[var(--app-primary)]" />
             <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[var(--app-text)]">
-              Historial
+              {t("dashboard.summary.history")}
             </p>
             <p className="mt-1 text-[11px] text-[var(--app-muted)]">
-              Ver comidas
+              {t("dashboard.summary.historyDesc")}
             </p>
           </button>
 
@@ -76,10 +78,10 @@ export default function DashboardInfoGrid({
         >
             <CalendarCheck size={18} className="text-[var(--app-primary)]" />
             <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[var(--app-text)]">
-              Peso y medidas
+              {t("dashboard.summary.progress")}
             </p>
             <p className="mt-1 text-[11px] text-[var(--app-muted)]">
-              Ver evolución
+              {t("dashboard.summary.progressDesc")}
             </p>
           </button>
         </div>
@@ -138,10 +140,12 @@ function InfoRow({ icon, title, value, detail, badge, active, onClick }) {
   );
 }
 
-function formatDate(value) {
+function formatDate(value, locale = "es-ES") {
   if (!value) return "Sin fecha";
 
-  return new Date(value).toLocaleDateString("es-ES", {
+  const effectiveLocale = locale === "en" ? "en-US" : "es-ES";
+
+  return new Date(value).toLocaleDateString(effectiveLocale, {
     day: "2-digit",
     month: "short",
   });

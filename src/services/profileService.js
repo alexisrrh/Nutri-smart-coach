@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
 import { mergePendingLegalConsent } from "./legalConsentService";
-import { normalizeProfile } from "./normalizers";
+import { normalizeLanguage, normalizeProfile } from "./normalizers";
 
 const PROFILE_KEY = STORAGE_KEYS.PROFILE;
 const PROFILE_API_ENABLED = import.meta.env.VITE_PROFILE_API_ENABLED === "true";
@@ -137,6 +137,9 @@ function toProfileRow(profile) {
     gender: profile.gender,
     activity: profile.activity_level,
     goal: profile.goal,
+    language: normalizeLanguage(
+      profile.language || profile.preferences?.language || profile.preferences?.locale
+    ),
     meals_per_day: normalizeMealsPerDay(
       profile.meals_per_day ?? profile.mealsPerDay ?? profile.preferences?.meals_per_day
     ),

@@ -1,4 +1,5 @@
 import ActionCard from "./ActionCard";
+import { useTranslation } from "react-i18next";
 import {
   ChartNoAxesColumnIncreasing,
   ClipboardList,
@@ -9,6 +10,7 @@ import { exercises } from "../../data/exercises";
 import { preloadExercises } from "../../services/exerciseMediaService";
 
 export default function DashboardActions({ navigate }) {
+  const { t } = useTranslation();
   const preloadAllExercises = () => {
     if (!Array.isArray(exercises) || exercises.length === 0) return;
     preloadExercises(exercises);
@@ -22,11 +24,11 @@ export default function DashboardActions({ navigate }) {
             className="pb-1 text-center text-[15px] font-black uppercase tracking-[0.2em]"
             style={{ color: "var(--app-primary)", opacity: 0.55 }}
           >
-            Más herramientas
+            {t("dashboard.actions.moreTools")}
           </p>
 
           <h2 className="mt-0.5 pb-1 text-[14px] font-black leading-none text-[var(--app-text)] text-center">
-            Continúa tu plan
+            {t("dashboard.actions.continuePlan")}
           </h2>
         </div>
 
@@ -38,7 +40,7 @@ export default function DashboardActions({ navigate }) {
             color: "var(--app-primary)",
           }}
         >
-          IA
+          {t("dashboard.tools.badge")}
         </div>
       </div>
 
@@ -46,24 +48,24 @@ export default function DashboardActions({ navigate }) {
         <ActionCard
           icon="/icons/scan-comida-icon.png"
           fallbackIcon={ClipboardList}
-          label="Plan dieta"
-          description="Dieta personalizada"
+          label={t("dashboard.actions.planDiet")}
+          description={t("dashboard.actions.planDietDesc")}
           onClick={() => navigate("/plan-comidas")}
         />
 
         <ActionCard
           icon="/icons/bodyscan-icon.png"
           fallbackIcon={UserRoundSearch}
-          label="Check-in foto"
-          description="Físico con foto"
+          label={t("dashboard.actions.checkinPhoto")}
+          description={t("dashboard.actions.checkinPhotoDesc")}
           onClick={() => navigate("/checkin")}
         />
 
         <ActionCard
           icon="/icons/rutinas.png"
           fallbackIcon={ClipboardList}
-          label="Rutinas"
-          description="Rutina semanal"
+          label={t("dashboard.actions.routines")}
+          description={t("dashboard.actions.routinesDesc")}
           onClick={() => navigate("/rutinas")}
           imageClassName="scale-[1.15] "
         />
@@ -71,8 +73,8 @@ export default function DashboardActions({ navigate }) {
         <ActionCard
           icon="/icons/ejercicios.png"
           fallbackIcon={ClipboardList}
-          label="Ejercicios"
-          description="Ejercicios por músculo"
+          label={t("dashboard.actions.exercises")}
+          description={t("dashboard.actions.exercisesDesc")}
           onClick={() => {
             preloadAllExercises();
             navigate("/ejercicios");
@@ -83,16 +85,16 @@ export default function DashboardActions({ navigate }) {
         <ActionCard
           icon="/icons/historial-icon.png"
           fallbackIcon={ScanLine}
-          label="Historial"
-          description="Comidas guardadas"
+          label={t("dashboard.actions.history")}
+          description={t("dashboard.actions.historyDesc")}
           onClick={() => navigate("/comidas")}
         />
 
         <ActionCard
           icon="/icons/progreso-icon.png"
           fallbackIcon={ChartNoAxesColumnIncreasing}
-          label="Progreso"
-          description="Peso y medidas"
+          label={t("dashboard.actions.progress")}
+          description={t("dashboard.actions.progressDesc")}
           onClick={() => navigate("/progreso")}
         />
       </div>
