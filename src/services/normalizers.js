@@ -1,3 +1,5 @@
+import { getCurrentAppLanguage } from "../i18n";
+
 export function normalizeProfile(data) {
   if (!data) return null;
 
@@ -13,7 +15,9 @@ export function normalizeProfile(data) {
   const mealsPerDay = normalizeMealsPerDay(
     data.meals_per_day ?? data.mealsPerDay ?? preferences.meals_per_day ?? preferences.mealsPerDay
   );
-  const language = normalizeLanguage(data.language || preferences.language || preferences.locale);
+  const language = normalizeLanguage(
+    data.language || preferences.language || preferences.locale || getCurrentAppLanguage()
+  );
 
   return {
     ...data,
@@ -216,6 +220,10 @@ function toNumberOrNull(value) {
 }
 
 export function normalizeLanguage(language) {
-  if (language === "en") return "en";
+  const normalized = String(language || "").trim().toLowerCase();
+
+  if (normalized.startsWith("en")) return "en";
+  if (normalized.startsWith("es")) return "es";
+
   return "es";
 }

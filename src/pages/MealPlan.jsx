@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { trackEvent } from "../services/analytics";
 import {
   Download,
@@ -45,45 +46,9 @@ import {
 import { useAiUsageStatus } from "../hooks/useAiUsageStatus";
 import { formatAiUsageMessage } from "../services/aiUsageService";
 
-const DIET_TYPES = [
-  { value: "balanced", label: "Balanceada" },
-  { value: "low_carb", label: "Sin carbohidratos" },
-  { value: "keto", label: "Keto" },
-  { value: "hyperprotein", label: "Alta proteína" },
-  { value: "vegetarian", label: "Vegetariana" },
-  { value: "vegan", label: "Vegana" },
-];
-
-const GOAL_TYPES = [
-  { value: "lose_fat", label: "Perder grasa" },
-  { value: "gain_muscle", label: "Ganar músculo" },
-  { value: "maintain", label: "Mantener" },
-];
-
-const BUDGET_TYPES = [
-  { value: "low", label: "Económico" },
-  { value: "medium", label: "Normal" },
-  { value: "high", label: "Premium" },
-];
-
-const PLAN_DAYS = [
-  { value: "2", label: "2 días" },
-  { value: "3", label: "3 días" },
-  { value: "4", label: "4 días" },
-  { value: "5", label: "5 días" },
-  { value: "7", label: "7 días" },
-];
-
-const MEALS_PER_DAY = [
-  { value: "2", label: "2 comidas · ayuno" },
-  { value: "3", label: "3 comidas" },
-  { value: "4", label: "4 comidas" },
-  { value: "5", label: "5 comidas" },
-  { value: "6", label: "6 comidas" },
-];
-
 export function MealPlan() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const isMountedRef = useRef(true);
   const [generationState, setGenerationState] = useState(() =>
     getDietGenerationState()
@@ -125,6 +90,59 @@ export function MealPlan() {
   const safeActiveDay = hasPlan
     ? Math.max(0, Math.min(activeDay, plan.length - 1))
     : 0;
+  const currentLanguage = i18n.resolvedLanguage || i18n.language || "es";
+
+  const DIET_TYPES = useMemo(
+    () => [
+      { value: "balanced", label: t("diet.form.dietTypes.balanced") },
+      { value: "low_carb", label: t("diet.form.dietTypes.lowCarb") },
+      { value: "keto", label: t("diet.form.dietTypes.keto") },
+      { value: "hyperprotein", label: t("diet.form.dietTypes.hyperprotein") },
+      { value: "vegetarian", label: t("diet.form.dietTypes.vegetarian") },
+      { value: "vegan", label: t("diet.form.dietTypes.vegan") },
+    ],
+    [t]
+  );
+
+  const GOAL_TYPES = useMemo(
+    () => [
+      { value: "lose_fat", label: t("diet.form.goals.loseFat") },
+      { value: "gain_muscle", label: t("diet.form.goals.gainMuscle") },
+      { value: "maintain", label: t("diet.form.goals.maintain") },
+    ],
+    [t]
+  );
+
+  const BUDGET_TYPES = useMemo(
+    () => [
+      { value: "low", label: t("diet.form.budget.low") },
+      { value: "medium", label: t("diet.form.budget.medium") },
+      { value: "high", label: t("diet.form.budget.high") },
+    ],
+    [t]
+  );
+
+  const PLAN_DAYS = useMemo(
+    () => [
+      { value: "2", label: t("diet.form.planDays.2") },
+      { value: "3", label: t("diet.form.planDays.3") },
+      { value: "4", label: t("diet.form.planDays.4") },
+      { value: "5", label: t("diet.form.planDays.5") },
+      { value: "7", label: t("diet.form.planDays.7") },
+    ],
+    [t]
+  );
+
+  const MEALS_PER_DAY = useMemo(
+    () => [
+      { value: "2", label: t("diet.form.mealsPerDay.fasting") },
+      { value: "3", label: t("diet.form.mealsPerDay.3") },
+      { value: "4", label: t("diet.form.mealsPerDay.4") },
+      { value: "5", label: t("diet.form.mealsPerDay.5") },
+      { value: "6", label: t("diet.form.mealsPerDay.6") },
+    ],
+    [t]
+  );
 
   const completedMeals = useMemo(
     () => Object.values(progress).filter(Boolean).length,
@@ -149,6 +167,7 @@ export function MealPlan() {
         completionPercent,
         goal: formData.goal || profile?.goal || profile?.objetivo,
         totals: weekTotals,
+        t,
       }),
     [
       completedMeals,
@@ -157,6 +176,7 @@ export function MealPlan() {
       formData.goal,
       profile,
       weekTotals,
+      t,
     ]
   );
 
@@ -177,7 +197,7 @@ export function MealPlan() {
       if (isLoadingStateRecent(generationState)) {
         setLoading(true);
         setErrorMessage("");
-        setNotice("Tu dieta se está generando...");
+        setNotice(t("mealPlan.status.generating"));
         return;
       }
 
@@ -186,7 +206,7 @@ export function MealPlan() {
           ...generationState,
           status: "error",
           updatedAt: new Date().toISOString(),
-          error: "La generación tardó demasiado. Inténtalo de nuevo.",
+          error: t("mealPlan.errors.timeout"),
         };
 
         persistGenerationState(staleState);
@@ -232,8 +252,8 @@ export function MealPlan() {
         setActiveDay(0);
         setNotice(
           generationState.result.usedFallback
-            ? "Se generó una dieta base porque la IA tardó demasiado."
-            : "Dieta generada correctamente."
+            ? t("mealPlan.status.fallbackGenerated")
+            : t("mealPlan.status.generated")
         );
         setLoading(false);
         setErrorMessage("");
@@ -243,7 +263,7 @@ export function MealPlan() {
     return () => {
       cancelled = true;
     };
-  }, [generationState, hasPlan]);
+  }, [generationState, hasPlan, t]);
 
   useEffect(() => {
     if (!userId) return;
@@ -319,7 +339,7 @@ export function MealPlan() {
       const savedProfile = getCachedProfile();
 
       if (!isProfileComplete(savedProfile)) {
-        throw new Error("Completa tu perfil antes de generar una dieta.");
+        throw new Error(t("mealPlan.errors.profileIncomplete"));
       }
 
       const payloadPreferences = {
@@ -327,6 +347,7 @@ export function MealPlan() {
         days: Number(formData.planDays),
         planDays: Number(formData.planDays),
         mealsPerDay: Number(formData.mealsPerDay),
+        language: currentLanguage,
         lowCarb: formData.dietType === "low_carb" || formData.dietType === "keto",
         intermittentFasting: Number(formData.mealsPerDay) === 2,
         homeFoods: formData.homeFoods || "",
@@ -364,7 +385,7 @@ export function MealPlan() {
       const cleanPlan = data.week || [];
 
       if (!cleanPlan.length) {
-        throw new Error("No se pudo generar una dieta válida.");
+        throw new Error(t("mealPlan.errors.invalidPlan"));
       }
 
       setPlan(cleanPlan);
@@ -395,8 +416,8 @@ export function MealPlan() {
 
       setNotice(
         data.usedFallback
-          ? "Se generó una dieta base porque la IA tardó demasiado."
-          : "Dieta generada correctamente."
+          ? t("mealPlan.status.fallbackGenerated")
+          : t("mealPlan.status.generated")
       );
       await refreshUsage(profile?.id || profile?.user_id || "");
     } catch (err) {
@@ -406,9 +427,7 @@ export function MealPlan() {
         error: err,
       });
       if (!requestId || !startedAt) {
-        setErrorMessage(
-          err.message || "La generación tardó demasiado. Inténtalo de nuevo."
-        );
+        setErrorMessage(err.message || t("mealPlan.errors.timeout"));
         return;
       }
 
@@ -420,7 +439,7 @@ export function MealPlan() {
         result: null,
         error:
           err.message ||
-          "La generación tardó demasiado. Inténtalo de nuevo.",
+          t("mealPlan.errors.timeout"),
       };
 
       persistGenerationState(errorState);
@@ -500,7 +519,7 @@ export function MealPlan() {
     const normalizedReason = rewriteReason.trim();
 
     if (!normalizedReason) {
-      setRewriteDialogError("Escribe qué quieres cambiar para continuar.");
+      setRewriteDialogError(t("mealPlan.rewrite.needReason"));
       return;
     }
 
@@ -533,17 +552,17 @@ export function MealPlan() {
       });
 
       if (!Array.isArray(data.week) || data.week.length === 0) {
-        throw new Error("La IA no devolvió una dieta actualizada.");
+        throw new Error(t("mealPlan.rewrite.noResponse"));
       }
 
       setPlan(data.week);
       setRewriteTarget(null);
       setRewriteReason("");
       setRewriteDialogError("");
-      setNotice("Comida cambiada correctamente.");
+      setNotice(t("mealPlan.rewrite.success"));
     } catch (error) {
       if (error?.status === 403 && error?.data?.upgradeAvailable) {
-        setErrorMessage("Esta función requiere Premium.");
+        setErrorMessage(t("mealPlan.rewrite.premiumRequired"));
         navigate("/premium");
         return;
       }
@@ -554,7 +573,7 @@ export function MealPlan() {
         error,
       });
 
-      const message = error?.message || "No se pudo cambiar la comida.";
+      const message = error?.message || t("mealPlan.rewrite.error");
       setRewriteDialogError(message);
       setErrorMessage(message);
     } finally {
@@ -563,20 +582,20 @@ export function MealPlan() {
   }
 
   async function handleShare() {
-    const text = buildShareText(plan);
+    const text = buildShareText(plan, t);
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Mi dieta semanal - NutriSmart Coach",
+          title: t("mealPlan.share.shareTitle"),
           text,
         });
       } else {
         await navigator.clipboard.writeText(text);
-        setNotice("Dieta copiada al portapapeles.");
+        setNotice(t("mealPlan.share.copied"));
       }
     } catch {
-      setErrorMessage("No se pudo compartir la dieta.");
+      setErrorMessage(t("mealPlan.share.failed"));
     }
   }
 
@@ -608,9 +627,9 @@ export function MealPlan() {
             <StatusBox
               type="error"
               action={() => navigate("/perfil")}
-              actionLabel="Completar perfil"
+              actionLabel={t("mealPlan.actions.completeProfile")}
             >
-              Completa tu perfil para generar una dieta precisa.
+              {t("mealPlan.errors.profileIncomplete")}
             </StatusBox>
           )}
 
@@ -621,10 +640,10 @@ export function MealPlan() {
 <div className="pr-0.5 pb-[calc(var(--bottom-nav-space)+40px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <PremiumEmptyState
                 icon={Utensils}
-                title="Tu plan semanal empieza aquí"
-                description="Configura objetivo, días y comidas para generar una dieta adaptada a tu rutina."
-                actionLabel="Generar dieta"
-               
+                title={t("mealPlan.empty.title")}
+                description={t("mealPlan.empty.description")}
+                actionLabel={t("mealPlan.empty.action")}
+              
               />
               <MealPlanForm
                 formData={formData}
@@ -655,16 +674,16 @@ export function MealPlan() {
                   <div className="flex items-center gap-1.5">
                     <Sparkles size={13} className="text-[var(--app-primary)]" />
                     <h2 className="text-[13px] font-black uppercase">
-                      {showShopping ? "Lista de compra" : "Plan generado"}
+                      {showShopping ? t("mealPlan.plan.shoppingTitle") : t("mealPlan.plan.generatedTitle")}
                     </h2>
                   </div>
 
                   <p className="mt-0.5 truncate text-[9px] normal-case text-[var(--app-muted)]">
                     {hasPlan
-                      ? `${plan.length} días · ${totalMeals} comidas · ${completedMeals}/${totalMeals} completadas`
+                      ? t("mealPlan.plan.progress", { days: plan.length, totalMeals, completedMeals })
                       : loading
-                      ? "La IA está creando tu plan personalizado."
-                      : "Tu dieta aparecerá aquí."}
+                      ? t("mealPlan.plan.loading")
+                      : t("mealPlan.plan.empty")}
                   </p>
                 </div>
 
@@ -700,26 +719,26 @@ export function MealPlan() {
                   <div className="mt-1 grid grid-cols-4 gap-1">
                     <ActionButton
                       icon={<RefreshCcw size={12} />}
-                      label="Nueva dieta"
+                      label={t("mealPlan.actions.newDiet")}
                       onClick={handleResetPlan}
                     />
 
                     <ActionButton
                       icon={<ShoppingCart size={12} />}
-                      label={showShopping ? "Dieta" : "Compra"}
+                      label={showShopping ? t("mealPlan.actions.diet") : t("mealPlan.actions.shopping")}
                       onClick={() => setShowShopping((prev) => !prev)}
                       active={showShopping}
                     />
 
                     <ActionButton
                       icon={<Download size={12} />}
-                      label="PDF"
+                      label={t("mealPlan.actions.pdf")}
                       onClick={() => window.print()}
                     />
 
                     <ActionButton
                       icon={<Share2 size={12} />}
-                      label="Enviar"
+                      label={t("mealPlan.actions.share")}
                       onClick={handleShare}
                     />
                   </div>
@@ -787,23 +806,25 @@ function DietHeroCard({
   completedMeals,
   totalMeals,
 }) {
+  const { t } = useTranslation();
+
   return (
     <SurfaceCard as="header" className="shrink-0 overflow-hidden p-2">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             <Sparkles size={11} />
-            Smart Diet IA
+            {t("mealPlan.hero.badge")}
           </div>
 
           <h1 className="text-[21px] font-black uppercase italic leading-[0.95] tracking-tight text-[var(--app-text)]">
-            Dieta personalizada
+            {t("mealPlan.hero.title")}
           </h1>
 
           <p className="mt-0.5 text-[10px] leading-4 text-[var(--app-muted)]">
             {hasPlan
-              ? `${completedMeals}/${totalMeals} comidas completadas · ${completionPercent}% semanal`
-              : "Plan por objetivo, días, comidas y alimentos disponibles."}
+              ? t("mealPlan.hero.activeSummary", { completedMeals, totalMeals, completionPercent })
+              : t("mealPlan.hero.emptySummary")}
           </p>
         </div>
 
@@ -840,6 +861,7 @@ function ActionButton({ icon, label, onClick, active = false, disabled = false }
 }
 
 function CompactDietSummary({ daysCount, totalMeals, totals }) {
+  const { t } = useTranslation();
   const dailyCalories = daysCount
     ? Math.round(Number(totals?.calories || 0) / daysCount)
     : 0;
@@ -860,12 +882,11 @@ function CompactDietSummary({ daysCount, totalMeals, totals }) {
 
         <div className="min-w-0">
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Resumen semanal
+            {t("mealPlan.summary.badge")}
           </p>
 
           <p className="mt-0.5 truncate text-[10px] font-bold normal-case leading-[1.25] text-[var(--app-muted)]">
-            {daysCount} días • {totalMeals} comidas • {dailyCalories} kcal/día •{" "}
-            {dailyProtein}g proteína
+            {t("mealPlan.summary.value", { daysCount, totalMeals, dailyCalories, dailyProtein })}
           </p>
         </div>
       </div>
@@ -874,6 +895,7 @@ function CompactDietSummary({ daysCount, totalMeals, totals }) {
 }
 
 function DietMotivationCard({ message }) {
+  const { t } = useTranslation();
   return (
     <section className="relative overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_16px_45px_var(--app-glow)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,var(--app-primary)1f,transparent_42%)]" />
@@ -885,7 +907,7 @@ function DietMotivationCard({ message }) {
 
         <div className="min-w-0">
           <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Coach IA
+            {t("mealPlan.motivation.badge")}
           </p>
 
           <p className="mt-0.5 line-clamp-1 text-[10px] font-bold normal-case leading-[1.25] text-[var(--app-muted)]">
@@ -908,6 +930,8 @@ function RewriteMealDialog({
   onConfirm,
   onUpgrade,
 }) {
+  const { t } = useTranslation();
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--app-bg)]/75 px-3 pb-5 pt-10 backdrop-blur-sm sm:items-center sm:p-4"
@@ -922,21 +946,21 @@ function RewriteMealDialog({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              Edición inteligente
+              {t("mealPlan.rewrite.badge")}
             </p>
             <h3 className="mt-1 text-[16px] font-black text-[var(--app-text)]">
-              Cambiar comida
+              {t("mealPlan.rewrite.title")}
             </h3>
             <p className="mt-1 text-[11px] font-medium leading-5 text-[var(--app-muted)]">
               {isPremium
-                ? "Escribe qué quieres cambiar y la IA mantendrá macros y objetivo similares."
-                : "Esta función requiere Premium para editar una comida sin regenerar toda la dieta."}
+                ? t("mealPlan.rewrite.premiumDescription")
+                : t("mealPlan.rewrite.freeDescription")}
             </p>
           </div>
 
           <button
             type="button"
-            aria-label="Cerrar"
+            aria-label={t("mealPlan.rewrite.close")}
             onClick={onClose}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)]"
           >
@@ -952,7 +976,7 @@ function RewriteMealDialog({
                 setReason(event.target.value);
                 if (error) setError("");
               }}
-              placeholder="Ej: sin arroz, algo más barato, no me gusta el atún..."
+              placeholder={t("mealPlan.rewrite.placeholder")}
               className={`mt-3 min-h-24 w-full resize-none rounded-2xl border bg-[var(--app-surface)] px-3 py-2 text-[12px] font-medium text-[var(--app-text)] outline-none focus:border-[var(--app-primary)] ${
                 error
                   ? "border-rose-400/60"
@@ -970,8 +994,8 @@ function RewriteMealDialog({
               }`}
             >
               {loading
-                ? "Cambiando..."
-                : error || "Describe el cambio que quieres ver en esta comida."}
+                ? t("mealPlan.rewrite.loading")
+                : error || t("mealPlan.rewrite.helper")}
             </p>
           </>
         ) : null}
@@ -983,7 +1007,7 @@ function RewriteMealDialog({
             disabled={loading}
             className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] disabled:opacity-50"
           >
-            Cancelar
+            {t("mealPlan.rewrite.cancel")}
           </button>
 
           <button
@@ -992,7 +1016,7 @@ function RewriteMealDialog({
             disabled={loading || (isPremium && !reason.trim())}
             className="rounded-2xl bg-[var(--app-primary)] px-3 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--app-surface)] shadow-[0_16px_32px_var(--app-glow)] disabled:opacity-50"
           >
-            {loading ? "Cambiando..." : isPremium ? "Cambiar" : "Ver Premium"}
+            {loading ? t("mealPlan.rewrite.loading") : isPremium ? t("mealPlan.rewrite.confirm") : t("mealPlan.rewrite.upgrade")}
           </button>
         </div>
       </section>
@@ -1001,10 +1025,17 @@ function RewriteMealDialog({
 }
 
 function GeneratingDietLoader({ formData }) {
+  const { t } = useTranslation();
   const [percent, setPercent] = useState(7);
   const [seconds, setSeconds] = useState(0);
 
-  const steps = ["Perfil", "Macros", "Menú", "Porciones", "Compra"];
+  const steps = [
+    t("mealPlan.loader.steps.profile"),
+    t("mealPlan.loader.steps.macros"),
+    t("mealPlan.loader.steps.menu"),
+    t("mealPlan.loader.steps.portions"),
+    t("mealPlan.loader.steps.shopping"),
+  ];
 
   useEffect(() => {
     const progressInterval = setInterval(() => {
@@ -1033,17 +1064,17 @@ function GeneratingDietLoader({ formData }) {
 
   return (
     <section
-      aria-label={`Creando dieta de ${formData?.planDays || "varios"} días`}
+      aria-label={t("mealPlan.loader.aria", { days: formData?.planDays || t("mealPlan.loader.variousDays") })}
       className="min-h-0 overflow-hidden rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-2.5 shadow-[0_24px_70px_var(--app-glow)]"
     >
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-            Creando dieta
+            {t("mealPlan.loader.title")}
           </p>
 
           <h3 className="mt-0.5 text-base font-black uppercase italic">
-            AI Meal Plan
+            {t("mealPlan.loader.subtitle")}
           </h3>
         </div>
 
@@ -1067,7 +1098,7 @@ function GeneratingDietLoader({ formData }) {
             </p>
 
             <p className="mt-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
-              Personalizando con IA
+              {t("mealPlan.loader.personalizing")}
             </p>
 
             <p className="mt-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold text-[var(--app-muted)]">
@@ -1150,46 +1181,47 @@ function getDietMotivationMessage({
   completionPercent,
   goal,
   totals,
+  t,
 }) {
   const normalizedGoal = String(goal || "").toLowerCase();
   const protein = Math.round(Number(totals?.protein || 0));
   const calories = Math.round(Number(totals?.calories || 0));
 
   if (!totalMeals) {
-    return "Tu plan está listo para convertirse en una rutina sostenible.";
+    return t("mealPlan.motivation.noMeals");
   }
 
   if (completionPercent >= 85) {
-    return "Vas por muy buen camino: la constancia vale más que la perfección.";
+    return t("mealPlan.motivation.highProgress");
   }
 
   if (completionPercent >= 50) {
-    return "Cada comida completada refuerza tu adherencia semanal.";
+    return t("mealPlan.motivation.mediumProgress");
   }
 
   if (completedMeals > 0) {
-    return "Buen inicio. Mantener el ritmo hará que el plan sea más fácil de seguir.";
+    return t("mealPlan.motivation.started");
   }
 
   if (normalizedGoal.includes("lose") || normalizedGoal.includes("perder")) {
-    return "Completar esta semana ayuda a construir una base sólida de constancia.";
+    return t("mealPlan.motivation.loseFat");
   }
 
   if (normalizedGoal.includes("gain") || normalizedGoal.includes("ganar")) {
     return protein > 0
-      ? `Tu plan prioriza proteína y estructura para apoyar tu progreso.`
-      : "Tu plan está diseñado para sostener entrenamiento y recuperación.";
+      ? t("mealPlan.motivation.gainMuscleWithProtein")
+      : t("mealPlan.motivation.gainMuscle");
   }
 
   if (normalizedGoal.includes("maintain") || normalizedGoal.includes("mantener")) {
-    return "Tu plan busca ayudarte a mantener constancia sin complicarte.";
+    return t("mealPlan.motivation.maintain");
   }
 
   if (calories > 0) {
-    return "Tu semana ya tiene estructura. Ahora toca convertirla en hábito.";
+    return t("mealPlan.motivation.withStructure");
   }
 
-  return "Tu plan está diseñado para ayudarte a comer con más intención.";
+  return t("mealPlan.motivation.default");
 }
 
 function isProfileComplete(profile) {
@@ -1277,9 +1309,11 @@ async function generateDietPlanWithRetry(args) {
   }
 }
 
-function buildShareText(plan) {
+function buildShareText(plan, t) {
   const days = getSharePlanDays(plan);
-  if (!days.length) return "NutriSmartCoach\nPlan nutricional semanal.";
+  if (!days.length) {
+    return `${t("mealPlan.share.brand")}\n${t("mealPlan.share.title")}.`;
+  }
 
   const totals = days.reduce(
     (acc, day) => {
@@ -1296,12 +1330,15 @@ function buildShareText(plan) {
 
   const dayCount = days.length || 1;
   const summary = [
-    "NutriSmartCoach",
-    "Plan nutricional semanal",
+    t("mealPlan.share.brand"),
+    t("mealPlan.share.title"),
     "",
-    `Resumen: ${days.length} dias · ${totals.meals} comidas · ${Math.round(
-      totals.calories / dayCount
-    )} kcal/dia aprox. · ${Math.round(totals.protein / dayCount)}g proteina/dia`,
+    t("mealPlan.share.summary", {
+      days: days.length,
+      meals: totals.meals,
+      calories: Math.round(totals.calories / dayCount),
+      protein: Math.round(totals.protein / dayCount),
+    }),
   ];
 
   const dayLines = days.slice(0, 7).map((day, dayIndex) => {
@@ -1315,8 +1352,8 @@ function buildShareText(plan) {
               meal?.mealType ||
               meal?.meal_type ||
               meal?.type ||
-              `Comida ${mealIndex + 1}`;
-            const food = meal?.food || meal?.title || meal?.description || "Sin comida registrada";
+              t("meal.defaultNames.fallback", { index: mealIndex + 1 });
+            const food = meal?.food || meal?.title || meal?.description || t("mealPlan.share.noMeal");
             const calories = Number(meal?.calories || meal?.kcal || 0);
             const protein = Number(meal?.protein || 0);
             const macros = [
@@ -1328,19 +1365,19 @@ function buildShareText(plan) {
 
             return `- ${time}${label}: ${food}${macros ? ` (${macros})` : ""}`;
           })
-        : ["- Sin comida registrada"];
+        : [`- ${t("mealPlan.share.noMeal")}`];
 
-    return `${day?.day || day?.dia || `Dia ${dayIndex + 1}`}\n${mealLines.join("\n")}`;
+    return `${getShareDayLabel(day, dayIndex, t)}\n${mealLines.join("\n")}`;
   });
 
   const shoppingGroups = buildShareShoppingGroups(days);
   const shoppingLines = shoppingGroups.length
     ? [
         "",
-        "Lista de compra resumida",
+        t("mealPlan.share.shoppingTitle"),
         ...shoppingGroups.map(
           (group) =>
-            `${group.category}: ${group.items
+            `${t(group.translationKey)}: ${group.items
               .slice(0, 6)
               .map((item) => `${item.name} (${item.amount})`)
               .join(", ")}${group.items.length > 6 ? "..." : ""}`
@@ -1365,6 +1402,22 @@ function getShareMeals(day) {
     return Object.values(day.meals).filter(Boolean);
   }
   return [];
+}
+
+function getShareDayLabel(day, index, t) {
+  const raw = String(day?.day || day?.dia || "").toLowerCase();
+
+  if (raw.startsWith("lunes") || raw.startsWith("monday")) return t("mealPlan.weekdays.long.monday");
+  if (raw.startsWith("martes") || raw.startsWith("tuesday")) return t("mealPlan.weekdays.long.tuesday");
+  if (raw.startsWith("miércoles") || raw.startsWith("miercoles") || raw.startsWith("wednesday"))
+    return t("mealPlan.weekdays.long.wednesday");
+  if (raw.startsWith("jueves") || raw.startsWith("thursday")) return t("mealPlan.weekdays.long.thursday");
+  if (raw.startsWith("viernes") || raw.startsWith("friday")) return t("mealPlan.weekdays.long.friday");
+  if (raw.startsWith("sábado") || raw.startsWith("sabado") || raw.startsWith("saturday"))
+    return t("mealPlan.weekdays.long.saturday");
+  if (raw.startsWith("domingo") || raw.startsWith("sunday")) return t("mealPlan.weekdays.long.sunday");
+
+  return day?.day || day?.dia || t("mealPlan.share.dayFallback", { index: index + 1 });
 }
 
 function buildShareShoppingGroups(days) {
@@ -1394,7 +1447,13 @@ function buildShareShoppingGroups(days) {
     });
   });
 
-  const categories = ["Proteinas", "Carbohidratos", "Frutas y verduras", "Lacteos", "Otros"];
+  const categories = [
+    { key: "Proteinas", translationKey: "diet.shopping.categories.proteins" },
+    { key: "Carbohidratos", translationKey: "diet.shopping.categories.carbs" },
+    { key: "Frutas y verduras", translationKey: "diet.shopping.categories.fruitsVegetables" },
+    { key: "Lacteos", translationKey: "diet.shopping.categories.dairy" },
+    { key: "Otros", translationKey: "diet.shopping.categories.other" },
+  ];
   const byCategory = new Map();
 
   Array.from(grouped.values()).forEach((item) => {
@@ -1408,8 +1467,9 @@ function buildShareShoppingGroups(days) {
 
   return categories
     .map((category) => ({
-      category,
-      items: (byCategory.get(category) || []).sort((a, b) => a.name.localeCompare(b.name)),
+      category: category.key,
+      translationKey: category.translationKey,
+      items: (byCategory.get(category.key) || []).sort((a, b) => a.name.localeCompare(b.name)),
     }))
     .filter((group) => group.items.length > 0)
     .slice(0, 5);

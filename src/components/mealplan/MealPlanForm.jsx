@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   BadgeEuro,
   CalendarDays,
@@ -25,6 +26,8 @@ export function MealPlanForm({
   PLAN_DAYS = [],
   MEALS_PER_DAY = [],
 }) {
+  const { t } = useTranslation();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -49,11 +52,11 @@ export function MealPlanForm({
 
           <div className="min-w-0 flex-1">
             <p className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-              Smart Diet Builder
+              {t("diet.form.badge")}
             </p>
 
             <h2 className="mt-0.5 text-[15px] font-bold normal-case leading-tight tracking-normal text-[var(--app-text)]">
-              Personaliza tu dieta
+              {t("diet.form.title")}
             </h2>
           </div>
         </div>
@@ -63,7 +66,7 @@ export function MealPlanForm({
         <div className="grid grid-cols-2 gap-2">
           <SelectField
             icon={<Target size={14} />}
-            label="Objetivo"
+            label={t("diet.form.labels.goal")}
             name="goal"
             value={formData.goal}
             onChange={handleChange}
@@ -72,7 +75,7 @@ export function MealPlanForm({
 
           <SelectField
             icon={<Salad size={14} />}
-            label="Tipo dieta"
+            label={t("diet.form.labels.dietType")}
             name="dietType"
             value={formData.dietType}
             onChange={handleChange}
@@ -83,7 +86,7 @@ export function MealPlanForm({
         <div className="grid grid-cols-2 gap-2">
           <SelectField
             icon={<CalendarDays size={14} />}
-            label="Días"
+            label={t("diet.form.labels.days")}
             name="planDays"
             value={formData.planDays}
             onChange={handleChange}
@@ -92,7 +95,7 @@ export function MealPlanForm({
 
           <SelectField
             icon={<Utensils size={14} />}
-            label="Comidas"
+            label={t("diet.form.labels.meals")}
             name="mealsPerDay"
             value={formData.mealsPerDay}
             onChange={handleChange}
@@ -102,7 +105,7 @@ export function MealPlanForm({
 
         <SelectField
           icon={<BadgeEuro size={14} />}
-          label="Presupuesto"
+          label={t("diet.form.labels.budget")}
           name="budget"
           value={formData.budget}
           onChange={handleChange}
@@ -113,7 +116,7 @@ export function MealPlanForm({
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.1em] text-slate-300">
             <span className="inline-flex items-center gap-1.5">
               <Home size={12} className="text-[var(--app-primary)]" />
-              Preferencias avanzadas
+              {t("diet.form.advanced")}
             </span>
 
             <span className="text-[var(--app-primary)] transition group-open:rotate-45">+</span>
@@ -122,33 +125,33 @@ export function MealPlanForm({
           <div className="space-y-2 border-t border-[var(--app-border)] p-2">
             <SelectField
               icon={<ChefHat size={14} />}
-              label="Cocina"
+              label={t("diet.form.labels.cooking")}
               name="cookingLevel"
               value={formData.cookingLevel}
               onChange={handleChange}
               options={[
-                { value: "easy", label: "Fácil" },
-                { value: "medium", label: "Media" },
-                { value: "hard", label: "Pro" },
+                { value: "easy", label: t("diet.form.cooking.easy") },
+                { value: "medium", label: t("diet.form.cooking.medium") },
+                { value: "hard", label: t("diet.form.cooking.hard") },
               ]}
             />
 
             <TextAreaField
               icon={<Home size={14} />}
-              label="Tengo en casa"
+              label={t("diet.form.labels.homeFoods")}
               name="homeFoods"
               value={formData.homeFoods}
               onChange={handleChange}
-              placeholder="Ej: huevos, pollo, arroz, brócoli, yogur griego..."
+              placeholder={t("diet.form.placeholders.homeFoods")}
             />
 
             <TextField
               icon={<XCircle size={14} />}
-              label="Evitar"
+              label={t("diet.form.labels.exclusions")}
               name="exclusions"
               value={formData.exclusions}
               onChange={handleChange}
-              placeholder="Ej: lactosa, gluten, atún..."
+              placeholder={t("diet.form.placeholders.exclusions")}
             />
           </div>
         </details>
@@ -170,10 +173,10 @@ export function MealPlanForm({
 
               <span className="flex min-w-0 flex-col items-start justify-center text-left">
                 <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
-                  Generando dieta...
+                  {t("diet.form.submit.loadingTitle")}
                 </span>
                 <span className="mt-0.5 text-[10px] font-bold normal-case leading-tight text-[var(--app-text)]/80">
-                  Plan personalizado con IA
+                  {t("diet.form.submit.loadingSubtitle")}
                 </span>
               </span>
             </span>
@@ -184,17 +187,17 @@ export function MealPlanForm({
                <span className="absolute inset-[2px] rounded-[0.9rem] bg-[var(--app-primary)] theme-icon-tile-inner" />
                 <img
                   src="/icons/dieta.png"
-                  alt="Generar dieta"
+                  alt={t("diet.form.submit.title")}
                   className="relative z-10 h-20 w-25 object-cover pb-3"
                 />
               </span>
 
               <span className="flex min-w-0 flex-col items-start justify-center text-left">
-                <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
-                  Generar dieta
+              <span className="text-[12px] font-black uppercase leading-tight tracking-[0.12em]">
+                  {t("diet.form.submit.title")}
                 </span>
                 <span className="mt-0.5 text-[10px] font-bold normal-case leading-tight text-[var(--app-text)]/85">
-                  Plan personalizado con IA
+                  {t("diet.form.submit.subtitle")}
                 </span>
               </span>
             </span>

@@ -190,14 +190,46 @@
         "general": "General"
       },
       "exerciseHints": {
-        "abs": ["Plancha", "Crunch controlado", "Movilidad"],
-        "chest": ["Press", "Flexiones", "Aperturas"],
-        "back": ["Remo", "Jalón", "Peso muerto"],
-        "legs": ["Sentadilla", "Zancadas", "Prensa"],
-        "shoulders": ["Press militar", "Elevaciones", "Face pull"],
-        "glutes": ["Hip thrust", "Puente", "Patada de glúteo"],
-        "arms": ["Curl bíceps", "Fondos", "Extensión tríceps"],
-        "general": ["Fuerza base", "Core", "Movilidad"]
+        "abs": [
+          "Plancha",
+          "Crunch controlado",
+          "Movilidad"
+        ],
+        "chest": [
+          "Press",
+          "Flexiones",
+          "Aperturas"
+        ],
+        "back": [
+          "Remo",
+          "Jalón",
+          "Peso muerto"
+        ],
+        "legs": [
+          "Sentadilla",
+          "Zancadas",
+          "Prensa"
+        ],
+        "shoulders": [
+          "Press militar",
+          "Elevaciones",
+          "Face pull"
+        ],
+        "glutes": [
+          "Hip thrust",
+          "Puente",
+          "Patada de glúteo"
+        ],
+        "arms": [
+          "Curl bíceps",
+          "Fondos",
+          "Extensión tríceps"
+        ],
+        "general": [
+          "Fuerza base",
+          "Core",
+          "Movilidad"
+        ]
       }
     },
     "progress": {
@@ -912,6 +944,262 @@
         "lowProtein": "Baja en proteína. Añade una fuente magra.",
         "highCalories": "Alta en calorías. Reduce salsas o fritos.",
         "acceptable": "Comida aceptable. Ajusta porción y proteína."
+      }
+    }
+  },
+  "meal": {
+    "default": {
+      "amount": "1 ud"
+    },
+    "kcal": "kcal",
+    "kcalWithValue": "{{value}} kcal",
+    "macros": {
+      "protein": "Proteína",
+      "carbs": "Carbohidratos",
+      "fat": "Grasa"
+    },
+    "day": {
+      "fallback": "Día"
+    },
+    "defaultNames": {
+      "breakfast": "Desayuno",
+      "lunch": "Comida",
+      "snack": "Snack",
+      "dinner": "Cena",
+      "meal": "Comida",
+      "fallback": "Comida {{index}}"
+    }
+  },
+  "diet": {
+    "form": {
+      "badge": "SMART DIET BUILDER",
+      "title": "Personaliza tu dieta",
+      "advanced": "Preferencias avanzadas",
+      "labels": {
+        "goal": "Objetivo",
+        "dietType": "Tipo dieta",
+        "days": "Días",
+        "meals": "Comidas",
+        "budget": "Presupuesto",
+        "cooking": "Cocina",
+        "homeFoods": "Tengo en casa",
+        "exclusions": "Evitar"
+      },
+      "dietTypes": {
+        "balanced": "Equilibrada",
+        "lowCarb": "Baja en carbohidratos",
+        "keto": "Keto",
+        "hyperprotein": "Hiperproteica",
+        "vegetarian": "Vegetariana",
+        "vegan": "Vegana"
+      },
+      "goals": {
+        "loseFat": "Perder grasa",
+        "gainMuscle": "Ganar músculo",
+        "maintain": "Mantener"
+      },
+      "budget": {
+        "low": "Bajo",
+        "medium": "Medio",
+        "high": "Alto"
+      },
+      "planDays": {
+        "2": "2 días",
+        "3": "3 días",
+        "4": "4 días",
+        "5": "5 días",
+        "7": "7 días"
+      },
+      "mealsPerDay": {
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "6": "6",
+        "fasting": "2"
+      },
+      "cooking": {
+        "easy": "Fácil",
+        "medium": "Media",
+        "hard": "Pro"
+      },
+      "placeholders": {
+        "homeFoods": "Ej: huevos, yogur, arroz, pollo...",
+        "exclusions": "Ej: lactosa, gluten, marisco..."
+      },
+      "submit": {
+        "loadingTitle": "Generando dieta...",
+        "loadingSubtitle": "Construyendo tu plan con IA",
+        "title": "Plan personalizado con IA",
+        "subtitle": "Genera una dieta semanal según tus objetivos."
+      }
+    },
+    "shopping": {
+      "badge": "LISTA DE COMPRA",
+      "title": "Lista inteligente",
+      "progress": "{{checkedCount}} de {{totalItems}} marcados",
+      "ready": "LISTA",
+      "filter": "Filtrar por {{category}}",
+      "empty": {
+        "title": "Sin lista de compra",
+        "description": "No hay ingredientes para mostrar en esta dieta."
+      },
+      "categories": {
+        "proteins": "Proteínas",
+        "carbs": "Carbohidratos",
+        "fruitsVegetables": "Frutas y verduras",
+        "dairy": "Lácteos",
+        "other": "Otros"
+      }
+    }
+  },
+  "mealPlan": {
+    "actions": {
+      "completeProfile": "Completar perfil",
+      "newDiet": "Nueva dieta",
+      "diet": "Dieta",
+      "pdf": "Descargar PDF",
+      "share": "Compartir",
+      "shopping": "Compra"
+    },
+    "empty": {
+      "title": "Tu plan aún no está listo",
+      "description": "Completa el formulario y genera una dieta adaptada a tu objetivo.",
+      "action": "Crear mi dieta"
+    },
+    "errors": {
+      "profileIncomplete": "Completa tu perfil antes de generar una dieta.",
+      "invalidPlan": "La dieta generada no es válida.",
+      "timeout": "No pudimos terminar la generación a tiempo."
+    },
+    "hero": {
+      "badge": "PLAN SEMANAL",
+      "title": "Tu dieta con IA",
+      "activeSummary": "{{completedMeals}} de {{totalMeals}} comidas completadas · {{completionPercent}}% listo",
+      "emptySummary": "Genera tu plan semanal con IA y sigue cada comida al detalle."
+    },
+    "loader": {
+      "aria": "Generando dieta de {{days}} días",
+      "title": "Generando dieta",
+      "subtitle": "IA preparando tu plan",
+      "personalizing": "Personalizando con IA",
+      "variousDays": "varios",
+      "steps": {
+        "profile": "Perfil",
+        "macros": "Macros",
+        "menu": "Menú",
+        "portions": "Porciones",
+        "shopping": "Compra"
+      }
+    },
+    "motivation": {
+      "badge": "AVANCE",
+      "default": "Tu dieta está lista para empezar.",
+      "gainMuscle": "Vas bien para ganar músculo.",
+      "gainMuscleWithProtein": "La proteína va fuerte hoy. Sigue así.",
+      "highProgress": "Estás avanzando muy bien.",
+      "loseFat": "Buen día para mantener el control y las porciones.",
+      "maintain": "Ritmo estable. Mantén la rutina.",
+      "mediumProgress": "Buen ritmo. Sigue registrando comidas para terminar fuerte.",
+      "noMeals": "Empieza la semana generando una dieta.",
+      "started": "Ya tienes impulso. Sigue adelante.",
+      "withStructure": "La estructura hace la semana más fácil."
+    },
+    "plan": {
+      "empty": "Sin plan generado",
+      "generatedTitle": "Dieta generada",
+      "loading": "Preparando plan",
+      "progress": "{{days}} días · {{totalMeals}} comidas · {{completedMeals}} completadas",
+      "shoppingTitle": "Lista de compra"
+    },
+    "print": {
+      "subtitle": "Plan semanal de comidas generado con IA",
+      "dayFallback": "Día {{index}}",
+      "noMeal": "Sin comida registrada",
+      "shoppingTitle": "Lista de compra resumida",
+      "summary": {
+        "aria": "Resumen nutricional del plan",
+        "days": "Días",
+        "meals": "Comidas",
+        "kcal": "Kcal medias",
+        "protein": "Proteína media"
+      }
+    },
+    "rewrite": {
+      "badge": "CAMBIAR COMIDA",
+      "title": "Ajusta una comida con IA",
+      "premiumDescription": "Cambia comidas con IA ilimitadamente en Premium.",
+      "freeDescription": "Disponible para usuarios Premium.",
+      "placeholder": "Ej: más proteína y menos arroz",
+      "helper": "Describe el cambio que quieres hacer.",
+      "loading": "Cambiando...",
+      "confirm": "Cambiar",
+      "upgrade": "Mejorar plan",
+      "cancel": "Cancelar",
+      "needReason": "Escribe qué quieres cambiar antes de continuar.",
+      "noResponse": "No recibimos una respuesta válida.",
+      "success": "Comida actualizada con IA.",
+      "error": "No se pudo cambiar la comida.",
+      "premiumRequired": "Esta función requiere Premium.",
+      "close": "Cerrar"
+    },
+    "share": {
+      "brand": "NutriSmartCoach",
+      "title": "Mi dieta semanal",
+      "shareTitle": "Compartir dieta",
+      "shoppingTitle": "Lista de compra",
+      "noMeal": "Sin comida registrada",
+      "copied": "Plan copiado",
+      "failed": "No se pudo compartir el plan",
+      "summary": "{{days}} días · {{meals}} comidas · {{calories}} kcal/día · {{protein}} g de proteína/día",
+      "dayFallback": "Día {{index}}"
+    },
+    "status": {
+      "generating": "Generando dieta con IA...",
+      "generated": "Dieta generada con éxito.",
+      "fallbackGenerated": "Dieta generada con datos de respaldo."
+    },
+    "summary": {
+      "badge": "RESUMEN",
+      "value": "{{daysCount}} días · {{totalMeals}} comidas · {{dailyCalories}} kcal/día · {{dailyProtein}} g proteína"
+    },
+    "weekdays": {
+      "long": {
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "saturday": "Sábado",
+        "sunday": "Domingo"
+      },
+      "short": {
+        "monday": "LU",
+        "tuesday": "MA",
+        "wednesday": "MI",
+        "thursday": "JU",
+        "friday": "VI",
+        "saturday": "SA",
+        "sunday": "DO"
+      }
+    },
+    "day": {
+      "header": "Plan diario",
+      "progress": "{{completed}} de {{total}} comidas · {{percentage}}% completado",
+      "changeMeal": "Cambiar comida",
+      "premium": "Función Premium",
+      "mark": "Marcar comida",
+      "markCompleted": "Marcar como pendiente",
+      "markPending": "Marcar como completada",
+      "done": "Completada",
+      "closeDetail": "Cerrar detalle",
+      "nutritionSummary": "Resumen nutricional",
+      "fullFood": "Comida completa",
+      "ingredients": "Ingredientes",
+      "summary": {
+        "protein": "Proteína adecuada",
+        "carbs": "Buen aporte de carbohidratos",
+        "fat": "Grasa moderada",
+        "recovery": "Buena para recuperación"
       }
     }
   }

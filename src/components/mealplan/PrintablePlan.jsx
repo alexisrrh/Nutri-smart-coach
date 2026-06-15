@@ -1,4 +1,5 @@
 import { forwardRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const SHOPPING_CATEGORIES = [
   "Proteinas",
@@ -9,6 +10,7 @@ const SHOPPING_CATEGORIES = [
 ];
 
 const PrintablePlan = forwardRef(({ plan }, ref) => {
+  const { t } = useTranslation();
   const days = useMemo(() => getPlanDays(plan), [plan]);
   const summary = useMemo(() => getPlanSummary(days), [days]);
   const shoppingList = useMemo(() => buildShoppingList(days), [days]);
@@ -214,34 +216,36 @@ const PrintablePlan = forwardRef(({ plan }, ref) => {
 
       <header className="pdf-header">
         <h1 className="pdf-brand">NutriSmartCoach</h1>
-        <p className="pdf-subtitle">Plan nutricional semanal</p>
+        <p className="pdf-subtitle">{t("mealPlan.print.subtitle")}</p>
       </header>
 
-      <section className="pdf-summary" aria-label="Resumen semanal">
-        <SummaryCard label="Dias" value={summary.days} />
-        <SummaryCard label="Comidas" value={summary.meals} />
-        <SummaryCard label="Kcal/dia aprox." value={summary.averageCalories} />
-        <SummaryCard label="Proteina/dia" value={`${summary.averageProtein}g`} />
+      <section className="pdf-summary" aria-label={t("mealPlan.print.summary.aria")}>
+        <SummaryCard label={t("mealPlan.print.summary.days")} value={summary.days} />
+        <SummaryCard label={t("mealPlan.print.summary.meals")} value={summary.meals} />
+        <SummaryCard label={t("mealPlan.print.summary.kcal")} value={summary.averageCalories} />
+        <SummaryCard label={t("mealPlan.print.summary.protein")} value={`${summary.averageProtein}g`} />
       </section>
 
       <section>
         {days.map((day, dayIndex) => {
           const meals = getMeals(day);
+          const dayName = getDayName(day, dayIndex, t);
 
           return (
-            <article className="pdf-day" key={`${getDayName(day, dayIndex)}-${dayIndex}`}>
-              <h2 className="pdf-day-title">{getDayName(day, dayIndex)}</h2>
+            <article className="pdf-day" key={`${dayName}-${dayIndex}`}>
+              <h2 className="pdf-day-title">{dayName}</h2>
               <div className="pdf-meal-list">
                 {meals.length > 0 ? (
                   meals.map((meal, mealIndex) => (
                     <MealRow
-                      key={`${getMealLabel(meal, mealIndex)}-${mealIndex}`}
+                      key={`${getMealLabel(meal, mealIndex, t)}-${mealIndex}`}
                       meal={meal}
                       mealIndex={mealIndex}
+                      t={t}
                     />
                   ))
                 ) : (
-                  <p className="pdf-empty">Sin comida registrada</p>
+                  <p className="pdf-empty">{t("mealPlan.print.noMeal")}</p>
                 )}
               </div>
             </article>
@@ -251,11 +255,11 @@ const PrintablePlan = forwardRef(({ plan }, ref) => {
 
       {shoppingList.length > 0 && (
         <section className="pdf-shopping">
-          <h2 className="pdf-section-title">Lista de compra</h2>
+          <h2 className="pdf-section-title">{t("mealPlan.print.shoppingTitle")}</h2>
           <div className="pdf-shopping-grid">
             {shoppingList.map((group) => (
               <article className="pdf-shopping-card" key={group.category}>
-                <h3>{group.category}</h3>
+                <h3>{t(group.translationKey)}</h3>
                 <ul>
                   {group.items.map((item) => (
                     <li key={item.id}>
@@ -281,7 +285,7 @@ function SummaryCard({ label, value }) {
   );
 }
 
-function MealRow({ meal, mealIndex }) {
+function MealRow({ meal, mealIndex, t }) {
   const time = meal?.time || defaultMealTime(mealIndex);
   const label = getMealLabel(meal, mealIndex);
   const food = meal?.food || meal?.title || meal?.description || "";
@@ -304,7 +308,7 @@ function MealRow({ meal, mealIndex }) {
           {fat > 0 && <span> · G {fat}g</span>}
         </div>
       </div>
-      <p className="pdf-food">{food || "Sin comida registrada"}</p>
+      <p className="pdf-food">{food || t("mealPlan.print.noMeal")}</p>
     </div>
   );
 }
@@ -325,16 +329,33 @@ function getMeals(day) {
   return [];
 }
 
-function getDayName(day, index) {
-  return day?.day || day?.dia || `Dia ${index + 1}`;
+function getDayName(day, index, t) {
+  const raw = String(day?.day || day?.dia || "").toLowerCase();
+
+  if (raw.startsWith("lunes") || raw.startsWith("monday")) return t("mealPlan.weekdays.long.monday");
+  if (raw.startsWith("martes") || raw.startsWith("tuesday")) return t("mealPlan.weekdays.long.tuesday");
+  if (raw.startsWith("miércoles") || raw.startsWith("miercoles") || raw.startsWith("wednesday"))
+    return t("mealPlan.weekdays.long.wednesday");
+  if (raw.startsWith("jueves") || raw.startsWith("thursday")) return t("mealPlan.weekdays.long.thursday");
+  if (raw.startsWith("viernes") || raw.startsWith("friday")) return t("mealPlan.weekdays.long.friday");
+  if (raw.startsWith("sábado") || raw.startsWith("sabado") || raw.startsWith("saturday"))
+    return t("mealPlan.weekdays.long.saturday");
+  if (raw.startsWith("domingo") || raw.startsWith("sunday")) return t("mealPlan.weekdays.long.sunday");
+
+  return day?.day || day?.dia || t("mealPlan.print.dayFallback", { index: index + 1 });
 }
 
-function getMealLabel(meal, index) {
-  return meal?.name || meal?.mealType || meal?.meal_type || meal?.type || defaultMealName(index);
+function getMealLabel(meal, index, t) {
+  return meal?.name || meal?.mealType || meal?.meal_type || meal?.type || defaultMealName(index, t);
 }
 
-function defaultMealName(index) {
-  return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
+function defaultMealName(index, t) {
+  return [
+    t("meal.defaultNames.breakfast"),
+    t("meal.defaultNames.lunch"),
+    t("meal.defaultNames.snack"),
+    t("meal.defaultNames.dinner"),
+  ][index] || t("meal.defaultNames.fallback", { index: index + 1 });
 }
 
 function defaultMealTime(index) {
@@ -408,6 +429,7 @@ function buildShoppingList(days) {
 
   return SHOPPING_CATEGORIES.map((category) => ({
     category,
+    translationKey: getShoppingCategoryTranslationKey(category),
     items: (byCategory.get(category) || []).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter((group) => group.items.length > 0);
 }
@@ -485,6 +507,21 @@ function categorizeIngredient(name = "") {
   if (/(leche|yogur|queso)/.test(text)) return "Lacteos";
 
   return "Otros";
+}
+
+function getShoppingCategoryTranslationKey(category) {
+  switch (category) {
+    case "Proteinas":
+      return "diet.shopping.categories.proteins";
+    case "Carbohidratos":
+      return "diet.shopping.categories.carbs";
+    case "Frutas y verduras":
+      return "diet.shopping.categories.fruitsVegetables";
+    case "Lacteos":
+      return "diet.shopping.categories.dairy";
+    default:
+      return "diet.shopping.categories.other";
+  }
 }
 
 function normalizeText(text = "") {

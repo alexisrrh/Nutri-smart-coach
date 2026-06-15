@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Apple,
   Beef,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 
 export function ShoppingListView({ plan }) {
+  const { t } = useTranslation();
   const [checkedItems, setCheckedItems] = useState({});
   const [activeCategory, setActiveCategory] = useState("proteinas");
 
@@ -18,31 +20,31 @@ export function ShoppingListView({ plan }) {
   const categories = [
     {
       key: "proteinas",
-      label: "Proteínas",
+      label: t("diet.shopping.categories.proteins"),
       icon: <Beef size={11} strokeWidth={2.4} />,
       items: shoppingGroups.proteinas,
     },
     {
       key: "carbohidratos",
-      label: "Carbos",
+      label: t("diet.shopping.categories.carbs"),
       icon: <Wheat size={11} strokeWidth={2.4} />,
       items: shoppingGroups.carbohidratos,
     },
     {
       key: "frutasVerduras",
-      label: "Verdes",
+      label: t("diet.shopping.categories.fruitsVegetables"),
       icon: <Apple size={11} strokeWidth={2.4} />,
       items: shoppingGroups.frutasVerduras,
     },
     {
       key: "lacteos",
-      label: "Lácteos",
+      label: t("diet.shopping.categories.dairy"),
       icon: <Milk size={11} strokeWidth={2.4} />,
       items: shoppingGroups.lacteos,
     },
     {
       key: "otros",
-      label: "Otros",
+      label: t("diet.shopping.categories.other"),
       icon: <Package size={11} strokeWidth={2.4} />,
       items: shoppingGroups.otros,
     },
@@ -75,11 +77,11 @@ export function ShoppingListView({ plan }) {
         />
 
         <p className="text-xs font-black uppercase text-[var(--app-text)]">
-          Lista vacía
+          {t("diet.shopping.empty.title")}
         </p>
 
         <p className="mt-1 text-[10px] normal-case leading-4 text-slate-400">
-          Genera una dieta con ingredientes para crear la compra.
+          {t("diet.shopping.empty.description")}
         </p>
       </div>
     );
@@ -101,15 +103,15 @@ export function ShoppingListView({ plan }) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
               <ShoppingBag size={12} />
-              Compra semanal
+              {t("diet.shopping.badge")}
             </div>
 
             <h3 className="mt-0.5 text-[15px] font-black uppercase italic leading-none text-[var(--app-text)]">
-              Lista inteligente
+              {t("diet.shopping.title")}
             </h3>
 
             <p className="mt-0.5 text-[10px] normal-case text-slate-500">
-              {checkedCount}/{totalItems} productos comprados
+              {t("diet.shopping.progress", { checkedCount, totalItems })}
             </p>
           </div>
 
@@ -120,7 +122,7 @@ export function ShoppingListView({ plan }) {
               </p>
 
               <p className="text-[8px] font-black uppercase tracking-wide text-[var(--app-muted)]">
-                listo
+                {t("diet.shopping.ready")}
               </p>
             </div>
           </div>
@@ -138,7 +140,7 @@ export function ShoppingListView({ plan }) {
             <button
               key={category.key}
               type="button"
-              aria-label={`Filtrar por ${category.label}`}
+              aria-label={t("diet.shopping.filter", { category: category.label })}
               title={category.label}
               onClick={() => setActiveCategory(category.key)}
              className={`flex h-7 min-w-12 shrink-0 items-center justify-center gap-1 rounded-xl border px-1.5 ml-3.5 leading-none text-[8px] font-black uppercase tracking-wide transition-all ${
