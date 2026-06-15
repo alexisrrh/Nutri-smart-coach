@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeCheckinAnalysis } from "../normalizers/checkin.normalizer.js";
 import { normalizeFoodAnalysis } from "../normalizers/foodAnalysis.normalizer.js";
+import { buildCheckinPrompt } from "../prompts/checkin.prompt.js";
 import { buildFoodAnalysisPrompt } from "../prompts/foodAnalysis.prompt.js";
 
 describe("foodAnalysis normalizer", () => {
@@ -84,6 +85,7 @@ describe("checkinAnalysis normalizer", () => {
     });
 
     expect(result).toEqual({
+      language: "es",
       body_fat_range: "16-18%",
       confidence: 91,
       visual_changes: "Mejor postura",
@@ -100,6 +102,15 @@ describe("checkinAnalysis normalizer", () => {
       "No se pudieron detectar cambios visuales con suficiente claridad."
     );
     expect(result.recommendation).toContain("check-in semanal");
+  });
+
+  it("uses english defaults when language is en", () => {
+    const result = normalizeCheckinAnalysis({}, "en");
+
+    expect(result.language).toBe("en");
+    expect(result.body_fat_range).toBe("Not estimable");
+    expect(result.visual_changes).toContain("No clear visual changes");
+    expect(result.recommendation).toContain("weekly check-in");
   });
 });
 
@@ -134,7 +145,43 @@ describe("foodAnalysis prompt", () => {
     });
 
     expect(prompt).toContain("Si language es 'en', devuelve todo el texto visible para el usuario en inglés.");
-    expect(prompt).toContain("Objetivo actual: ganancia muscular");
+    expect(prompt).toContain("Objetivo real: ganar músculo.");
     expect(prompt).toContain("Descripción del usuario: Pollo con arroz");
+  });
+});
+
+describe("checkin prompt", () => {
+  it("injects english language instructions when language is en", () => {
+    const prompt = buildCheckinPrompt({
+      weight: 72,
+      waist: 80,
+      chest: 95,
+      hips: 90,
+      notes: "Felt stronger",
+      previousCheckins: [],
+      language: "en",
+    });
+
+    expect(prompt).toContain("You are an expert fitness coach for NutriSmart Coach.");
+    expect(prompt).toContain("Analyze the user's body photo in a cautious and useful way.");
+    expect(prompt).toContain("Return ONLY valid JSON. Do not use markdown.");
+    expect(prompt).toContain('"recommendation": "concrete recommendation for next week"');
+  });
+
+  it("injects spanish language instructions when language is es", () => {
+    const prompt = buildCheckinPrompt({
+      weight: 72,
+      waist: 80,
+      chest: 95,
+      hips: 90,
+      notes: "Me siento mejor",
+      previousCheckins: [],
+      language: "es",
+    });
+
+    expect(prompt).toContain("Eres un coach fitness experto para NutriSmart Coach.");
+    expect(prompt).toContain("Analiza la foto corporal del usuario de forma prudente y útil.");
+    expect(prompt).toContain("Devuelve SOLO JSON válido. No uses markdown.");
+    expect(prompt).toContain('"recommendation": "recomendación concreta para la próxima semana"');
   });
 });

@@ -137,6 +137,9 @@ export function normalizeCheckin(data) {
     ...data,
     id: data.id || null,
     user_id: data.user_id || null,
+    language: normalizeLanguage(
+      data.language || data.preferred_language || data.profile_language || "es"
+    ),
     image_url: data.image_url || data.image || null,
     weight: toNumberOrNull(data.weight ?? data.peso),
     waist: toNumberOrNull(data.waist ?? data.cintura),

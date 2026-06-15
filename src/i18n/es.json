@@ -643,6 +643,22 @@
       "badge": "Legal",
       "title": "Privacidad y legal",
       "subtitle": "Trust center para revisar políticas y gestionar tus datos con transparencia.",
+      "layout": {
+        "back": "Volver",
+        "trustCenter": "Trust Center",
+        "description": "Centro de confianza para revisar políticas, transparencia y control de datos.",
+        "updatedAt": "Última actualización",
+        "nav": {
+          "privacy": "Privacidad",
+          "terms": "Términos",
+          "deleteAccount": "Eliminar cuenta"
+        },
+        "chips": {
+          "protected": "Datos protegidos",
+          "management": "Gestión disponible",
+          "synced": "Cuenta sincronizada"
+        }
+      },
       "trust": {
         "title": "Trust Center",
         "desc": "Datos protegidos, políticas activas y control de tu información.",
@@ -657,12 +673,213 @@
         "line1": "Tus datos siguen bajo tu control.",
         "line2": "Puedes revisar políticas o solicitar eliminación cuando lo necesites."
       },
-      "privacy": "Política de privacidad",
-      "terms": "Términos del servicio",
-      "deleteAccount": "Eliminar cuenta / datos",
       "privacyDesc": "Cómo tratamos tus datos y fotos.",
       "termsDesc": "Condiciones de uso de la plataforma.",
-      "deleteDesc": "Solicitud de borrado de tu cuenta."
+      "deleteDesc": "Solicitud de borrado de tu cuenta.",
+      "privacy": {
+        "title": "Política de privacidad",
+        "sections": {
+          "responsible": {
+            "title": "Responsable y contacto",
+            "body": "NutriSmartCoach es una aplicación de nutrición, fitness y seguimiento personal asistida por IA. Para consultas sobre privacidad o protección de datos puedes escribir a {{email}}."
+          },
+          "data": {
+            "title": "Datos que podemos tratar"
+          },
+          "ai": {
+            "title": "Uso de IA",
+            "body": "NutriSmartCoach utiliza sistemas de inteligencia artificial para analizar comidas, generar recomendaciones, ayudar con dietas y aportar orientación sobre progreso. Los resultados pueden ser aproximados y deben revisarse con criterio. La app no sustituye asesoramiento médico, nutricional ni deportivo profesional."
+          },
+          "purpose": {
+            "title": "Finalidad del tratamiento"
+          },
+          "external": {
+            "title": "Servicios externos",
+            "body": "Para prestar el servicio podemos apoyarnos en proveedores externos. En particular, Supabase para autenticación, base de datos y almacenamiento; Google Gemini para funciones de IA; Meta/Facebook Login para inicio de sesión con Facebook; y Google OAuth para inicio de sesión con Google. Estos proveedores pueden tratar datos necesarios para ejecutar sus servicios conforme a sus propias condiciones y políticas."
+          },
+          "retention": {
+            "title": "Conservación de datos",
+            "body": "Conservamos los datos mientras tu cuenta esté activa o mientras sean necesarios para prestar la funcionalidad solicitada, mantener seguridad, resolver incidencias o cumplir obligaciones aplicables. Puedes solicitar la eliminación de cuenta y datos mediante la página de eliminación."
+          },
+          "deletion": {
+            "title": "Eliminación de datos",
+            "body": "Puedes solicitar la eliminación escribiendo a {{email}} con el asunto \"Eliminar cuenta NutriSmartCoach\". La eliminación puede incluir perfil, fotos, comidas, check-ins, dietas, rutinas, sesiones, progreso e historial, salvo datos que deban conservarse por seguridad, prevención de abuso o motivos legales."
+          },
+          "security": {
+            "title": "Seguridad",
+            "body": "Aplicamos medidas razonables para proteger la cuenta y los datos, como autenticación, controles de acceso, almacenamiento gestionado y reglas de acceso por usuario. Ningún sistema es completamente infalible, por lo que también recomendamos usar contraseñas seguras y proteger el acceso a tu dispositivo y correo."
+          },
+          "rights": {
+            "title": "Derechos del usuario",
+            "body": "Puedes solicitar información, corrección, acceso o eliminación de tus datos escribiendo al contacto indicado. Para poder procesar solicitudes de cuenta puede ser necesario verificar que la petición corresponde al titular de la cuenta."
+          },
+          "medical": {
+            "title": "Aviso médico y deportivo",
+            "body": "NutriSmartCoach ofrece herramientas de apoyo y recomendaciones aproximadas. No diagnostica enfermedades, no prescribe tratamientos y no sustituye a un médico, nutricionista, dietista o entrenador certificado. Antes de cambiar tu alimentación, iniciar entrenamientos intensos o tomar decisiones de salud, consulta con un profesional."
+          }
+        },
+        "items": {
+          "account": "Datos de cuenta, como email, nombre y proveedor de acceso social si usas Google, Meta/Facebook u otro proveedor configurado.",
+          "profile": "Datos de perfil físico y nutricional, como peso, altura, edad, objetivo, nivel, preferencias y actividad.",
+          "food": "Fotos de comida, descripciones, comidas analizadas, resultados nutricionales y recomendaciones generadas.",
+          "checkin": "Fotos de check-in corporal, medidas, notas, análisis de evolución y datos de seguimiento físico.",
+          "diet": "Dietas generadas, planes alimentarios, progreso de dieta y preferencias asociadas.",
+          "workout": "Rutinas, entrenamientos, sesiones completadas, progreso, historial y rutinas compartidas cuando el usuario las publica.",
+          "technical": "Datos técnicos necesarios para autenticación, seguridad, funcionamiento de la sesión, prevención de abuso y límites de uso."
+        },
+        "purpose": {
+          "account": "Crear y mantener tu cuenta de usuario.",
+          "personalization": "Personalizar recomendaciones de nutrición, entrenamiento y progreso.",
+          "history": "Guardar historial para que puedas consultar tu evolución.",
+          "analysis": "Procesar fotos y datos introducidos para análisis asistidos por IA.",
+          "security": "Aplicar límites diarios, proteger la plataforma y prevenir abuso.",
+          "improvement": "Mejorar estabilidad, seguridad y experiencia de uso de la aplicación."
+        }
+      },
+      "terms": {
+        "title": "Términos del servicio",
+        "sections": {
+          "acceptance": {
+            "title": "Aceptación del servicio",
+            "body": "Al usar NutriSmartCoach aceptas estas condiciones. Si no estás de acuerdo, no debes utilizar la aplicación. Estas condiciones se aplican al uso de funciones de nutrición, análisis de comidas, check-ins, rutinas, progreso, historial y herramientas asistidas por IA."
+          },
+          "allowed": {
+            "title": "Uso permitido"
+          },
+          "responsibility": {
+            "title": "Responsabilidad del usuario",
+            "body": "Eres responsable de la información que introduces, de revisar los resultados antes de actuar sobre ellos y de mantener la seguridad de tu cuenta. También eres responsable de consultar a profesionales cualificados si tienes dudas médicas, nutricionales o deportivas."
+          },
+          "ai": {
+            "title": "Recomendaciones e IA",
+            "body": "Las calorías, macros, dietas, rutinas, análisis corporales y recomendaciones generadas por NutriSmartCoach son aproximadas. La IA puede cometer errores, interpretar mal imágenes o generar sugerencias incompletas. No debes considerar la app como sustituto de un médico, nutricionista, dietista o entrenador certificado."
+          },
+          "limits": {
+            "title": "Límites diarios de IA",
+            "body": "Para proteger la estabilidad y controlar costes, algunas funciones de IA pueden tener límites diarios o rate limits. Estos límites pueden aplicarse a análisis de comida, generación de dietas o check-ins. Las rutinas y otras funciones no limitadas pueden mantenerse disponibles según la configuración actual de la app."
+          },
+          "security": {
+            "title": "Cuentas y seguridad"
+          },
+          "content": {
+            "title": "Contenido generado por usuario",
+            "body": "Puedes subir fotos, medidas, notas, comidas, rutinas y otros datos. Al hacerlo confirmas que tienes derecho a usar ese contenido y autorizas su tratamiento para prestar las funciones solicitadas. Si compartes una rutina como pública, cualquier persona con el enlace podrá acceder a esa rutina compartida."
+          },
+          "futurePremium": {
+            "title": "Funciones premium futuras",
+            "body": "NutriSmartCoach puede incorporar funciones premium, planes de pago o límites diferenciados en el futuro. Si se activan pagos, se mostrarán condiciones específicas antes de contratar cualquier servicio de pago."
+          },
+          "changes": {
+            "title": "Disponibilidad y cambios",
+            "body": "Intentamos mantener la app estable, pero pueden existir interrupciones, mantenimiento, errores o cambios de funcionalidad. Podemos actualizar estas condiciones cuando sea necesario para reflejar cambios del producto, seguridad o requisitos aplicables."
+          },
+          "contact": {
+            "title": "Contacto",
+            "bodyStart": "Para dudas sobre estas condiciones puedes escribir a"
+          }
+        },
+        "allowed": {
+          "one": "Usar la app para seguimiento personal de nutrición, entrenamiento y progreso.",
+          "two": "Introducir datos reales o razonables para obtener recomendaciones más útiles.",
+          "three": "No intentar abusar de límites, automatizar peticiones, sobrecargar sistemas o acceder a cuentas ajenas.",
+          "four": "No subir contenido ilegal, ofensivo, engañoso o que vulnere derechos de terceros."
+        },
+        "security": {
+          "one": "Debes usar un email o proveedor social válido para acceder cuando la app lo requiera.",
+          "two": "No compartas credenciales ni enlaces privados de recuperación.",
+          "three": "Si detectas acceso no autorizado, contacta con soporte lo antes posible.",
+          "four": "Podemos bloquear o suspender accesos si detectamos abuso, automatización maliciosa o riesgo para la plataforma."
+        }
+      },
+      "delete": {
+        "eyebrow": "Datos y cuenta",
+        "title": "Eliminar cuenta",
+        "button": "Solicitar eliminación",
+        "sections": {
+          "how": {
+            "title": "Cómo solicitar la eliminación",
+            "body": "Para solicitar la eliminación de tu cuenta y datos asociados, escribe desde el email vinculado a tu cuenta a {{email}} con el asunto \"Eliminar cuenta NutriSmartCoach\"."
+          },
+          "data": {
+            "title": "Datos que puedes solicitar eliminar"
+          },
+          "timeline": {
+            "title": "Plazo orientativo",
+            "body": "Las solicitudes se revisan y procesan en un plazo orientativo de hasta 30 días desde la recepción y verificación de la solicitud. Si se necesita información adicional para confirmar la titularidad de la cuenta, el plazo puede depender de la respuesta del usuario."
+          },
+          "retained": {
+            "title": "Datos que podrían conservarse",
+            "body": "Algunos datos pueden conservarse de forma limitada si son necesarios por motivos legales, seguridad, prevención de abuso, resolución de incidencias o defensa de reclamaciones. Cuando sea posible, se eliminarán o desvincularán los datos personales que ya no sean necesarios."
+          },
+          "profile": {
+            "title": "Opción desde perfil",
+            "body": "En el futuro podrá incorporarse una opción directa desde el perfil para gestionar la eliminación de cuenta. Hasta que esté disponible, el canal operativo para solicitarla es el email indicado en esta página."
+          }
+        },
+        "data": {
+          "one": "Perfil de usuario y preferencias.",
+          "two": "Fotos de comida y análisis asociados.",
+          "three": "Comidas registradas e historial nutricional.",
+          "four": "Fotos de check-in corporal, medidas, notas y análisis asociados.",
+          "five": "Dietas generadas y progreso de dieta.",
+          "six": "Rutinas personalizadas, rutinas compartidas y datos de entrenamiento.",
+          "seven": "Sesiones de entrenamiento, progreso, historial y datos relacionados."
+        }
+      },
+      "creator": {
+        "eyebrow": "Programa de Creadores",
+        "title": "Términos del Programa de Creadores",
+        "sections": {
+          "commission": {
+            "title": "Comisión",
+            "body": "Los creadores aprobados pueden recibir una comisión del 30% por cada suscripción Premium válida atribuida a su código de creador."
+          },
+          "trial": {
+            "title": "Trial de 15 días",
+            "body": "Los usuarios invitados con un código de creador pueden recibir 15 días de acceso Premium promocional. El trial gratuito no genera comisión por sí mismo."
+          },
+          "eligible": {
+            "title": "Referido válido"
+          },
+          "payoutLimit": {
+            "title": "Límite de pagos",
+            "body": "Cada usuario referido puede generar comisión durante un máximo de 12 pagos Premium válidos. Superado ese límite, el usuario puede seguir usando NutriSmart Coach, pero deja de generar comisión para el creador."
+          },
+          "fraud": {
+            "title": "Fraude y autorreferidos"
+          },
+          "suspension": {
+            "title": "Suspensión del programa",
+            "body": "NutriSmart Coach puede rechazar solicitudes, pausar códigos, suspender la participación o cerrar el acceso al programa si el creador incumple estos términos, publica contenido engañoso o genera riesgo para la plataforma, los usuarios o la marca."
+          },
+          "cancellations": {
+            "title": "Cancelaciones",
+            "body": "Si un usuario cancela su suscripción, solicita un reembolso, no completa el pago o deja de estar en estado Premium válido, ese periodo no genera comisión. Las comisiones pendientes pueden revisarse antes de confirmarse."
+          },
+          "responsibilities": {
+            "title": "Responsabilidades del creador"
+          }
+        },
+        "eligible": {
+          "one": "El usuario debe registrarse usando el código o enlace del creador.",
+          "two": "La atribución debe producirse antes de la contratación Premium.",
+          "three": "La comisión solo se genera tras el primer pago real confirmado.",
+          "four": "Los pagos rechazados, devueltos, reembolsados o cancelados no generan comisión."
+        },
+        "fraud": {
+          "one": "No se permiten cuentas falsas, automatizadas, duplicadas o creadas para simular actividad.",
+          "two": "No se permiten autorreferidos ni compras realizadas por el propio creador para generar comisión.",
+          "three": "No se permite incentivar usos engañosos, abuso de trials o manipulación de atribuciones.",
+          "four": "NutriSmart Coach puede retener, cancelar o ajustar comisiones si detecta actividad fraudulenta."
+        },
+        "responsibilities": {
+          "one": "Comunicar la promoción de forma clara, honesta y no engañosa.",
+          "two": "No prometer resultados físicos, médicos, nutricionales o económicos no garantizados.",
+          "three": "Cumplir las normas de cada plataforma social y la normativa publicitaria aplicable.",
+          "four": "Mantener un perfil público, contenido original y una relación transparente con su audiencia.",
+          "five": "Contactar con soporte en {{email}} si necesita aclaraciones sobre el programa."
+        }
+      }
     },
     "security": {
       "badge": "Seguridad",

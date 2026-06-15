@@ -30,6 +30,9 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
   try {
     const requestedUserId = req.body.user_id || null;
     const userId = requireAuthenticatedUser(req, res);
+    const language = normalizeCheckinLanguage(
+      req.body.language || req.body.preferred_language || req.body.profile_language
+    );
 
     if (!userId) return;
 
@@ -101,6 +104,7 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
       hips: req.body.hips,
       notes: req.body.notes,
       previousCheckins,
+      language,
     });
 
     const { data, error } = await supabase
@@ -113,6 +117,7 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
         chest: toNumberOrNull(req.body.chest),
         hips: toNumberOrNull(req.body.hips),
         notes: req.body.notes || "",
+        language,
         body_fat_range: analysis.body_fat_range,
         confidence: analysis.confidence,
         visual_changes: analysis.visual_changes,
@@ -130,7 +135,11 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
 
     return res.json({
       ok: true,
-      checkin: data,
+      language,
+      checkin: {
+        ...data,
+        language,
+      },
     });
   } catch (error) {
     console.error("Error checkins:", error);
@@ -281,9 +290,10 @@ async function analyzeCheckinWithGemini({
   hips,
   notes,
   previousCheckins,
+  language = "es",
 }) {
   if (!process.env.GEMINI_API_KEY) {
-    return createFallbackCheckinAnalysis({ weight, previousCheckins });
+    return createFallbackCheckinAnalysis({ weight, previousCheckins, language });
   }
 
   try {
@@ -303,6 +313,7 @@ async function analyzeCheckinWithGemini({
                 hips,
                 notes,
                 previousCheckins,
+                language,
               }),
             },
             {
@@ -319,10 +330,10 @@ async function analyzeCheckinWithGemini({
     const cleanText = cleanGeminiJson(response.text || "");
     const data = JSON.parse(cleanText);
 
-    return normalizeCheckinAnalysis(data);
+    return normalizeCheckinAnalysis(data, language);
   } catch (error) {
     console.error("Error analizando checkin con Gemini:", error);
-    return createFallbackCheckinAnalysis({ weight, previousCheckins });
+    return createFallbackCheckinAnalysis({ weight, previousCheckins, language });
   }
 }
 
@@ -345,22 +356,32 @@ function serializeUsageState(type, usageState) {
   };
 }
 
-function createFallbackCheckinAnalysis({ weight, previousCheckins }) {
+function createFallbackCheckinAnalysis({ weight, previousCheckins, language = "es" }) {
+  const normalizedLanguage = normalizeCheckinLanguage(language);
   const previous = previousCheckins?.[0];
   const previousWeight = Number(previous?.weight || 0);
   const currentWeight = Number(weight || 0);
 
-  let visualChanges = "Primer registro guardado. A partir del próximo check-in podremos comparar evolución.";
+  let visualChanges =
+    normalizedLanguage === "en"
+      ? "First record saved. From the next check-in we will be able to compare progress."
+      : "Primer registro guardado. A partir del próximo check-in podremos comparar evolución.";
 
   if (previousWeight && currentWeight) {
     const diff = Number((currentWeight - previousWeight).toFixed(1));
 
-    visualChanges =
-      diff < 0
-        ? `Has bajado aproximadamente ${Math.abs(diff)} kg desde el último registro.`
+      visualChanges =
+        diff < 0
+        ? normalizedLanguage === "en"
+          ? `You have lost approximately ${Math.abs(diff)} kg since the last record.`
+          : `Has bajado aproximadamente ${Math.abs(diff)} kg desde el último registro.`
         : diff > 0
-          ? `Has subido aproximadamente ${diff} kg desde el último registro.`
-          : "Tu peso se mantiene estable desde el último registro.";
+          ? normalizedLanguage === "en"
+            ? `You have gained approximately ${diff} kg since the last record.`
+            : `Has subido aproximadamente ${diff} kg desde el último registro.`
+          : normalizedLanguage === "en"
+            ? "Your weight has remained stable since the last record."
+            : "Tu peso se mantiene estable desde el último registro.";
   }
 
   return {
@@ -368,8 +389,19 @@ function createFallbackCheckinAnalysis({ weight, previousCheckins }) {
     confidence: 50,
     visual_changes: visualChanges,
     recommendation:
-      "Repite la foto cada semana con la misma luz, distancia y postura para comparar mejor tu progreso.",
+      normalizedLanguage === "en"
+        ? "Repeat the photo every week with the same light, distance, and pose to compare your progress better."
+        : "Repite la foto cada semana con la misma luz, distancia y postura para comparar mejor tu progreso.",
   };
+}
+
+function normalizeCheckinLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  if (normalized.startsWith("en")) return "en";
+  if (normalized.startsWith("es")) return "es";
+
+  return "es";
 }
 
 export default router;
