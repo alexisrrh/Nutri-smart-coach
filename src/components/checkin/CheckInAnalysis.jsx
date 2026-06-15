@@ -1,15 +1,17 @@
 import { BrainCircuit, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { shortText } from "./checkinUtils";
 
 export function CheckInAnalysis({ lastCheckin, profile, weightDiff, onOpenFull }) {
+  const { t } = useTranslation();
   const visualChanges = shortText(
     lastCheckin?.visual_changes ||
-      "La IA revisa cambios de grasa, definición y consistencia entre semanas.",
+      t("checkin.analysis.visualChangesFallback"),
     100
   );
   const recommendation = shortText(
     lastCheckin?.recommendation ||
-      "Mantén la misma luz, postura y distancia para comparar mejor la evolución.",
+      t("checkin.analysis.recommendationFallback"),
     84
   );
   const hasLongAnalysis =
@@ -23,11 +25,11 @@ export function CheckInAnalysis({ lastCheckin, profile, weightDiff, onOpenFull }
       <div className="relative z-10 mb-2 flex items-center justify-between gap-3">
         <div className="theme-icon-tile-muted inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
           <Sparkles size={11} />
-          Análisis IA
+          {t("checkin.analysis.title")}
         </div>
 
         <div className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-          {profile?.goal || "Progreso"}
+          {profile?.goal || t("checkin.analysis.goalFallback")}
         </div>
       </div>
 
@@ -37,16 +39,22 @@ export function CheckInAnalysis({ lastCheckin, profile, weightDiff, onOpenFull }
 
       <div className="relative z-10 mt-3 grid grid-cols-3 gap-2">
         <MiniChip
-          label="Progreso"
-          value={weightDiff === null ? "Pendiente" : weightDiff <= 0 ? "A favor" : "En ajuste"}
+          label={t("checkin.analysis.metrics.progress")}
+          value={
+            weightDiff === null
+              ? t("checkin.analysis.progress.pending")
+              : weightDiff <= 0
+              ? t("checkin.analysis.progress.favor")
+              : t("checkin.analysis.progress.adjusting")
+          }
         />
         <MiniChip
-          label="Confianza"
+          label={t("checkin.analysis.metrics.confidence")}
           value={lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "-"}
         />
         <MiniChip
-          label="Grasa"
-          value={lastCheckin?.body_fat_range || "No estimable"}
+          label={t("checkin.analysis.metrics.fat")}
+          value={lastCheckin?.body_fat_range || t("checkin.analysis.noEstimable")}
         />
       </div>
 
@@ -55,7 +63,7 @@ export function CheckInAnalysis({ lastCheckin, profile, weightDiff, onOpenFull }
           <div className="flex items-center gap-2 text-[var(--app-primary)]">
             <BrainCircuit size={13} />
             <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">
-              Recomendación
+              {t("checkin.analysis.recommendation")}
             </p>
           </div>
 
@@ -66,12 +74,12 @@ export function CheckInAnalysis({ lastCheckin, profile, weightDiff, onOpenFull }
       </div>
 
       {hasLongAnalysis && (
-        <button
+          <button
           type="button"
           onClick={onOpenFull}
           className="relative z-10 mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 transition hover:border-[var(--app-border)] hover:text-[var(--app-text)]"
         >
-          Ver análisis completo
+          {t("checkin.analysis.openFull")}
         </button>
       )}
     </section>

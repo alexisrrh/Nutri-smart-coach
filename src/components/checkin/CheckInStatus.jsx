@@ -1,10 +1,16 @@
 import { Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CheckInStatus({ lastCheckin, weightDiff }) {
-  const bodyFat = lastCheckin?.body_fat_range || "No estimable";
+  const { t } = useTranslation();
+  const bodyFat = lastCheckin?.body_fat_range || t("checkin.status.noEstimable");
   const confidence = lastCheckin?.confidence ? `${lastCheckin.confidence}%` : "-";
   const definition =
-    weightDiff === null ? "Pendiente" : weightDiff <= 0 ? "Mejorando" : "En ajuste";
+    weightDiff === null
+      ? t("checkin.status.pending")
+      : weightDiff <= 0
+      ? t("checkin.status.improving")
+      : t("checkin.status.adjusting");
   const change =
     weightDiff === null ? "-" : `${weightDiff > 0 ? "+" : ""}${weightDiff} kg`;
 
@@ -15,19 +21,19 @@ export function CheckInStatus({ lastCheckin, weightDiff }) {
       <div className="relative z-10 mb-2 flex items-center justify-between gap-3">
         <div className="theme-icon-tile-muted inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
           <Sparkles size={11} />
-          Resultado actual
+          {t("checkin.status.title")}
         </div>
 
         <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
-          IA corporal
+          {t("checkin.status.subtitle")}
         </span>
       </div>
 
       <div className="relative z-10 grid grid-cols-2 gap-2">
-        <Chip label="Grasa" value={bodyFat} />
-        <Chip label="Confianza" value={confidence} />
-        <Chip label="Definición" value={definition} />
-        <Chip label="Cambio" value={change} />
+        <Chip label={t("checkin.status.labels.fat")} value={bodyFat} />
+        <Chip label={t("checkin.status.labels.confidence")} value={confidence} />
+        <Chip label={t("checkin.status.labels.definition")} value={definition} />
+        <Chip label={t("checkin.status.labels.change")} value={change} />
       </div>
     </section>
   );

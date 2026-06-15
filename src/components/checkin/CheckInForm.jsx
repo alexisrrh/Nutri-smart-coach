@@ -5,6 +5,7 @@ import {
   ImagePlus,
   ScanFace,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function CheckInForm({
   preview,
@@ -14,6 +15,7 @@ export function CheckInForm({
   saveCheckIn,
   loading,
 }) {
+  const { t } = useTranslation();
   const hasPreview = Boolean(preview);
 
   return (
@@ -29,17 +31,17 @@ export function CheckInForm({
 
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.26em] text-[var(--app-primary)]">
-                Check-in físico
+                {t("checkin.form.badge")}
               </p>
 
               <h2 className="text-lg font-black uppercase italic">
-                Sube tu foto corporal
+                {t("checkin.form.title")}
               </h2>
             </div>
           </div>
 
           <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1 text-[10px] font-black text-slate-400">
-            Frontal / lateral
+            {t("checkin.form.photoType")}
           </span>
         </div>
 
@@ -52,19 +54,19 @@ export function CheckInForm({
               <>
                 <img
                   src={preview}
-                  alt="Vista previa check-in"
+                  alt={t("checkin.form.previewAlt")}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)]/92 via-[var(--app-surface)]/25 to-transparent" />
 
-                <div className="relative z-10 self-end p-4">
-                  <p className="text-base font-black uppercase italic">
-                    Foto actual
+                  <div className="relative z-10 self-end p-4">
+                    <p className="text-base font-black uppercase italic">
+                    {t("checkin.form.currentPhoto")}
                   </p>
 
                   <p className="mt-1 text-[10px] text-[var(--app-muted)]">
-                    Toca para cambiarla.
+                    {t("checkin.form.changeHint")}
                   </p>
                 </div>
               </>
@@ -75,11 +77,11 @@ export function CheckInForm({
                 </div>
 
                 <p className="text-base font-black uppercase italic">
-                  Sube una foto frontal o lateral
+                  {t("checkin.form.uploadTitle")}
                 </p>
 
                 <p className="mx-auto mt-2 max-w-xs text-[10px] leading-5 text-slate-400">
-                  Frontal o lateral, buena luz y cuerpo completo para comparar tu evolución.
+                  {t("checkin.form.uploadHint")}
                 </p>
               </div>
             )}
@@ -98,7 +100,7 @@ export function CheckInForm({
               htmlFor="checkin-photo"
               className="block rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_20px_60px_var(--app-glow)] transition hover:bg-[var(--app-primary-soft)]"
             >
-              Subir foto
+              {t("checkin.form.uploadButton")}
             </label>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -106,7 +108,7 @@ export function CheckInForm({
                 htmlFor="checkin-photo"
                 className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-slate-200 transition hover:border-[var(--app-border)] hover:text-[var(--app-text)]"
               >
-                Cambiar foto
+                {t("checkin.form.changeButton")}
               </label>
 
               <button
@@ -117,7 +119,7 @@ export function CheckInForm({
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <ScanFace size={16} />
-                  {loading ? "Analizando..." : "Analizar cuerpo con IA"}
+                  {loading ? t("checkin.form.analyzing") : t("checkin.form.analyze")}
                   <ChevronRight size={15} />
                 </span>
               </button>
@@ -126,7 +128,7 @@ export function CheckInForm({
 
           <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
             <Field
-              label="Peso actual"
+              label={t("checkin.form.weightSection")}
               value={form.weight}
               onChange={(e) => handleChange("weight", e.target.value)}
               placeholder="72.5"
@@ -140,13 +142,13 @@ export function CheckInForm({
 
           <details className="group rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-3">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-              Medidas opcionales
+              {t("checkin.form.optionalMeasures")}
               <ChevronDown size={14} className="transition group-open:rotate-180" />
             </summary>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <Field
-                label="Cintura"
+                label={t("checkin.form.waist")}
                 value={form.waist}
                 onChange={(e) => handleChange("waist", e.target.value)}
                 placeholder="80"
@@ -155,7 +157,7 @@ export function CheckInForm({
               />
 
               <Field
-                label="Pecho"
+                label={t("checkin.form.chest")}
                 value={form.chest}
                 onChange={(e) => handleChange("chest", e.target.value)}
                 placeholder="95"
@@ -164,7 +166,7 @@ export function CheckInForm({
               />
 
               <Field
-                label="Cadera"
+                label={t("checkin.form.hips")}
                 value={form.hips}
                 onChange={(e) => handleChange("hips", e.target.value)}
                 placeholder="90"
@@ -174,14 +176,14 @@ export function CheckInForm({
 
               <label className="sm:col-span-2">
                 <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-muted)]">
-                  Nota
+                  {t("checkin.form.note")}
                 </p>
 
                 <textarea
                   value={form.notes}
                   onChange={(e) => handleChange("notes", e.target.value)}
                   className="h-[68px] w-full resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)] focus:border-[var(--app-primary)]/50"
-                  placeholder="Ej: entrené 4 días, mejor energía..."
+                  placeholder={t("checkin.form.notePlaceholder")}
                 />
               </label>
             </div>

@@ -1,7 +1,9 @@
 import { Camera, GitCompare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatDate } from "./checkinUtils";
 
 export function CheckInCompare({ history = [], onSelect }) {
+  const { t } = useTranslation();
   const first = Array.isArray(history) && history.length > 1 ? history[history.length - 1] : null;
   const latest = Array.isArray(history) && history.length > 0 ? history[0] : null;
 
@@ -13,30 +15,30 @@ export function CheckInCompare({ history = [], onSelect }) {
         <div>
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--app-primary)]">
             <GitCompare size={13} />
-            Comparación semanal
+            {t("checkin.compare.title")}
           </div>
 
           <h3 className="mt-1 text-sm font-black uppercase italic leading-none text-[var(--app-text)]">
-            Semana anterior / Semana actual
+            {t("checkin.compare.subtitle")}
           </h3>
         </div>
 
         <div className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-          IA visual
+          {t("checkin.compare.badge")}
         </div>
       </div>
 
       {first && latest && first.image_url && latest.image_url ? (
         <div className="grid grid-cols-2 gap-2">
           <CompareFrame
-            title="Semana anterior"
+            title={t("checkin.compare.previous")}
             date={formatDate(first.created_at)}
             image={first.image_url}
             onClick={() => onSelect?.(first)}
           />
 
           <CompareFrame
-            title="Semana actual"
+            title={t("checkin.compare.current")}
             date={formatDate(latest.created_at)}
             image={latest.image_url}
             active
@@ -47,10 +49,10 @@ export function CheckInCompare({ history = [], onSelect }) {
         <div className="rounded-[24px] border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-4 text-center">
           <Camera className="mx-auto mb-2 text-[var(--app-primary)]" size={22} />
           <p className="text-[10px] font-black uppercase text-[var(--app-text)]">
-            Comparación pendiente
+            {t("checkin.compare.emptyTitle")}
           </p>
           <p className="mt-1 text-[10px] leading-5 text-slate-400">
-            Necesitas dos check-ins con foto para comparar semanas.
+            {t("checkin.compare.emptyDescription")}
           </p>
         </div>
       )}
@@ -59,6 +61,8 @@ export function CheckInCompare({ history = [], onSelect }) {
 }
 
 function CompareFrame({ title, date, image, active = false, onClick }) {
+  const { t } = useTranslation();
+
   return (
     <button
       type="button"
@@ -84,7 +88,7 @@ function CompareFrame({ title, date, image, active = false, onClick }) {
 
           {active && (
             <div className="absolute bottom-2 left-2 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--app-primary)]">
-              Actual
+              {t("checkin.compare.active")}
             </div>
           )}
         </div>

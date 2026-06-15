@@ -8,6 +8,7 @@ import {
   Home,
   X,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   saveWorkoutSession,
 } from "../../services/workoutSessionService";
@@ -22,6 +23,10 @@ import {
 import { useAuth } from "../../context/useAuth";
 import ExerciseMediaFrame from "../exercises/ExerciseMediaFrame";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import {
+  getWorkoutLanguage,
+  translateWorkoutText,
+} from "../../utils/workoutI18n";
 
 export function WorkoutSession({
   session,
@@ -32,6 +37,8 @@ export function WorkoutSession({
   onFinish,
   onDashboard,
 }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const { user } = useAuth();
   const userId = user?.id || null;
   const [exerciseIndex, setExerciseIndex] = useState(0);
@@ -287,31 +294,31 @@ export function WorkoutSession({
                   <CheckCircle2 size={30} />
                 </div>
                 <p className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                  Entreno completado
+                  {translateWorkoutText("Entreno completado", language)}
                 </p>
                 <h2 className="mt-1 text-[30px] font-black leading-none text-[var(--app-text)]">
-                  Buen trabajo
+                  {translateWorkoutText("Buen trabajo", language)}
                 </h2>
 
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <SessionMetric label="XP" value={`+${summary.xpAwarded}`} />
-                  <SessionMetric label="Ejercicios" value={exercises.length} />
-                  <SessionMetric label="Duración" value={formatDuration(summary.duration * 60)} />
-                  <SessionMetric label="Kcal" value={summary.caloriesEstimate} />
-                  <SessionMetric label="Peso movido" value={`${summary.totalWeightMoved || 0} kg`} />
-                  <SessionMetric label="Récords" value={summary.newRecords?.length || 0} />
+                  <SessionMetric label={translateWorkoutText("XP", language)} value={`+${summary.xpAwarded}`} />
+                  <SessionMetric label={translateWorkoutText("Ejercicios", language)} value={exercises.length} />
+                  <SessionMetric label={translateWorkoutText("Duración", language)} value={formatDuration(summary.duration * 60)} />
+                  <SessionMetric label={translateWorkoutText("Kcal", language)} value={summary.caloriesEstimate} />
+                  <SessionMetric label={translateWorkoutText("Peso movido", language)} value={`${summary.totalWeightMoved || 0} kg`} />
+                  <SessionMetric label={translateWorkoutText("Récords", language)} value={summary.newRecords?.length || 0} />
                 </div>
 
                 {summary.bestExercise ? (
                   <p className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[11px] font-black text-[var(--app-text)]">
-                    Mejor ejercicio · {summary.bestExercise.name} · {summary.bestExercise.volume} kg
+                    {translateWorkoutText("Mejor ejercicio", language)} · {translateWorkoutText(summary.bestExercise.name, language)} · {summary.bestExercise.volume} kg
                   </p>
                 ) : null}
 
                 <p className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[12px] font-black text-[var(--app-primary)]">
                   {summary.streak > 0
-                    ? `${summary.streak} días de racha`
-                    : "Sesión guardada"}
+                    ? translateWorkoutText(`${summary.streak} días de racha`, language)
+                    : translateWorkoutText("Sesión guardada", language)}
                 </p>
               </div>
             </section>
@@ -320,11 +327,11 @@ export function WorkoutSession({
           <button
             type="button"
             onClick={onDashboard}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_18px_42px_var(--app-glow)]"
-          >
-            <Home size={16} />
-            Volver al dashboard
-          </button>
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--app-primary)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--app-surface)] shadow-[0_18px_42px_var(--app-glow)]"
+        >
+          <Home size={16} />
+            {translateWorkoutText("Volver al dashboard", language)}
+        </button>
         </div>
       </div>
     );
@@ -338,17 +345,17 @@ export function WorkoutSession({
             type="button"
             onClick={requestClose}
             className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]"
-            aria-label="Salir"
+            aria-label={translateWorkoutText("Salir", language)}
           >
             <X size={16} />
           </button>
           <div className="min-w-0 flex-1 text-center">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              {exerciseIndex + 1}/{exercises.length} ejercicios
+              {translateWorkoutText(`${exerciseIndex + 1}/${exercises.length} ejercicios`, language)}
             </p>
             <p className="text-[10px] font-bold leading-none text-[var(--app-muted)]">
-              {formatDuration(elapsedSeconds)}
-            </p>
+            {translateWorkoutText(formatDuration(elapsedSeconds), language)}
+          </p>
           </div>
           <div className="min-w-10 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5 text-center text-[10px] font-black text-[var(--app-primary)]">
             {progress}%
@@ -358,11 +365,11 @@ export function WorkoutSession({
         <main className="min-h-0 overflow-y-auto pb-1 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-1">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
-              <MetricChip label="Kcal" value={calories} />
+              <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />
               <MetricDivider />
-              <MetricChip label="Tiempo" value={formatDuration(elapsedSeconds)} />
+              <MetricChip label={translateWorkoutText("Tiempo", language)} value={translateWorkoutText(formatDuration(elapsedSeconds), language)} />
               <MetricDivider />
-              <MetricChip label="Series" value={`${completedSetCount}/${totalSets}`} />
+              <MetricChip label={translateWorkoutText("Series", language)} value={translateWorkoutText(`${completedSetCount}/${totalSets}`, language)} />
             </div>
 
             <ExerciseImage exercise={exercise} />
@@ -370,16 +377,16 @@ export function WorkoutSession({
             <section className="space-y-0.5">
               <div className="flex items-center gap-1.5">
                 <p className="min-w-0 truncate text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-                  {exercise.muscle} · {exercise.difficulty || level}
+                  {translateWorkoutText(exercise.muscle, language)} · {translateWorkoutText(exercise.difficulty || level, language)}
                 </p>
                 {exercise.mainLift ? (
                   <span className="shrink-0 rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-                    Principal
+                    {translateWorkoutText("Principal", language)}
                   </span>
                 ) : null}
               </div>
               <h1 className="mt-0.5 line-clamp-2 text-[21px] font-black leading-[1.05] text-[var(--app-text)]">
-                {exercise.name}
+                {translateWorkoutText(exercise.name, language)}
               </h1>
               <PerformanceHint
                 lastPerformance={lastPerformance}
@@ -389,9 +396,9 @@ export function WorkoutSession({
                 <StrengthRecommendationCard recommendation={weightRecommendation} />
               ) : null}
               <div className="mt-1 flex gap-1">
-                <PrescriptionChip label="Series" value={prescription.sets} />
-                <PrescriptionChip label="Reps" value={prescription.reps} />
-                <PrescriptionChip label="Descanso" value={prescription.rest} />
+                <PrescriptionChip label={translateWorkoutText("Series", language)} value={prescription.sets} />
+                <PrescriptionChip label={translateWorkoutText("Reps", language)} value={prescription.reps} />
+                <PrescriptionChip label={translateWorkoutText("Descanso", language)} value={prescription.rest} />
               </div>
             </section>
             <QuickTechnique exercise={exercise} />
@@ -447,13 +454,13 @@ export function WorkoutSession({
         </section>
       </div>
 
-      <ConfirmDialog
+        <ConfirmDialog
         open={confirmExitOpen}
         variant="danger"
-        title="Salir del entreno"
-        description="Se perdera el progreso no guardado de esta sesion."
-        cancelLabel="Permanecer"
-        confirmLabel="Salir"
+        title={translateWorkoutText("Salir del entreno", language)}
+        description={translateWorkoutText("Se perdera el progreso no guardado de esta sesion.", language)}
+        cancelLabel={translateWorkoutText("Permanecer", language)}
+        confirmLabel={translateWorkoutText("Salir", language)}
         onCancel={() => setConfirmExitOpen(false)}
         onConfirm={confirmClose}
       />
@@ -477,20 +484,28 @@ function ExerciseImage({ exercise }) {
 }
 
 function QuickTechnique({ exercise }) {
-  const tip = exercise.tips?.[0] || "Mantén el control en todo el recorrido.";
-  const mistake = exercise.mistakes?.[0] || "Evita compensar con impulso.";
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
+  const tip = translateWorkoutText(
+    exercise.tips?.[0] || "Mantén el control en todo el recorrido.",
+    language
+  );
+  const mistake = translateWorkoutText(
+    exercise.mistakes?.[0] || "Evita compensar con impulso.",
+    language
+  );
 
   return (
     <section className="mt-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1">
       <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
-        Técnica rápida
+        {translateWorkoutText("Técnica rápida", language)}
       </p>
       <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-text)]">
-        {exercise.description}
+        {translateWorkoutText(exercise.description, language)}
       </p>
       <p className="line-clamp-1 text-[10px] leading-4 text-[var(--app-muted)]">
-        <span className="font-black text-[var(--app-text)]">Tip:</span> {tip} ·{" "}
-        <span className="font-black text-[var(--app-text)]">Evita:</span> {mistake}
+        <span className="font-black text-[var(--app-text)]">{translateWorkoutText("Consejo", language)}:</span> {tip} ·{" "}
+        <span className="font-black text-[var(--app-text)]">{translateWorkoutText("Evita", language)}:</span> {mistake}
       </p>
     </section>
   );
@@ -505,6 +520,8 @@ function SeriesRestCoach({
   recordFeedback,
   setTracking,
 }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const [showAllSets, setShowAllSets] = useState(false);
   const nextSetIndex = Array.from(
     { length: prescription.sets },
@@ -524,13 +541,16 @@ function SeriesRestCoach({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-              Serie actual
+              {translateWorkoutText("Serie actual", language)}
             </p>
             <h3 className="mt-0.5 text-[14px] font-black leading-none text-[var(--app-text)]">
-              Serie {activeSetNumber} de {prescription.sets}
+              {translateWorkoutText(`Serie ${activeSetNumber} de ${prescription.sets}`, language)}
             </h3>
             <p className="mt-1 text-[10px] font-semibold text-[var(--app-muted)]">
-              {completedSeriesCount} completadas · {remainingSets} restantes
+              {translateWorkoutText(
+                `${completedSeriesCount} completadas · ${remainingSets} restantes`,
+                language
+              )}
             </p>
           </div>
 
@@ -542,7 +562,7 @@ function SeriesRestCoach({
         <div className="mt-2 grid grid-cols-3 gap-1">
           <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-              Reps
+              {translateWorkoutText("Reps", language)}
             </p>
             <input
               inputMode="numeric"
@@ -556,7 +576,7 @@ function SeriesRestCoach({
           </div>
           <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-              Peso
+              {translateWorkoutText("Peso", language)}
             </p>
             <div className="mt-0.5 flex items-center gap-0.5">
               <input
@@ -575,10 +595,10 @@ function SeriesRestCoach({
           </div>
           <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-              Objetivo
+              {translateWorkoutText("Objetivo", language)}
             </p>
             <p className="mt-0.5 truncate text-[11px] font-black text-[var(--app-primary)]">
-              {prescription.reps}
+              {translateWorkoutText(String(prescription.reps), language)}
             </p>
           </div>
         </div>
@@ -597,7 +617,7 @@ function SeriesRestCoach({
           className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-3 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_22px_var(--app-glow)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-default disabled:opacity-60"
         >
           <Check size={14} />
-          Completar serie
+          {translateWorkoutText("Completar serie", language)}
         </button>
 
         <button
@@ -605,7 +625,9 @@ function SeriesRestCoach({
           onClick={() => setShowAllSets((current) => !current)}
           className="mt-1.5 w-full rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition duration-150 hover:bg-[var(--app-card)] active:scale-[0.98]"
         >
-          {showAllSets ? "Ocultar todas las series" : "Ver todas las series"}
+          {showAllSets
+            ? translateWorkoutText("Ocultar todas las series", language)
+            : translateWorkoutText("Ver todas las series", language)}
         </button>
       </div>
 
@@ -636,7 +658,7 @@ function SeriesRestCoach({
               ) : null}
               <div className="min-w-0 flex-1">
                 <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
-                  Serie {index + 1}
+                  {translateWorkoutText(`Serie ${index + 1}`, language)}
                 </p>
                 <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   <label className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 focus-within:border-[var(--app-primary)]">
@@ -644,11 +666,11 @@ function SeriesRestCoach({
                       inputMode="numeric"
                       value={tracking.reps || ""}
                       onChange={(event) => onTrackSet(index, "reps", event.target.value)}
-                      placeholder="10"
+                      placeholder={translateWorkoutText("10", language)}
                       className="w-8 bg-transparent text-center text-[10px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
                     />
                     <span className="text-[7px] font-black uppercase tracking-[0.08em] text-[var(--app-muted)]">
-                      reps
+                      {translateWorkoutText("Reps", language)}
                     </span>
                   </label>
                   <label className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 focus-within:border-[var(--app-primary)]">
@@ -656,15 +678,15 @@ function SeriesRestCoach({
                       inputMode="decimal"
                       value={tracking.kg || ""}
                       onChange={(event) => onTrackSet(index, "kg", event.target.value)}
-                      placeholder="15"
+                      placeholder={translateWorkoutText("15", language)}
                       className="w-8 bg-transparent text-center text-[10px] font-black text-[var(--app-primary)] outline-none placeholder:text-[var(--app-muted)]"
                     />
                     <span className="text-[7px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
-                      kg
+                      {translateWorkoutText("kg", language)}
                     </span>
                   </label>
                   <span className="text-[8px] font-bold text-[var(--app-muted)]">
-                    {prescription.reps}
+                    {translateWorkoutText(String(prescription.reps), language)}
                   </span>
                 </div>
               </div>
@@ -680,14 +702,14 @@ function SeriesRestCoach({
                       ? "border-[var(--app-primary)] bg-[var(--app-primary-soft)] text-[var(--app-primary)]"
                       : "border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]",
                 ].join(" ")}
-                aria-label={`Completar serie ${index + 1}`}
+                aria-label={translateWorkoutText(`Completar serie ${index + 1}`, language)}
               >
                 {complete ? <Check size={11} /> : null}
               </button>
 
               {isRecord ? (
                 <span className="absolute bottom-0.5 right-9 text-[7px] font-black uppercase tracking-[0.1em] text-[var(--app-primary)]">
-                  Nuevo récord
+                  {translateWorkoutText("Nuevo récord", language)}
                 </span>
               ) : null}
             </div>
@@ -698,7 +720,7 @@ function SeriesRestCoach({
 
       {recordFeedback?.progressKg > 0 ? (
         <p className="mt-1 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2 py-1 text-center text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-          ↑ +{formatKgValue(recordFeedback.progressKg)}kg desde la última sesión
+          {translateWorkoutText(`↑ +${formatKgValue(recordFeedback.progressKg)}kg desde la última sesión`, language)}
         </p>
       ) : null}
     </section>
@@ -706,10 +728,12 @@ function SeriesRestCoach({
 }
 
 function PerformanceHint({ lastPerformance, recordFeedback }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   if (!lastPerformance?.maxKg) {
     return (
       <p className="mt-1 inline-flex rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-[var(--app-muted)]">
-        Nuevo ejercicio
+        {translateWorkoutText("Nuevo ejercicio", language)}
       </p>
     );
   }
@@ -717,12 +741,12 @@ function PerformanceHint({ lastPerformance, recordFeedback }) {
   return (
     <div className="mt-1 flex flex-wrap items-center gap-1.5">
       <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1 text-[9px] font-black text-[var(--app-muted)]">
-        Última sesión: {formatKgValue(lastPerformance.maxKg)}kg
+        {translateWorkoutText(`Última sesión: ${formatKgValue(lastPerformance.maxKg)}kg`, language)}
         {lastPerformance.reps ? ` x ${lastPerformance.reps}` : ""}
       </span>
       {recordFeedback?.progressKg > 0 ? (
         <span className="rounded-full border border-[var(--app-primary)] bg-[var(--app-primary-soft)] px-2 py-1 text-[9px] font-black text-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)]">
-          Nuevo récord
+          {translateWorkoutText("Nuevo récord", language)}
         </span>
       ) : null}
     </div>
@@ -730,6 +754,8 @@ function PerformanceHint({ lastPerformance, recordFeedback }) {
 }
 
 function StrengthRecommendationCard({ recommendation }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   if (!recommendation) return null;
 
   return (
@@ -737,28 +763,28 @@ function StrengthRecommendationCard({ recommendation }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-            Última vez
+            {translateWorkoutText("Última vez", language)}
           </p>
           <p className="mt-0.5 text-[11px] font-black text-[var(--app-text)]">
-            {recommendation.lastText || "Sin datos"}
+            {translateWorkoutText(recommendation.lastText || "Sin datos", language)}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[var(--app-primary-soft)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)]">
-          {recommendation.recommendationTitle}
+          {translateWorkoutText(recommendation.recommendationTitle, language)}
         </span>
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-muted)]">
-            Hoy recomendado
+            {translateWorkoutText("Hoy recomendado", language)}
           </p>
           <p className="mt-0.5 text-[16px] font-black leading-none text-[var(--app-primary)]">
             {recommendation.recommendationValue}
           </p>
         </div>
         <p className="min-w-0 flex-1 text-right text-[10px] font-semibold leading-4 text-[var(--app-muted)]">
-          {recommendation.recommendationText}
+          {translateWorkoutText(recommendation.recommendationText, language)}
         </p>
       </div>
     </section>
@@ -766,6 +792,8 @@ function StrengthRecommendationCard({ recommendation }) {
 }
 
 function RestPanel({ compact = false, progress, remaining, onSkip }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const active = remaining > 0;
   const orbProgress = active ? progress : 0;
 
@@ -823,15 +851,19 @@ function RestPanel({ compact = false, progress, remaining, onSkip }) {
 
         <div className={active ? "mt-1.5" : "mt-1"}>
           <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[var(--app-primary)]">
-            {active ? "Descanso activo" : "Listo para la siguiente serie"}
+            {active
+              ? translateWorkoutText("Descanso activo", language)
+              : translateWorkoutText("Listo para la siguiente serie", language)}
           </p>
           <p className="mt-0.5 text-[10px] font-black leading-4 text-[var(--app-text)]">
-            {active ? "Recuperación inteligente" : "Siguiente serie lista"}
+            {active
+              ? translateWorkoutText("Recuperación inteligente", language)
+              : translateWorkoutText("Siguiente serie lista", language)}
           </p>
           <p className="mt-0.5 line-clamp-1 text-[8px] font-bold text-[var(--app-muted)] opacity-75">
             {active
-              ? "Respira y prepara la siguiente serie"
-              : "Marca una serie para iniciar el coach"}
+              ? translateWorkoutText("Respira y prepara la siguiente serie", language)
+              : translateWorkoutText("Marca una serie para iniciar el coach", language)}
           </p>
         </div>
 
@@ -853,7 +885,7 @@ function RestPanel({ compact = false, progress, remaining, onSkip }) {
           disabled={!active}
           className="mt-1.5 h-8 rounded-full border border-[var(--app-border)] bg-[color-mix(in_srgb,var(--app-card)_68%,transparent)] px-3 text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)] backdrop-blur transition duration-150 hover:-translate-y-0.5 active:scale-95 disabled:text-[var(--app-muted)] disabled:opacity-45"
         >
-          Saltar
+          {translateWorkoutText("Saltar", language)}
         </button>
       </div>
     </div>
@@ -868,6 +900,8 @@ function FooterControls({
   onFinish,
   onNext,
 }) {
+  const { i18n } = useTranslation();
+  const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
     <footer className="space-y-1">
       <div className="grid grid-cols-2 gap-1.5">
@@ -878,7 +912,7 @@ function FooterControls({
           className="flex h-10 items-center justify-center gap-1 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-45"
         >
           <ChevronLeft size={14} />
-          Anterior
+          {translateWorkoutText("Anterior", language)}
         </button>
         <button
           type="button"
@@ -886,8 +920,8 @@ function FooterControls({
           disabled={!canGoNext}
           className="flex h-10 items-center justify-center gap-1 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-card)] px-3 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-text)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-45"
         >
-          Siguiente
           <ChevronRight size={14} />
+          {translateWorkoutText("Siguiente", language)}
         </button>
       </div>
       <button
@@ -900,9 +934,9 @@ function FooterControls({
             ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)] hover:-translate-y-0.5"
             : "border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)] opacity-75",
         ].join(" ")}
-      >
-        <Flame size={16} />
-        Finalizar entreno
+        >
+          <Flame size={16} />
+        {translateWorkoutText("Finalizar entreno", language)}
       </button>
     </footer>
   );

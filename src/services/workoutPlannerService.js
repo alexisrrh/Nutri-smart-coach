@@ -3,6 +3,7 @@ import {
   EXERCISE_LIBRARY as exerciseCatalog,
 } from "../data/exerciseLibrary";
 import { DAYS_PER_WEEK_OPTIONS, getWorkoutSplit } from "../data/workoutSplits";
+import { translateWorkoutText } from "../utils/workoutI18n";
 
 const LEVEL_ORDER = {
   Principiante: 0,
@@ -173,15 +174,15 @@ export function buildWeeklyWorkoutPlan({
   return {
     days,
     meta: {
-      adaptation: "Adaptado a tu objetivo",
+      adaptation: translateWorkoutText("Adaptado a tu objetivo"),
       level: resolvedLevel,
-      levelLabel: `Nivel: ${resolvedLevel}`,
+      levelLabel: translateWorkoutText(`Nivel: ${resolvedLevel}`),
       goal: resolvedGoal,
-      goalLabel: `Objetivo: ${resolvedGoal}`,
+      goalLabel: translateWorkoutText(`Objetivo: ${resolvedGoal}`),
       focus: resolvedFocus,
-      focusLabel: `Enfoque: ${resolvedFocus}`,
+      focusLabel: translateWorkoutText(`Enfoque: ${resolvedFocus}`),
       daysPerWeek: resolvedDays,
-      daysLabel: `Días: ${resolvedDays}`,
+      daysLabel: translateWorkoutText(`Días: ${resolvedDays}`),
       planName: getPlanName({
         level: resolvedLevel,
         goal: resolvedGoal,
@@ -209,7 +210,7 @@ export function buildWorkoutDay({
     return {
       id: "",
       day: 0,
-      name: "Rutina",
+      name: translateWorkoutText("Rutina"),
       muscles: [],
       focus: "strength_main",
       duration: "45 min",
@@ -818,48 +819,48 @@ function getWarmupItems(day, focus) {
   const mainMuscle = day?.muscles?.[0] || "zona principal";
 
   if (focus === "Glúteos y piernas") {
-    return ["5 min cardio suave", "Movilidad de cadera", "Activación glútea"];
+    return [translateWorkoutText("5 min cardio suave"), translateWorkoutText("Movilidad de cadera"), translateWorkoutText("Activación glútea")];
   }
 
   if (focus === "Torso y brazos") {
-    return ["5 min cardio suave", "Movilidad torácica", "Activación escapular"];
+    return [translateWorkoutText("5 min cardio suave"), translateWorkoutText("Movilidad torácica"), translateWorkoutText("Activación escapular")];
   }
 
   if (focus === "Core/abdomen") {
-    return ["5 min cardio suave", "Movilidad lumbar", "Activación abdominal"];
+    return [translateWorkoutText("5 min cardio suave"), translateWorkoutText("Movilidad lumbar"), translateWorkoutText("Activación abdominal")];
   }
 
   return [
-    "5 min cardio suave",
-    `Movilidad de ${mainMuscle.toLowerCase()}`,
-    "Activación ligera",
+    translateWorkoutText("5 min cardio suave"),
+    translateWorkoutText(`Movilidad de ${mainMuscle.toLowerCase()}`),
+    translateWorkoutText("Activación ligera"),
   ];
 }
 
 function getFinalItems(goal, focus) {
   if (goal === "Fuerza") {
-    return ["Descarga suave", "Respiración", "Movilidad breve"];
+    return [translateWorkoutText("Descarga suave"), translateWorkoutText("Respiración"), translateWorkoutText("Movilidad breve")];
   }
 
   if (goal === "Definir") {
-    return ["Estiramiento breve", "Cardio suave", "Respiración"];
+    return [translateWorkoutText("Estiramiento breve"), translateWorkoutText("Cardio suave"), translateWorkoutText("Respiración")];
   }
 
   if (focus === "Core/abdomen") {
-    return ["Estiramiento corto", "Core ligero", "Respiración"];
+    return [translateWorkoutText("Estiramiento corto"), translateWorkoutText("Core ligero"), translateWorkoutText("Respiración")];
   }
 
-  return ["Estiramiento breve", "Respiración y recuperación"];
+  return [translateWorkoutText("Estiramiento breve"), translateWorkoutText("Respiración y recuperación")];
 }
 
 function buildDayBrief(day, focus, goal, profile) {
   const profileHint = getProfileHint(profile, focus, day.daysPerWeek);
 
-  if (focus === "Glúteos y piernas") return "Glúteos y pierna con prioridad";
-  if (focus === "Torso y brazos") return "Torso y brazos con más frecuencia";
-  if (focus === "Core/abdomen") return "Core añadido al cierre de la sesión";
-  if (goal === "Fuerza") return "Básicos principales y descanso más largo";
-  if (goal === "Definir") return "Más densidad y superseries";
+  if (focus === "Glúteos y piernas") return translateWorkoutText("Glúteos y pierna con prioridad");
+  if (focus === "Torso y brazos") return translateWorkoutText("Torso y brazos con más frecuencia");
+  if (focus === "Core/abdomen") return translateWorkoutText("Core añadido al cierre de la sesión");
+  if (goal === "Fuerza") return translateWorkoutText("Básicos principales y descanso más largo");
+  if (goal === "Definir") return translateWorkoutText("Más densidad y superseries");
 
   return profileHint;
 }
@@ -872,43 +873,43 @@ function getProfileHint(profile, focus, daysPerWeek) {
     profile?.preferences?.activity_level;
   const gender = profile?.gender || profile?.genero || profile?.preferences?.gender;
 
-  if (focus === "Glúteos y piernas") return "Más frecuencia de tren inferior";
-  if (focus === "Torso y brazos") return "Torso y brazos con menor pierna";
-  if (activity === "high") return "Volumen ajustado a tu actividad";
-  if (activity === "low" || activity === "sedentary") return "Volumen moderado para progresar";
-  if (gender === "female" || gender === "mujer") return "Enfoque sugerido en glúteos y pierna";
-  if (gender === "male" || gender === "hombre") return "Enfoque sugerido en torso y espalda";
-  if (daysPerWeek >= 5) return "Más densidad y progresión semanal";
+  if (focus === "Glúteos y piernas") return translateWorkoutText("Más frecuencia de tren inferior");
+  if (focus === "Torso y brazos") return translateWorkoutText("Torso y brazos con menor pierna");
+  if (activity === "high") return translateWorkoutText("Volumen ajustado a tu actividad");
+  if (activity === "low" || activity === "sedentary") return translateWorkoutText("Volumen moderado para progresar");
+  if (gender === "female" || gender === "mujer") return translateWorkoutText("Enfoque sugerido en glúteos y pierna");
+  if (gender === "male" || gender === "hombre") return translateWorkoutText("Enfoque sugerido en torso y espalda");
+  if (daysPerWeek >= 5) return translateWorkoutText("Más densidad y progresión semanal");
 
-  return "Plan equilibrado y progresivo";
+  return translateWorkoutText("Plan equilibrado y progresivo");
 }
 
 function getPlanName({ level, goal, focus, daysPerWeek }) {
   if (goal === "Fuerza") {
-    return daysPerWeek >= 5 ? "Plan de fuerza avanzada" : "Plan de fuerza progresiva";
+    return translateWorkoutText(daysPerWeek >= 5 ? "Plan de fuerza avanzada" : "Plan de fuerza progresiva");
   }
 
   if (focus === "Glúteos y piernas") {
-    return daysPerWeek >= 5 ? "Split de glúteos y pierna" : "Rutina glúteos y pierna";
+    return translateWorkoutText(daysPerWeek >= 5 ? "Split de glúteos y pierna" : "Rutina glúteos y pierna");
   }
 
   if (focus === "Torso y brazos") {
-    return daysPerWeek >= 5 ? "Split de torso y brazos" : "Torso y brazos estructurado";
+    return translateWorkoutText(daysPerWeek >= 5 ? "Split de torso y brazos" : "Torso y brazos estructurado");
   }
 
   if (focus === "Core/abdomen") {
-    return "Plan con core frecuente";
+    return translateWorkoutText("Plan con core frecuente");
   }
 
   if (level === "Principiante") {
-    return "Base técnica semanal";
+    return translateWorkoutText("Base técnica semanal");
   }
 
   if (goal === "Definir") {
-    return daysPerWeek >= 5 ? "Plan semanal de definición" : "Plan equilibrado de definición";
+    return translateWorkoutText(daysPerWeek >= 5 ? "Plan semanal de definición" : "Plan equilibrado de definición");
   }
 
-  return daysPerWeek >= 5 ? "Plan semanal de hipertrofia" : "Plan semanal equilibrado";
+  return translateWorkoutText(daysPerWeek >= 5 ? "Plan semanal de hipertrofia" : "Plan semanal equilibrado");
 }
 
 function compactSlots(slots) {
@@ -928,13 +929,13 @@ function getFocusProfile(focus) {
 }
 
 function getTrainingStyle(goal, focus, level) {
-  if (goal === "Definir") return "Superseries + cardio final";
-  if (goal === "Fuerza") return "Básicos pesados";
-  if (focus === "Glúteos y piernas") return "Volumen de tren inferior";
-  if (focus === "Torso y brazos") return "Torso y brazos";
-  if (focus === "Core/abdomen") return "Core y estabilidad";
-  if (level === "Avanzado") return "Hipertrofia densa";
-  return "Plan equilibrado";
+  if (goal === "Definir") return translateWorkoutText("Superseries + cardio final");
+  if (goal === "Fuerza") return translateWorkoutText("Básicos pesados");
+  if (focus === "Glúteos y piernas") return translateWorkoutText("Volumen de tren inferior");
+  if (focus === "Torso y brazos") return translateWorkoutText("Torso y brazos");
+  if (focus === "Core/abdomen") return translateWorkoutText("Core y estabilidad");
+  if (level === "Avanzado") return translateWorkoutText("Hipertrofia densa");
+  return translateWorkoutText("Plan equilibrado");
 }
 
 function createPlanState({ level, goal, focus, daysPerWeek } = {}) {

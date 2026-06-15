@@ -1,7 +1,9 @@
 import { Activity } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PremiumEmptyState } from "../ui";
 
 export function WorkoutHistoryPreview({ sessions, onOpen, WorkoutHistoryCard }) {
+  const { t } = useTranslation();
   const recentSessions = getRecentWorkoutSessionsFromList(sessions, 1);
   const latestSession = recentSessions[0];
 
@@ -9,9 +11,9 @@ export function WorkoutHistoryPreview({ sessions, onOpen, WorkoutHistoryCard }) 
     return (
       <PremiumEmptyState
         icon={Activity}
-        title="Aún no has registrado entrenamientos"
-        description="Completa una sesión para que tu historial de rendimiento cobre vida."
-        actionLabel="Abrir historial"
+        title={t("workouts.history.preview.emptyTitle")}
+        description={t("workouts.history.preview.emptyDescription")}
+        actionLabel={t("workouts.history.preview.action")}
         onAction={onOpen}
         className="py-4"
       />
@@ -22,14 +24,14 @@ export function WorkoutHistoryPreview({ sessions, onOpen, WorkoutHistoryCard }) 
     <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] p-1.5 shadow-[0_6px_16px_var(--app-glow)]">
       <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-0.5">
         <h2 className="min-w-0 text-[13px] font-black text-[var(--app-text)]">
-          Última sesión
+          {t("workouts.history.preview.title")}
         </h2>
         <button
           type="button"
           onClick={onOpen}
           className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]"
         >
-          Ver historial
+          {t("workouts.history.preview.button")}
         </button>
       </div>
 

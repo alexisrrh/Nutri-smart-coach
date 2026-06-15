@@ -1,31 +1,34 @@
 import { ArrowLeft, Camera, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SurfaceCard } from "../ui";
 
 export function HistoryHeader({ onBack, onScan }) {
+  const { t } = useTranslation();
+
   return (
     <SurfaceCard as="header" className="overflow-hidden p-2" radius="lg">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-primary-soft)] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
             <Sparkles size={11} />
-            Historial IA
+            {t("meals.history.badge")}
           </div>
 
           <h1 className="text-[22px] font-black uppercase italic leading-none text-[var(--app-text)]">
-            Historial
+            {t("meals.history.title")}
           </h1>
 
           <p className="mt-0.5 text-[11px] leading-4 text-[var(--app-muted)]">
-            Tus comidas analizadas.
+            {t("meals.history.subtitle")}
           </p>
         </div>
 
         <div className="flex shrink-0 gap-1.5">
-          <IconAction onClick={onBack} label="Volver">
+          <IconAction onClick={onBack} label={t("meals.history.back")}>
             <ArrowLeft size={15} />
           </IconAction>
 
-          <IconAction onClick={onScan} label="Escanear" active>
+          <IconAction onClick={onScan} label={t("meals.history.scan")} active>
             <Camera size={15} />
           </IconAction>
         </div>
