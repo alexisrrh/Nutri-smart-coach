@@ -120,4 +120,21 @@ describe("foodAnalysis prompt", () => {
     expect(prompt).toContain("Actual goal: muscle gain");
     expect(prompt).toContain("User description: Grilled chicken and rice");
   });
+
+  it("injects spanish language instructions when language is es", () => {
+    const prompt = buildFoodAnalysisPrompt({
+      goal: "ganar_musculo",
+      description: "Pollo con arroz",
+      hasImage: true,
+      language: "es",
+      profileContext: {
+        caloriesGoal: 2200,
+        proteinGoal: 160,
+      },
+    });
+
+    expect(prompt).toContain("Si language es 'en', devuelve todo el texto visible para el usuario en inglés.");
+    expect(prompt).toContain("Objetivo actual: ganancia muscular");
+    expect(prompt).toContain("Descripción del usuario: Pollo con arroz");
+  });
 });

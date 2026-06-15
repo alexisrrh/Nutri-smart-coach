@@ -40,4 +40,13 @@ describe("createFallbackDiet", () => {
       "Domingo",
     ]);
   });
+
+  it("returns english fallback text when language is en", () => {
+    const week = createFallbackDiet({}, { language: "en" });
+
+    expect(week[0].day).toBe("Monday");
+    expect(week[0].meals[0].name).toBe("Breakfast");
+    expect(week[0].meals[0].food).toContain("Oatmeal");
+    expect(week[0].meals[0].details).toContain("oats");
+  });
 });

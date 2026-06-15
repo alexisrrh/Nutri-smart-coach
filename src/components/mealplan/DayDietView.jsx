@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CheckCircle2,
   ChevronRight,
@@ -20,6 +21,7 @@ export function DayDietView({
   rewriteMealState = {},
   toggleMeal,
 }) {
+  const { t } = useTranslation();
   const [selectedMealDetail, setSelectedMealDetail] = useState(null);
   const hasPlan = Array.isArray(plan) && plan.length > 0;
   const safeActiveDay = hasPlan
@@ -49,7 +51,7 @@ export function DayDietView({
       <div className="grid grid-cols-7 gap-1">
         {plan.map((dayData, index) => {
           const active = safeActiveDay === index;
-          const fullLabel = fullDayLabel(dayData.day, index);
+          const fullLabel = fullDayLabel(dayData.day, index, t);
 
           return (
             <button
@@ -71,7 +73,7 @@ export function DayDietView({
                 </>
               )}
               <span className="relative z-10">
-                {miniDay(dayData.day, index)}
+                {miniDay(dayData.day, index, t)}
               </span>
             </button>
           );
@@ -85,15 +87,15 @@ export function DayDietView({
           <div className="flex items-center justify-between gap-2.5">
             <div className="min-w-0">
               <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-                Plan diario
+                {t("mealPlan.day.header")}
               </span>
 
               <h3 className="mt-0.5 truncate text-[17px] font-black uppercase italic leading-none text-[var(--app-text)]">
-                {activeDayData?.day || "Día"}
+                {activeDayData?.day || t("meal.day.fallback")}
               </h3>
 
               <p className="mt-0.5 text-[10px] normal-case text-slate-500">
-                {completed}/{total} comidas · {percentage}% completado
+                {t("mealPlan.day.progress", { completed, total, percentage })}
               </p>
             </div>
 
@@ -118,8 +120,8 @@ export function DayDietView({
           const mealId = getMealId(activeDayData?.day, meal, index);
           const isCompleted = Boolean(progress?.[mealId]);
           const ingredients = getIngredients(meal);
-          const mealName = meal.name || defaultMealName(index, total);
-          const foodName = meal.food || meal.title || "Comida";
+          const mealName = meal.name || defaultMealName(index, total, t);
+          const foodName = meal.food || meal.title || t("meal.defaultNames.meal");
           const mealTime = meal.time || defaultMealTime(index, total);
           const calories = Math.round(Number(meal.calories || meal.kcal || 0));
           const rewriteLoading = rewriteMealState.mealId === mealId;
@@ -159,7 +161,7 @@ export function DayDietView({
 
                     <span className="inline-flex items-center gap-1">
                       <Flame size={10} />
-                      {calories} kcal
+                      {t("meal.kcalWithValue", { value: calories })}
                     </span>
                   </div>
 
@@ -176,8 +178,8 @@ export function DayDietView({
                 <div className="flex shrink-0 items-center gap-1">
                   <button
                     type="button"
-                    aria-label="Cambiar comida"
-                    title={isPremium ? "Cambiar comida" : "Premium"}
+                    aria-label={t("mealPlan.day.changeMeal")}
+                    title={isPremium ? t("mealPlan.day.changeMeal") : t("mealPlan.day.premium")}
                     onClick={(event) => {
                       event.stopPropagation();
                       onRewriteMeal?.({
@@ -210,8 +212,12 @@ export function DayDietView({
 
                   <button
                     type="button"
-                    aria-label={isCompleted ? "Marcar comida como pendiente" : "Marcar comida como completada"}
-                    title={isCompleted ? "Hecho" : "Marcar"}
+                    aria-label={
+                      isCompleted
+                        ? t("mealPlan.day.markPending")
+                        : t("mealPlan.day.markCompleted")
+                    }
+                    title={isCompleted ? t("mealPlan.day.done") : t("mealPlan.day.mark")}
                     onClick={(event) => {
                       event.stopPropagation();
                       toggleMeal?.(mealId);
@@ -239,12 +245,13 @@ export function DayDietView({
 }
 
 function MealDetailSheet({ detail, onClose }) {
+  const { t } = useTranslation();
   const { meal, mealName, foodName, mealTime, ingredients } = detail;
   const calories = Math.round(Number(meal.calories || meal.kcal || 0));
   const protein = Math.round(Number(meal.protein || 0));
   const carbs = Math.round(Number(meal.carbs || 0));
   const fat = Math.round(Number(meal.fat || 0));
-  const nutritionSummary = getNutritionSummary({ calories, protein, carbs, fat });
+  const nutritionSummary = getNutritionSummary({ calories, protein, carbs, fat, t });
   const rawFoodDetail = meal.food || meal.title || meal.description || meal.details;
   const foodDetail =
     rawFoodDetail && String(rawFoodDetail).trim().toLowerCase() !== String(foodName).trim().toLowerCase()
@@ -280,7 +287,7 @@ function MealDetailSheet({ detail, onClose }) {
 
           <button
             type="button"
-            aria-label="Cerrar detalle"
+            aria-label={t("mealPlan.day.closeDetail")}
             onClick={onClose}
             className="grid min-h-7 min-w-7 shrink-0 place-items-center rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] text-slate-400 transition hover:border-[var(--app-primary)]/30 hover:text-[var(--app-text)]"
           >
@@ -289,19 +296,19 @@ function MealDetailSheet({ detail, onClose }) {
         </div>
 
         <div className="mt-4 space-y-2.5">
-          {calories > 0 && <CaloriesHero value={calories} />}
+          {calories > 0 && <CaloriesHero value={calories} t={t} />}
 
           <div className="grid grid-cols-3 gap-2">
-            {protein > 0 && <MacroBlock label="proteína" value={`${protein}g`} />}
-            {carbs > 0 && <MacroBlock label="carbs" value={`${carbs}g`} />}
-            {fat > 0 && <MacroBlock label="grasa" value={`${fat}g`} />}
+            {protein > 0 && <MacroBlock label={t("meal.macros.protein")} value={`${protein}g`} />}
+            {carbs > 0 && <MacroBlock label={t("meal.macros.carbs")} value={`${carbs}g`} />}
+            {fat > 0 && <MacroBlock label={t("meal.macros.fat")} value={`${fat}g`} />}
           </div>
         </div>
 
         {nutritionSummary.length > 0 && (
           <div className="mt-3 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/75 px-3 py-2">
             <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">
-              Resumen nutricional
+              {t("mealPlan.day.nutritionSummary")}
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {nutritionSummary.map((item) => (
@@ -319,7 +326,7 @@ function MealDetailSheet({ detail, onClose }) {
         {foodDetail && (
           <div className="mt-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-3">
             <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
-              Comida completa
+              {t("mealPlan.day.fullFood")}
             </p>
             <p className="mt-1 text-[11px] font-medium normal-case leading-snug text-[var(--app-text)]">
               {foodDetail}
@@ -330,11 +337,11 @@ function MealDetailSheet({ detail, onClose }) {
         {ingredients.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 text-[9px] font-black uppercase tracking-wide text-slate-500">
-              Ingredientes / porciones
+              {t("mealPlan.day.ingredients")}
             </p>
             <div className="space-y-1.25 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)]/60 p-2.5">
               {ingredients.map((item, idx) => (
-                <IngredientRow key={`detail-ing-${idx}`} item={item} />
+                <IngredientRow key={`detail-ing-${idx}`} item={item} t={t} />
               ))}
             </div>
           </div>
@@ -344,18 +351,18 @@ function MealDetailSheet({ detail, onClose }) {
   );
 }
 
-function CaloriesHero({ value }) {
+function CaloriesHero({ value, t }) {
   return (
     <div className="rounded-2xl border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 px-4 py-3">
       <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
-        kcal
+        {t("meal.kcal")}
       </p>
       <div className="mt-1 flex items-end gap-2">
         <span className="text-[28px] font-black leading-none tracking-tight text-[var(--app-text)]">
           {value}
         </span>
         <span className="pb-0.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
-          calorías
+          {t("meal.kcal")}
         </span>
       </div>
     </div>
@@ -377,8 +384,8 @@ function MacroBlock({ label, value }) {
   );
 }
 
-function IngredientRow({ item }) {
-  const { amount, name } = splitIngredient(item);
+function IngredientRow({ item, t }) {
+  const { amount, name } = splitIngredient(item, t);
 
   return (
     <div className="flex items-start gap-2 text-[11px] leading-snug text-[var(--app-text)]">
@@ -391,13 +398,13 @@ function IngredientRow({ item }) {
   );
 }
 
-function getNutritionSummary({ calories, protein, carbs, fat }) {
+function getNutritionSummary({ calories, protein, carbs, fat, t }) {
   const summary = [];
 
-  if (protein >= 25) summary.push("Proteína adecuada");
-  if (carbs >= 35) summary.push("Alta en carbohidratos");
-  if (fat <= 10 && fat > 0) summary.push("Ligera en grasa");
-  if (calories >= 500) summary.push("Buena para recuperación");
+  if (protein >= 25) summary.push(t("mealPlan.day.summary.protein"));
+  if (carbs >= 35) summary.push(t("mealPlan.day.summary.carbs"));
+  if (fat <= 10 && fat > 0) summary.push(t("mealPlan.day.summary.fat"));
+  if (calories >= 500) summary.push(t("mealPlan.day.summary.recovery"));
 
   return summary.slice(0, 3);
 }
@@ -421,11 +428,11 @@ function getIngredients(meal) {
   return [];
 }
 
-function splitIngredient(item = "") {
+function splitIngredient(item = "", t = (value) => value) {
   if (typeof item === "object" && item !== null) {
     return {
       name: item.name || item.food || "Ingrediente",
-      amount: item.amount || item.quantity || "al gusto",
+      amount: item.amount || item.quantity || t("meal.default.amount"),
     };
   }
 
@@ -436,7 +443,7 @@ function splitIngredient(item = "") {
   );
 
   if (!match) {
-    return { name: text, amount: "al gusto" };
+    return { name: text, amount: t("meal.default.amount") };
   }
 
   const amount = match[0];
@@ -445,32 +452,62 @@ function splitIngredient(item = "") {
   return { name: name || text, amount };
 }
 
-function miniDay(day = "", index = 0) {
+function miniDay(day = "", index = 0, t = (value) => value) {
   const normalized = String(day).toLowerCase();
 
-  if (normalized.startsWith("lunes")) return "L";
-  if (normalized.startsWith("martes")) return "M";
-  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return "X";
-  if (normalized.startsWith("jueves")) return "J";
-  if (normalized.startsWith("viernes")) return "V";
-  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return "S";
-  if (normalized.startsWith("domingo")) return "D";
+  if (normalized.startsWith("lunes")) return t("mealPlan.weekdays.short.monday");
+  if (normalized.startsWith("monday")) return t("mealPlan.weekdays.short.monday");
+  if (normalized.startsWith("martes")) return t("mealPlan.weekdays.short.tuesday");
+  if (normalized.startsWith("tuesday")) return t("mealPlan.weekdays.short.tuesday");
+  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return t("mealPlan.weekdays.short.wednesday");
+  if (normalized.startsWith("wednesday")) return t("mealPlan.weekdays.short.wednesday");
+  if (normalized.startsWith("jueves")) return t("mealPlan.weekdays.short.thursday");
+  if (normalized.startsWith("thursday")) return t("mealPlan.weekdays.short.thursday");
+  if (normalized.startsWith("viernes")) return t("mealPlan.weekdays.short.friday");
+  if (normalized.startsWith("friday")) return t("mealPlan.weekdays.short.friday");
+  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return t("mealPlan.weekdays.short.saturday");
+  if (normalized.startsWith("saturday")) return t("mealPlan.weekdays.short.saturday");
+  if (normalized.startsWith("domingo")) return t("mealPlan.weekdays.short.sunday");
+  if (normalized.startsWith("sunday")) return t("mealPlan.weekdays.short.sunday");
 
-  return ["L", "M", "X", "J", "V", "S", "D"][index] || "D";
+  return [
+    t("mealPlan.weekdays.short.monday"),
+    t("mealPlan.weekdays.short.tuesday"),
+    t("mealPlan.weekdays.short.wednesday"),
+    t("mealPlan.weekdays.short.thursday"),
+    t("mealPlan.weekdays.short.friday"),
+    t("mealPlan.weekdays.short.saturday"),
+    t("mealPlan.weekdays.short.sunday"),
+  ][index] || t("mealPlan.weekdays.short.sunday");
 }
 
-function fullDayLabel(day = "", index = 0) {
+function fullDayLabel(day = "", index = 0, t = (value) => value) {
   const normalized = String(day).toLowerCase();
 
-  if (normalized.startsWith("lunes")) return "Lunes";
-  if (normalized.startsWith("martes")) return "Martes";
-  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return "Miércoles";
-  if (normalized.startsWith("jueves")) return "Jueves";
-  if (normalized.startsWith("viernes")) return "Viernes";
-  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return "Sábado";
-  if (normalized.startsWith("domingo")) return "Domingo";
+  if (normalized.startsWith("lunes")) return t("mealPlan.weekdays.long.monday");
+  if (normalized.startsWith("monday")) return t("mealPlan.weekdays.long.monday");
+  if (normalized.startsWith("martes")) return t("mealPlan.weekdays.long.tuesday");
+  if (normalized.startsWith("tuesday")) return t("mealPlan.weekdays.long.tuesday");
+  if (normalized.startsWith("miércoles") || normalized.startsWith("miercoles")) return t("mealPlan.weekdays.long.wednesday");
+  if (normalized.startsWith("wednesday")) return t("mealPlan.weekdays.long.wednesday");
+  if (normalized.startsWith("jueves")) return t("mealPlan.weekdays.long.thursday");
+  if (normalized.startsWith("thursday")) return t("mealPlan.weekdays.long.thursday");
+  if (normalized.startsWith("viernes")) return t("mealPlan.weekdays.long.friday");
+  if (normalized.startsWith("friday")) return t("mealPlan.weekdays.long.friday");
+  if (normalized.startsWith("sábado") || normalized.startsWith("sabado")) return t("mealPlan.weekdays.long.saturday");
+  if (normalized.startsWith("saturday")) return t("mealPlan.weekdays.long.saturday");
+  if (normalized.startsWith("domingo")) return t("mealPlan.weekdays.long.sunday");
+  if (normalized.startsWith("sunday")) return t("mealPlan.weekdays.long.sunday");
 
-  return String(day) || ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][index] || "Día";
+  return String(day) || [
+    t("mealPlan.weekdays.long.monday"),
+    t("mealPlan.weekdays.long.tuesday"),
+    t("mealPlan.weekdays.long.wednesday"),
+    t("mealPlan.weekdays.long.thursday"),
+    t("mealPlan.weekdays.long.friday"),
+    t("mealPlan.weekdays.long.saturday"),
+    t("mealPlan.weekdays.long.sunday"),
+  ][index] || t("meal.day.fallback");
 }
 
 function defaultMealTime(index, total = 4) {
@@ -481,10 +518,21 @@ function defaultMealTime(index, total = 4) {
   return ["08:00", "13:30", "17:30", "21:00"][index] || "08:00";
 }
 
-function defaultMealName(index, total = 4) {
-  if (total === 2) return ["Comida 1", "Comida 2"][index] || `Comida ${index + 1}`;
-  if (total === 3) return ["Desayuno", "Comida", "Cena"][index] || `Comida ${index + 1}`;
-  if (total === 5) return ["Desayuno", "Snack", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
-  if (total >= 6) return ["Desayuno", "Snack 1", "Comida", "Snack 2", "Cena", "Extra"][index] || `Comida ${index + 1}`;
-  return ["Desayuno", "Comida", "Merienda", "Cena"][index] || `Comida ${index + 1}`;
+function defaultMealName(index, total = 4, t = (value) => value) {
+  const defaults = [
+    t("meal.defaultNames.breakfast"),
+    t("meal.defaultNames.lunch"),
+    t("meal.defaultNames.snack"),
+    t("meal.defaultNames.dinner"),
+  ];
+
+  if (total === 2) {
+    return [t("meal.defaultNames.lunch"), t("meal.defaultNames.dinner")][index] || t("meal.defaultNames.fallback", { index: index + 1 });
+  }
+
+  if (total === 3) {
+    return [t("meal.defaultNames.breakfast"), t("meal.defaultNames.lunch"), t("meal.defaultNames.dinner")][index] || t("meal.defaultNames.fallback", { index: index + 1 });
+  }
+
+  return defaults[index] || t("meal.defaultNames.fallback", { index: index + 1 });
 }

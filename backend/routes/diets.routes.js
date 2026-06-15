@@ -31,6 +31,13 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
   const timing = createTimingLogger("generate-diet");
   const { profile, preferences, user_id } = req.body || {};
   const userId = requireAuthenticatedUser(req, res);
+  const language = normalizeDietLanguage(
+    req.body?.language ||
+      req.body?.preferred_language ||
+      req.body?.profile_language ||
+      preferences?.language ||
+      profile?.preferences?.language
+  );
 
   if (!userId) return;
 
@@ -53,13 +60,17 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
     }
 
     const dietConfig = buildDietConfig(preferences);
+    const resolvedPreferences = {
+      ...(preferences || {}),
+      language,
+    };
 
     let week;
     let usedFallback = false;
     let warning = "";
 
     if (!process.env.GEMINI_API_KEY) {
-      week = createFallbackDiet(profile, preferences, dietConfig);
+      week = createFallbackDiet(profile, resolvedPreferences, dietConfig, language);
       usedFallback = true;
       warning = "GEMINI_API_KEY no está configurada en Render";
     } else {
@@ -111,7 +122,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
               role: "user",
               parts: [
                 {
-                  text: buildDietPrompt(profile, preferences, dietConfig),
+                  text: buildDietPrompt(profile, resolvedPreferences, dietConfig, language),
                 },
               ],
             },
@@ -131,7 +142,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
         timing.mark("normalize");
       } catch (error) {
         console.error("Error Gemini generate-diet:", error);
-        week = createFallbackDiet(profile, preferences, dietConfig);
+        week = createFallbackDiet(profile, resolvedPreferences, dietConfig, language);
         usedFallback = true;
         warning = error.message || "Gemini falló generando dieta";
         timing.mark("Gemini");
@@ -151,7 +162,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
         userId,
         profile,
         preferences: {
-          ...(preferences || {}),
+          ...resolvedPreferences,
           dietConfig,
         },
         week,
@@ -162,7 +173,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
       await upsertUserProfile({
         userId,
         profile,
-        preferences,
+        preferences: resolvedPreferences,
       });
 
       timing.mark("save");
@@ -178,18 +189,31 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
       warning,
       saved: Boolean(savedPlan),
       diet_plan_id: savedPlan?.id || null,
+      language,
     });
   } catch (error) {
     timing.done({ error: true });
     console.error("Error generate-diet completo:", error);
 
     const dietConfig = buildDietConfig(preferences);
+    const language = normalizeDietLanguage(
+      req.body?.language ||
+        req.body?.preferred_language ||
+        req.body?.profile_language ||
+        preferences?.language ||
+        profile?.preferences?.language
+    );
+    const resolvedPreferences = {
+      ...(preferences || {}),
+      language,
+    };
 
     return res.json({
-      week: createFallbackDiet(profile, preferences, dietConfig),
+      week: createFallbackDiet(profile, resolvedPreferences, dietConfig, language),
       usedFallback: true,
       warning: error.message,
       saved: false,
+      language,
     });
   }
 });
@@ -969,6 +993,20 @@ const rawMeals =
     intermittentFasting,
     homeFoods,
   };
+}
+
+function normalizeDietLanguage(language) {
+  const normalized = String(language || "").trim().toLowerCase();
+
+  if (normalized === "en" || normalized === "en-us" || normalized === "en-gb") {
+    return "en";
+  }
+
+  if (normalized === "es" || normalized === "es-es" || normalized === "es-mx") {
+    return "es";
+  }
+
+  return "es";
 }
 
 export default router;

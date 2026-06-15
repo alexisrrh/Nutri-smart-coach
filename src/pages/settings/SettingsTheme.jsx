@@ -7,7 +7,12 @@ import { Check, Globe, Palette } from "lucide-react";
 import { SettingsCard, SettingsScreenShell } from "./SettingsShared";
 import { useNavigate } from "react-router-dom";
 import { getProfile, saveProfile } from "../../services/profileService";
-import { setAppLanguage } from "../../i18n";
+import {
+  getCurrentAppLanguage,
+  getInitialAppLanguage,
+  getPreferredLanguageFromProfile,
+  setAppLanguage,
+} from "../../i18n";
 
 const THEMES = [
   {
@@ -131,24 +136,26 @@ export function SettingsTheme() {
     let active = true;
 
     async function loadLanguage() {
+      const fallbackLanguage = getCurrentAppLanguage() || getInitialAppLanguage();
+
       if (!user?.id) {
-        await setAppLanguage("es");
-        if (active) setLanguage("es");
+        await setAppLanguage(fallbackLanguage);
+        if (active) setLanguage(fallbackLanguage);
         return;
       }
 
       try {
         const profile = await getProfile(user.id, { fallbackToCache: false });
         const nextLanguage =
-          profile?.preferences?.language || profile?.language || "es";
+          getPreferredLanguageFromProfile(profile) || fallbackLanguage;
 
         if (!active) return;
         setLanguage(nextLanguage === "en" ? "en" : "es");
         await setAppLanguage(nextLanguage);
       } catch {
         if (!active) return;
-        setLanguage("es");
-        await setAppLanguage("es");
+        setLanguage(fallbackLanguage === "en" ? "en" : "es");
+        await setAppLanguage(fallbackLanguage);
       }
     }
 

@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "../config/storageKeys";
+import { getCurrentAppLanguage } from "../i18n";
 import { supabase } from "../lib/supabase";
 import { getFriendlyErrorMessage, request } from "./apiClient";
 import { getCache, removeCache, setCache } from "./cacheService";
@@ -138,7 +139,10 @@ function toProfileRow(profile) {
     activity: profile.activity_level,
     goal: profile.goal,
     language: normalizeLanguage(
-      profile.language || profile.preferences?.language || profile.preferences?.locale
+      profile.language ||
+        profile.preferences?.language ||
+        profile.preferences?.locale ||
+        getCurrentAppLanguage()
     ),
     meals_per_day: normalizeMealsPerDay(
       profile.meals_per_day ?? profile.mealsPerDay ?? profile.preferences?.meals_per_day

@@ -5,30 +5,64 @@ import es from "./es.json";
 import en from "./en.json";
 
 const STORAGE_KEY = STORAGE_KEYS.LANGUAGE;
-const SUPPORTED_LANGUAGES = new Set(["es", "en"]);
+const LEGACY_STORAGE_KEY = "nutrismart-language";
 
 function normalizeLanguage(language) {
-  return SUPPORTED_LANGUAGES.has(language) ? language : "es";
+  const normalized = String(language || "").trim().toLowerCase();
+
+  if (normalized.startsWith("en")) return "en";
+  if (normalized.startsWith("es")) return "es";
+
+  return "es";
 }
 
-function getStoredLanguage() {
+export function getStoredLanguage() {
   if (typeof window === "undefined") return "es";
 
   try {
-    return normalizeLanguage(window.localStorage.getItem(STORAGE_KEY));
+    const currentValue = window.localStorage.getItem(STORAGE_KEY);
+    if (currentValue) return normalizeLanguage(currentValue);
+
+    const legacyValue = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacyValue) {
+      const normalizedLegacy = normalizeLanguage(legacyValue);
+      window.localStorage.setItem(STORAGE_KEY, normalizedLegacy);
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return normalizedLegacy;
+    }
+
+    return null;
   } catch {
-    return "es";
+    return null;
   }
 }
 
-function setStoredLanguage(language) {
+export function setStoredLanguage(language) {
   if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.setItem(STORAGE_KEY, normalizeLanguage(language));
+    const nextLanguage = normalizeLanguage(language);
+    window.localStorage.setItem(STORAGE_KEY, nextLanguage);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch {
     // Ignore storage failures.
   }
+}
+
+function getBrowserLanguage() {
+  if (typeof navigator === "undefined") return null;
+
+  const candidate =
+    navigator.languages?.find(Boolean) ||
+    navigator.language ||
+    navigator.userLanguage ||
+    "";
+
+  return normalizeLanguage(candidate);
+}
+
+function getInitialLanguage() {
+  return getStoredLanguage() || getBrowserLanguage() || "es";
 }
 
 function applyDocumentLanguage(language) {
@@ -44,11 +78,21 @@ export function getPreferredLanguageFromProfile(profile) {
     profile?.preferences?.locale ||
     profile?.locale;
 
-  return normalizeLanguage(language);
+  return language ? normalizeLanguage(language) : null;
 }
 
 export function getCurrentAppLanguage() {
-  return normalizeLanguage(i18n.resolvedLanguage || i18n.language || getStoredLanguage());
+  return normalizeLanguage(
+    i18n.resolvedLanguage ||
+      i18n.language ||
+      getStoredLanguage() ||
+      getBrowserLanguage() ||
+      "es"
+  );
+}
+
+export function getInitialAppLanguage() {
+  return getInitialLanguage();
 }
 
 export async function setAppLanguage(language) {
@@ -66,7 +110,9 @@ export async function setAppLanguage(language) {
 
 export async function syncAppLanguageFromProfile(profile, fallbackLanguage = "es") {
   const nextLanguage =
-    getPreferredLanguageFromProfile(profile) || normalizeLanguage(fallbackLanguage);
+    getPreferredLanguageFromProfile(profile) ||
+    normalizeLanguage(fallbackLanguage) ||
+    getInitialLanguage();
 
   return setAppLanguage(nextLanguage);
 }
@@ -76,7 +122,7 @@ void i18n.use(initReactI18next).init({
     es: { translation: es },
     en: { translation: en },
   },
-  lng: getStoredLanguage(),
+  lng: getInitialLanguage(),
   fallbackLng: "es",
   interpolation: {
     escapeValue: false,
@@ -86,6 +132,6 @@ void i18n.use(initReactI18next).init({
   },
 });
 
-applyDocumentLanguage(getStoredLanguage());
+applyDocumentLanguage(getInitialLanguage());
 
 export default i18n;
