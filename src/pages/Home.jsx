@@ -83,10 +83,24 @@ export function Home() {
             padding-bottom: 0.35rem;
             font-size: 8px;
             letter-spacing: 0.12em;
+            line-height: 1;
+            white-space: nowrap;
           }
           .home-header-auth-primary {
             padding-left: 0.5rem;
             padding-right: 0.5rem;
+          }
+        }
+        @media (max-width: 430px) and (max-height: 900px) and (pointer: coarse) {
+          .home-home-shell .home-home-nav-wrap {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
+            height: 78px;
+            margin-top: 0.15rem;
+          }
+          .home-home-shell .home-home-nav-floating {
+            bottom: calc(env(safe-area-inset-bottom) + 16px);
+            left: 0.9rem;
+            right: 0.9rem;
           }
         }
         @media (max-height: 800px) {

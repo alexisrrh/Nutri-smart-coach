@@ -33,7 +33,7 @@ export const NavNavigation = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-50">
+    <div className="home-home-nav-floating absolute bottom-4 left-4 right-4 z-50">
       <div className="grid grid-cols-4 overflow-hidden rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)]/95 shadow-2xl backdrop-blur-xl">
         <DashboardTab 
           to="/" 
