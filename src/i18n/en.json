@@ -1222,6 +1222,102 @@
     "mealPlan": "Meal Plan",
     "mealPlanShort": "PLAN"
   },
+  "navbar": {
+    "brandAlt": "NutriSmart Coach",
+    "brandPrefix": "Nutri",
+    "brandSuffix": "Smart",
+    "brandStatus": "AI Active",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "summary": "Summary",
+    "calculator": "Calculator",
+    "mealPlan": "Plan",
+    "meals": "Meals",
+    "aiPhoto": "AI Photo",
+    "progress": "Weight & Measures",
+    "logout": "Log out"
+  },
+  "calculator": {
+    "header": {
+      "badge": "Profile",
+      "title": "Nutrition Calculator",
+      "description": "Calculate your calories and protein using the data saved in your profile."
+    },
+    "baseData": "Base data",
+    "profile": "Your profile",
+    "weight": "Weight",
+    "height": "Height",
+    "age": "Age",
+    "years": "years",
+    "calculate": "Calculate",
+    "resultBadge": "Result",
+    "dailyTarget": "Daily target",
+    "calories": "Calories",
+    "protein": "Protein",
+    "helper": "Tap calculate to see your recommended daily target."
+  },
+  "daily": {
+    "badge": "Today",
+    "title": "Daily summary",
+    "description": "Track what you should eat versus what you have already logged.",
+    "meals": "Meals",
+    "target": "Target",
+    "calories": "Calories",
+    "protein": "Protein",
+    "balance": "Balance",
+    "consumed": "Consumed",
+    "goal": "Goal",
+    "progress": "Progress",
+    "remaining": "Remaining",
+    "excess": "Excess"
+  },
+  "aiError": {
+    "limit": {
+      "label": "AI limit",
+      "title": "You have reached your AI limit",
+      "description": "Your quota will reset at the start of the next period, or you can expand limits with Premium."
+    },
+    "rate": {
+      "label": "Short pause",
+      "title": "Wait a few seconds before trying again",
+      "description": "The AI needs a small gap between requests."
+    },
+    "image": {
+      "label": "Image",
+      "title": "The image is too large",
+      "description": "Try a lighter photo or one taken at a lower resolution."
+    },
+    "network": {
+      "label": "Connection",
+      "title": "The connection did not respond",
+      "description": "Check your network or try again in a moment."
+    },
+    "generic": {
+      "label": "Notice",
+      "title": "The action could not be completed",
+      "description": "Try again in a few seconds."
+    }
+  },
+  "mealPlan": {
+    "summary": {
+      "emptyTitle": "No nutrition summary",
+      "emptyDescription": "Generate a diet to calculate calories and macros.",
+      "title": "Nutrition summary",
+      "fullWeek": "Full week",
+      "weekStats": "{{daysCount}} days · {{mealsCount}} meals",
+      "meals": "meals",
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "daily": "{{value}}/day",
+      "dailyWithUnit": "{{value}}{{unit}}/day",
+      "macroDistribution": "Macro distribution",
+      "proteinShort": "P",
+      "carbsShort": "C",
+      "fatShort": "F"
+    }
+  },
   "settings": {
     "common": {
       "back": "Back"

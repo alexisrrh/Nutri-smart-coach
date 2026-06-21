@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Calculator as CalculatorIcon, Flame, Ruler, Scale, Target, UserRound } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { getProfile } from "../services/profileService";
@@ -14,6 +15,7 @@ import {
 
 export function Calculator() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({
     peso: "",
@@ -83,18 +85,18 @@ export function Calculator() {
   return (
     <AppShell>
       <PageHeaderCard
-        badge="Perfil"
+        badge={t("calculator.header.badge")}
         badgeIcon={<CalculatorIcon size={14} />}
         icon={<Target size={18} />}
-        title="Calculadora nutricional"
-        description="Calcula tus calorías y proteína usando los datos guardados en tu perfil."
+        title={t("calculator.header.title")}
+        description={t("calculator.header.description")}
       />
 
       <SurfaceCard as="form" onSubmit={calcular} className="mt-4 p-4">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <MetaBadge variant="neutral">Datos base</MetaBadge>
-            <h2 className="mt-2 text-2xl font-black tracking-tight">Tu perfil</h2>
+            <MetaBadge variant="neutral">{t("calculator.baseData")}</MetaBadge>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">{t("calculator.profile")}</h2>
           </div>
 
           <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.04] text-[#86efac]">
@@ -103,22 +105,22 @@ export function Calculator() {
         </div>
 
         <div className="grid gap-3">
-          <ReadOnlyField label="Peso" value={form.peso} unit="kg" Icon={Scale} />
-          <ReadOnlyField label="Altura" value={form.altura} unit="cm" Icon={Ruler} />
-          <ReadOnlyField label="Edad" value={form.edad} unit="años" Icon={UserRound} />
+          <ReadOnlyField label={t("calculator.weight")} value={form.peso} unit="kg" Icon={Scale} />
+          <ReadOnlyField label={t("calculator.height")} value={form.altura} unit="cm" Icon={Ruler} />
+          <ReadOnlyField label={t("calculator.age")} value={form.edad} unit={t("calculator.years")} Icon={UserRound} />
         </div>
 
         <PrimaryButton type="submit" icon={<CalculatorIcon size={17} />} className="mt-4">
-          Calcular
+          {t("calculator.calculate")}
         </PrimaryButton>
       </SurfaceCard>
 
       <SurfaceCard variant="soft" className="mt-4 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <MetaBadge variant="cyan">Resultado</MetaBadge>
+            <MetaBadge variant="cyan">{t("calculator.resultBadge")}</MetaBadge>
             <h2 className="mt-2 text-2xl font-black tracking-tight">
-              Objetivo diario
+              {t("calculator.dailyTarget")}
             </h2>
           </div>
 
@@ -130,14 +132,14 @@ export function Calculator() {
         {resultado ? (
           <div className="mt-5 grid gap-3">
             <StatCard
-              label="Calorías"
+              label={t("calculator.calories")}
               value={resultado.calorias}
               unit="kcal"
               icon={<Flame size={18} />}
               tone="emerald"
             />
             <StatCard
-              label="Proteína"
+              label={t("calculator.protein")}
               value={resultado.proteina}
               unit="g"
               icon={<Target size={18} />}
@@ -147,7 +149,7 @@ export function Calculator() {
         ) : (
           <SurfaceCard variant="soft" radius="md" className="mt-5 p-4">
             <p className="text-sm leading-6 text-white/62">
-              Pulsa calcular para ver tu objetivo diario recomendado.
+              {t("calculator.helper")}
             </p>
           </SurfaceCard>
         )}
