@@ -284,7 +284,7 @@ export function WorkoutSession({
 
   if (summary) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-[var(--app-surface)]">
+      <div className="fixed inset-0 z-[9999] overflow-x-hidden bg-[var(--app-surface)]">
         <div className="mx-auto flex h-[100dvh] max-w-[430px] flex-col px-3 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3">
           <div className="flex flex-1 flex-col justify-center">
             <section className="relative overflow-hidden rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] p-4 text-center shadow-[0_14px_42px_var(--app-glow)]">
@@ -338,7 +338,7 @@ export function WorkoutSession({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[var(--app-surface)]">
+    <div className="fixed inset-0 z-[9999] overflow-x-hidden bg-[var(--app-surface)]">
       <div className="mx-auto flex h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2">
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
@@ -362,7 +362,7 @@ export function WorkoutSession({
           </div>
         </header>
 
-        <main className="min-h-0 overflow-y-auto pb-1 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <main className="min-h-0 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+110px)] pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="space-y-1">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />
@@ -374,9 +374,9 @@ export function WorkoutSession({
 
             <ExerciseImage exercise={exercise} />
 
-            <section className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <p className="min-w-0 truncate text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
+            <section className="space-y-0.5 px-0.5">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p className="min-w-0 break-words text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                   {translateWorkoutText(exercise.muscle, language)} · {translateWorkoutText(exercise.difficulty || level, language)}
                 </p>
                 {exercise.mainLift ? (
@@ -385,7 +385,7 @@ export function WorkoutSession({
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-0.5 line-clamp-2 text-[21px] font-black leading-[1.05] text-[var(--app-text)]">
+              <h1 className="mt-0.5 min-w-0 break-words text-[21px] font-black leading-[1.05] text-[var(--app-text)]">
                 {translateWorkoutText(exercise.name, language)}
               </h1>
               <PerformanceHint
@@ -440,7 +440,7 @@ export function WorkoutSession({
           </div>
         </main>
 
-        <section className="shrink-0 px-0 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+   <section className="shrink-0 px-0 pt-2 pb-[calc(env(safe-area-inset-bottom)+112px)]">
           <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2.5 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl">
             <FooterControls
               canFinish={hasProgress}
@@ -924,11 +924,11 @@ function FooterControls({
           {translateWorkoutText("Siguiente", language)}
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onFinish}
-        disabled={!canFinish}
-        className={[
+        <button
+          type="button"
+          onClick={onFinish}
+          disabled={!canFinish}
+          className={[
           "flex h-11 w-full items-center justify-center gap-2 rounded-[1rem] px-4 text-[9px] font-black uppercase tracking-[0.14em] transition duration-150 active:scale-[0.98]",
           canFinish
             ? "bg-[var(--app-primary)] text-[var(--app-surface)] shadow-[0_10px_24px_var(--app-glow)] hover:-translate-y-0.5"
@@ -936,8 +936,8 @@ function FooterControls({
         ].join(" ")}
         >
           <Flame size={16} />
-        {translateWorkoutText("Finalizar entreno", language)}
-      </button>
+          {translateWorkoutText("Finalizar entreno", language)}
+        </button>
     </footer>
   );
 }
