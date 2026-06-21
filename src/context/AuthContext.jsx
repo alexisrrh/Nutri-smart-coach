@@ -16,11 +16,10 @@ import {
 import { clearCreatorPanelCache } from "../services/creatorService";
 import { getProfile, saveProfile } from "../services/profileService";
 import {
-  getCurrentAppLanguage,
   getInitialAppLanguage,
   getPreferredLanguageFromProfile,
+  getStoredLanguage,
   setAppLanguage,
-  syncAppLanguageFromProfile,
 } from "../i18n";
 import { AuthContext } from "./authContext";
 
@@ -209,8 +208,10 @@ async function syncPendingOnboardingArtifacts(user) {
 
 async function syncAppLanguage(user) {
   try {
+    const storedLanguage = getStoredLanguage();
+
     if (!user?.id) {
-      await setAppLanguage(getInitialAppLanguage());
+      await setAppLanguage(storedLanguage || getInitialAppLanguage());
       return;
     }
 
@@ -219,9 +220,9 @@ async function syncAppLanguage(user) {
     );
 
     const nextLanguage =
-      getPreferredLanguageFromProfile(profile) || getCurrentAppLanguage() || getInitialAppLanguage();
+      storedLanguage || getPreferredLanguageFromProfile(profile) || getInitialAppLanguage();
 
-    await syncAppLanguageFromProfile(profile || null, nextLanguage);
+    await setAppLanguage(nextLanguage);
   } catch (error) {
     console.warn("No se pudo sincronizar el idioma:", error);
   }

@@ -49,20 +49,8 @@ export function setStoredLanguage(language) {
   }
 }
 
-function getBrowserLanguage() {
-  if (typeof navigator === "undefined") return null;
-
-  const candidate =
-    navigator.languages?.find(Boolean) ||
-    navigator.language ||
-    navigator.userLanguage ||
-    "";
-
-  return normalizeLanguage(candidate);
-}
-
 function getInitialLanguage() {
-  return getStoredLanguage() || getBrowserLanguage() || "es";
+  return getStoredLanguage() || "es";
 }
 
 function applyDocumentLanguage(language) {
@@ -86,7 +74,6 @@ export function getCurrentAppLanguage() {
     i18n.resolvedLanguage ||
       i18n.language ||
       getStoredLanguage() ||
-      getBrowserLanguage() ||
       "es"
   );
 }

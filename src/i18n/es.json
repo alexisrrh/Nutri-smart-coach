@@ -1222,6 +1222,102 @@
     "mealPlan": "Meal Plan",
     "mealPlanShort": "DIETA"
   },
+  "navbar": {
+    "brandAlt": "NutriSmart Coach",
+    "brandPrefix": "Nutri",
+    "brandSuffix": "Smart",
+    "brandStatus": "IA Activa",
+    "home": "Inicio",
+    "dashboard": "Dashboard",
+    "summary": "Resumen",
+    "calculator": "Calculadora",
+    "mealPlan": "Plan",
+    "meals": "Comidas",
+    "aiPhoto": "Foto IA",
+    "progress": "Peso y medidas",
+    "logout": "Salir"
+  },
+  "calculator": {
+    "header": {
+      "badge": "Perfil",
+      "title": "Calculadora nutricional",
+      "description": "Calcula tus calorías y proteína usando los datos guardados en tu perfil."
+    },
+    "baseData": "Datos base",
+    "profile": "Tu perfil",
+    "weight": "Peso",
+    "height": "Altura",
+    "age": "Edad",
+    "years": "años",
+    "calculate": "Calcular",
+    "resultBadge": "Resultado",
+    "dailyTarget": "Objetivo diario",
+    "calories": "Calorías",
+    "protein": "Proteína",
+    "helper": "Pulsa calcular para ver tu objetivo diario recomendado."
+  },
+  "daily": {
+    "badge": "Hoy",
+    "title": "Resumen diario",
+    "description": "Controla lo que debes comer frente a lo que ya has registrado.",
+    "meals": "Comidas",
+    "target": "Objetivo",
+    "calories": "Calorías",
+    "protein": "Proteína",
+    "balance": "Balance",
+    "consumed": "Consumido",
+    "goal": "Objetivo",
+    "progress": "Progreso",
+    "remaining": "Restante",
+    "excess": "Exceso"
+  },
+  "aiError": {
+    "limit": {
+      "label": "Límite IA",
+      "title": "Has alcanzado tu límite de IA",
+      "description": "Tu cupo se reactivará al iniciar el siguiente periodo o puedes ampliar límites con Premium."
+    },
+    "rate": {
+      "label": "Pausa breve",
+      "title": "Espera unos segundos antes de volver a intentarlo",
+      "description": "La IA necesita un pequeño margen entre solicitudes."
+    },
+    "image": {
+      "label": "Imagen",
+      "title": "La imagen es demasiado grande",
+      "description": "Intenta con una foto más ligera o tomada con menor resolución."
+    },
+    "network": {
+      "label": "Conexión",
+      "title": "La conexión no respondió",
+      "description": "Revisa tu red o inténtalo de nuevo en unos instantes."
+    },
+    "generic": {
+      "label": "Aviso",
+      "title": "No se pudo completar la acción",
+      "description": "Inténtalo de nuevo en unos segundos."
+    }
+  },
+  "mealPlan": {
+    "summary": {
+      "emptyTitle": "Sin resumen nutricional",
+      "emptyDescription": "Genera una dieta para calcular calorías y macros.",
+      "title": "Resumen nutricional",
+      "fullWeek": "Semana completa",
+      "weekStats": "{{daysCount}} días · {{mealsCount}} comidas",
+      "meals": "comidas",
+      "calories": "Calorías",
+      "protein": "Proteína",
+      "carbs": "Carbos",
+      "fat": "Grasas",
+      "daily": "{{value}}/día",
+      "dailyWithUnit": "{{value}}{{unit}}/día",
+      "macroDistribution": "Distribución macros",
+      "proteinShort": "P",
+      "carbsShort": "C",
+      "fatShort": "G"
+    }
+  },
   "settings": {
     "common": {
       "back": "Volver"

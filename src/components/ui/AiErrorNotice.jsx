@@ -4,41 +4,41 @@ import { useTranslation } from "react-i18next";
 const NOTICE_TYPES = {
   limit: {
     icon: Sparkles,
-    label: "Límite IA",
-    title: "Has alcanzado tu límite de IA",
-    description: "Tu cupo se reactivará al iniciar el siguiente periodo o puedes ampliar límites con Premium.",
+    label: "aiError.limit.label",
+    title: "aiError.limit.title",
+    description: "aiError.limit.description",
     tone: "from-amber-300/18 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-amber-200",
   },
   rate: {
     icon: Clock3,
-    label: "Pausa breve",
-    title: "Espera unos segundos antes de volver a intentarlo",
-    description: "La IA necesita un pequeño margen entre solicitudes.",
+    label: "aiError.rate.label",
+    title: "aiError.rate.title",
+    description: "aiError.rate.description",
     tone: "from-cyan-300/14 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-cyan-100",
   },
   image: {
     icon: ImageOff,
-    label: "Imagen",
-    title: "La imagen es demasiado grande",
-    description: "Intenta con una foto más ligera o tomada con menor resolución.",
+    label: "aiError.image.label",
+    title: "aiError.image.title",
+    description: "aiError.image.description",
     tone: "from-emerald-300/14 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-[var(--app-primary)]",
   },
   network: {
     icon: WifiOff,
-    label: "Conexión",
-    title: "La conexión no respondió",
-    description: "Revisa tu red o inténtalo de nuevo en unos instantes.",
+    label: "aiError.network.label",
+    title: "aiError.network.title",
+    description: "aiError.network.description",
     tone: "from-red-300/14 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-red-200",
   },
   generic: {
     icon: AlertTriangle,
-    label: "Aviso",
-    title: "No se pudo completar la acción",
-    description: "Inténtalo de nuevo en unos segundos.",
+    label: "aiError.generic.label",
+    title: "aiError.generic.title",
+    description: "aiError.generic.description",
     tone: "from-red-300/14 via-[var(--app-card)] to-[var(--app-surface)]",
     iconClass: "text-red-200",
   },
@@ -141,16 +141,8 @@ function getAiErrorNotice(message, t) {
 function translateNotice(notice, t) {
   return {
     ...notice,
-    label: t(`food.errors.${noticeKey(notice)}.label`),
-    title: t(`food.errors.${noticeKey(notice)}.title`),
-    description: t(`food.errors.${noticeKey(notice)}.description`),
+    label: t(notice.label),
+    title: t(notice.title),
+    description: t(notice.description),
   };
-}
-
-function noticeKey(notice) {
-  if (notice === NOTICE_TYPES.limit) return "limit";
-  if (notice === NOTICE_TYPES.rate) return "rate";
-  if (notice === NOTICE_TYPES.image) return "image";
-  if (notice === NOTICE_TYPES.network) return "network";
-  return "generic";
 }

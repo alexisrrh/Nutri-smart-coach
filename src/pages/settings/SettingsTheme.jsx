@@ -8,9 +8,9 @@ import { SettingsCard, SettingsScreenShell } from "./SettingsShared";
 import { useNavigate } from "react-router-dom";
 import { getProfile, saveProfile } from "../../services/profileService";
 import {
-  getCurrentAppLanguage,
   getInitialAppLanguage,
   getPreferredLanguageFromProfile,
+  getStoredLanguage,
   setAppLanguage,
 } from "../../i18n";
 
@@ -130,13 +130,14 @@ export function SettingsTheme() {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const activeTheme = THEMES.find((item) => item.id === theme) || THEMES[0];
-  const [language, setLanguage] = useState("es");
+  const [language, setLanguage] = useState(() => getInitialAppLanguage());
 
   useEffect(() => {
     let active = true;
 
     async function loadLanguage() {
-      const fallbackLanguage = getCurrentAppLanguage() || getInitialAppLanguage();
+      const storedLanguage = getStoredLanguage();
+      const fallbackLanguage = storedLanguage || getInitialAppLanguage();
 
       if (!user?.id) {
         await setAppLanguage(fallbackLanguage);
@@ -147,7 +148,9 @@ export function SettingsTheme() {
       try {
         const profile = await getProfile(user.id, { fallbackToCache: false });
         const nextLanguage =
-          getPreferredLanguageFromProfile(profile) || fallbackLanguage;
+          storedLanguage ||
+          getPreferredLanguageFromProfile(profile) ||
+          fallbackLanguage;
 
         if (!active) return;
         setLanguage(nextLanguage === "en" ? "en" : "es");

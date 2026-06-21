@@ -1,7 +1,9 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Activity, Beef, Droplets, Flame, Target, Wheat } from "lucide-react";
 
 export function DietSummary({ plan = [], getWeekTotals }) {
+  const { t } = useTranslation();
   const totals = useMemo(() => {
     if (!Array.isArray(plan) || plan.length === 0) {
       return { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -58,11 +60,11 @@ export function DietSummary({ plan = [], getWeekTotals }) {
         <Target className="mx-auto mb-2 text-[var(--app-primary)]" size={26} />
 
         <p className="text-xs font-black uppercase tracking-wide text-[var(--app-text)]">
-          Sin resumen nutricional
+          {t("mealPlan.summary.emptyTitle")}
         </p>
 
         <p className="mt-1 text-xs normal-case text-slate-500">
-          Genera una dieta para calcular calorías y macros.
+          {t("mealPlan.summary.emptyDescription")}
         </p>
       </div>
     );
@@ -76,15 +78,15 @@ export function DietSummary({ plan = [], getWeekTotals }) {
         <div className="mb-2 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--app-primary)]">
-              Resumen nutricional
+              {t("mealPlan.summary.title")}
             </p>
 
             <h3 className="mt-0.5 text-base font-black uppercase italic leading-none text-[var(--app-text)]">
-              Semana completa
+              {t("mealPlan.summary.fullWeek")}
             </h3>
 
             <p className="mt-1 text-[10px] normal-case text-slate-500">
-              {daysCount} días · {mealsCount} comidas
+              {t("mealPlan.summary.weekStats", { daysCount, mealsCount })}
             </p>
           </div>
 
@@ -92,57 +94,57 @@ export function DietSummary({ plan = [], getWeekTotals }) {
             <div>
               <p className="text-base font-black text-[var(--app-primary)]">{mealsCount}</p>
               <p className="text-[10px] font-black uppercase tracking-tight text-[var(--app-muted)]">
-                comidas
+                {t("mealPlan.summary.meals")}
               </p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-4 gap-1.5">
-          <SummaryCard
-            icon={<Flame size={15} />}
-            title="Calorías"
-            value={Math.round(totals.calories)}
-            unit="kcal"
-            detail={`${dailyAverage.calories}/día`}
-          />
+            <SummaryCard
+              icon={<Flame size={15} />}
+              title={t("mealPlan.summary.calories")}
+              value={Math.round(totals.calories)}
+              unit="kcal"
+              detail={t("mealPlan.summary.daily", { value: dailyAverage.calories })}
+            />
 
-          <SummaryCard
-            icon={<Beef size={15} />}
-            title="Proteína"
-            value={Math.round(totals.protein)}
-            unit="g"
-            detail={`${dailyAverage.protein}g/día`}
-          />
+            <SummaryCard
+              icon={<Beef size={15} />}
+              title={t("mealPlan.summary.protein")}
+              value={Math.round(totals.protein)}
+              unit="g"
+              detail={t("mealPlan.summary.dailyWithUnit", { value: dailyAverage.protein, unit: "g" })}
+            />
 
-          <SummaryCard
-            icon={<Wheat size={15} />}
-            title="Carbos"
-            value={Math.round(totals.carbs)}
-            unit="g"
-            detail={`${dailyAverage.carbs}g/día`}
-          />
+            <SummaryCard
+              icon={<Wheat size={15} />}
+              title={t("mealPlan.summary.carbs")}
+              value={Math.round(totals.carbs)}
+              unit="g"
+              detail={t("mealPlan.summary.dailyWithUnit", { value: dailyAverage.carbs, unit: "g" })}
+            />
 
-          <SummaryCard
-            icon={<Droplets size={15} />}
-            title="Grasas"
-            value={Math.round(totals.fat)}
-            unit="g"
-            detail={`${dailyAverage.fat}g/día`}
-          />
-        </div>
+            <SummaryCard
+              icon={<Droplets size={15} />}
+              title={t("mealPlan.summary.fat")}
+              value={Math.round(totals.fat)}
+              unit="g"
+              detail={t("mealPlan.summary.dailyWithUnit", { value: dailyAverage.fat, unit: "g" })}
+            />
+          </div>
 
         <div className="mt-2 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
               <Activity size={12} className="text-[var(--app-primary)]" />
-              Distribución macros
+              {t("mealPlan.summary.macroDistribution")}
             </div>
 
             <div className="flex gap-2 text-[10px] font-black uppercase text-slate-500">
-              <span>P {percentages.protein}%</span>
-              <span>C {percentages.carbs}%</span>
-              <span>G {percentages.fat}%</span>
+              <span>{t("mealPlan.summary.proteinShort")} {percentages.protein}%</span>
+              <span>{t("mealPlan.summary.carbsShort")} {percentages.carbs}%</span>
+              <span>{t("mealPlan.summary.fatShort")} {percentages.fat}%</span>
             </div>
           </div>
 

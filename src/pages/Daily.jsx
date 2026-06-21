@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Activity, Flame, Target, Utensils } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { listMeals } from "../services/mealService";
@@ -14,6 +15,7 @@ import {
 
 export function Daily() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [profile, setProfile] = useState(null);
   const [meals, setMeals] = useState([]);
@@ -50,21 +52,22 @@ export function Daily() {
   return (
     <AppShell>
       <PageHeaderCard
-        badge="Hoy"
+        badge={t("daily.badge")}
         badgeIcon={<Activity size={14} />}
         icon={<Utensils size={18} />}
-        title="Resumen diario"
-        description="Controla lo que debes comer frente a lo que ya has registrado."
+        title={t("daily.title")}
+        description={t("daily.description")}
       />
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <StatCard label="Comidas" value={meals.length} />
-        <StatCard label="Objetivo" value={targetCalories || "--"} unit="kcal" />
+        <StatCard label={t("daily.meals")} value={meals.length} />
+        <StatCard label={t("daily.target")} value={targetCalories || "--"} unit="kcal" />
       </div>
 
       <div className="mt-4 space-y-3">
         <Card
-          title="Calorías"
+          t={t}
+          title={t("daily.calories")}
           target={targetCalories}
           current={totalCalories}
           remaining={remainingCalories}
@@ -74,7 +77,8 @@ export function Daily() {
         />
 
         <Card
-          title="Proteína"
+          t={t}
+          title={t("daily.protein")}
           target={targetProtein}
           current={totalProtein}
           remaining={remainingProtein}
@@ -87,7 +91,7 @@ export function Daily() {
   );
 }
 
-function Card({ title, target, current, remaining, unit, Icon, accent }) {
+function Card({ t, title, target, current, remaining, unit, Icon, accent }) {
   const progress = target > 0 ? Math.min((current / target) * 100, 100) : 0;
   const isCyan = accent === "cyan";
   const accentText = isCyan ? "text-cyan-200" : "text-[var(--app-primary)]";
@@ -98,7 +102,7 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
     <SurfaceCard className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <MetaBadge variant="neutral">Balance</MetaBadge>
+          <MetaBadge variant="neutral">{t("daily.balance")}</MetaBadge>
           <h2 className="mt-2 text-2xl font-black tracking-tight">{title}</h2>
         </div>
 
@@ -110,7 +114,7 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
       <div className="mt-5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-[var(--app-muted)]">Consumido</p>
+            <p className="text-sm font-semibold text-[var(--app-muted)]">{t("daily.consumed")}</p>
             <p className="mt-1 text-4xl font-black leading-none tracking-tight">
               {current}
               <span className={`ml-1 text-base font-black ${accentText}`}>{unit}</span>
@@ -118,7 +122,7 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
           </div>
 
           <div className="text-right">
-            <p className="text-sm font-semibold text-[var(--app-muted)]">Objetivo</p>
+            <p className="text-sm font-semibold text-[var(--app-muted)]">{t("daily.goal")}</p>
             <p className="mt-1 text-lg font-black text-[var(--app-text)]">{target || 0} {unit}</p>
           </div>
         </div>
@@ -131,9 +135,9 @@ function Card({ title, target, current, remaining, unit, Icon, accent }) {
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <Row label="Progreso" value={Math.round(progress)} unit="%" />
+          <Row label={t("daily.progress")} value={Math.round(progress)} unit="%" />
           <Row
-            label={remaining >= 0 ? "Restante" : "Exceso"}
+            label={remaining >= 0 ? t("daily.remaining") : t("daily.excess")}
             value={Math.abs(remaining)}
             unit={unit}
             highlight
