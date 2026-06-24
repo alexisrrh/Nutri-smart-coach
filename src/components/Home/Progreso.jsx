@@ -6,7 +6,7 @@ import { NavNavigation } from "./NavNavigation";
 export function Progreso() {
   const { t } = useTranslation();
   return (
-     <div className="home-progress-shell min-h-dvh w-full bg-[var(--app-bg)] flex items-start justify-center overflow-visible font-sans">
+     <div className="home-progress-shell h-screen max-h-screen w-full bg-[var(--app-bg)] flex flex-col overflow-hidden font-sans">
       
       <style>{`
         @keyframes laserMotion {
