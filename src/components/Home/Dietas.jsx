@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, CheckCircle2, Flame } from "lucide-react";
+import { ArrowRight, CheckCircle2, Flame, Zap } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 
 import dietashome from "../../../public/dietashome.jpeg";
@@ -18,8 +18,8 @@ export function Dietas() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%)] pointer-events-none opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-20" />
 
-        <header className="relative z-20 px-5 pt-3 shrink-0">
-          <nav className="flex items-center justify-between border-b border-[var(--app-border)] pb-3">
+        <header className="home-progress-header relative z-20 px-5 pt-4 shrink-0">
+          <nav className="home-progress-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3.5">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -37,16 +37,10 @@ export function Dietas() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link
-                to="/login"
-                className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-text)]"
-              >
+              <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
                 {t("home.header.login")}
               </Link>
-              <Link
-                to="/registro"
-                className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)] transition-transform active:scale-95"
-              >
+              <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
                 {t("home.header.register")}
               </Link>
             </div>
@@ -55,6 +49,9 @@ export function Dietas() {
 
         <section className="relative z-10 flex flex-1 flex-col overflow-hidden px-5">
           <div className="shrink-0 pt-3 pb-2 text-center">
+            <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
+                <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
+              </div>
             <h1 className="text-[1.7rem] font-black italic uppercase tracking-tighter text-[var(--app-text)]">
               {t("home.mealPlans.titlePrefix")} <span className="text-[var(--app-primary)]">{t("home.mealPlans.titleAccent")}</span>
             </h1>

@@ -107,8 +107,8 @@ export function BodyScaner() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-20" />
 
         {/* 1. HEADER (Fijo) */}
-        <header className="home-analyze-header relative z-20 px-5 pt-3 shrink-0">
-          <nav className="home-analyze-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3">
+        <header className="home-progress-header relative z-20 px-5 pt-4 shrink-0">
+          <nav className="home-progress-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3.5">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
@@ -139,6 +139,9 @@ export function BodyScaner() {
         {/* 2. CONTENIDO SCROLLABLE (Para evitar choques en móviles pequeños) */}
         <section className="relative z-10 flex-1 overflow-visible overflow-x-hidden px-5">
           <div className="flex h-full flex-col items-center text-center py-3">
+            <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
+                <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
+              </div>
             <h1 className="home-analyze-title text-[1.75rem] font-black italic uppercase tracking-tight leading-none text-[var(--app-text)]">
               {t("home.bodyScanner.titlePrefix")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">{t("home.bodyScanner.titleAccent")}</span>
             </h1>
