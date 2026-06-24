@@ -99,22 +99,46 @@ export function Dietas() {
           </div>
         </section>
 
-     
-          <div className="flex flex-col w-full">
-            <div className="px-5 pt-3 pb-10 w-full">
-              <Link
-                to="/registro"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
-              >
-                {t("home.mealPlans.cta")}
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-
-            <div className="h-16 w-full flex items-center justify-center">
-              <NavNavigation />
-            </div>
+        <div className="flex flex-col w-full mt-auto shrink-0">
+          
+          {/* Contenedor del Botón - Con las clases para que las lea el <style> de abajo */}
+          <div className="home-dietas-footer-cta px-5 pt-3 pb-10 w-full">
+            <Link
+              to="/registro"
+              className="home-dietas-footer-button group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+            >
+              {t("home.mealPlans.cta")} 
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
+
+          {/* Contenedor del Menú */}
+          <div className="home-dietas-footer-nav h-16 flex items-center justify-center">
+            <NavNavigation />
+          </div>
+
+          {/* Clonamos de forma exacta las reglas del otro archivo, adaptadas para Dietas */}
+          <style>{`
+            @media (max-height: 760px) {
+              .home-dietas-footer-cta {
+                padding-top: 10px;
+              }
+              .home-dietas-footer-button {
+                padding-top: 10px;
+                padding-bottom: 10px;
+              }
+              .home-dietas-footer-nav {
+                height: 56px;
+              }
+            }
+            @media (max-height: 700px) {
+              .home-dietas-footer-nav {
+                height: 50px;
+              }
+            }
+          `}</style>
+
+        </div>
   
       </main>
     </div>
