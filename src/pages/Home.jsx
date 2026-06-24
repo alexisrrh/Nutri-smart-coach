@@ -325,28 +325,23 @@ export function Home() {
         </section>
 
         {/* 3. FOOTER FIJO */}
-     
-          <div className="flex flex-col w-full">
-            {/* Contenedor central del botón y el link */}
-         <div className="home-home-cta-wrap px-5 pt-2 pb-4 w-full flex flex-col items-center gap-2">
-              <Link
-                to="/registro"
-                className="home-home-cta group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-4 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
-              >
-                {t("home.cta")} 
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-              </Link>
+<div className="flex flex-col w-full">
+  {/* Se cambió a pb-8 para levantar el botón ese pelín exacto que faltaba */}
+  <div className="home-home-cta-wrap px-5 pt-1 pb-8 w-full">
+    <Link
+      to="/registro"
+      className="home-home-cta group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+    >
+      {t("home.cta")} 
+      <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+    </Link>
+  </div>
 
-  
+  <div className="home-home-nav-wrap h-[72px] w-full flex items-center justify-center">
+    <NavNavigation />
+  </div>
+</div>
 
-            </div>
-
-            {/* Navegación inferior */}
-           <div className="home-home-nav-wrap mt-2 h-[72px] w-full flex items-center justify-center">
-              <NavNavigation />
-            </div>
-          </div>
-     
 
 
       </main>
