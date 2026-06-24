@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { TrendingUp, Award, ArrowRight } from "lucide-react";
+import { TrendingUp, Award, ArrowRight, Zap } from "lucide-react";
 import { NavNavigation } from "./NavNavigation";
 
 export function Progreso() {
@@ -142,6 +142,9 @@ export function Progreso() {
             
             {/* TÍTULO */}
             <div className="text-center">
+              <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
+                <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
+              </div>
                 <h1 className="home-progress-title text-[1.95rem] font-black italic uppercase tracking-tighter leading-none text-[var(--app-text)]">
                     {t("home.progress.titlePrefix")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-cyan-300 bg-clip-text text-transparent">{t("home.progress.titleAccent")}</span>
                 </h1>

@@ -225,9 +225,9 @@ export function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-20" />
 
         {/* 1. HEADER (Fijo) */}
-       <header className="home-home-header home-header relative z-20 px-5 pt-2 shrink-0">
-          <nav className="home-home-nav flex items-center justify-between border-b border-[var(--app-border)] pb-2">
-            <div className="home-header-brand flex items-center gap-2">
+        <header className="home-progress-header relative z-20 px-5 pt-4 shrink-0">
+          <nav className="home-progress-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3.5">
+            <div className="flex items-center gap-2">
               <img
                 src="/favicon.png"
                 alt={t("home.brandAlt")}
@@ -235,7 +235,7 @@ export function Home() {
               />
               <div className="leading-none">
                 <p className="text-sm font-black italic tracking-tight text-[var(--app-text)]">
-                  {t("home.brand")}
+                  {t("home.brandPrefix")}<span className="text-[var(--app-primary)]">{t("home.brandSuffix")}</span>
                 </p>
                 <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)]">
                   {t("home.headerTagline")}
@@ -243,11 +243,11 @@ export function Home() {
               </div>
             </div>
 
-            <div className="home-header-auth flex items-center gap-2">
-              <Link to="/login" className="home-header-auth-btn rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
+            <div className="flex items-center gap-2">
+              <Link to="/login" className="rounded-full border border-[var(--app-border)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-muted)]">
                 {t("home.header.login")}
               </Link>
-              <Link to="/registro" className="home-header-auth-btn home-header-auth-primary rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
+              <Link to="/registro" className="rounded-full bg-[var(--app-primary)] px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--app-surface)]">
                 {t("home.header.register")}
               </Link>
             </div>
