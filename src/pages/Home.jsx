@@ -254,39 +254,41 @@ export function Home() {
           </nav>
         </header>
 
-        {/* 2. CONTENIDO SCROLLABLE */}
-    <section className="relative z-10 flex-1 px-5 pb-4 overflow-hidden">
-      <div className="home-home-content flex h-full flex-col justify-between gap-2 pt-3">
+              {/* 2. CONTENIDO SCROLLABLE */}
+        {/* Cambiado overflow-hidden a overflow-y-auto y scrollbar-hide para permitir scroll si la pantalla es muy baja */}
+        <section className="relative z-10 flex-1 px-5 overflow-y-auto scrollbar-hide">
+          {/* Se eliminó h-full y justify-between. Se maneja el espacio con gaps y paddings verticales controlados */}
+          <div className="home-home-content flex flex-col gap-4 pt-3 pb-4">
             
             {/* TITULO */}
             <div className="flex flex-col items-center text-center shrink-0">
-              <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
+              <div className="home-home-badge mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
                 <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
               </div>
-              <h1 className="home-home-title text-[1.55rem] font-black italic uppercase leading-none tracking-tight">
+              <h1 className="home-home-title text-[1.45rem] font-black italic uppercase leading-none tracking-tight">
                 {t("home.hero.title")} <span className="bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary)] bg-clip-text text-transparent">{t("home.hero.titleAccent")}</span>
               </h1>
               <p className="mt-1.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">{t("home.hero.subtitle")}</p>
-
             </div>
 
             {/* RECUADRO DE ANÁLISIS */}
-            <div className="home-home-panel-wrap relative w-full px-1 shrink-0">
+            <div className="home-home-panel-wrap relative w-full px-0.5 shrink-0">
               <div className="absolute -inset-2 rounded-[2rem] bg-[var(--app-primary-soft)] blur-2xl pointer-events-none" />
-              <div className="home-home-panel relative rounded-[1.8rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-2 backdrop-blur-sm shadow-[0_0_40px_var(--app-glow)]">
+              <div className="home-home-panel relative rounded-[1.8rem] border border-[var(--app-border)] bg-gradient-to-b from-[var(--app-primary-soft)] to-transparent p-1.5 backdrop-blur-sm shadow-[0_0_40px_var(--app-glow)]">
                 <div className="home-home-panel-inner rounded-[1.4rem] border-2 border-[var(--app-border)] bg-[var(--app-surface)]/95 p-3 shadow-[inset_0_0_20px_var(--app-glow)]">
                   
-                  <div className="home-home-panel-header mb-3 flex items-center justify-between">
-                  <div>
+                  <div className="home-home-panel-header mb-2.5 flex items-center justify-between">
+                    <div>
                       <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--app-primary)]">{t("home.panel.badge")}</p>
-                      <h2 className="home-home-panel-title mt-0.5 text-base font-black uppercase italic tracking-tight text-[var(--app-text)]">{t("home.panel.title")}</h2>
+                      <h2 className="home-home-panel-title mt-0.5 text-sm font-black uppercase italic tracking-tight text-[var(--app-text)]">{t("home.panel.title")}</h2>
                     </div>
-                    <Link to="/registro" className="home-home-camera-btn h-9 w-9 flex items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] active:scale-90 transition-all">
-                      <Camera size={18} />
+                    <Link to="/registro" className="home-home-camera-btn h-8 w-8 flex items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-primary)] active:scale-90 transition-all">
+                      <Camera size={16} />
                     </Link>
                   </div>
 
-                  <Link to="/registro" className="home-home-preview relative block h-40 overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[var(--app-surface)] active:scale-[0.97] transition-transform group">
+                  {/* Reducida la altura de h-40 a h-32 en móviles pequeños mediante CSS interno en la primera parte, o directamente una clase responsiva */}
+                  <Link to="/registro" className="home-home-preview relative block h-36 overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[var(--app-surface)] active:scale-[0.97] transition-transform group">
                     <SmartImage 
                       src="https://imag.bonviveur.com/presentacion-final-del-poke-bowl-de-pollo-y-verduras.webp" 
                       alt={t("home.panel.imageAlt")} 
@@ -295,7 +297,7 @@ export function Home() {
                     <div className="absolute inset-x-0 z-20 h-[2px] animate-[scan_2.8s_ease-in-out_infinite] bg-red-500 shadow-[0_0_12px_#ef4444]" />
                   </Link>
 
-                  <div className="home-home-macros grid grid-cols-2 gap-2 mt-3">
+                  <div className="home-home-macros grid grid-cols-2 gap-1.5 mt-2.5">
                     <DashboardMacro title={t("home.macros.calories")} value="450" unit="kcal" color="bg-emerald-400" pct="60%" />
                     <DashboardMacro title={t("home.macros.protein")} value="28" unit="g" color="bg-cyan-400" pct="85%" />
                     <DashboardMacro title={t("home.macros.carbs")} value="42" unit="g" color="bg-amber-300" pct="45%" />
@@ -307,42 +309,40 @@ export function Home() {
 
             {/* STATS */}
             <div className="w-full shrink-0">
-              <div className="home-home-stats-grid grid grid-cols-3 gap-2 pb-4">
+              <div className="home-home-stats-grid grid grid-cols-3 gap-2 pb-2">
                 <Stat value="IA" label={t("home.stats.analysis")} className="home-home-stat" />
                 <Stat value="24/7" label={t("home.stats.coach")} className="home-home-stat" />
                 <Stat value="PRO" label={t("home.stats.habits")} className="home-home-stat" />
               </div>
-               <div className="home-home-privacy text-center justify-center">
+              <div className="home-home-privacy text-center justify-center mt-1">
                 <Link 
-                to="/privacy" 
-                className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors "
-              >
-                {t("home.privacy")}
-              </Link>
+                  to="/privacy" 
+                  className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--app-muted)] hover:text-[var(--app-primary)] transition-colors"
+                >
+                  {t("home.privacy")}
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
         {/* 3. FOOTER FIJO */}
-<div className="flex flex-col w-full">
-  {/* Se cambió a pb-8 para levantar el botón ese pelín exacto que faltaba */}
-  <div className="home-home-cta-wrap px-5 pt-1 pb-8 w-full">
-    <Link
-      to="/registro"
-      className="home-home-cta group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
-    >
-      {t("home.cta")} 
-      <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-    </Link>
-  </div>
+        <footer className="flex flex-col w-full shrink-0 bg-[var(--app-card)] z-20">
+          {/* Se redujo ligeramente el padding inferior para asegurar compatibilidad en pantallas mini con la barra nativa de iOS */}
+          <div className="home-home-cta-wrap px-5 pt-1 pb-6 w-full">
+            <Link
+              to="/registro"
+              className="home-home-cta group flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-primary)] py-3 text-xs font-black uppercase tracking-widest text-[var(--app-surface)] shadow-[0_12px_30px_var(--app-glow)] active:scale-[0.98] transition-all"
+            >
+              {t("home.cta")} 
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
 
-  <div className="home-home-nav-wrap h-[72px] w-full flex items-center justify-center">
-    <NavNavigation />
-  </div>
-</div>
-
-
+          <div className="home-home-nav-wrap h-[68px] w-full flex items-center justify-center border-t border-[var(--app-border)]">
+            <NavNavigation />
+          </div>
+        </footer>
 
       </main>
 
@@ -358,6 +358,7 @@ export function Home() {
     </div>
   );
 }
+
 
 {/* --- AUXILIARES (Asegúrate de tenerlos) --- */}
 function Stat({ value, label, className = "" }) {

@@ -18,6 +18,7 @@ export function Dietas() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_15%,var(--app-primary)15,transparent_45%)] pointer-events-none opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--app-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--app-border)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-20" />
 
+        {/* 1. HEADER FIJO */}
         <header className="home-progress-header relative z-20 px-5 pt-4 shrink-0">
           <nav className="home-progress-nav flex items-center justify-between border-b border-[var(--app-border)] pb-3.5">
             <div className="flex items-center gap-2">
@@ -47,20 +48,25 @@ export function Dietas() {
           </nav>
         </header>
 
-        <section className="relative z-10 flex flex-1 flex-col overflow-hidden px-5">
-          <div className="shrink-0 pt-3 pb-2 text-center">
-            <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
+               {/* 2. CONTENIDO SCROLLABLE */}
+        <section className="relative z-10 flex-1 overflow-visible overflow-x-hidden px-5">
+          
+          <div className="home-dietas-body flex h-full flex-col gap-4 py-4">
+            
+            {/* TÍTULO */}
+            <div className="text-center">
+              <div className="home-home-badge mb-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-primary-soft)] px-3 py-1 text-[9px] font-black uppercase text-[var(--app-primary)] shadow-[0_0_15px_var(--app-glow)]">
                 <Zap size={11} className="fill-current" /> {t("home.hero.badge")}
               </div>
-            <h1 className="text-[1.7rem] font-black italic uppercase tracking-tighter text-[var(--app-text)]">
-              {t("home.mealPlans.titlePrefix")} <span className="text-[var(--app-primary)]">{t("home.mealPlans.titleAccent")}</span>
-            </h1>
-            <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
-              {t("home.mealPlans.subtitle")}
-            </p>
-          </div>
+              <h1 className="text-[1.7rem] font-black italic uppercase tracking-tighter leading-none text-[var(--app-text)]">
+                {t("home.mealPlans.titlePrefix")} <span className="text-[var(--app-primary)]">{t("home.mealPlans.titleAccent")}</span>
+              </h1>
+              <p className="mt-1 text-[8px] font-black uppercase tracking-[0.3em] text-[var(--app-muted)]">
+                {t("home.mealPlans.subtitle")}
+              </p>
+            </div>
 
-          <div className="flex flex-1 flex-col justify-center gap-2.5 pb-2">
+            {/* IMAGEN DE DIETAS */}
             <div className="relative shrink-0">
               <div className="relative h-[150px] w-full overflow-hidden rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-surface)] shadow-[0_0_30px_var(--app-glow)]">
                 <img
@@ -72,7 +78,8 @@ export function Dietas() {
               </div>
             </div>
 
-            <div className="grid gap-2">
+            {/* PREVISTAS DE COMIDAS */}
+            <div className="grid gap-2 pb-4">
               <MealPreview
                 image={tortilla}
                 time={t("home.mealPlans.samples.breakfast.time")}
@@ -93,12 +100,14 @@ export function Dietas() {
                 info={t("home.mealPlans.samples.dinner.info")}
               />
             </div>
+
           </div>
         </section>
 
+        {/* 3. FOOTER FIJO (Restaurado con tus clases originales de Dietas) */}
         <div className="flex flex-col w-full mt-auto shrink-0">
           
-          {/* Contenedor del Botón - Con las clases para que las lea el <style> de abajo */}
+          {/* Contenedor del Botón - Volvemos a pb-10 original */}
           <div className="home-dietas-footer-cta px-5 pt-3 pb-10 w-full">
             <Link
               to="/registro"
@@ -110,12 +119,15 @@ export function Dietas() {
           </div>
 
           {/* Contenedor del Menú */}
-          <div className="home-dietas-footer-nav h-16 flex items-center justify-center">
+          <div className="home-dietas-footer-nav h-16 w-full flex items-center justify-center">
             <NavNavigation />
           </div>
 
-          {/* Clonamos de forma exacta las reglas del otro archivo, adaptadas para Dietas */}
+          {/* Tus estilos responsivos específicos para controlar la distancia en iPhones pequeños */}
           <style>{`
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
             @media (max-height: 760px) {
               .home-dietas-footer-cta {
                 padding-top: 10px;
@@ -141,6 +153,7 @@ export function Dietas() {
     </div>
   );
 }
+
 
 function MealPreview({ image, time, title, info, active = false }) {
   return (
