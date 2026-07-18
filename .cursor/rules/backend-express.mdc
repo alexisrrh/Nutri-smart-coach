@@ -1,0 +1,43 @@
+---
+description: Patrones Express existentes del backend modular.
+globs:
+  - "backend/**/*.js"
+alwaysApply: false
+---
+
+# Backend Express
+
+- Mantén `backend/server.js` como arranque y `backend/app.js` como composición de middleware y rutas.
+- Registra nuevas rutas en `backend/app.js` solo si la tarea lo pide y revisando consumidores.
+- Reutiliza `backend/middleware/auth.js` para Bearer JWT, `backend/middleware/rateLimit.js` para límites y `backend/middleware/errorHandler.js` para errores globales.
+- Mantén rutas por dominio en `backend/routes/`, servicios en `backend/services/`, normalizadores en `backend/normalizers/`, prompts en `backend/prompts/` y utilidades en `backend/utils/`.
+- Usa `express.json({ limit: "10mb" })` y `uploadSingleImage("image")` según el patrón actual; no aumentes límites sin justificación.
+- Respeta `/` y `/health` como endpoints de estado existentes.
+
+## Ejemplos
+
+✅ Correcto:
+```js
+router.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
+  const userId = requireAuthenticatedUser(req, res);
+  if (!userId) return;
+});
+```
+
+❌ Incorrecto:
+```js
+router.get("/checkins/:userId", async (req, res) => {
+  const userId = req.params.userId;
+});
+```
+
+✅ Correcto:
+```js
+app.use("/checkins", checkinsRateLimiter);
+app.use("/", checkinsRoutes);
+```
+
+❌ Incorrecto:
+```js
+app.post("/checkins", async (req, res) => {});
+```
