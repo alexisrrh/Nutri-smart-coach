@@ -1,0 +1,44 @@
+---
+description: Reglas de seguridad para autenticación, privacidad, CORS, pagos e IA.
+globs:
+  - "src/**/*.{js,jsx}"
+  - "backend/**/*.js"
+  - "supabase/migrations/**/*.sql"
+alwaysApply: true
+---
+
+# Seguridad
+
+- No expongas claves, tokens, secretos, cabeceras Authorization completas ni datos de otros usuarios.
+- Backend: valida Bearer JWT con `verifySupabaseUser` antes de acceder a recursos privados.
+- No confíes en `user_id` del cliente; compáralo con `req.authUser.id` o ignóralo y usa el usuario autenticado.
+- Mantén CORS en `backend/config/cors.js` con orígenes explícitos y `Authorization`, `Content-Type`, `X-Request-Id`.
+- Mantén rate limits globales y específicos en `backend/middleware/rateLimit.js`.
+- Mantén límites de imagen de `backend/config/multer.js`.
+- No registres errores con secretos; revisa tests de observabilidad cuando cambies manejo de errores.
+- En pagos, premium, referidos y creadores, revisa servicios y tests relacionados antes de cambiar contratos.
+
+## Ejemplos
+
+✅ Correcto:
+```js
+if (requestedUserId && !assertSameUser(userId, requestedUserId)) {
+  return res.status(403).json({ error: "No autorizado para este usuario" });
+}
+```
+
+❌ Incorrecto:
+```js
+const userId = req.query.user_id;
+await deleteUserData(userId);
+```
+
+✅ Correcto:
+```js
+console.error("Error guardando check-in:", error.message);
+```
+
+❌ Incorrecto:
+```js
+console.error(process.env.SUPABASE_SERVICE_ROLE_KEY);
+```
