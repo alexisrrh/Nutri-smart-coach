@@ -1,54 +1,42 @@
 ---
-description: Mantiene los patrones existentes del frontend React de NutriSmart Coach
+description: Patrones React existentes del frontend Vite.
 globs:
-  - "src/**/*.{js,jsx,ts,tsx}"
+  - "src/**/*.{js,jsx}"
+  - "src/i18n/*.json"
 alwaysApply: false
 ---
 
 # Frontend React
 
-## Obligatorio
+- Usa React con Vite y módulos ES; no migres de framework.
+- Mantén rutas centralizadas en `src/App.jsx` con `BrowserRouter`, `Routes`, `Route`, `Navigate`, `React.lazy` y `Suspense`.
+- Protege páginas privadas con `ProtectedRoute` y `useAuth`; no dupliques la lógica de sesión.
+- Usa servicios en `src/services/` y hooks en `src/hooks/` para lógica compartida.
+- Usa `request` de `src/services/apiClient.js` para llamadas al backend que necesitan token Bearer, timeout y errores normalizados.
+- Usa `supabase` de `src/lib/supabase.js` para autenticación y lecturas/escrituras directas ya existentes.
+- Añade textos visibles a `src/i18n/es.json` y `src/i18n/en.json` cuando el flujo ya use i18next.
 
-✅ Usa componentes funcionales y los patrones ya presentes en el archivo o módulo.
+## Ejemplos
 
-✅ Reutiliza componentes, hooks, contextos y servicios existentes antes de crear otros.
+✅ Correcto:
+```jsx
+const Meals = lazy(() =>
+  import("./pages/Meals").then((module) => ({ default: module.Meals }))
+);
+```
 
-✅ Mantén las rutas y protecciones definidas en `src/App.jsx`.
+❌ Incorrecto:
+```jsx
+import Meals from "./pages/Meals";
+```
 
-✅ Gestiona estados de carga, error y ausencia de datos en operaciones asíncronas.
+✅ Correcto:
+```js
+import { request } from "./apiClient";
+await request("/ai-usage/user-id", {}, { operation: "cargar uso de IA" });
+```
 
-✅ Usa el cliente o servicio de API existente; no dupliques lógica de autenticación o peticiones.
-
-✅ Conserva la experiencia móvil, `safe-area` y navegación Android cuando aplique.
-
-## Prohibido
-
-❌ Crear un contexto global para resolver un estado local.
-
-❌ Hacer llamadas directas dispersas si ya existe un servicio centralizado.
-
-❌ Cambiar nombres o rutas públicas sin revisar todos sus consumidores.
-
-❌ Reescribir componentes completos para una corrección puntual.
-
-❌ Añadir dependencias sin justificar por qué no basta la solución actual.
-
-## Ejemplo correcto
-
-✅ Ajustar el manejador existente, reutilizar el servicio actual y mostrar el error con el patrón ya usado por la página.
-
-## Ejemplo incorrecto
-
-❌ Crear un nuevo store global y reemplazar la navegación para corregir un botón.
-
-## Antes de terminar
-
-- Ejecuta las pruebas frontend relacionadas.
-- Ejecuta el build.
-- Comprueba el flujo afectado en tamaño móvil.
-
-## Referencias
-
-- `.cursor/rules/general.mdc`
-- `.cursor/rules/production.mdc`
-- `memory-bank/architecture-decisions/stack-and-rules.md`
+❌ Incorrecto:
+```js
+await fetch(`${API_URL}/ai-usage/user-id`);
+```
