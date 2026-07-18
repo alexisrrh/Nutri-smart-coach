@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-07-18 — Reglas de contexto para asistentes
+
+- **Área:** documentación
+- **Objetivo:** incorporar reglas operativas para Cursor y Codex que protejan la estabilidad de producción y obliguen a verificar el código real antes de proponer cambios.
+- **Cambios:** se creó `.cursor/rules/` con reglas por área y se añadió `AGENTS.md` en la raíz con instrucciones de trabajo para Codex.
+- **Archivos principales:** `.cursor/rules/*.mdc`, `AGENTS.md` y `memory-bank/change-log.md`.
+- **Pruebas automáticas:** `npm run lint` correcto; `npm run build` correcto; `npm run test` falla en el entorno local con `listen EPERM 0.0.0.0` en tests de Supertest y fallos existentes de mocks/componentes no relacionados con esta documentación.
+- **Prueba humana:** revisar que las reglas tienen frontmatter válido, ejemplos correctos e incorrectos, y no documentan patrones inexistentes.
+- **Pendientes:** mantener estas reglas sincronizadas cuando cambien arquitectura, rutas, datos, IA, móvil o despliegue.
+- **Autor:** Codex
+
 ## 2026-07-18 — Creación del banco de memoria de IA
 
 - **Área:** documentación
