@@ -1,0 +1,39 @@
+---
+description: Reglas generales para cambios conservadores en NutriSmart Coach.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Reglas generales
+
+- Lee primero `memory-bank/README.md`, `memory-bank/app-description.md`, `memory-bank/project-status.md`, `memory-bank/production-safety.md` y `memory-bank/architecture-decisions/stack-and-rules.md`.
+- Trata el código real como fuente principal de verdad cuando difiera de la documentación; investiga la diferencia y actualiza la documentación cuando corresponda.
+- Antes de editar, inspecciona los archivos reales implicados y sus consumidores.
+- Mantén cambios pequeños, localizados, reversibles y comprobables.
+- No inventes rutas, endpoints, tablas, buckets, variables de entorno ni convenciones.
+- No cambies arquitectura, diseño, APIs, esquemas, dependencias o despliegue sin solicitud explícita.
+- Para cambios importantes, crea un plan en `memory-bank/implementation-plans/` usando `template.md`.
+- Actualiza `memory-bank/change-log.md` cuando el cambio sea funcional, arquitectónico o de reglas de contexto.
+
+## Ejemplos
+
+✅ Correcto:
+```text
+Leer `memory-bank/project-status.md`, abrir `src/App.jsx` y confirmar la ruta antes de modificar navegación.
+```
+
+❌ Incorrecto:
+```text
+Asumir que existe `/api/users` porque el producto tiene perfiles.
+```
+
+✅ Correcto:
+```text
+Modificar solo el servicio o componente relacionado con la incidencia.
+```
+
+❌ Incorrecto:
+```text
+Reestructurar carpetas o renombrar módulos durante una corrección puntual.
+```

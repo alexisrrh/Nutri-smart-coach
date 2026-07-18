@@ -1,0 +1,47 @@
+---
+description: Reglas para autenticación, datos, migraciones y storage con Supabase.
+globs:
+  - "src/lib/supabase.js"
+  - "src/services/**/*.js"
+  - "src/hooks/**/*.js"
+  - "src/pages/**/*.jsx"
+  - "backend/**/*.js"
+  - "supabase/migrations/**/*.sql"
+alwaysApply: false
+---
+
+# Supabase
+
+- Frontend: importa `supabase` desde `src/lib/supabase.js`, que usa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+- Backend: importa `supabase` desde `backend/config/supabase.js`, que exige `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
+- Nunca expongas `SUPABASE_SERVICE_ROLE_KEY` en frontend, logs o respuestas HTTP.
+- En endpoints privados, valida el Bearer token con `verifySupabaseUser` y usa `req.authUser.id` como usuario real.
+- Comprueba propiedad con `assertSameUser` o filtros `.eq("user_id", userId)` antes de leer, borrar o actualizar datos privados.
+- Revisa `supabase/migrations/` antes de cambiar tablas, columnas, RLS o buckets.
+- Buckets observados: `checkins` y `food-photos`; verifica el código antes de usar otros.
+
+## Ejemplos
+
+✅ Correcto:
+```js
+const { data, error } = await supabase
+  .from("checkins")
+  .select("*")
+  .eq("user_id", userId);
+```
+
+❌ Incorrecto:
+```js
+const { data } = await supabase.from("checkins").select("*");
+```
+
+✅ Correcto:
+```js
+const { data, error } = await supabase.auth.getUser(token);
+req.authUser = data.user;
+```
+
+❌ Incorrecto:
+```js
+const userId = req.body.user_id;
+```

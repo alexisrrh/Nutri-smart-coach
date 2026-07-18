@@ -1,0 +1,42 @@
+---
+description: Patrones React existentes del frontend Vite.
+globs:
+  - "src/**/*.{js,jsx}"
+  - "src/i18n/*.json"
+alwaysApply: false
+---
+
+# Frontend React
+
+- Usa React con Vite y módulos ES; no migres de framework.
+- Mantén rutas centralizadas en `src/App.jsx` con `BrowserRouter`, `Routes`, `Route`, `Navigate`, `React.lazy` y `Suspense`.
+- Protege páginas privadas con `ProtectedRoute` y `useAuth`; no dupliques la lógica de sesión.
+- Usa servicios en `src/services/` y hooks en `src/hooks/` para lógica compartida.
+- Usa `request` de `src/services/apiClient.js` para llamadas al backend que necesitan token Bearer, timeout y errores normalizados.
+- Usa `supabase` de `src/lib/supabase.js` para autenticación y lecturas/escrituras directas ya existentes.
+- Añade textos visibles a `src/i18n/es.json` y `src/i18n/en.json` cuando el flujo ya use i18next.
+
+## Ejemplos
+
+✅ Correcto:
+```jsx
+const Meals = lazy(() =>
+  import("./pages/Meals").then((module) => ({ default: module.Meals }))
+);
+```
+
+❌ Incorrecto:
+```jsx
+import Meals from "./pages/Meals";
+```
+
+✅ Correcto:
+```js
+import { request } from "./apiClient";
+await request("/ai-usage/user-id", {}, { operation: "cargar uso de IA" });
+```
+
+❌ Incorrecto:
+```js
+await fetch(`${API_URL}/ai-usage/user-id`);
+```

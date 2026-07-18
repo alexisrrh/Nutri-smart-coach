@@ -1,0 +1,41 @@
+---
+description: Comprobaciones y patrones de pruebas existentes.
+globs:
+  - "**/*.test.{js,jsx}"
+  - "backend/tests/**/*.js"
+  - "src/**/*.test.{js,jsx}"
+  - "package.json"
+  - "eslint.config.js"
+alwaysApply: false
+---
+
+# Testing
+
+- El repo usa Vitest y ESLint; los scripts disponibles en raíz son `npm run lint`, `npm run test` y `npm run build`.
+- Los tests de backend viven en `backend/tests/` y usan mocks de `backend/config/supabase.js` y `backend/config/gemini.js` cuando procede.
+- Los tests de frontend viven junto a `src/` y prueban servicios/componentes concretos.
+- Añade o ajusta tests cercanos al cambio cuando modifiques lógica de negocio, autenticación, IA, premium, referidos o normalizadores.
+- Para cambios solo documentales, ejecuta al menos `npm run lint`, `npm run test` y `npm run build` si el entorno ya tiene dependencias.
+- Si una comprobación falla por cambios previos fuera de alcance, documenta el fallo y no lo arregles mezclado con esta tarea.
+
+## Ejemplos
+
+✅ Correcto:
+```text
+npm run test -- backend/tests/auth-hardening.test.js
+```
+
+❌ Incorrecto:
+```text
+Omitir tests porque el cambio toca un endpoint privado.
+```
+
+✅ Correcto:
+```text
+Documentar que `npm run build` falla en `src/context/AuthContext.jsx` si ese fallo ya existía fuera del cambio actual.
+```
+
+❌ Incorrecto:
+```text
+Arreglar una pantalla no relacionada dentro de un PR documental.
+```

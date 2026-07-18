@@ -1,0 +1,45 @@
+---
+description: Reglas para mantener compatibilidad Android con Capacitor.
+globs:
+  - "capacitor.config.ts"
+  - "android/**/*"
+  - "src/**/*.{js,jsx,css}"
+  - "public/manifest.webmanifest"
+  - "public/sw.js"
+alwaysApply: false
+---
+
+# Capacitor y Android
+
+- Capacitor usa `appId: "com.nutrismartcoach.app"`, `appName: "NutriSmart Coach"` y `webDir: "dist"` en `capacitor.config.ts`.
+- No cambies `capacitor.config.ts`, `android/`, permisos, `appId` o `webDir` sin solicitud explícita.
+- Cambios de navegación, imágenes, cámara, scroll, teclado o safe areas deben comprobarse en contexto móvil.
+- Mantén `capacitor://localhost` y `https://localhost` en CORS cuando el backend acepte la app móvil.
+- Tras cambios web que afecten Android, ejecuta `npm run build` antes de cualquier `npm run cap:sync`.
+- No ejecutes `npm run cap:android` salvo que el usuario pida abrir Android Studio.
+
+## Ejemplos
+
+✅ Correcto:
+```ts
+const config: CapacitorConfig = {
+  appId: "com.nutrismartcoach.app",
+  appName: "NutriSmart Coach",
+  webDir: "dist",
+};
+```
+
+❌ Incorrecto:
+```ts
+const config = { webDir: "build" };
+```
+
+✅ Correcto:
+```text
+Revisar `AppShell` si un cambio afecta safe areas o scroll móvil.
+```
+
+❌ Incorrecto:
+```text
+Cambiar Android para resolver un problema documental.
+```

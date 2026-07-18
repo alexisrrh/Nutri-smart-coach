@@ -1,0 +1,43 @@
+---
+description: Reglas de estabilidad para una aplicación ya desplegada en producción.
+globs:
+  - "src/**/*"
+  - "backend/**/*"
+  - "supabase/**/*"
+  - "capacitor.config.ts"
+  - "android/**/*"
+  - "package.json"
+  - "package-lock.json"
+alwaysApply: true
+---
+
+# Producción
+
+- NutriSmart Coach está en producción; prioriza mantenimiento conservador.
+- Consulta `memory-bank/production-status.md` y `memory-bank/architecture-decisions/stack-and-rules.md` antes de tocar flujos existentes.
+- No cambies contratos de API sin revisar frontend, backend, pruebas y migraciones relacionadas.
+- No elimines validaciones, fallbacks, rate limits, CORS, autenticación o checks de propiedad.
+- No cambies `package.json`, `package-lock.json`, `vite.config.js`, `capacitor.config.ts`, `.vercel/` ni configuración Android salvo petición explícita.
+- Cuando toques código, ejecuta comprobaciones razonables: `npm run lint`, `npm run test` y `npm run build` si aplican al cambio.
+
+## Ejemplos
+
+✅ Correcto:
+```text
+Cambiar una validación concreta y cubrirla con el test existente más cercano.
+```
+
+❌ Incorrecto:
+```text
+Actualizar dependencias o reconfigurar Vite para resolver una tarea de UI menor.
+```
+
+✅ Correcto:
+```text
+Verificar consumidores antes de cambiar `POST /generate-diet`.
+```
+
+❌ Incorrecto:
+```text
+Renombrar un endpoint porque el nuevo nombre parece más claro.
+```
