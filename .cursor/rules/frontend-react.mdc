@@ -1,0 +1,54 @@
+---
+description: Mantiene los patrones existentes del frontend React de NutriSmart Coach
+globs:
+  - "src/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# Frontend React
+
+## Obligatorio
+
+✅ Usa componentes funcionales y los patrones ya presentes en el archivo o módulo.
+
+✅ Reutiliza componentes, hooks, contextos y servicios existentes antes de crear otros.
+
+✅ Mantén las rutas y protecciones definidas en `src/App.jsx`.
+
+✅ Gestiona estados de carga, error y ausencia de datos en operaciones asíncronas.
+
+✅ Usa el cliente o servicio de API existente; no dupliques lógica de autenticación o peticiones.
+
+✅ Conserva la experiencia móvil, `safe-area` y navegación Android cuando aplique.
+
+## Prohibido
+
+❌ Crear un contexto global para resolver un estado local.
+
+❌ Hacer llamadas directas dispersas si ya existe un servicio centralizado.
+
+❌ Cambiar nombres o rutas públicas sin revisar todos sus consumidores.
+
+❌ Reescribir componentes completos para una corrección puntual.
+
+❌ Añadir dependencias sin justificar por qué no basta la solución actual.
+
+## Ejemplo correcto
+
+✅ Ajustar el manejador existente, reutilizar el servicio actual y mostrar el error con el patrón ya usado por la página.
+
+## Ejemplo incorrecto
+
+❌ Crear un nuevo store global y reemplazar la navegación para corregir un botón.
+
+## Antes de terminar
+
+- Ejecuta las pruebas frontend relacionadas.
+- Ejecuta el build.
+- Comprueba el flujo afectado en tamaño móvil.
+
+## Referencias
+
+- `.cursor/rules/general.mdc`
+- `.cursor/rules/production.mdc`
+- `memory-bank/architecture-decisions/stack-and-rules.md`
