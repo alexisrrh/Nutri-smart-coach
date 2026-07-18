@@ -1,17 +1,17 @@
 # Creators
 
-## 1. Proposito
-Gestionar programa de creadores: solicitudes, codigo personalizado, tracking de enlaces, estadisticas y solicitudes de pago.
+## 1. Propósito
+Gestionar programa de creadores: solicitudes, código personalizado, tracking de enlaces, estadísticas y solicitudes de pago.
 
 ## 2. Estado actual
-Operativo para flujo de usuario. La aprobacion/rechazo administrativa de solicitudes queda pendiente de verificar porque no hay endpoint administrativo confirmado.
+Operativo para flujo de usuario. Pendiente de verificar: no hay endpoint administrativo confirmado en `backend/routes/` para aprobar o rechazar solicitudes.
 
 ## 3. Flujo de usuario
 1. El usuario abre `/creator-panel` o `/creadores`.
 2. Consulta estado con `GET /creators/me`.
-3. Si no tiene solicitud activa, envia formulario con plataforma, usuario social, seguidores y prueba.
-4. Un enlace de creador usa query `creator`; `App.jsx` guarda el codigo, registra clic y redirige a registro o premium.
-5. Un creador aprobado puede cambiar codigo y pedir payout si supera el minimo.
+3. Si no tiene solicitud activa, envía formulario con plataforma, usuario social, seguidores y prueba.
+4. Un enlace de creador usa query `creator`; `App.jsx` guarda el código, registra clic y redirige a registro o premium.
+5. Un creador aprobado puede cambiar código y pedir payout si supera el mínimo.
 
 ## 4. Rutas frontend
 `/creator-panel`, `/creadores`, `/join`, `/register`, `/premium`.
@@ -28,7 +28,7 @@ Operativo para flujo de usuario. La aprobacion/rechazo administrativa de solicit
 - `POST /creators/payouts/request`
 
 ## 7. Middleware
-`GET /me`, apply, code y payouts usan `verifySupabaseUser`. `track-click` es publico con rate limiter local de 30 peticiones/15 min. Hay limite global en `backend/app.js`.
+`GET /me`, apply, code y payouts usan `verifySupabaseUser`. `track-click` es público con rate limiter local de 30 peticiones/15 min. Todas las rutas también pasan por el límite global registrado en `backend/app.js`.
 
 ## 8. Supabase confirmado
 Tablas: `influencer_applications`, `referral_codes`, `creator_link_clicks`, `creator_payout_requests`, `affiliate_commissions`, `subscription_acquisitions`.
@@ -38,19 +38,19 @@ Columnas clave: `social_platform`, `social_handle`, `followers_count`, `proof_ur
 ## 9. IA
 No usa Gemini.
 
-## 10. Limites free/premium
-Constantes confirmadas: minimo 5000 seguidores para solicitud, prueba de creador 15 dias, comision 30%, limite de 12 meses, payout minimo 25 EUR.
+## 10. Límites free/premium
+Constantes confirmadas: mínimo 5000 seguidores para solicitud, prueba de creador 15 días, comisión 30%, límite de 12 meses, payout mínimo 25 EUR.
 
 ## 11. Pruebas
 `backend/tests/creatorService.test.js`, `backend/tests/creators.routes.test.js`, `src/pages/CreatorPanel.test.jsx`, `src/services/creatorService.test.js`, `src/services/creatorTrackingService.test.js`, `src/components/profile/CreatorProgramCard.test.jsx`.
 
 ## 12. Riesgos y dependencias
-El tracking publico debe mantener deduplicacion y hash de IP. Cambios de codigo afectan enlaces existentes. Payouts dependen de comisiones calculadas y estado aprobado.
+El tracking público debe mantener deduplicación y hash de IP. Cambios de código afectan enlaces existentes. Payouts dependen de comisiones calculadas y estado aprobado.
 
 ## 13. Invariantes
-- No permitir payout bajo minimo o con solicitud pendiente duplicada.
+- No permitir payout bajo mínimo o con solicitud pendiente duplicada.
 - No guardar IP en claro; el servicio guarda `ip_hash`.
-- Mantener normalizacion de codigos a mayusculas alfanumericas.
+- Mantener normalización de códigos a mayúsculas alfanuméricas.
 
 ## 14. Pendientes
 No hay endpoint administrativo confirmado para revisar `influencer_applications`.

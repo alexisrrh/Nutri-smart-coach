@@ -49,7 +49,7 @@ Explica qué necesita el usuario y por qué es importante.
 
 ### Paso 3 — Estados y errores
 
-- Añadir estados de carga, vacío, error y éxito cuando correspondan.
+- Añadir estados de carga, vacío, error y éxito cuando el cambio cree o modifique una interacción visible para el usuario.
 
 **Prueba humana:** simular cada estado y verificar que la interfaz informa correctamente.
 

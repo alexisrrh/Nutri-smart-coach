@@ -1,7 +1,7 @@
 # Check-ins
 
-## 1. Proposito
-Registrar fotos corporales con medidas opcionales, analizar evolucion visual con Gemini y consultar/borrar el historial.
+## 1. Propósito
+Registrar fotos corporales con medidas opcionales, analizar evolución visual con Gemini y consultar/borrar el historial.
 
 ## 2. Estado actual
 Operativo.
@@ -9,10 +9,10 @@ Operativo.
 ## 3. Flujo de usuario
 1. El usuario abre `/checkin`.
 2. Sube una imagen y opcionalmente peso, cintura, pecho, cadera y notas.
-3. El frontend envia `FormData` a `POST /checkins`.
-4. El backend valida usuario, archivo y limite IA.
+3. El frontend envía `FormData` a `POST /checkins`.
+4. El backend valida usuario, archivo y límite IA.
 5. La imagen se sube al bucket `checkins`.
-6. El backend compara con check-ins previos y guarda analisis.
+6. El backend compara con check-ins previos y guarda análisis.
 7. El usuario consulta o borra registros desde la misma funcionalidad.
 
 ## 4. Rutas frontend
@@ -28,7 +28,7 @@ Operativo.
 - `GET /ai-usage/:userId`
 
 ## 7. Middleware
-`verifySupabaseUser`, `uploadSingleImage("image")`, `checkinsRateLimiter` y comprobacion de mismo usuario.
+`verifySupabaseUser`, `uploadSingleImage("image")`, `checkinsRateLimiter` y comprobación de mismo usuario.
 
 ## 8. Supabase confirmado
 Tabla `checkins`: `id`, `user_id`, `image_url`, `weight`, `waist`, `chest`, `hips`, `notes`, `language`, `body_fat_range`, `confidence`, `visual_changes`, `recommendation`, `created_at`.
@@ -38,14 +38,14 @@ Bucket: `checkins`.
 ## 9. IA
 `backend/routes/checkins.routes.js` usa Gemini si `GEMINI_API_KEY` existe, prompt en `backend/prompts/checkin.prompt.js` y normalizador `backend/normalizers/checkin.normalizer.js`. Si no hay Gemini, usa fallback.
 
-## 10. Limites free/premium
-Check-in IA: free 1/semana; premium 1/dia. Enfriamiento de 8 segundos antes de IA.
+## 10. Límites free/premium
+Check-in IA: free 1/semana; premium 1/día. Enfriamiento de 8 segundos antes de IA.
 
 ## 11. Pruebas
 `backend/tests/checkins.language.test.js`, `backend/tests/files.test.js`, `backend/tests/aiUsageLimits.test.js`.
 
 ## 12. Riesgos y dependencias
-Depende de Storage, Gemini y RLS. Cambios en campos de medidas afectan progreso y graficas.
+Depende de Storage, Gemini y RLS. Cambios en campos de medidas afectan progreso y gráficas.
 
 ## 13. Invariantes
 - `POST /checkins` requiere imagen.

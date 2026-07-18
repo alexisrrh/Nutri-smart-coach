@@ -18,5 +18,5 @@ Reglas de trabajo:
 - Ejecuta las pruebas, lint y build disponibles cuando sean razonables: `npm run lint`, `npm run test` y `npm run build`.
 - No cambies arquitectura, diseño, APIs, esquemas, dependencias ni configuración de despliegue sin solicitud explícita.
 - No inventes rutas, servicios, tablas, buckets, variables de entorno ni convenciones.
-- Actualiza `memory-bank/change-log.md` cuando corresponda.
+- Actualiza `memory-bank/change-log.md` cuando el cambio modifique documentación, reglas de contexto, comportamiento funcional, arquitectura, datos, IA, móvil o despliegue.
 - Explica siempre qué archivos modificaste y cómo validar el resultado.

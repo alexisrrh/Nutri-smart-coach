@@ -1,15 +1,15 @@
 # Capacitor Android
 
 ## 1. Responsabilidad
-Empaquetar la SPA Vite como aplicacion Android Capacitor.
+Empaquetar la SPA Vite como aplicación Android Capacitor.
 
 ## 2. Estructura real
 - `capacitor.config.ts`: `appId`, `appName`, `webDir`.
 - `android/`: proyecto Android generado, Gradle, manifest, recursos, MainActivity.
-- `src/services/mobileBillingService.js`: deteccion Android nativo y estado de billing.
+- `src/services/mobileBillingService.js`: detección Android nativo y estado de billing.
 
 ## 3. Flujo de datos
-La app web se compila a `dist`. Capacitor sincroniza `dist` al proyecto Android. En runtime, `mobileBillingService` detecta `Capacitor.getPlatform() === "android"` y consulta backend para configuracion premium movil.
+La app web se compila a `dist`. Capacitor sincroniza `dist` al proyecto Android. En runtime, `mobileBillingService` detecta `Capacitor.getPlatform() === "android"` y consulta backend para configuración premium móvil.
 
 ## 4. Puntos de entrada
 `capacitor.config.ts`, `android/app/src/main/java/com/nutrismartcoach/app/MainActivity.java`, `android/app/src/main/AndroidManifest.xml`.
@@ -21,7 +21,7 @@ La app web se compila a `dist`. Capacitor sincroniza `dist` al proyecto Android.
 `webDir` es `dist`; appId confirmado `com.nutrismartcoach.app`; appName confirmado `NutriSmart Coach`.
 
 ## 7. Integraciones externas
-Google Play Billing esta preparado desde backend/configuracion movil, pero la compra/restauracion frontend esta en estado placeholder.
+Google Play Billing está preparado desde backend/configuración móvil, pero la compra/restauración frontend está en estado placeholder.
 
 ## 8. Variables de entorno
 `GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_BUNDLE_ID`, `APPLE_ISSUER_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_ENVIRONMENT`.
@@ -29,8 +29,8 @@ Google Play Billing esta preparado desde backend/configuracion movil, pero la co
 ## 9. Comandos confirmados
 `npm run cap:sync`, `npm run cap:android`, `npm run android:add`, `npm run build`.
 
-## 10. Riesgos de produccion
-No tocar Android, Gradle, iconos, splash ni `capacitor.config.ts` sin solicitud explicita. Cambios de `webDir` o appId afectan builds publicados.
+## 10. Riesgos de producción
+No tocar Android, Gradle, iconos, splash ni `capacitor.config.ts` sin solicitud explícita. Cambios de `webDir` o appId afectan builds publicados.
 
 ## 11. Archivos a revisar antes de modificar
 `capacitor.config.ts`, `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml`, `android/variables.gradle`, `src/services/mobileBillingService.js`, `backend/services/mobilePremium.service.js`.

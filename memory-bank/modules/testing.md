@@ -10,7 +10,7 @@ Validar frontend y backend con Vitest, React Testing Library y ESLint.
 - `vite.config.js`: plugins React/Tailwind.
 
 ## 3. Flujo de datos
-Las pruebas importan modulos reales y usan mocks locales de Supabase, fetch, rutas o servicios segun el caso. Backend prueba rutas Express con Supertest donde aplica.
+Las pruebas importan módulos reales y usan mocks locales de Supabase, fetch, rutas o servicios según el caso. Backend prueba rutas Express con Supertest donde aplica.
 
 ## 4. Puntos de entrada
 `npm run test`, `npm run lint`, `npm run build`.
@@ -19,9 +19,9 @@ Las pruebas importan modulos reales y usan mocks locales de Supabase, fetch, rut
 Vitest, Testing Library, jsdom, ESLint, Supertest.
 
 ## 6. Convenciones existentes
-- Tests junto a servicios/paginas en frontend.
+- Tests junto a servicios/páginas en frontend.
 - Tests backend centralizados en `backend/tests/`.
-- No hay script separado para backend; `vitest run` cubre todo desde raiz.
+- No hay script separado para backend; `vitest run` cubre todo desde raíz.
 
 ## 7. Integraciones externas
 Las integraciones externas se mockean en tests relevantes; no depender de credenciales reales para pruebas unitarias.
@@ -32,8 +32,8 @@ Las pruebas pueden necesitar nombres de variables de Supabase/API/Stripe/Gemini,
 ## 9. Comandos confirmados
 `npm run lint`, `npm run test`, `npm run build`.
 
-## 10. Riesgos de produccion
-Un cambio documental no debe tocar tests. Para cambios de codigo, no aceptar fallos nuevos; si un fallo es previo, documentar archivo, test y error.
+## 10. Riesgos de producción
+Un cambio documental no debe tocar tests. Para cambios de código, no aceptar fallos nuevos; si un fallo es previo, documentar archivo, test y error.
 
 ## 11. Archivos a revisar antes de modificar
 `package.json`, `eslint.config.js`, `vite.config.js`, tests del dominio afectado y reglas en `.cursor/rules/testing.mdc`.

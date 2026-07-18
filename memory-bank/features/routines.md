@@ -1,7 +1,7 @@
 # Routines
 
-## 1. Proposito
-Crear rutinas personalizadas, registrar sesiones de entrenamiento, consultar biblioteca de ejercicios y compartir rutinas o semanas mediante enlaces publicos.
+## 1. Propósito
+Crear rutinas personalizadas, registrar sesiones de entrenamiento, consultar biblioteca de ejercicios y compartir rutinas o semanas mediante enlaces públicos.
 
 ## 2. Estado actual
 Operativo.
@@ -11,7 +11,7 @@ Operativo.
 2. Crea o edita en `/crear-rutina` o `/editar-rutina/:id`.
 3. Lanza entrenamientos y guarda sesiones en `workout_sessions`.
 4. Puede compartir una rutina con `/rutina/:shareId` o una semana con `/rutinas/semana/:shareId`.
-5. Los enlaces publicos permiten guardar rutinas compartidas para el usuario autenticado.
+5. Los enlaces públicos permiten guardar rutinas compartidas para el usuario autenticado.
 
 ## 4. Rutas frontend
 `/rutinas`, `/crear-rutina`, `/editar-rutina/:id`, `/ejercicios`, `/rutina/:shareId`, `/rutinas/semana/:shareId`, `/dashboard`, `/progress`.
@@ -23,7 +23,7 @@ Operativo.
 No hay endpoints Express confirmados para rutinas. El frontend usa Supabase directamente y almacenamiento local de respaldo para sesiones.
 
 ## 7. Middleware
-No aplica en Express. La proteccion depende de Supabase Auth/RLS para tablas privadas; las rutas compartidas son publicas por `share_id`.
+No aplica en Express. La protección depende de Supabase Auth/RLS para tablas privadas; las rutas compartidas son públicas por `share_id`.
 
 ## 8. Supabase confirmado
 Tablas: `custom_workout_routines`, `custom_workout_routine_week_shares`, `workout_sessions`.
@@ -33,22 +33,22 @@ Campos confirmados por servicios: `id`, `user_id`, `name`, `description`, `goal`
 ## 9. IA
 No usa Gemini directamente.
 
-## 10. Limites free/premium
-No hay limites free/premium confirmados para crear rutinas o sesiones.
+## 10. Límites free/premium
+No hay límites free/premium confirmados para crear rutinas o sesiones.
 
 ## 11. Pruebas
 No hay tests dedicados de rutinas confirmados.
 
 ## 12. Riesgos y dependencias
-Compartir depende de `share_id` publico. Las sesiones usan cache local como fallback, por lo que cambios de sincronizacion pueden duplicar o perder historial percibido.
+Compartir depende de `share_id` público. Las sesiones usan cache local como fallback, por lo que cambios de sincronización pueden duplicar o perder historial percibido.
 
 ## 13. Invariantes
 - El borrado de rutina personalizado es soft delete con `is_active=false`.
-- Las rutas publicas por `share_id` no deben exponer rutinas no publicas.
+- Las rutas públicas por `share_id` no deben exponer rutinas no públicas.
 - No romper compatibilidad de rutinas semanales compartidas.
 
 ## 14. Pendientes
-La definicion SQL completa de algunas tablas de rutinas no aparece como `create table` en migraciones actuales; su existencia se confirma por auditoria RLS y uso del frontend.
+Pendiente de verificar: la definición SQL completa de algunas tablas de rutinas no aparece como `create table` en las migraciones actuales. Su uso está documentado porque `supabase/migrations/001_rls_security_audit.sql` contiene políticas RLS para esas tablas y los servicios frontend las consultan directamente.
 
 ## 15. Archivos relevantes
 `src/pages/WorkoutRoutines.jsx`, `src/pages/CreateRoutine.jsx`, `src/pages/SharedRoutine.jsx`, `src/pages/ExercisesLibrary.jsx`, `src/hooks/workouts/useWorkoutConfig.js`, `src/hooks/workouts/useWorkoutHistory.js`, `src/hooks/workouts/useWorkoutSessionLauncher.js`, `src/services/customWorkoutService.js`, `src/services/workoutSessionService.js`, `src/services/workoutPlannerService.js`, `src/services/strengthProgressService.js`, `supabase/migrations/001_rls_security_audit.sql`.

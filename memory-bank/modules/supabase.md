@@ -1,7 +1,7 @@
 # Supabase
 
 ## 1. Responsabilidad
-Autenticacion, base de datos Postgres, RLS y Storage para fotos de comida/check-ins.
+Autenticación, base de datos Postgres, RLS y Storage para fotos de comida/check-ins.
 
 ## 2. Estructura real
 - `src/lib/supabase.js`: cliente frontend con anon key.
@@ -9,7 +9,7 @@ Autenticacion, base de datos Postgres, RLS y Storage para fotos de comida/check-
 - `supabase/migrations/*.sql`: migraciones versionadas.
 
 ## 3. Flujo de datos
-El frontend usa anon key y sesion del usuario para Supabase directo en perfiles/progreso/rutinas. El backend usa service role despues de validar Bearer token para operaciones de IA, pagos, referrals y creators.
+El frontend usa anon key y sesión del usuario para Supabase directo en perfiles/progreso/rutinas. El backend usa service role después de validar Bearer token para operaciones de IA, pagos, referrals y creators.
 
 ## 4. Puntos de entrada
 `src/lib/supabase.js`, `backend/config/supabase.js`, `supabase/migrations/`.
@@ -19,7 +19,7 @@ El frontend usa anon key y sesion del usuario para Supabase directo en perfiles/
 
 ## 6. Convenciones existentes
 - RLS habilitada para tablas sensibles.
-- Politicas de usuario propietario en datos privados.
+- Políticas de usuario propietario en datos privados.
 - Service role limitado a backend.
 - Migraciones incrementales numeradas.
 
@@ -32,8 +32,8 @@ Frontend React, backend Express, Stripe/acquisitions, Gemini mediante tablas de 
 ## 9. Comandos confirmados
 No hay scripts Supabase en `package.json`. Validaciones disponibles: `npm run lint`, `npm run test`, `npm run build`.
 
-## 10. Riesgos de produccion
-Cambios en RLS, columnas premium, buckets o claves foraneas afectan seguridad y facturacion. No crear tablas/columnas nuevas sin migracion explicita y pruebas.
+## 10. Riesgos de producción
+Cambios en RLS, columnas premium, buckets o claves foráneas afectan seguridad y facturación. No crear tablas/columnas nuevas sin migración explícita y pruebas.
 
 ## 11. Archivos a revisar antes de modificar
 `supabase/migrations/*.sql`, `src/lib/supabase.js`, `backend/config/supabase.js`, servicios frontend que consultan tablas directas y rutas backend del dominio.
