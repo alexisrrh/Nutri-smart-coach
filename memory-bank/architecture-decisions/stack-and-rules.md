@@ -1,62 +1,96 @@
-# Decisiones de arquitectura y reglas de trabajo
+# Decisiones de arquitectura y reglas de producción
+
+## Contexto
+
+NutriSmart Coach está en producción. La arquitectura existente es la referencia y la estrategia principal es **mantenimiento conservador**: cambios pequeños, localizados y comprobables.
 
 ## ADR-001: Frontend con React y Vite
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-El frontend se mantiene en React con Vite. No se debe migrar a otro framework ni introducir una segunda aplicación frontend para resolver una función aislada.
+El frontend se mantiene en React 19 con Vite 8. Las páginas usan carga diferida con `React.lazy` y `Suspense`. No migrar a Next.js, Vue, Angular u otro framework sin una decisión formal.
 
-## ADR-002: Estilos con Tailwind CSS
+## ADR-002: Estilos con Tailwind CSS y variables del tema
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-Los nuevos componentes deben reutilizar las clases, patrones visuales y componentes existentes. Se debe evitar introducir otra librería de estilos salvo que exista una necesidad clara y documentada.
+Se deben reutilizar componentes, clases Tailwind y variables CSS existentes. No introducir otra librería visual ni realizar un rediseño general para resolver una incidencia aislada. Comprobar especialmente pantallas móviles pequeñas, safe areas y Android.
 
-## ADR-003: Autenticación y datos con Supabase
+## ADR-003: Navegación con React Router
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-Supabase es la fuente de autenticación y persistencia. Las operaciones privadas del backend deben validar el token Bearer y obtener la identidad real del usuario autenticado. No se debe confiar únicamente en un `userId` enviado desde el cliente.
+Las rutas públicas, privadas, legales, de creador y de rutinas compartidas están centralizadas en `src/App.jsx`. No renombrar ni eliminar rutas sin comprobar enlaces, navegación, analítica, referidos y compatibilidad con usuarios existentes.
 
-## ADR-004: Backend con Node.js y Express
+## ADR-004: Autenticación y datos con Supabase
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-La API se mantiene en Node.js y Express. Los endpoints deben reutilizar middleware, validaciones y servicios existentes antes de crear implementaciones paralelas.
+Supabase gestiona autenticación, perfiles, persistencia y almacenamiento. El backend debe verificar el token Bearer y obtener el usuario real mediante el middleware existente. Nunca confiar únicamente en un `user_id` enviado por el cliente. Toda consulta privada debe limitarse al usuario autenticado.
 
-## ADR-005: IA con Gemini
+## ADR-005: Backend modular con Node.js y Express
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-Gemini se utiliza para análisis de alimentos y generación de planes. Toda respuesta de IA debe considerarse no determinista y debe validarse antes de almacenarse o mostrarse como dato fiable.
+La API usa Express 5 y separa rutas, middleware, normalizadores, prompts, servicios y utilidades. `backend/app.js` registra CORS, logging, limitadores, pagos, referidos, creadores, check-ins, uso de IA, dietas y comidas. No volver a concentrar la lógica en `server.js` ni crear rutas paralelas.
 
-## ADR-006: Aplicación móvil con Capacitor
+## ADR-006: IA con Gemini y respuestas de respaldo
 
-**Estado:** Aceptada
+**Estado:** aceptada y en producción.
 
-La aplicación Android reutiliza la compilación web mediante Capacitor. Los cambios visuales deben comprobarse en navegador móvil y, cuando afecten navegación, carga de archivos o zonas seguras, también en Android.
+Gemini se utiliza para análisis de comida, dietas y check-ins. Las respuestas deben normalizarse y validarse antes de guardarse. Los fallbacks existentes son parte de la estabilidad del producto y no deben eliminarse. La IA no debe presentar estimaciones como diagnósticos médicos.
 
-## Reglas para asistentes de IA
+## ADR-007: Límites, premium y monetización
 
-1. Leer `memory-bank/app-description.md` antes de proponer cambios.
-2. Leer el plan activo dentro de `memory-bank/implementation-plans/`.
-3. Inspeccionar los archivos reales relacionados antes de escribir código.
-4. No inventar rutas, tablas, columnas, variables de entorno ni endpoints.
-5. No reemplazar archivos completos cuando baste un cambio localizado.
-6. Mantener compatibilidad con la estructura y convenciones actuales.
-7. Indicar qué archivos se modifican y por qué.
-8. Añadir o actualizar pruebas cuando la lógica sea comprobable automáticamente.
-9. Incluir una prueba humana concreta para cada paso.
-10. Actualizar `memory-bank/change-log.md` al completar una tarea.
+**Estado:** aceptada y en producción.
+
+El consumo de IA se controla por usuario y tipo de operación. El perfil de Supabase determina plan, estado de suscripción, fuente premium y vigencia. No modificar límites, reglas premium, pagos, referidos o creadores sin revisar conjuntamente frontend, backend y datos.
+
+## ADR-008: Aplicación móvil con Capacitor
+
+**Estado:** aceptada y en producción.
+
+Android reutiliza la compilación web mediante Capacitor 8. Los cambios que afecten navegación, imágenes, permisos, teclado, scroll, safe areas o enlaces deben comprobarse en contexto móvil.
+
+## ADR-009: Internacionalización
+
+**Estado:** aceptada y en producción.
+
+La aplicación usa i18next y react-i18next. No introducir textos nuevos visibles al usuario directamente en componentes cuando exista el sistema de traducciones. Mantener como mínimo español e inglés cuando el flujo ya sea bilingüe.
+
+## Regla de cambio mínimo
+
+Antes de editar código:
+
+1. Reproducir o definir exactamente el problema.
+2. Leer el banco de memoria.
+3. Inspeccionar los archivos reales implicados.
+4. Localizar el componente, servicio o middleware existente que ya gestiona el flujo.
+5. Proponer el cambio mínimo.
+6. Identificar riesgos de producción y una forma de revertirlo.
+7. Ejecutar pruebas y una comprobación humana concreta.
+
+## Prohibiciones para asistentes de IA
+
+- No inventar rutas, endpoints, tablas, columnas, buckets ni variables de entorno.
+- No modificar archivos ajenos a la tarea para “mejorar” el código.
+- No reescribir componentes completos cuando baste un parche localizado.
+- No cambiar contratos de API sin revisar consumidores.
+- No eliminar fallbacks, validaciones, autenticación, rate limits o controles de propiedad.
+- No cambiar el diseño general sin aprobación explícita.
+- No añadir dependencias sin justificar necesidad, peso, seguridad y mantenimiento.
+- No usar datos médicos categóricos a partir de estimaciones visuales de IA.
 
 ## Criterios de finalización
 
-Un cambio se considera terminado cuando:
+Un cambio de producción se considera terminado cuando:
 
-- La aplicación compila sin errores.
-- Las pruebas relacionadas pasan.
-- No aparecen errores nuevos en la consola.
-- El flujo principal se ha comprobado manualmente.
-- Los estados de carga, error y ausencia de datos están contemplados.
-- No se han expuesto secretos o datos de otros usuarios.
-- El registro de cambios está actualizado.
+- `npm run build` finaliza correctamente.
+- Las pruebas relacionadas pasan con `npm run test` cuando corresponda.
+- El backend inicia y `/health` responde correctamente cuando se modifica la API.
+- No aparecen errores nuevos en consola o registros.
+- Se verifica el flujo principal y al menos un estado de error.
+- Se comprueba móvil cuando el cambio visual o de navegación lo requiera.
+- Se mantiene aislamiento de datos entre usuarios.
+- Existe una estrategia clara de reversión.
+- `memory-bank/change-log.md` se actualiza si el cambio es funcional o arquitectónico.
