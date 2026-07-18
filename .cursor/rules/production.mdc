@@ -1,0 +1,55 @@
+---
+description: Protege la estabilidad de NutriSmart Coach en producción
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Reglas de producción
+
+NutriSmart Coach está en producción y debe tratarse como un sistema estable.
+
+## Obligatorio
+
+✅ Realiza cambios pequeños, localizados y reversibles.
+
+✅ Conserva contratos existentes de rutas, componentes, servicios y datos.
+
+✅ Revisa efectos sobre autenticación, premium, límites de IA, persistencia y móvil cuando aplique.
+
+✅ Documenta cualquier riesgo, migración o dependencia necesaria antes de implementar.
+
+✅ Mantén compatibilidad con web y Capacitor Android cuando el área afectada sea compartida.
+
+## Prohibido
+
+❌ Refactorizaciones amplias sin necesidad funcional concreta.
+
+❌ Cambios visuales no solicitados.
+
+❌ Renombrar rutas, endpoints, tablas, columnas o variables de entorno sin plan de migración.
+
+❌ Sustituir una librería estable solo por preferencia personal.
+
+❌ Mezclar una corrección con limpiezas generales no relacionadas.
+
+## Validación mínima
+
+Antes de cerrar una tarea:
+
+1. Ejecuta las pruebas disponibles relacionadas.
+2. Ejecuta el build cuando se modifique frontend.
+3. Verifica manualmente el flujo afectado.
+4. Indica claramente qué no fue probado.
+
+## Ejemplos
+
+✅ Corregir únicamente el cálculo que falla y conservar la interfaz pública.
+
+❌ Reescribir toda la página y el servicio porque “quedaría más moderno”.
+
+## Referencias
+
+- `memory-bank/production-safety.md`
+- `memory-bank/project-status.md`
+- `.cursor/rules/general.mdc`
