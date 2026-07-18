@@ -12,7 +12,7 @@ alwaysApply: true
 - Antes de editar, inspecciona los archivos reales implicados y sus consumidores.
 - Mantén cambios pequeños, localizados, reversibles y comprobables.
 - No inventes rutas, endpoints, tablas, buckets, variables de entorno ni convenciones.
-- No cambies arquitectura, diseño, APIs, esquemas o despliegue sin solicitud explícita.
+- No cambies arquitectura, diseño, APIs, esquemas, dependencias o despliegue sin solicitud explícita.
 - Para cambios importantes, crea un plan en `memory-bank/implementation-plans/` usando `template.md`.
 - Actualiza `memory-bank/change-log.md` cuando el cambio sea funcional, arquitectónico o de reglas de contexto.
 
