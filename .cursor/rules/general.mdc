@@ -7,8 +7,8 @@ alwaysApply: true
 
 # Reglas generales
 
-- Lee primero `memory-bank/`, especialmente `app-description.md`, `system-map.md`, `production-status.md` y `architecture-decisions/stack-and-rules.md`.
-- Trata el código real como fuente principal de verdad cuando difiera de la documentación.
+- Lee primero `memory-bank/README.md`, `memory-bank/app-description.md`, `memory-bank/project-status.md`, `memory-bank/production-safety.md` y `memory-bank/architecture-decisions/stack-and-rules.md`.
+- Trata el código real como fuente principal de verdad cuando difiera de la documentación; investiga la diferencia y actualiza la documentación cuando corresponda.
 - Antes de editar, inspecciona los archivos reales implicados y sus consumidores.
 - Mantén cambios pequeños, localizados, reversibles y comprobables.
 - No inventes rutas, endpoints, tablas, buckets, variables de entorno ni convenciones.
@@ -20,7 +20,7 @@ alwaysApply: true
 
 ✅ Correcto:
 ```text
-Leer `memory-bank/system-map.md`, abrir `src/App.jsx` y confirmar la ruta antes de modificar navegación.
+Leer `memory-bank/project-status.md`, abrir `src/App.jsx` y confirmar la ruta antes de modificar navegación.
 ```
 
 ❌ Incorrecto:
