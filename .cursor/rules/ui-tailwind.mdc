@@ -1,0 +1,40 @@
+---
+description: Patrones de UI con Tailwind CSS 4 y variables de tema existentes.
+globs:
+  - "src/**/*.{js,jsx,css}"
+  - "vite.config.js"
+alwaysApply: false
+---
+
+# UI y Tailwind
+
+- Tailwind se carga con `@tailwindcss/vite` en `vite.config.js` y `@import "tailwindcss"` en `src/index.css`; no añadas un `tailwind.config.*` salvo petición explícita.
+- Reutiliza variables CSS de tema: `--app-bg`, `--app-surface`, `--app-card`, `--app-primary`, `--app-primary-soft`, `--app-border`, `--app-text`, `--app-muted` y `--app-glow`.
+- Mantén compatibilidad móvil con `100dvh`, `env(safe-area-inset-*)`, `--bottom-nav-space` y contenedores `max-w-[430px]` o `max-w-[520px]` cuando uses `AppShell`.
+- Usa componentes existentes de `src/components/ui/` antes de crear variantes visuales nuevas.
+- No rediseñes pantallas completas para un ajuste puntual.
+- Si añades iconos, usa `lucide-react`, ya presente en el proyecto.
+
+## Ejemplos
+
+✅ Correcto:
+```jsx
+<div className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-text)]" />
+```
+
+❌ Incorrecto:
+```jsx
+<div className="rounded-3xl border border-purple-500 bg-purple-950 text-white" />
+```
+
+✅ Correcto:
+```jsx
+<AppShell scrollClassName="px-1">
+  {children}
+</AppShell>
+```
+
+❌ Incorrecto:
+```jsx
+<main className="min-h-screen overflow-auto">{children}</main>
+```
