@@ -1,0 +1,50 @@
+---
+description: Reglas para integración existente con Google Gemini y límites de IA.
+globs:
+  - "backend/config/gemini.js"
+  - "backend/routes/**/*.js"
+  - "backend/prompts/**/*.js"
+  - "backend/normalizers/**/*.js"
+  - "backend/services/*Fallback*.js"
+  - "backend/utils/aiUsage.js"
+  - "src/services/*ai*.js"
+  - "src/hooks/**/*Ai*.js"
+  - "src/components/**/*Ai*.jsx"
+alwaysApply: false
+---
+
+# IA y Gemini
+
+- Usa `ai` desde `backend/config/gemini.js`; no crees clientes Gemini paralelos.
+- Modelo observado en rutas de IA: `gemini-2.5-flash`; no cambies modelo sin solicitud explícita.
+- Mantén `GEMINI_API_KEY` solo en backend.
+- Antes de llamar a Gemini, conserva validación de usuario, límite diario y cooldown desde `backend/utils/aiUsage.js`.
+- Normaliza respuestas con los normalizadores existentes antes de persistir.
+- Limpia JSON con `cleanGeminiJson` cuando el patrón actual lo use.
+- Mantén fallbacks de dieta y check-in; son parte de la estabilidad de producción.
+- No presentes estimaciones visuales como diagnóstico médico.
+
+## Ejemplos
+
+✅ Correcto:
+```js
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents,
+});
+```
+
+❌ Incorrecto:
+```js
+const ai = new GoogleGenAI({ apiKey: req.body.apiKey });
+```
+
+✅ Correcto:
+```js
+const analysis = normalizeFoodAnalysis(data, language);
+```
+
+❌ Incorrecto:
+```js
+await supabase.from("meal_analyses").insert(JSON.parse(response.text));
+```
