@@ -1,62 +1,39 @@
 ---
-description: Regla maestra para trabajar con NutriSmart Coach usando IA
+description: Reglas generales para cambios conservadores en NutriSmart Coach.
 globs:
   - "**/*"
 alwaysApply: true
 ---
 
-# Flujo obligatorio de trabajo
+# Reglas generales
 
-NutriSmart Coach es una aplicación estable y en producción.
+- Lee primero `memory-bank/`, especialmente `app-description.md`, `system-map.md`, `production-status.md` y `architecture-decisions/stack-and-rules.md`.
+- Trata el código real como fuente principal de verdad cuando difiera de la documentación.
+- Antes de editar, inspecciona los archivos reales implicados y sus consumidores.
+- Mantén cambios pequeños, localizados, reversibles y comprobables.
+- No inventes rutas, endpoints, tablas, buckets, variables de entorno ni convenciones.
+- No cambies arquitectura, diseño, APIs, esquemas o despliegue sin solicitud explícita.
+- Para cambios importantes, crea un plan en `memory-bank/implementation-plans/` usando `template.md`.
+- Actualiza `memory-bank/change-log.md` cuando el cambio sea funcional, arquitectónico o de reglas de contexto.
 
-Antes de modificar código:
+## Ejemplos
 
-1. Lee `memory-bank/README.md`.
-2. Lee `memory-bank/app-description.md`.
-3. Lee `memory-bank/project-status.md`.
-4. Lee `memory-bank/production-safety.md`.
-5. Revisa las reglas `.cursor/rules/*.mdc` aplicables al área.
-6. Inspecciona el código real relacionado con la tarea.
-7. Identifica el cambio mínimo necesario.
-8. Explica qué archivos se tocarán y por qué.
-9. Define cómo se probará el cambio.
+✅ Correcto:
+```text
+Leer `memory-bank/system-map.md`, abrir `src/App.jsx` y confirmar la ruta antes de modificar navegación.
+```
 
-## Principios obligatorios
+❌ Incorrecto:
+```text
+Asumir que existe `/api/users` porque el producto tiene perfiles.
+```
 
-✅ El código real es la fuente principal de verdad.
+✅ Correcto:
+```text
+Modificar solo el servicio o componente relacionado con la incidencia.
+```
 
-✅ Mantén los patrones ya usados en el repositorio.
-
-✅ Limita cada tarea a su alcance declarado.
-
-✅ Conserva compatibilidad web y Android cuando aplique.
-
-✅ Añade manejo de errores cuando exista una operación que pueda fallar.
-
-✅ Actualiza `memory-bank/change-log.md` cuando el cambio sea relevante.
-
-## Prohibido
-
-❌ Inventar rutas, tablas, columnas, variables de entorno o servicios.
-
-❌ Modificar archivos no relacionados solo para “mejorar” el código.
-
-❌ Reescribir componentes completos cuando una corrección localizada sea suficiente.
-
-❌ Cambiar arquitectura, diseño o contratos públicos sin petición explícita.
-
-❌ Dar por terminada una tarea sin indicar cómo verificarla.
-
-## Ejemplo correcto
-
-✅ “El problema está en `src/pages/Meals.jsx`. Ajustaré únicamente el manejador de eliminación y comprobaré el flujo existente del servicio antes de cambiarlo.”
-
-## Ejemplo incorrecto
-
-❌ “Voy a reorganizar toda la página, crear un nuevo contexto y reemplazar el servicio actual para que quede más limpio.”
-
-## Referencias
-
-- Estado y contexto: `memory-bank/`
-- Seguridad de producción: `memory-bank/production-safety.md`
-- Decisiones técnicas: `memory-bank/architecture-decisions/stack-and-rules.md`
+❌ Incorrecto:
+```text
+Reestructurar carpetas o renombrar módulos durante una corrección puntual.
+```
