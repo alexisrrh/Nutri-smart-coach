@@ -1,55 +1,43 @@
 ---
-description: Protege la estabilidad de NutriSmart Coach en producción
+description: Reglas de estabilidad para una aplicación ya desplegada en producción.
 globs:
-  - "**/*"
+  - "src/**/*"
+  - "backend/**/*"
+  - "supabase/**/*"
+  - "capacitor.config.ts"
+  - "android/**/*"
+  - "package.json"
+  - "package-lock.json"
 alwaysApply: true
 ---
 
-# Reglas de producción
+# Producción
 
-NutriSmart Coach está en producción y debe tratarse como un sistema estable.
-
-## Obligatorio
-
-✅ Realiza cambios pequeños, localizados y reversibles.
-
-✅ Conserva contratos existentes de rutas, componentes, servicios y datos.
-
-✅ Revisa efectos sobre autenticación, premium, límites de IA, persistencia y móvil cuando aplique.
-
-✅ Documenta cualquier riesgo, migración o dependencia necesaria antes de implementar.
-
-✅ Mantén compatibilidad con web y Capacitor Android cuando el área afectada sea compartida.
-
-## Prohibido
-
-❌ Refactorizaciones amplias sin necesidad funcional concreta.
-
-❌ Cambios visuales no solicitados.
-
-❌ Renombrar rutas, endpoints, tablas, columnas o variables de entorno sin plan de migración.
-
-❌ Sustituir una librería estable solo por preferencia personal.
-
-❌ Mezclar una corrección con limpiezas generales no relacionadas.
-
-## Validación mínima
-
-Antes de cerrar una tarea:
-
-1. Ejecuta las pruebas disponibles relacionadas.
-2. Ejecuta el build cuando se modifique frontend.
-3. Verifica manualmente el flujo afectado.
-4. Indica claramente qué no fue probado.
+- NutriSmart Coach está en producción; prioriza mantenimiento conservador.
+- Consulta `memory-bank/production-status.md` y `memory-bank/architecture-decisions/stack-and-rules.md` antes de tocar flujos existentes.
+- No cambies contratos de API sin revisar frontend, backend, pruebas y migraciones relacionadas.
+- No elimines validaciones, fallbacks, rate limits, CORS, autenticación o checks de propiedad.
+- No cambies `package.json`, `package-lock.json`, `vite.config.js`, `capacitor.config.ts`, `.vercel/` ni configuración Android salvo petición explícita.
+- Cuando toques código, ejecuta comprobaciones razonables: `npm run lint`, `npm run test` y `npm run build` si aplican al cambio.
 
 ## Ejemplos
 
-✅ Corregir únicamente el cálculo que falla y conservar la interfaz pública.
+✅ Correcto:
+```text
+Cambiar una validación concreta y cubrirla con el test existente más cercano.
+```
 
-❌ Reescribir toda la página y el servicio porque “quedaría más moderno”.
+❌ Incorrecto:
+```text
+Actualizar dependencias o reconfigurar Vite para resolver una tarea de UI menor.
+```
 
-## Referencias
+✅ Correcto:
+```text
+Verificar consumidores antes de cambiar `POST /generate-diet`.
+```
 
-- `memory-bank/production-safety.md`
-- `memory-bank/project-status.md`
-- `.cursor/rules/general.mdc`
+❌ Incorrecto:
+```text
+Renombrar un endpoint porque el nuevo nombre parece más claro.
+```
