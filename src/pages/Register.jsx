@@ -38,6 +38,7 @@ import {
   SurfaceCard,
 } from "../components/ui";
 import { trackEvent } from "../services/analytics";
+import { AppleSignInButton } from "../components/Home/AppleSignInButton";
 
 export function Register() {
   const navigate = useNavigate();
@@ -578,6 +579,51 @@ export function Register() {
                   </svg>
                   {tr("social.facebook")}
                 </button>
+
+                <AppleSignInButton
+                  supabase={supabase}
+                  acceptedPolicies={acceptedPolicies}
+                  onError={setError}
+                  onLoading={setLoading}
+                  label={"Continuar con Apple"}
+                  onSuccess={async (data, appleName) => {
+                    const user = data?.user;
+                    if (user) {
+                      setPendingLegalConsent(buildAcceptedLegalConsent());
+                      prepareOAuthReferralCode(getStoredReferralCode());
+                      
+                      try {
+                        await saveProfile({
+                          id: user.id,
+                          user_id: user.id,
+                          email: user.email,
+                          name: appleName,
+                          age: null,
+                          weight: null,
+                          height: null,
+                          gender: "male",
+                          activity_level: "moderate",
+                          goal: "perder_grasa",
+                          preferences: {
+                            gender: "male",
+                            activity: "moderate",
+                            goal: "perder_grasa",
+                            meals_per_day: 4,
+                          },
+                          ...buildAcceptedLegalConsent(),
+                          updated_at: new Date().toISOString(),
+                        });
+                        trackEvent("sign_up", { method: "apple" });
+                      } catch (profileError) {
+                        console.error("Error creando perfil:", profileError);
+                      }
+                      
+                      navigate("/dashboard", { replace: true });
+                    }
+                  }}
+                />
+
+
               </div>
 
             </div>

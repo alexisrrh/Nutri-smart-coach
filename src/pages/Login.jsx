@@ -29,6 +29,8 @@ import {
   StatusBox,
   SurfaceCard,
 } from "../components/ui";
+import { AppleSignInButton } from "../components/Home/AppleSignInButton";
+
 
 export function Login() {
   const navigate = useNavigate();
@@ -446,11 +448,13 @@ function PasswordResetModal({
   );
 }
 
-function SocialLoginButtons({ onSocialLogin }) {
+function SocialLoginButtons({ onSocialLogin, supabase, setError, setLoading, navigate }) {
   const { t } = useTranslation();
   const tl = (key, options) => t(`auth.login.${key}`, options);
+  
   return (
     <div className="mt-3 flex flex-col gap-3">
+      {/* Botón de Google */}
       <button
         type="button"
         onClick={() => onSocialLogin("google")}
@@ -465,6 +469,7 @@ function SocialLoginButtons({ onSocialLogin }) {
         {tl("social.google")}
       </button>
 
+      {/* Botón de Facebook */}
       <button
         type="button"
         onClick={() => onSocialLogin("facebook")}
@@ -475,9 +480,27 @@ function SocialLoginButtons({ onSocialLogin }) {
         </svg>
         {tl("social.facebook")}
       </button>
+
+      {/* Botón de Apple Seguro */}
+      <AppleSignInButton
+        supabase={supabase}
+        acceptedPolicies={true}
+        onError={setError || (() => {})}
+        onLoading={setLoading || (() => {})}
+        label="Continuar con Apple"
+        onSuccess={async (data) => {
+          const user = data?.user;
+          if (user) {
+            trackEvent("login", { method: "apple" });
+            navigate("/dashboard", { replace: true });
+          }
+        }}
+      />
     </div>
   );
 }
+
+
 
 function Input({ label, icon, ...props }) {
   return (
