@@ -6,8 +6,10 @@ Antes de proponer o modificar:
 
 1. Lee primero `memory-bank/`.
 2. Lee las reglas aplicables en `.cursor/rules/*.mdc`.
-3. Inspecciona el código real relacionado con la tarea.
-4. Usa el código, las migraciones y la configuración existente como fuente principal de verdad.
+3. Antes de modificar una funcionalidad, lee su documento correspondiente en `memory-bank/features/`.
+4. Antes de cambiar infraestructura, arquitectura, datos, IA, seguridad, pruebas, móvil o despliegue, lee `memory-bank/modules/`.
+5. Inspecciona el código real relacionado con la tarea.
+6. Usa el código, las migraciones y la configuración existente como fuente principal de verdad.
 
 Reglas de trabajo:
 
