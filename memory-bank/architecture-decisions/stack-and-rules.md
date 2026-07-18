@@ -14,7 +14,7 @@ El frontend se mantiene en React 19 con Vite 8. Las páginas usan carga diferida
 
 **Estado:** aceptada y en producción.
 
-Se deben reutilizar componentes, clases Tailwind y variables CSS existentes. No introducir otra librería visual ni realizar un rediseño general para resolver una incidencia aislada. Comprobar especialmente pantallas móviles pequeñas, safe areas y Android.
+Se deben reutilizar componentes, clases Tailwind y variables CSS existentes. No introducir otra librería visual ni realizar un rediseño general para resolver una incidencia aislada. Comprobar especialmente pantallas móviles pequeñas, safe áreas y Android.
 
 ## ADR-003: Navegación con React Router
 
@@ -50,7 +50,7 @@ El consumo de IA se controla por usuario y tipo de operación. El perfil de Supa
 
 **Estado:** aceptada y en producción.
 
-Android reutiliza la compilación web mediante Capacitor 8. Los cambios que afecten navegación, imágenes, permisos, teclado, scroll, safe areas o enlaces deben comprobarse en contexto móvil.
+Android reutiliza la compilación web mediante Capacitor 8. Los cambios que afecten navegación, imágenes, permisos, teclado, scroll, safe áreas o enlaces deben comprobarse en contexto móvil.
 
 ## ADR-009: Internacionalización
 
@@ -86,7 +86,7 @@ Antes de editar código:
 Un cambio de producción se considera terminado cuando:
 
 - `npm run build` finaliza correctamente.
-- Las pruebas relacionadas pasan con `npm run test` cuando corresponda.
+- Las pruebas relacionadas pasan con `npm run test` cuando el cambio toca código, pruebas, configuración o flujos ejecutables.
 - El backend inicia y `/health` responde correctamente cuando se modifica la API.
 - No aparecen errores nuevos en consola o registros.
 - Se verifica el flujo principal y al menos un estado de error.

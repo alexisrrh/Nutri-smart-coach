@@ -6,8 +6,10 @@ Antes de proponer o modificar:
 
 1. Lee primero `memory-bank/`.
 2. Lee las reglas aplicables en `.cursor/rules/*.mdc`.
-3. Inspecciona el código real relacionado con la tarea.
-4. Usa el código, las migraciones y la configuración existente como fuente principal de verdad.
+3. Antes de modificar una funcionalidad, lee su documento correspondiente en `memory-bank/features/`.
+4. Antes de cambiar infraestructura, arquitectura, datos, IA, seguridad, pruebas, móvil o despliegue, lee `memory-bank/modules/`.
+5. Inspecciona el código real relacionado con la tarea.
+6. Usa el código, las migraciones y la configuración existente como fuente principal de verdad.
 
 Reglas de trabajo:
 
@@ -16,5 +18,5 @@ Reglas de trabajo:
 - Ejecuta las pruebas, lint y build disponibles cuando sean razonables: `npm run lint`, `npm run test` y `npm run build`.
 - No cambies arquitectura, diseño, APIs, esquemas, dependencias ni configuración de despliegue sin solicitud explícita.
 - No inventes rutas, servicios, tablas, buckets, variables de entorno ni convenciones.
-- Actualiza `memory-bank/change-log.md` cuando corresponda.
+- Actualiza `memory-bank/change-log.md` cuando el cambio modifique documentación, reglas de contexto, comportamiento funcional, arquitectura, datos, IA, móvil o despliegue.
 - Explica siempre qué archivos modificaste y cómo validar el resultado.
