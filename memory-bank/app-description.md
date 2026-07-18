@@ -1,70 +1,127 @@
-# NutriSmart Coach — Descripción de la aplicación
+# NutriSmart Coach — Descripción actual de la aplicación
+
+## Estado del producto
+
+**Estado:** producción y mantenimiento.
+
+NutriSmart Coach ya no se encuentra en una fase inicial de construcción. La aplicación cuenta con frontend, API, autenticación, persistencia, funciones de IA, sistema premium, referidos, analítica, internacionalización y soporte Android. La prioridad actual es mantener la estabilidad, corregir errores concretos y realizar mejoras pequeñas y justificadas.
+
+No se deben proponer rediseños generales, migraciones de tecnología ni reestructuraciones amplias sin una necesidad real y aprobación explícita.
 
 ## Propósito
 
-NutriSmart Coach es una aplicación web y móvil orientada a nutrición, entrenamiento y seguimiento del progreso físico. Utiliza inteligencia artificial para ayudar al usuario a analizar comidas, generar dietas personalizadas, registrar check-ins corporales y consultar rutinas de entrenamiento.
+NutriSmart Coach es una plataforma web y móvil de nutrición, entrenamiento y seguimiento físico. Utiliza inteligencia artificial para analizar comidas, generar dietas personalizadas, registrar check-ins corporales y apoyar el seguimiento de hábitos y objetivos.
 
 ## Usuarios objetivo
 
-- Personas que quieren perder grasa o ganar masa muscular.
-- Usuarios que desean organizar su alimentación y progreso desde una sola aplicación.
-- Personas que buscan apoyo de IA para interpretar comidas, hábitos y evolución corporal.
+- Personas que quieren perder grasa, ganar masa muscular o mantener su peso.
+- Usuarios que desean organizar alimentación, rutinas y progreso en una sola aplicación.
+- Personas que buscan orientación automatizada mediante IA sin sustituir asesoramiento médico profesional.
 
-## Funcionalidades principales
+## Funcionalidades implementadas
 
-- Registro, inicio de sesión y rutas protegidas.
-- Configuración inicial del perfil y del objetivo físico.
-- Análisis nutricional de comidas mediante imagen o texto.
-- Historial de comidas analizadas y acumulación de macronutrientes.
+### Cuenta y seguridad
+
+- Registro, inicio de sesión y recuperación de contraseña.
+- Autenticación con Supabase.
+- Rutas privadas mediante `ProtectedRoute`.
+- Configuración y edición del perfil.
+- Ajustes de perfil, tema, IA, seguridad y aspectos legales.
+- Página para solicitar la eliminación de la cuenta.
+
+### Nutrición e inteligencia artificial
+
+- Análisis nutricional de comidas mediante fotografía.
+- Identificación de alimentos, estimación de calorías y macronutrientes.
+- Historial de comidas analizadas.
+- Resumen diario de alimentación.
 - Generación de dietas semanales personalizadas.
-- Check-ins corporales con peso, fotografía y análisis asistido por IA.
-- Seguimiento del progreso físico.
-- Biblioteca de ejercicios y rutinas por grupo muscular.
-- Gestión de límites de uso y funcionalidades premium.
-- Aplicación Android mediante Capacitor.
+- Reescritura de comidas de un plan existente.
+- Respuesta alternativa de respaldo cuando Gemini no está disponible.
+- Límites de uso de IA y tiempos de espera entre solicitudes.
 
-## Stack tecnológico
+### Progreso corporal
+
+- Check-ins con imagen, peso, medidas y notas.
+- Análisis corporal asistido por Gemini.
+- Historial y eliminación de check-ins.
+- Comparación con registros anteriores.
+- Centro de progreso y visualización de evolución.
+
+### Entrenamiento
+
+- Biblioteca de ejercicios por grupos musculares.
+- Rutinas de entrenamiento.
+- Creación y edición de rutinas.
+- Enlaces públicos para compartir rutinas.
+
+### Negocio y crecimiento
+
+- Plan gratuito y funciones premium.
+- Consulta del consumo y límites de IA por usuario.
+- Pagos y verificación del estado premium.
+- Sistema de referidos.
+- Panel y seguimiento para creadores.
+- Enlaces con código de creador.
+
+### Plataforma
+
+- Interfaz responsive adaptada a móvil y pantallas pequeñas de iPhone.
+- Soporte multiidioma con i18next.
+- Analítica con Google Analytics 4.
+- Aplicación Android mediante Capacitor.
+- Carga diferida de páginas con `React.lazy` y `Suspense`.
+
+## Stack confirmado en el repositorio
 
 ### Frontend
 
-- React 19
-- Vite
-- Tailwind CSS
-- React Router
-- Framer Motion
-- i18next
-- Supabase JS
-- Capacitor
+- React `19.2.5`
+- React DOM `19.2.5`
+- Vite `8.0.10`
+- Tailwind CSS `4.2.4`
+- React Router DOM `7.14.2`
+- Framer Motion `12.38.0`
+- Supabase JS `2.105.3`
+- i18next y react-i18next
+- Lucide React
+- React GA4
+- Vitest y ESLint
 
 ### Backend
 
-- Node.js
-- Express
-- Multer
-- Supabase
+- Node.js con módulos ES
+- Express `5.2.1`
+- Supabase JS `2.105.3`
 - Google Gemini mediante `@google/genai`
+- Multer para carga de imágenes
+- CORS, rate limiting, validación JWT y manejo centralizado de errores
 
-### Servicios externos
+### Móvil
 
-- Supabase para autenticación y persistencia de datos.
-- Gemini para análisis nutricional y generación de contenido.
-- Google Analytics 4 para analítica.
+- Capacitor `8.4.0`
+- Android
 
-## Objetivos técnicos
+## Servicios externos
 
-- Mantener una arquitectura modular y fácil de ampliar.
-- Proteger los endpoints privados verificando el usuario autenticado.
-- Evitar que un usuario pueda consultar o modificar datos de otro usuario.
-- Mantener una experiencia consistente entre web y Android.
-- Crear funcionalidades incrementales, comprobables y fáciles de revertir.
-- Revisar y probar siempre el código generado con ayuda de IA.
+- Supabase: autenticación, perfiles, datos y almacenamiento de imágenes.
+- Gemini: análisis de alimentos, generación de dietas y análisis de check-ins.
+- Google Analytics 4: analítica.
+- Servicios de pago integrados desde el backend.
 
-## Principios del proyecto
+## Objetivo actual
 
-1. No modificar funcionalidades ajenas a la tarea actual sin una razón documentada.
-2. Reutilizar componentes y servicios existentes antes de crear duplicados.
-3. Mantener la lógica de autenticación centralizada.
-4. Validar entradas tanto en frontend como en backend.
-5. No exponer claves, secretos ni credenciales en el repositorio.
-6. Dividir cambios grandes en pasos pequeños con pruebas humanas.
-7. Actualizar este banco de memoria cuando cambien decisiones importantes.
+Mantener una aplicación estable en producción. Los cambios deben ser mínimos, localizados, reversibles y comprobables.
+
+## Reglas de mantenimiento
+
+1. No modificar frontend o backend fuera del alcance solicitado.
+2. No cambiar diseños que ya funcionan salvo que exista un fallo reproducible.
+3. No renombrar rutas, tablas, columnas o variables de entorno sin plan de migración.
+4. No reemplazar servicios existentes por alternativas nuevas sin aprobación.
+5. Inspeccionar primero el código real y reutilizar componentes, hooks, servicios y middleware existentes.
+6. Mantener compatibilidad web, móvil y Android.
+7. Probar autenticación, permisos y aislamiento de datos cuando el cambio afecte usuarios.
+8. Mantener respuestas alternativas cuando Gemini falle.
+9. No exponer claves, tokens, credenciales ni datos de otros usuarios.
+10. Actualizar este banco únicamente cuando cambie el estado real del producto.
