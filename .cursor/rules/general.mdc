@@ -1,0 +1,62 @@
+---
+description: Regla maestra para trabajar con NutriSmart Coach usando IA
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Flujo obligatorio de trabajo
+
+NutriSmart Coach es una aplicación estable y en producción.
+
+Antes de modificar código:
+
+1. Lee `memory-bank/README.md`.
+2. Lee `memory-bank/app-description.md`.
+3. Lee `memory-bank/project-status.md`.
+4. Lee `memory-bank/production-safety.md`.
+5. Revisa las reglas `.cursor/rules/*.mdc` aplicables al área.
+6. Inspecciona el código real relacionado con la tarea.
+7. Identifica el cambio mínimo necesario.
+8. Explica qué archivos se tocarán y por qué.
+9. Define cómo se probará el cambio.
+
+## Principios obligatorios
+
+✅ El código real es la fuente principal de verdad.
+
+✅ Mantén los patrones ya usados en el repositorio.
+
+✅ Limita cada tarea a su alcance declarado.
+
+✅ Conserva compatibilidad web y Android cuando aplique.
+
+✅ Añade manejo de errores cuando exista una operación que pueda fallar.
+
+✅ Actualiza `memory-bank/change-log.md` cuando el cambio sea relevante.
+
+## Prohibido
+
+❌ Inventar rutas, tablas, columnas, variables de entorno o servicios.
+
+❌ Modificar archivos no relacionados solo para “mejorar” el código.
+
+❌ Reescribir componentes completos cuando una corrección localizada sea suficiente.
+
+❌ Cambiar arquitectura, diseño o contratos públicos sin petición explícita.
+
+❌ Dar por terminada una tarea sin indicar cómo verificarla.
+
+## Ejemplo correcto
+
+✅ “El problema está en `src/pages/Meals.jsx`. Ajustaré únicamente el manejador de eliminación y comprobaré el flujo existente del servicio antes de cambiarlo.”
+
+## Ejemplo incorrecto
+
+❌ “Voy a reorganizar toda la página, crear un nuevo contexto y reemplazar el servicio actual para que quede más limpio.”
+
+## Referencias
+
+- Estado y contexto: `memory-bank/`
+- Seguridad de producción: `memory-bank/production-safety.md`
+- Decisiones técnicas: `memory-bank/architecture-decisions/stack-and-rules.md`
