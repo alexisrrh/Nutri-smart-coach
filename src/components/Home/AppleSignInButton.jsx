@@ -1,6 +1,7 @@
-import React from "react";
 import { Capacitor } from "@capacitor/core";
 import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+
+const APPLE_CLIENT_ID = "com.nutrismartcoach.nutrismart";
 
 export function AppleSignInButton({ 
   supabase, 
@@ -8,63 +9,78 @@ export function AppleSignInButton({
   onError, 
   onSuccess, 
   onLoading, 
-  label 
+  label,
+  policyError,
+  connectionErrorPrefix,
+  cancelledMessage,
+  fallbackName,
+  redirectTo,
+  onBeforeSignIn,
 }) {
-  
-  // Condición de seguridad nativa
-  const isIosNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
-
-  // NOTA: COMENTA esta línea si quieres verlo temporalmente en Windows para diseñar.
- // if (!isIosNative) return null;
-
   const handleAppleSignIn = async () => {
     if (!acceptedPolicies) {
-      onError("Debes aceptar las políticas de privacidad primero.");
+      onError(policyError);
       return;
     }
 
     onError("");
+    onBeforeSignIn?.();
     onLoading(true);
 
     try {
-      // Detectamos dinámicamente si estamos en la web o en el teléfono real
-      const isNative = Capacitor.isNativePlatform();
-      
+      if (!Capacitor.isNativePlatform()) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "apple",
+          options: {
+            redirectTo,
+          },
+        });
+
+        if (error) {
+          onError(`${connectionErrorPrefix}${error.message}`);
+        }
+
+        return;
+      }
+
+      if (Capacitor.getPlatform() !== "ios") {
+        onError(cancelledMessage);
+        return;
+      }
+
+      const nonce = crypto.randomUUID();
+      const state = crypto.randomUUID();
       const options = {
-        clientId: "com.nutrismartcoach.app", // Tu Bundle ID de Nutri Smart Coach
-        // Si estamos en la web (Windows), le damos la URL de localhost para que no falle.
-        // Si estamos en el iPhone real, se queda vacío para usar el flujo nativo.
-        redirectURI: isNative ? "" : window.location.origin, 
+        clientId: APPLE_CLIENT_ID,
+        redirectURI: "",
         scopes: "name email",
-        state: "12345",
-        nonce: "nonce",
+        state,
+        nonce,
       };
 
-      // Abre el FaceID/TouchID nativo del iPhone o el flujo web de Apple
       const result = await SignInWithApple.authorize(options);
-
 
       if (result.response && result.response.identityToken) {
         const { data, error: supabaseError } = await supabase.auth.signInWithIdToken({
           provider: "apple",
           token: result.response.identityToken,
+          nonce,
         });
 
         if (supabaseError) {
-          onError(`Error de conexión: ${supabaseError.message}`);
-          onLoading(false);
+          onError(`${connectionErrorPrefix}${supabaseError.message}`);
           return;
         }
 
         const appleName = result.response.givenName 
           ? `${result.response.givenName} ${result.response.familyName || ""}`.trim()
-          : "Usuario Apple";
+          : fallbackName;
 
         onSuccess(data, appleName);
       }
     } catch (err) {
       console.error("Error en Apple Sign In:", err);
-      onError(err?.message || "Operación cancelada");
+      onError(err?.message || cancelledMessage);
     } finally {
       onLoading(false);
     }
