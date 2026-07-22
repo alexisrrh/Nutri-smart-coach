@@ -585,13 +585,19 @@ export function Register() {
                   acceptedPolicies={acceptedPolicies}
                   onError={setError}
                   onLoading={setLoading}
-                  label={"Continuar con Apple"}
+                  label={tr("social.apple")}
+                  policyError={tr("errors.policiesRequired")}
+                  connectionErrorPrefix={tr("errors.connect")}
+                  cancelledMessage={tr("errors.appleUnavailable")}
+                  fallbackName={tr("social.appleFallbackName")}
+                  redirectTo={`${window.location.origin}/perfil`}
+                  onBeforeSignIn={() => {
+                    setPendingLegalConsent(buildAcceptedLegalConsent());
+                    prepareOAuthReferralCode(getStoredReferralCode());
+                  }}
                   onSuccess={async (data, appleName) => {
                     const user = data?.user;
                     if (user) {
-                      setPendingLegalConsent(buildAcceptedLegalConsent());
-                      prepareOAuthReferralCode(getStoredReferralCode());
-                      
                       try {
                         await saveProfile({
                           id: user.id,

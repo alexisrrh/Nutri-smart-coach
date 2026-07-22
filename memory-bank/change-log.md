@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-07-20 — Ajuste de inicio de sesión con Apple
+
+- **Área:** frontend
+- **Objetivo:** completar la integración inicial de Sign in with Apple sin cambiar la arquitectura de autenticación basada en Supabase.
+- **Cambios:** se conectó el botón Apple en login con las dependencias reales, se corrigió el client ID a `com.nutrismartcoach.nutrismart`, se añadió OAuth web de Supabase, se usa nonce/state dinámico para iOS nativo y se preparan consentimiento/referral antes de iniciar el flujo Apple en registro.
+- **Archivos principales:** `src/components/Home/AppleSignInButton.jsx`, `src/pages/Login.jsx`, `src/pages/Register.jsx`, `src/i18n/es.json`, `src/i18n/en.json`.
+- **Pruebas automáticas:** JSON i18n correcto con `node`; `npx eslint src/components/Home/AppleSignInButton.jsx src/pages/Login.jsx src/pages/Register.jsx` correcto; `npm run build` correcto tras ejecutar `npm install` para instalar la dependencia ya declarada `@capacitor-community/apple-sign-in`; `npm run test -- src/services/referralOnboardingService.test.js src/services/creatorTrackingService.test.js` falla por el mock hoisted existente en `src/services/creatorTrackingService.test.js`, mientras `src/services/referralOnboardingService.test.js` pasa con 12 tests.
+- **Prueba humana:** pendiente; validar login/registro Apple en web con provider Supabase configurado y en iOS cuando exista proyecto iOS/capability.
+- **Pendientes:** confirmar configuración externa en Supabase Auth y Apple Developer.
+- **Autor:** Codex
+
 ## 2026-07-18 — Documentación de funcionalidades y módulos
 
 - **Área:** documentación
