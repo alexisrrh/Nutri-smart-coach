@@ -23,8 +23,10 @@ La app web se compila a `dist`. Capacitor sincroniza `dist` al proyecto Android.
 ## 7. Integraciones externas
 Google Play Billing está preparado desde backend/configuración móvil, pero la compra/restauración frontend está en estado placeholder.
 
+Google Sign-In nativo usa `@capawesome/capacitor-google-sign-in` en Android. El plugin se inicializa desde frontend con el OAuth Client ID Web público (`VITE_GOOGLE_WEB_CLIENT_ID`) y usa Credential Manager para obtener un ID token que Supabase valida mediante `signInWithIdToken`.
+
 ## 8. Variables de entorno
-`GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_BUNDLE_ID`, `APPLE_ISSUER_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_ENVIRONMENT`.
+`VITE_GOOGLE_WEB_CLIENT_ID`, `GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_BUNDLE_ID`, `APPLE_ISSUER_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_ENVIRONMENT`.
 
 ## 9. Comandos confirmados
 `npm run cap:sync`, `npm run cap:android`, `npm run android:add`, `npm run build`.
