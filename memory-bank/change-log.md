@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-07-25 — Inicio de sesión nativo con Google en Android
+
+- **Área:** frontend | móvil | documentación
+- **Objetivo:** evitar que el login con Google en Android abra Chrome y preparar autenticación nativa con Google ID token y Supabase.
+- **Cambios:** se añadió `@capawesome/capacitor-google-sign-in`, se creó un servicio `signInWithGoogle()` que separa Android nativo de web, y se documentó `VITE_GOOGLE_WEB_CLIENT_ID` como Client ID público.
+- **Archivos principales:** `src/services/googleAuthService.js`, `src/pages/Login.jsx`, `src/pages/Register.jsx`, `.env.example`, `package.json`, `package-lock.json`, `android/capacitor.settings.gradle`, `android/app/src/main/assets/capacitor.plugins.json`, `memory-bank/features/authentication.md`, `memory-bank/modules/capacitor-android.md`.
+- **Pruebas automáticas:** `npm run lint` correcto; `npm run build` correcto; `npx cap sync android` correcto; `cmd.exe /c gradlew.bat assembleDebug` correcto con warnings D8 no bloqueantes de `play-services-auth-21.5.0`.
+- **Prueba humana:** APK debug instalado y `MainActivity` abre; la prueba interactiva de Google queda pendiente porque falta configurar `VITE_GOOGLE_WEB_CLIENT_ID` real y el emulador actual no acepta taps aunque `uiautomator` ve la UI.
+- **Pendientes:** configurar Google Cloud y Supabase, regenerar build/sync/APK, y validar selector nativo, sesión Supabase, persistencia, logout y cancelación.
+- **Autor:** Codex
+
 ## 2026-07-20 — Ajuste de inicio de sesión con Apple
 
 - **Área:** frontend

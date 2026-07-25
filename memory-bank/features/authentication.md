@@ -14,6 +14,13 @@ Operativo.
 5. Tras autenticarse se sincronizan idioma, consentimiento legal pendiente, códigos de creador y códigos de referral.
 6. Un usuario autenticado que entra a rutas públicas principales se redirige a `/dashboard`.
 
+### Google Sign-In
+
+- Web mantiene Supabase OAuth mediante `supabase.auth.signInWithOAuth({ provider: "google" })`.
+- Android nativo usa `@capawesome/capacitor-google-sign-in` para obtener un Google ID token con Credential Manager y crea la sesión con `supabase.auth.signInWithIdToken({ provider: "google", token })`.
+- El Client ID usado por el plugin es público y debe venir de `VITE_GOOGLE_WEB_CLIENT_ID`; no se guarda Client Secret en la app.
+- El listener central de `AuthProvider` sigue siendo la única fuente de actualización de sesión.
+
 ## 4. Rutas frontend
 Públicas: `/`, `/login`, `/register`, `/registro`, `/join`, `/reset-password`, `/privacy`, `/terms`, `/creator-terms`, `/delete-account`, `/rutina/:shareId`, `/rutinas/semana/:shareId`, `/bodyscannerhome`, `/progresohome`, `/dietahome`.
 
@@ -45,7 +52,7 @@ No hay límite free/premium específico para autenticación.
 Backend: `backend/tests/auth-401.test.js`, `backend/tests/auth-hardening.test.js`.
 
 ## 12. Riesgos y dependencias
-Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. Cambiar nombres de campos de `profiles` rompe perfil, onboarding, premium y preferencias.
+Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_WEB_CLIENT_ID`, `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. Cambiar nombres de campos de `profiles` rompe perfil, onboarding, premium y preferencias.
 
 ## 13. Invariantes
 - Las rutas privadas no deben renderizar contenido sin usuario autenticado.
@@ -56,4 +63,4 @@ Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL` y `SUPA
 No hay endpoints backend de login/register confirmados; la autenticación se apoya en Supabase Auth desde frontend.
 
 ## 15. Archivos relevantes
-`src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/lib/supabase.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `backend/middleware/auth.js`, `supabase/migrations/002_profile_legal_consent.sql`.
+`src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/lib/supabase.js`, `src/services/googleAuthService.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `backend/middleware/auth.js`, `supabase/migrations/002_profile_legal_consent.sql`.

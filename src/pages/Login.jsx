@@ -30,6 +30,7 @@ import {
   SurfaceCard,
 } from "../components/ui";
 import { AppleSignInButton } from "../components/Home/AppleSignInButton";
+import { signInWithGoogle } from "../services/googleAuthService";
 
 
 export function Login() {
@@ -103,12 +104,15 @@ export function Login() {
       ? "com.nutrismartcoach.app://login-callback"
       : `${window.location.origin}/dashboard`;
 
-    const { error: socialError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo,
-      },
-    });
+    const { error: socialError } =
+      provider === "google"
+        ? await signInWithGoogle({ redirectTo })
+        : await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo,
+            },
+          });
 
     if (socialError) {
       setError(tl("errors.connect") + socialError.message);
