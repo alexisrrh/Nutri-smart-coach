@@ -19,7 +19,7 @@ export function AppleSignInButton({
 }) {
   // Oculta el botón en Android y en entornos Web (Escritorio / Navegadores móviles)
   // Solo se mostrará en la aplicación nativa de iOS
-  if (Capacitor.getPlatform() === "android" || !Capacitor.isNativePlatform()) {
+  if (Capacitor.getPlatform() === "android") {
     return null;
   }
 
