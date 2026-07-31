@@ -11,7 +11,6 @@
     android:name=".MainActivity"
     android:exported="true"
     android:launchMode="singleTask"
-    android:hardwareAccelerated="false"
     android:theme="@style/AppTheme.NoActionBarLaunch"
     android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation">
 
