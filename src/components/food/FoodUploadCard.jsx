@@ -32,12 +32,19 @@ export default function FoodUploadCard({
 
           <div className="absolute bottom-3 left-3 right-3">
             <p className="text-base font-black uppercase italic text-[var(--app-text)]">
-              {t("food.upload.imageReady")}
+              {t("food.upload.readyToAnalyze")}
             </p>
 
-            <p className="mt-0.5 text-xs text-[var(--app-muted)]">
-              {t("food.upload.tapToRetake")}
-            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
+                <Camera size={12} />
+                {t("food.upload.retakeAction")}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
+                <ImagePlus size={12} />
+                {t("food.upload.galleryAction")}
+              </span>
+            </div>
           </div>
         </>
       ) : (
@@ -66,12 +73,12 @@ export default function FoodUploadCard({
         <button
           type="button"
           onClick={captureFoodPhoto}
-          className="group block w-full cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 text-left transition active:scale-[0.99]"
+          className="group block w-full cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 text-left transition duration-200 active:scale-[1.02]"
         >
           {scanContent}
         </button>
       ) : (
-        <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 transition active:scale-[0.99]">
+        <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 transition duration-200 active:scale-[1.02]">
           {scanContent}
           <input
             type="file"
