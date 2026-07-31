@@ -38,7 +38,12 @@ export default function FoodPhoto() {
     setMeals,
     resetRecoveryState,
   } = useFoodPhotoRecovery();
-  const { handleImage } = useFoodPhotoImageUpload({
+  const {
+    captureFoodPhoto,
+    handleCameraCapture,
+    handleImage,
+    isNativeCameraAvailable,
+  } = useFoodPhotoImageUpload({
     preview,
     setPreview,
     setImage,
@@ -178,7 +183,10 @@ export default function FoodPhoto() {
             preview={preview}
             description={description}
             onDescriptionChange={setDescription}
+            captureFoodPhoto={captureFoodPhoto}
+            handleCameraCapture={handleCameraCapture}
             handleImage={handleImage}
+            isNativeCameraAvailable={isNativeCameraAvailable}
             analyzeFood={analyzeFood}
             loading={loading}
           />
