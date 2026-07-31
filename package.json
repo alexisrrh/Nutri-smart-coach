@@ -9,9 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "cap:sync": "npx cap sync",
-    "cap:android": "npx cap open android",
-    "android:add": "npx cap add android"
+    "cap:sync": "cap sync",
+    "cap:android": "cap open android",
+    "android:add": "cap add android"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
