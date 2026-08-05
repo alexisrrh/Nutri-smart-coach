@@ -361,8 +361,7 @@ export function WorkoutSession({
             {progress}%
           </div>
         </header>
-
-        <main className="flex flex-auto flex-col gap-2 pr-0.5 max-sm:gap-1">
+<main className="flex flex-col gap-2 pr-0.5 max-sm:gap-1">
           <div className="space-y-1 max-sm:space-y-0.5">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />

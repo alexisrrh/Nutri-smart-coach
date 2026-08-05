@@ -449,7 +449,7 @@ export function WorkoutRoutines() {
 
   return (
    <AppShell
-      className="overflow-hidden pb-25"
+      className="overflow-hidden"
       contentClassName="px-2 pt-2"
   scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
      <div className="flex w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
@@ -1277,7 +1277,7 @@ function WeeklyRoutineSheet({
   const { t, i18n } = useTranslation();
   const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
-    <div className="fixed inset-0 z-[85] overflow-y-auto bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+8px)] pt-[calc(env(safe-area-inset-top)_+_8px)] backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+   <div className="fixed inset-0 z-[85] overflow-hidden bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+8px)] pt-[calc(env(safe-area-inset-top)_+_8px)] backdrop-blur-md">
       <section className="mx-auto flex max-h-[calc(100dvh_-_var(--bottom-nav-space)_-_env(safe-area-inset-top)_-_16px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2 max-sm:px-2.5">
             <div className="flex items-start justify-between gap-2">
