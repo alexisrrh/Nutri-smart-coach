@@ -339,7 +339,7 @@ export function WorkoutSession({
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex min-h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)]">
+      <div className="mx-auto flex min-h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_14px)]">
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
             type="button"
@@ -362,8 +362,8 @@ export function WorkoutSession({
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col gap-2 pr-0.5">
-          <div className="space-y-1">
+        <main className="flex flex-1 flex-col gap-2 pr-0.5 max-sm:gap-1">
+          <div className="space-y-1 max-sm:space-y-0.5">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />
               <MetricDivider />
@@ -374,7 +374,7 @@ export function WorkoutSession({
 
             <ExerciseImage exercise={exercise} />
 
-            <section className="space-y-0.5 px-0.5">
+            <section className="space-y-0.5 px-0.5 max-sm:space-y-0">
               <div className="flex min-w-0 items-center gap-1.5">
                 <p className="min-w-0 break-words text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
                   {translateWorkoutText(exercise.muscle, language)} · {translateWorkoutText(exercise.difficulty || level, language)}
@@ -385,7 +385,7 @@ export function WorkoutSession({
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-0.5 min-w-0 break-words text-[19px] font-black leading-[1.05] text-[var(--app-text)]">
+              <h1 className="mt-0.5 min-w-0 break-words text-[19px] font-black leading-[1.05] text-[var(--app-text)] max-sm:text-[17px]">
                 {translateWorkoutText(exercise.name, language)}
               </h1>
               <PerformanceHint
@@ -395,7 +395,7 @@ export function WorkoutSession({
               {weightRecommendation.hasHistory ? (
                 <StrengthRecommendationCard recommendation={weightRecommendation} />
               ) : null}
-              <div className="mt-1 flex gap-1">
+              <div className="mt-1 flex gap-1 max-sm:mt-0.5">
                 <PrescriptionChip label={translateWorkoutText("Series", language)} value={prescription.sets} />
                 <PrescriptionChip label={translateWorkoutText("Reps", language)} value={prescription.reps} />
                 <PrescriptionChip label={translateWorkoutText("Descanso", language)} value={prescription.rest} />
@@ -440,8 +440,8 @@ export function WorkoutSession({
           </div>
         </main>
 
-   <section className="shrink-0 px-0 pt-1.5">
-          <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2.5 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+   <section className="shrink-0 px-0 pt-1.5 max-sm:pt-1">
+          <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2.5 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl max-sm:px-2 max-sm:py-2">
             <FooterControls
               canFinish={hasProgress}
               canGoBack={exerciseIndex > 0}
@@ -474,7 +474,7 @@ function ExerciseImage({ exercise }) {
       key={exercise?.mediaKey || exercise?.id || exercise?.name}
       exercise={exercise}
       className={[
-        "mt-1 aspect-[16/9] w-full max-h-[27vh]",
+        "mt-1 aspect-[16/9] w-full max-h-[27vh] max-sm:max-h-[21vh]",
         exercise.mainLift
           ? "shadow-[0_0_18px_var(--app-glow)]"
           : "",
@@ -496,14 +496,14 @@ function QuickTechnique({ exercise }) {
   );
 
   return (
-    <section className="mt-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1">
+    <section className="mt-1 rounded-[0.95rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1 max-sm:mt-0.5 max-sm:px-2">
       <p className="text-[8px] font-black uppercase tracking-[0.14em] text-[var(--app-primary)]">
         {translateWorkoutText("Técnica rápida", language)}
       </p>
-      <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-text)]">
+      <p className="mt-0.5 line-clamp-1 text-[10px] font-bold leading-4 text-[var(--app-text)] max-sm:leading-3.5">
         {translateWorkoutText(exercise.description, language)}
       </p>
-      <p className="line-clamp-1 text-[10px] leading-4 text-[var(--app-muted)]">
+      <p className="line-clamp-1 text-[10px] leading-4 text-[var(--app-muted)] max-sm:leading-3.5">
         <span className="font-black text-[var(--app-text)]">{translateWorkoutText("Consejo", language)}:</span> {tip} ·{" "}
         <span className="font-black text-[var(--app-text)]">{translateWorkoutText("Evita", language)}:</span> {mistake}
       </p>
@@ -536,17 +536,17 @@ function SeriesRestCoach({
   const activeKg = activeTracking.kg ?? "";
 
   return (
-    <section className="overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
-      <div className="rounded-[0.95rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_8%,var(--app-card)),var(--app-surface))] px-2.5 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.16)]">
+    <section className="overflow-hidden rounded-[1.1rem] border border-[var(--app-border)] bg-[linear-gradient(155deg,color-mix(in_srgb,var(--app-primary)_10%,var(--app-card)),var(--app-card)_42%,var(--app-surface))] p-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.22)] max-sm:p-1">
+      <div className="rounded-[0.95rem] border border-[color:color-mix(in_srgb,var(--app-primary)_16%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_8%,var(--app-card)),var(--app-surface))] px-2.5 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.16)] max-sm:px-2 max-sm:py-1.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[var(--app-primary)]">
               {translateWorkoutText("Serie actual", language)}
             </p>
-            <h3 className="mt-0.5 text-[14px] font-black leading-none text-[var(--app-text)]">
+            <h3 className="mt-0.5 text-[14px] font-black leading-none text-[var(--app-text)] max-sm:text-[13px]">
               {translateWorkoutText(`Serie ${activeSetNumber} de ${prescription.sets}`, language)}
             </h3>
-            <p className="mt-1 text-[10px] font-semibold text-[var(--app-muted)]">
+            <p className="mt-1 text-[10px] font-semibold text-[var(--app-muted)] max-sm:mt-0.5">
               {translateWorkoutText(
                 `${completedSeriesCount} completadas · ${remainingSets} restantes`,
                 language
@@ -559,8 +559,8 @@ function SeriesRestCoach({
           </span>
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-1">
-          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+        <div className="mt-2 grid grid-cols-3 gap-1 max-sm:mt-1.5">
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5 max-sm:px-1.5 max-sm:py-1">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
               {translateWorkoutText("Reps", language)}
             </p>
@@ -574,7 +574,7 @@ function SeriesRestCoach({
               className="mt-0.5 w-full bg-transparent text-center text-[11px] font-black text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
             />
           </div>
-          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5 max-sm:px-1.5 max-sm:py-1">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
               {translateWorkoutText("Peso", language)}
             </p>
@@ -593,7 +593,7 @@ function SeriesRestCoach({
               </span>
             </div>
           </div>
-          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5">
+          <div className="rounded-[0.8rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2 py-1.5 max-sm:px-1.5 max-sm:py-1">
             <p className="text-[7px] font-black uppercase tracking-[0.12em] text-[var(--app-muted)]">
               {translateWorkoutText("Objetivo", language)}
             </p>
@@ -603,7 +603,7 @@ function SeriesRestCoach({
           </div>
         </div>
 
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-primary-soft))]">
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--app-card)_82%,var(--app-primary-soft))] max-sm:mt-1.5">
           <div
             className="h-full rounded-full bg-[var(--app-primary)] shadow-[0_0_10px_var(--app-glow)] transition-all duration-300"
             style={{ width: `${prescription.sets ? (completedSeriesCount / prescription.sets) * 100 : 0}%` }}
@@ -614,7 +614,7 @@ function SeriesRestCoach({
           type="button"
           onClick={() => onToggleSet(activeSetIndex)}
           disabled={activeCompleted}
-          className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-3 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_22px_var(--app-glow)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-default disabled:opacity-60"
+          className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[0.95rem] bg-[var(--app-primary)] px-3 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--app-surface)] shadow-[0_10px_22px_var(--app-glow)] transition duration-150 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 max-sm:mt-1.5"
         >
           <Check size={14} />
           {translateWorkoutText("Completar serie", language)}
@@ -623,7 +623,7 @@ function SeriesRestCoach({
         <button
           type="button"
           onClick={() => setShowAllSets((current) => !current)}
-          className="mt-1.5 w-full rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition duration-150 hover:bg-[var(--app-card)] active:scale-[0.98]"
+          className="mt-1.5 w-full rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-[var(--app-primary)] transition duration-150 hover:bg-[var(--app-card)] active:scale-[0.98] max-sm:mt-1 max-sm:py-1.5"
         >
           {showAllSets
             ? translateWorkoutText("Ocultar todas las series", language)
@@ -801,14 +801,14 @@ function RestPanel({ compact = false, progress, remaining, onSkip }) {
     <div
       className={[
         "relative overflow-hidden rounded-[1.15rem] border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_34%,var(--app-primary-soft),transparent_42%),radial-gradient(circle_at_88%_0%,color-mix(in_srgb,var(--app-primary)_8%,transparent),transparent_28%),linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_6%,var(--app-card)),var(--app-surface)_58%,var(--app-card))] px-3 text-center shadow-[0_10px_28px_rgba(0,0,0,0.22)]",
-        active ? (compact ? "py-1" : "py-1.5") : "py-1",
+        active ? (compact ? "py-1 max-sm:py-0.5" : "py-1.5") : "py-1",
       ].join(" ")}
     >
       <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--app-primary),transparent)] opacity-45" />
       <div
         className={[
           "relative z-10 mx-auto flex flex-col items-center justify-center",
-          active ? (compact ? "min-h-[132px]" : "min-h-[160px]") : "min-h-[84px]",
+          active ? (compact ? "min-h-[132px] max-sm:min-h-[108px]" : "min-h-[160px]") : "min-h-[84px] max-sm:min-h-[72px]",
         ].join(" ")}
       >
         <div
@@ -816,7 +816,7 @@ function RestPanel({ compact = false, progress, remaining, onSkip }) {
             "relative grid shrink-0 place-items-center rounded-full",
             active
               ? compact
-                ? "h-[88px] w-[88px] shadow-[0_0_18px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
+                ? "h-[88px] w-[88px] shadow-[0_0_18px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite] max-sm:h-[72px] max-sm:w-[72px]"
                 : "h-[100px] w-[100px] shadow-[0_0_20px_var(--app-glow)] [animation:restOrbPulse_2.8s_ease-in-out_infinite]"
               : "h-[48px] w-[48px] opacity-[0.82]",
           ].join(" ")}
@@ -834,7 +834,7 @@ function RestPanel({ compact = false, progress, remaining, onSkip }) {
           <span className="absolute inset-[9px] rounded-full border border-[var(--app-border)] bg-[radial-gradient(circle_at_50%_0%,var(--app-primary-soft),transparent_38%),var(--app-surface)]" />
           <div className="relative z-10 grid place-items-center">
             {active ? (
-              <span className="text-[32px] font-black leading-none text-[var(--app-primary)] tabular-nums">
+              <span className="text-[32px] font-black leading-none text-[var(--app-primary)] tabular-nums max-sm:text-[26px]">
                 {remaining}s
               </span>
             ) : (
