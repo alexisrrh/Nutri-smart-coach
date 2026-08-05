@@ -362,7 +362,7 @@ export function WorkoutSession({
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col gap-2 pr-0.5 max-sm:gap-1">
+        <main className="flex flex-auto flex-col gap-2 pr-0.5 max-sm:gap-1">
           <div className="space-y-1 max-sm:space-y-0.5">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />
@@ -440,8 +440,8 @@ export function WorkoutSession({
           </div>
         </main>
 
-   <section className="shrink-0 px-0 pt-1.5 max-sm:pt-1">
-          <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2.5 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl max-sm:px-2 max-sm:py-2">
+   <section className="shrink-0 px-0 max-sm:pt-1">
+          <div className="rounded-[1.35rem] border border-[color:color-mix(in_srgb,var(--app-primary)_14%,var(--app-border))] bg-[linear-gradient(180deg,rgba(7,12,18,0.86),rgba(8,16,26,0.76))] px-2.5 py-2 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl max-sm:px-2 max-sm:py-2">
             <FooterControls
               canFinish={hasProgress}
               canGoBack={exerciseIndex > 0}
@@ -903,7 +903,7 @@ function FooterControls({
   const { i18n } = useTranslation();
   const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
-    <footer className="space-y-1">
+    <footer className="space-y-0.5">
       <div className="grid grid-cols-2 gap-1.5">
         <button
           type="button"
