@@ -339,7 +339,7 @@ export function WorkoutSession({
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex min-h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] max-sm:min-h-0 max-sm:pt-[calc(env(safe-area-inset-top)_+_8px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
+      <div className="mx-auto flex min-h-0 max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] sm:min-h-[100dvh] max-sm:pt-[calc(env(safe-area-inset-top)_+_16px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
             type="button"
