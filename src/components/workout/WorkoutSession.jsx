@@ -339,7 +339,7 @@ export function WorkoutSession({
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex min-h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_14px)]">
+      <div className="mx-auto flex min-h-[100dvh] max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] max-sm:min-h-0 max-sm:pt-[calc(env(safe-area-inset-top)_+_8px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
             type="button"
@@ -473,7 +473,7 @@ function ExerciseImage({ exercise }) {
       key={exercise?.mediaKey || exercise?.id || exercise?.name}
       exercise={exercise}
       className={[
-        "mt-1 aspect-[16/9] w-full max-h-[27vh] max-sm:max-h-[21vh]",
+        "mt-1 aspect-[16/9] w-full max-h-[27vh] max-sm:mt-0 max-sm:max-h-[21vh]",
         exercise.mainLift
           ? "shadow-[0_0_18px_var(--app-glow)]"
           : "",
