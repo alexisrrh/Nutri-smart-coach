@@ -1334,7 +1334,7 @@ function WeeklyRoutineSheet({
         </div>
 
         {/* LISTA — SIN SCROLL INTERNO */}
-        <div className="px-3 pb-15 pt-4 max-sm:px-2.5">
+        <div className="px-3 pb-15 pt-4 max-sm:px-3.5">
           <div className="grid gap-2">
             {days.map((day, index) => {
               const dateKey = getPlanDayDateKey(index);
