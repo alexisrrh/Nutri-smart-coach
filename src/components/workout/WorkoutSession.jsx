@@ -338,8 +338,8 @@ export function WorkoutSession({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex min-h-0 max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] sm:min-h-[100dvh] max-sm:pt-[calc(env(safe-area-inset-top)_+_32px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
+    <div className="fixed inset-0 z-[9999] overflow-hidden overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] sm:overflow-y-auto sm:overflow-x-hidden [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex h-[100dvh] min-h-0 max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] sm:h-auto sm:min-h-[100dvh] max-sm:pt-[calc(env(safe-area-inset-top)_+_32px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
             type="button"
@@ -361,7 +361,7 @@ export function WorkoutSession({
             {progress}%
           </div>
         </header>
-<main className="flex flex-col gap-2 pr-0.5 max-sm:gap-1">
+<main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pr-0.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:flex-none sm:overflow-visible [&::-webkit-scrollbar]:hidden">
           <div className="space-y-1 max-sm:space-y-0.5">
             <div className="flex h-8 items-center gap-1 overflow-hidden rounded-full border border-[var(--app-border)] bg-[var(--app-card)] px-2">
               <MetricChip label={translateWorkoutText("Kcal", language)} value={calories} />
