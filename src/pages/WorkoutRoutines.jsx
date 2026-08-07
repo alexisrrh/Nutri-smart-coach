@@ -1277,95 +1277,108 @@ function WeeklyRoutineSheet({
 }) {
   const { t, i18n } = useTranslation();
   const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
-  return (
-   <div className="fixed inset-0 z-[85] overflow-y-auto overflow-x-hidden bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+30px)] pt-[calc(env(safe-area-inset-top)_+_8px)] backdrop-blur-md [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:overflow-hidden sm:pb-[calc(var(--bottom-nav-space)+8px)] [&::-webkit-scrollbar]:hidden">
-      <section className="mx-auto w-full max-w-[430px] rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)] sm:flex sm:max-h-[calc(100dvh_-_var(--bottom-nav-space)_-_env(safe-area-inset-top)_-_16px)] sm:flex-col sm:overflow-hidden">
-          <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2 max-sm:px-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2 py-0.5 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-primary)]">
-                  {t("workouts.weekly.badge")}
-                </span>
-                <h2 className="mt-2 text-[20px] font-black leading-none text-[var(--app-text)]">
-                  {t("workouts.weekly.title")}
-                </h2>
-                <p className={`mt-1 max-w-[20rem] ${routineSubtitleClass}`}>
-                  {t("workouts.weekly.subtitle")}
-                </p>
-              </div>
+ return (
+  <div className="fixed inset-0 z-[85] overflow-y-auto overflow-x-hidden bg-black/66 backdrop-blur-md [scrollbar-width:none] touch-pan-y [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+    <div className="px-2 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(var(--bottom-nav-space)+30px)]">
+      <section className="mx-auto w-full max-w-[430px] rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
 
-              <button
-                type="button"
-                onClick={onClose}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
-              >
-                <X size={15} />
-              </button>
+        {/* CABECERA */}
+        <div className="border-b border-[var(--app-border)] px-3 py-2 max-sm:px-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--app-primary)_22%,var(--app-border))] bg-[rgba(8,16,26,0.72)] px-2 py-0.5 text-[7px] font-semibold tracking-[0.1em] text-[var(--app-primary)]">
+                {t("workouts.weekly.badge")}
+              </span>
+
+              <h2 className="mt-2 text-[20px] font-black leading-none text-[var(--app-text)]">
+                {t("workouts.weekly.title")}
+              </h2>
+
+              <p className={`mt-1 max-w-[20rem] ${routineSubtitleClass}`}>
+                {t("workouts.weekly.subtitle")}
+              </p>
             </div>
 
-            <div className="mt-2 grid gap-2 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2 shadow-[0_0_18px_rgba(0,0,0,0.12)]">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
-                  {t("workouts.weekly.progress")}
-                </p>
-                <p className="text-[9px] font-semibold text-[var(--app-text)]">
-                  {t("workouts.weekly.completed", {
-                    count: planStats.completedCount,
-                    completed: planStats.completedCount,
-                    total: days.length,
-                  })}
-                </p>
-              </div>
-
-              <div className="h-2.5 overflow-hidden rounded-full border border-[var(--app-border)] bg-[rgba(8,16,26,0.62)]">
-                <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_72%,#fff))]"
-                  style={{ width: `${planStats.weeklyProgress}%` }}
-                />
-              </div>
-            </div>
-            
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-muted)] shadow-[0_0_10px_rgba(0,0,0,0.12)] transition duration-150 hover:text-[var(--app-text)] active:scale-[0.96]"
+            >
+              <X size={15} />
+            </button>
           </div>
 
-          <div className="px-3 pb-4 pt-2 max-sm:px-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:min-h-0 sm:flex-1 sm:overflow-y-auto [&::-webkit-scrollbar]:hidden">
-            <div className="grid gap-2">
-              {days.map((day, index) => {
-                const dateKey = getPlanDayDateKey(index);
-                const completion = getCompletionForPlanDay({
-                  completions,
-                  dateKey,
-                  dayId: day.id,
-                });
-                const locked = !completion && index > planStats.completedCount + 1;
-                const status = getDayStatus({
-                  completion,
-                  isToday: dateKey === getLocalDateKey(),
-                  locked,
-                });
+          {/* PROGRESO */}
+          <div className="mt-2 grid gap-2 rounded-[1rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-2 shadow-[0_0_18px_rgba(0,0,0,0.12)]">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[8px] font-semibold tracking-[0.08em] text-[var(--app-primary)]">
+                {t("workouts.weekly.progress")}
+              </p>
 
-                return (
-                  <WeeklyRoutineDayCard
-                    key={day.id}
-                    day={translateRoutineDay(day, language)}
-                    locked={locked}
-                    onOpen={() => onOpenDay(day)}
-                    onStart={() => onStartDayWorkout(day)}
-                    onToggle={() =>
-                      onToggleDayCompletion(day, index, {
-                        selectedGoal,
-                        selectedLevel,
-                      })
-                    }
-                    status={status}
-                  />
-                );
-              })}
+              <p className="text-[9px] font-semibold text-[var(--app-text)]">
+                {t("workouts.weekly.completed", {
+                  count: planStats.completedCount,
+                  completed: planStats.completedCount,
+                  total: days.length,
+                })}
+              </p>
+            </div>
+
+            <div className="h-2.5 overflow-hidden rounded-full border border-[var(--app-border)] bg-[rgba(8,16,26,0.62)]">
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-primary),color-mix(in_srgb,var(--app-primary)_72%,#fff))]"
+                style={{ width: `${planStats.weeklyProgress}%` }}
+              />
             </div>
           </div>
-          </section>
         </div>
-   
-  );
+
+        {/* LISTA — SIN SCROLL INTERNO */}
+        <div className="px-3 pb-15 pt-4 max-sm:px-2.5">
+          <div className="grid gap-2">
+            {days.map((day, index) => {
+              const dateKey = getPlanDayDateKey(index);
+
+              const completion = getCompletionForPlanDay({
+                completions,
+                dateKey,
+                dayId: day.id,
+              });
+
+              const locked =
+                !completion && index > planStats.completedCount + 1;
+
+              const status = getDayStatus({
+                completion,
+                isToday: dateKey === getLocalDateKey(),
+                locked,
+              });
+
+              return (
+                <WeeklyRoutineDayCard
+                  key={day.id}
+                  day={translateRoutineDay(day, language)}
+                  locked={locked}
+                  onOpen={() => onOpenDay(day)}
+                  onStart={() => onStartDayWorkout(day)}
+                  onToggle={() =>
+                    onToggleDayCompletion(day, index, {
+                      selectedGoal,
+                      selectedLevel,
+                    })
+                  }
+                  status={status}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+);
+
 }
 
 function WeeklyRoutineDayCard({
