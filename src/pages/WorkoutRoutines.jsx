@@ -449,10 +449,11 @@ export function WorkoutRoutines() {
 
   return (
    <AppShell
-      className="overflow-hidden max-sm:pb-10"
-      contentClassName="px-2 pt-2"
-  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-     <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
+     className="pb-1"
+  contentClassName="px-2 pt-2"
+  scrollClassName="overflow-x-hidden overscroll-x-none   [scrollbar-width:none] touch-pan-y pb-[calc(var(--bottom-nav-space)+30px)]"
+>
+     <div className="flex flex-col gap-3">
         <header className="w-full max-w-full shrink-0">
           <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_6px_18px_var(--app-glow)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_40%)]" />
@@ -483,7 +484,7 @@ export function WorkoutRoutines() {
         </header>
 
    <main className="w-full max-w-full overflow-x-hidden">
-        <div className="w-full max-w-full min-w-0 space-y-[5px] pb-2">
+        <div className="w-full max-w-full min-w-0 space-y-[5px] pb-10">
             <AIPerformanceCore
               planStats={planStats}
               workoutCompletions={workoutCompletions}
@@ -1277,8 +1278,8 @@ function WeeklyRoutineSheet({
   const { t, i18n } = useTranslation();
   const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   return (
-   <div className="fixed inset-0 z-[85] overflow-hidden bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+8px)] pt-[calc(env(safe-area-inset-top)_+_8px)] backdrop-blur-md">
-      <section className="mx-auto flex max-h-[calc(100dvh_-_var(--bottom-nav-space)_-_env(safe-area-inset-top)_-_16px)] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
+   <div className="fixed inset-0 z-[85] overflow-y-auto overflow-x-hidden bg-black/66 px-2 pb-[calc(var(--bottom-nav-space)+30px)] pt-[calc(env(safe-area-inset-top)_+_8px)] backdrop-blur-md [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:overflow-hidden sm:pb-[calc(var(--bottom-nav-space)+8px)] [&::-webkit-scrollbar]:hidden">
+      <section className="mx-auto w-full max-w-[430px] rounded-t-[1.25rem] border border-[var(--app-border)] bg-[var(--app-card)] shadow-[0_-14px_42px_rgba(0,0,0,0.48)] sm:flex sm:max-h-[calc(100dvh_-_var(--bottom-nav-space)_-_env(safe-area-inset-top)_-_16px)] sm:flex-col sm:overflow-hidden">
           <div className="shrink-0 border-b border-[var(--app-border)] px-3 py-2 max-sm:px-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
@@ -1326,7 +1327,7 @@ function WeeklyRoutineSheet({
             
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-2 max-sm:px-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+          <div className="px-3 pb-4 pt-2 max-sm:px-2.5 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] sm:min-h-0 sm:flex-1 sm:overflow-y-auto [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-2">
               {days.map((day, index) => {
                 const dateKey = getPlanDayDateKey(index);
