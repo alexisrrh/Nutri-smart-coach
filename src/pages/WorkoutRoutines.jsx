@@ -449,10 +449,10 @@ export function WorkoutRoutines() {
 
   return (
    <AppShell
-      className="overflow-hidden"
+      className="overflow-hidden max-sm:pb-10"
       contentClassName="px-2 pt-2"
-  scrollClassName="max-sm:!pb-[calc(env(safe-area-inset-bottom)_+_84px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-     <div className="flex w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
+  scrollClassName="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+     <div className="flex h-full min-h-0 w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
         <header className="w-full max-w-full shrink-0">
           <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[0.9rem] border border-[var(--app-border)] bg-[var(--app-card)] px-2.5 py-1.5 shadow-[0_6px_18px_var(--app-glow)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,var(--app-primary-soft),transparent_40%)]" />
