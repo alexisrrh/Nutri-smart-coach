@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-08-07 - Ajustes de layout movil en rutinas
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** corregir espacios vacios y comportamiento de scroll en `/rutinas`, `WeeklyRoutineSheet` y la sesion activa de entrenamiento sin tocar cards, logica ni datos.
+- **Cambios:** en `WorkoutSession` movil la cabecera queda visible bajo safe-area, el contenido central usa `main` scrollable y `FooterControls` permanece abajo fuera del scroll, eliminando espacio inferior artificial. En `/rutinas` movil se mantiene `AppShell` como unico scroll de la pantalla y el contenido final queda visible sobre `BottomNav`. En `WeeklyRoutineSheet` movil el scroll pasa al wrapper exterior, la lista de dias deja de tener scroll interno y la ultima card puede verse completa respetando safe-area y `BottomNav`. Desktop queda intacto mediante breakpoints.
+- **Archivos principales:** `src/components/workout/WorkoutSession.jsx`, `src/pages/WorkoutRoutines.jsx`.
+- **Pruebas automaticas:** `npm run lint` correcto; `npm run build` correcto con warning existente de Vite sobre import dinamico inefectivo de `src/data/exercises.js`.
+- **Prueba humana:** pendiente en iPhone real: comprobar `/rutinas`, abrir "Tu semana de entrenamiento" y ejecutar una sesion para confirmar que no hay huecos inferiores grandes y que `Anterior`, `Siguiente` y `Finalizar entreno` quedan accesibles.
+- **Pendientes:** no hubo cambios en logica de entrenamiento, estado, navegacion, backend, Supabase, Gemini ni Premium.
+- **Autor:** Codex
+
 ## 2026-07-31 — Camara directa para escaner de comidas
 
 - **Area:** frontend | movil | documentacion
