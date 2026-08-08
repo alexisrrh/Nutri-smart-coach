@@ -5,6 +5,7 @@
 	"packageClassList": [
 		"SignInWithApple",
 		"AppPlugin",
+		"CAPCameraPlugin",
 		"AppleSignInPlugin",
 		"GoogleSignInPlugin"
 	]
