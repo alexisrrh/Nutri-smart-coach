@@ -153,7 +153,9 @@
         "resetFailed": "No pudimos enviar el enlace: ",
         "resetSuccess": "Te enviamos un enlace para restablecer tu contraseña.",
         "callbackFailed": "No pudimos completar el inicio de sesión: ",
-        "createProfileFailed": "No se pudo crear el perfil del usuario."
+        "createProfileFailed": "No se pudo crear el perfil del usuario.",
+        "policiesRequired": "Debes aceptar las políticas y condiciones de NutriSmartCoach.",
+        "appleUnavailable": "Inicio de sesión con Apple no disponible en esta plataforma."
       },
       "reset": {
         "eyebrow": "Recuperación segura",
@@ -167,7 +169,9 @@
       },
       "social": {
         "google": "Continuar con Google",
-        "facebook": "Continuar con Facebook"
+        "facebook": "Continuar con Facebook",
+        "apple": "Continuar con Apple",
+        "appleFallbackName": "Usuario Apple"
       },
       "hero": {
         "badge": "AI ACTIVE",
@@ -211,11 +215,14 @@
         "invalidReferral": "El código de invitación no es válido o ya no está disponible.",
         "callbackFailed": "No pudimos completar el inicio de sesión: ",
         "callbackInvalid": "callback inválido",
-        "connect": "Error al conectar: "
+        "connect": "Error al conectar: ",
+        "appleUnavailable": "Inicio de sesión con Apple no disponible en esta plataforma."
       },
       "social": {
         "google": "Continuar con Google",
-        "facebook": "Continuar con Facebook"
+        "facebook": "Continuar con Facebook",
+        "apple": "Continuar con Apple",
+        "appleFallbackName": "Usuario Apple"
       }
     }
   },
@@ -1887,9 +1894,15 @@
       "previewAlt": "Vista previa de la comida",
       "photoReady": "Foto lista",
       "imageReady": "Imagen preparada",
+      "readyToAnalyze": "✓ Foto lista para analizar",
       "tapToChange": "Toca la imagen para cambiarla.",
+      "tapToRetake": "Toca la imagen para tomar otra foto.",
+      "retakeAction": "Tomar otra foto",
       "title": "Sube tu comida",
       "subtitle": "Usa buena luz y que el plato se vea completo.",
+      "cameraTitle": "Tomar foto",
+      "cameraSubtitle": "La cámara se abrirá automáticamente.",
+      "galleryAction": "Elegir desde la galería",
       "optionalDescription": "Descripción opcional",
       "optionalDescriptionHelp": "Añade detalles para mejorar la precisión",
       "placeholder": "Ej: 2 arepas pequeñas con queso, pollo a la plancha, salsa y ensalada",

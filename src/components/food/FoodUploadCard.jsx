@@ -1,70 +1,104 @@
-import { ImagePlus } from "lucide-react";
+import { Camera, ImagePlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function FoodUploadCard({
   preview,
   description,
   onDescriptionChange,
+  captureFoodPhoto,
+  handleCameraCapture,
   handleImage,
+  isNativeCameraAvailable,
   analyzeFood,
   loading,
 }) {
   const { t } = useTranslation();
   const canAnalyze = Boolean(preview || description?.trim());
+  const scanContent = (
+    <div className="relative h-[168px] max-h-[180px] overflow-hidden rounded-[20px] bg-[var(--app-surface)]">
+      {preview ? (
+        <>
+          <img
+            src={preview}
+            alt={t("food.upload.previewAlt")}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)] via-[var(--app-surface)]/20 to-transparent" />
+
+          <div className="absolute left-2 top-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)] backdrop-blur-xl">
+            {t("food.upload.photoReady")}
+          </div>
+
+          <div className="absolute bottom-3 left-3 right-3">
+            <p className="text-base font-black uppercase italic text-[var(--app-text)]">
+              {t("food.upload.readyToAnalyze")}
+            </p>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
+                <Camera size={12} />
+                {t("food.upload.retakeAction")}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--app-primary)]">
+                <ImagePlus size={12} />
+                {t("food.upload.galleryAction")}
+              </span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid h-full place-items-center text-center">
+          <div>
+            <div className="theme-icon-tile mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_30px_var(--app-glow)]">
+              <Camera size={28} />
+            </div>
+
+            <p className="text-lg font-black uppercase italic text-[var(--app-text)]">
+              {t("food.upload.cameraTitle")}
+            </p>
+
+            <p className="mx-auto mt-1.5 max-w-[220px] text-xs leading-4 text-[var(--app-muted)]">
+              {t("food.upload.cameraSubtitle")}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <section className="min-h-0">
-      <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 transition active:scale-[0.99]">
-        <div className="relative h-[168px] max-h-[180px] overflow-hidden rounded-[20px] bg-[var(--app-surface)]">
-          {preview ? (
-            <>
-              <img
-                src={preview}
-                alt={t("food.upload.previewAlt")}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--app-surface)] via-[var(--app-surface)]/20 to-transparent" />
-
-              <div className="absolute left-2 top-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--app-primary)] backdrop-blur-xl">
-                {t("food.upload.photoReady")}
-              </div>
-
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-base font-black uppercase italic text-[var(--app-text)]">
-                  {t("food.upload.imageReady")}
-                </p>
-
-                <p className="mt-0.5 text-xs text-[var(--app-muted)]">
-                  {t("food.upload.tapToChange")}
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="grid h-full place-items-center text-center">
-              <div>
-                <div className="theme-icon-tile mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-primary-soft)] text-[var(--app-primary)] shadow-[0_0_30px_var(--app-glow)]">
-                  <ImagePlus size={28} />
-                </div>
-
-                <p className="text-lg font-black uppercase italic text-[var(--app-text)]">
-                  {t("food.upload.title")}
-                </p>
-
-                <p className="mx-auto mt-1.5 max-w-[220px] text-xs leading-4 text-[var(--app-muted)]">
-                  {t("food.upload.subtitle")}
-                </p>
-              </div>
-            </div>
-          )}
-
+      {isNativeCameraAvailable ? (
+        <button
+          type="button"
+          onClick={captureFoodPhoto}
+          className="group block w-full cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 text-left transition duration-200 active:scale-[1.02]"
+        >
+          {scanContent}
+        </button>
+      ) : (
+        <label className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[var(--app-surface)] p-1.5 transition duration-200 active:scale-[1.02]">
+          {scanContent}
           <input
             type="file"
-            accept="image/*,.heic,.heif"
-            onChange={handleImage}
+            accept="image/*"
+            capture="environment"
+            onChange={handleCameraCapture}
             className="hidden"
           />
-        </div>
+        </label>
+      )}
+
+      <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-[var(--app-border)] bg-[var(--app-card)] px-3 py-2.5 text-[10px] font-black uppercase leading-3 tracking-[0.12em] text-[var(--app-primary)] transition active:scale-[0.98]">
+        <ImagePlus size={16} />
+        {t("food.upload.galleryAction")}
+        <input
+          type="file"
+          accept="image/*,.heic,.heif"
+          onChange={handleImage}
+          className="hidden"
+        />
       </label>
 
       <div className="mt-2 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-card)] p-3">

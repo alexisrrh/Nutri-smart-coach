@@ -153,7 +153,9 @@
         "resetFailed": "We could not send the link: ",
         "resetSuccess": "We sent you a link to reset your password.",
         "callbackFailed": "We could not complete the sign-in: ",
-        "createProfileFailed": "We could not create the user profile."
+        "createProfileFailed": "We could not create the user profile.",
+        "policiesRequired": "You must accept the policies and terms of NutriSmartCoach.",
+        "appleUnavailable": "Sign in with Apple is not available on this platform."
       },
       "reset": {
         "eyebrow": "Secure recovery",
@@ -167,7 +169,9 @@
       },
       "social": {
         "google": "Continue with Google",
-        "facebook": "Continue with Facebook"
+        "facebook": "Continue with Facebook",
+        "apple": "Continue with Apple",
+        "appleFallbackName": "Apple user"
       },
       "hero": {
         "badge": "AI ACTIVE",
@@ -211,11 +215,14 @@
         "invalidReferral": "The invite code is invalid or no longer available.",
         "callbackFailed": "We could not complete the sign-in: ",
         "callbackInvalid": "invalid callback",
-        "connect": "Connection error: "
+        "connect": "Connection error: ",
+        "appleUnavailable": "Sign in with Apple is not available on this platform."
       },
       "social": {
         "google": "Continue with Google",
-        "facebook": "Continue with Facebook"
+        "facebook": "Continue with Facebook",
+        "apple": "Continue with Apple",
+        "appleFallbackName": "Apple user"
       }
     }
   },
@@ -1887,9 +1894,15 @@
       "previewAlt": "Meal preview",
       "photoReady": "Photo ready",
       "imageReady": "Image ready",
+      "readyToAnalyze": "✓ Photo ready to analyze",
       "tapToChange": "Tap the image to change it.",
+      "tapToRetake": "Tap the image to take another photo.",
+      "retakeAction": "Take another photo",
       "title": "Upload your meal",
       "subtitle": "Use good lighting and keep the plate fully visible.",
+      "cameraTitle": "Take photo",
+      "cameraSubtitle": "The camera will open automatically.",
+      "galleryAction": "Choose from gallery",
       "optionalDescription": "Optional description",
       "optionalDescriptionHelp": "Add details to improve accuracy",
       "placeholder": "Ex: 2 small arepas with cheese, grilled chicken, sauce and salad",

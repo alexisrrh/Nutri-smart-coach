@@ -19,6 +19,50 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-08-07 - Ajustes de layout movil en rutinas
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** corregir espacios vacios y comportamiento de scroll en `/rutinas`, `WeeklyRoutineSheet` y la sesion activa de entrenamiento sin tocar cards, logica ni datos.
+- **Cambios:** en `WorkoutSession` movil la cabecera queda visible bajo safe-area, el contenido central usa `main` scrollable y `FooterControls` permanece abajo fuera del scroll, eliminando espacio inferior artificial. En `/rutinas` movil se mantiene `AppShell` como unico scroll de la pantalla y el contenido final queda visible sobre `BottomNav`. En `WeeklyRoutineSheet` movil el scroll pasa al wrapper exterior, la lista de dias deja de tener scroll interno y la ultima card puede verse completa respetando safe-area y `BottomNav`. Desktop queda intacto mediante breakpoints.
+- **Archivos principales:** `src/components/workout/WorkoutSession.jsx`, `src/pages/WorkoutRoutines.jsx`.
+- **Pruebas automaticas:** `npm run lint` correcto; `npm run build` correcto con warning existente de Vite sobre import dinamico inefectivo de `src/data/exercises.js`.
+- **Prueba humana:** pendiente en iPhone real: comprobar `/rutinas`, abrir "Tu semana de entrenamiento" y ejecutar una sesion para confirmar que no hay huecos inferiores grandes y que `Anterior`, `Siguiente` y `Finalizar entreno` quedan accesibles.
+- **Pendientes:** no hubo cambios en logica de entrenamiento, estado, navegacion, backend, Supabase, Gemini ni Premium.
+- **Autor:** Codex
+
+## 2026-07-31 — Camara directa para escaner de comidas
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** abrir directamente la camara al iniciar el escaneo de comida, manteniendo una opcion secundaria de galeria y reutilizando el flujo existente de preview y analisis nutricional.
+- **Cambios:** se instalo `@capacitor/camera@8.2.2`, se registro el plugin con Capacitor, se separo la accion principal de camara de la seleccion secundaria de galeria y se centralizo el procesamiento en `processImageFile(file)` para validar, comprimir y generar preview desde ambos origenes. En Android nativo se usa `Camera.takePhoto` con camara trasera y `saveToGallery: false`; en web/PWA se usa `input accept="image/*" capture="environment"`.
+- **Archivos principales:** `src/hooks/food-photo/useFoodPhotoImageUpload.js`, `src/components/food/FoodUploadCard.jsx`, `src/pages/FoodPhoto.jsx`, `src/i18n/es.json`, `src/i18n/en.json`, `package.json`, `package-lock.json`, `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`, `android/app/src/main/assets/capacitor.plugins.json`, `memory-bank/implementation-plans/2026-07-31-food-camera-scanner.md`.
+- **Pruebas automaticas:** `npm run lint` correcto; `npm run build` correcto con warnings existentes de Vite/Rolldown; `npm run cap:sync` correcto; `npx cap sync android` correcto.
+- **Prueba humana:** pendiente en dispositivo/navegador real: entrar en `/foto-comida`, pulsar la accion principal, tomar foto, comprobar preview, descripcion opcional y analisis; cancelar camara/galeria y confirmar que no aparece error grave; elegir imagen desde galeria secundaria.
+- **Pendientes:** validar manualmente en Android fisico o emulador con camara disponible y en navegador/PWA. `npm install` reporto 15 vulnerabilidades de auditoria no tratadas porque `npm audit fix` queda fuera del alcance.
+- **Autor:** Codex
+
+## 2026-07-25 — Inicio de sesión nativo con Google en Android
+
+- **Área:** frontend | móvil | documentación
+- **Objetivo:** evitar que el login con Google en Android abra Chrome y preparar autenticación nativa con Google ID token y Supabase.
+- **Cambios:** se añadió `@capawesome/capacitor-google-sign-in`, se creó un servicio `signInWithGoogle()` que separa Android nativo de web, y se documentó `VITE_GOOGLE_WEB_CLIENT_ID` como Client ID público.
+- **Archivos principales:** `src/services/googleAuthService.js`, `src/pages/Login.jsx`, `src/pages/Register.jsx`, `.env.example`, `package.json`, `package-lock.json`, `android/capacitor.settings.gradle`, `android/app/src/main/assets/capacitor.plugins.json`, `memory-bank/features/authentication.md`, `memory-bank/modules/capacitor-android.md`.
+- **Pruebas automáticas:** `npm run lint` correcto; `npm run build` correcto; `npx cap sync android` correcto; `cmd.exe /c gradlew.bat assembleDebug` correcto con warnings D8 no bloqueantes de `play-services-auth-21.5.0`.
+- **Prueba humana:** APK debug instalado y `MainActivity` abre; la prueba interactiva de Google queda pendiente porque falta configurar `VITE_GOOGLE_WEB_CLIENT_ID` real y el emulador actual no acepta taps aunque `uiautomator` ve la UI.
+- **Pendientes:** configurar Google Cloud y Supabase, regenerar build/sync/APK, y validar selector nativo, sesión Supabase, persistencia, logout y cancelación.
+- **Autor:** Codex
+
+## 2026-07-20 — Ajuste de inicio de sesión con Apple
+
+- **Área:** frontend
+- **Objetivo:** completar la integración inicial de Sign in with Apple sin cambiar la arquitectura de autenticación basada en Supabase.
+- **Cambios:** se conectó el botón Apple en login con las dependencias reales, se corrigió el client ID a `com.nutrismartcoach.nutrismart`, se añadió OAuth web de Supabase, se usa nonce/state dinámico para iOS nativo y se preparan consentimiento/referral antes de iniciar el flujo Apple en registro.
+- **Archivos principales:** `src/components/Home/AppleSignInButton.jsx`, `src/pages/Login.jsx`, `src/pages/Register.jsx`, `src/i18n/es.json`, `src/i18n/en.json`.
+- **Pruebas automáticas:** JSON i18n correcto con `node`; `npx eslint src/components/Home/AppleSignInButton.jsx src/pages/Login.jsx src/pages/Register.jsx` correcto; `npm run build` correcto tras ejecutar `npm install` para instalar la dependencia ya declarada `@capacitor-community/apple-sign-in`; `npm run test -- src/services/referralOnboardingService.test.js src/services/creatorTrackingService.test.js` falla por el mock hoisted existente en `src/services/creatorTrackingService.test.js`, mientras `src/services/referralOnboardingService.test.js` pasa con 12 tests.
+- **Prueba humana:** pendiente; validar login/registro Apple en web con provider Supabase configurado y en iOS cuando exista proyecto iOS/capability.
+- **Pendientes:** confirmar configuración externa en Supabase Auth y Apple Developer.
+- **Autor:** Codex
+
 ## 2026-07-18 — Documentación de funcionalidades y módulos
 
 - **Área:** documentación

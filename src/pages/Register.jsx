@@ -39,6 +39,7 @@ import {
 } from "../components/ui";
 import { trackEvent } from "../services/analytics";
 import { AppleSignInButton } from "../components/Home/AppleSignInButton";
+import { signInWithGoogle } from "../services/googleAuthService";
 
 export function Register() {
   const navigate = useNavigate();
@@ -129,12 +130,15 @@ export function Register() {
       : `${window.location.origin}/perfil`;
 
 
-    const { error: socialError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo,
-      },
-    });
+    const { error: socialError } =
+      provider === "google"
+        ? await signInWithGoogle({ redirectTo })
+        : await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo,
+            },
+          });
 
     if (socialError) setError(tr("errors.connect") + socialError.message);
     if (socialError) {
@@ -585,13 +589,19 @@ export function Register() {
                   acceptedPolicies={acceptedPolicies}
                   onError={setError}
                   onLoading={setLoading}
-                  label={"Continuar con Apple"}
+                  label={tr("social.apple")}
+                  policyError={tr("errors.policiesRequired")}
+                  connectionErrorPrefix={tr("errors.connect")}
+                  cancelledMessage={tr("errors.appleUnavailable")}
+                  fallbackName={tr("social.appleFallbackName")}
+                  redirectTo={`${window.location.origin}/perfil`}
+                  onBeforeSignIn={() => {
+                    setPendingLegalConsent(buildAcceptedLegalConsent());
+                    prepareOAuthReferralCode(getStoredReferralCode());
+                  }}
                   onSuccess={async (data, appleName) => {
                     const user = data?.user;
                     if (user) {
-                      setPendingLegalConsent(buildAcceptedLegalConsent());
-                      prepareOAuthReferralCode(getStoredReferralCode());
-                      
                       try {
                         await saveProfile({
                           id: user.id,

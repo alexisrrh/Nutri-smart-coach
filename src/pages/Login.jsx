@@ -30,6 +30,7 @@ import {
   SurfaceCard,
 } from "../components/ui";
 import { AppleSignInButton } from "../components/Home/AppleSignInButton";
+import { signInWithGoogle } from "../services/googleAuthService";
 
 
 export function Login() {
@@ -103,12 +104,15 @@ export function Login() {
       ? "com.nutrismartcoach.app://login-callback"
       : `${window.location.origin}/dashboard`;
 
-    const { error: socialError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo,
-      },
-    });
+    const { error: socialError } =
+      provider === "google"
+        ? await signInWithGoogle({ redirectTo })
+        : await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo,
+            },
+          });
 
     if (socialError) {
       setError(tl("errors.connect") + socialError.message);
@@ -320,7 +324,13 @@ export function Login() {
               </PrimaryButton>
             </form>
 
-            <SocialLoginButtons onSocialLogin={handleSocialLogin} />
+            <SocialLoginButtons
+              navigate={navigate}
+              onSocialLogin={handleSocialLogin}
+              setError={setError}
+              setLoading={setLoading}
+              supabase={supabase}
+            />
 
             <div className="mt-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-surface)] p-2.5 text-center">
               <p className="text-sm text-[var(--app-muted)]">
@@ -485,9 +495,14 @@ function SocialLoginButtons({ onSocialLogin, supabase, setError, setLoading, nav
       <AppleSignInButton
         supabase={supabase}
         acceptedPolicies={true}
-        onError={setError || (() => {})}
-        onLoading={setLoading || (() => {})}
-        label="Continuar con Apple"
+        onError={setError}
+        onLoading={setLoading}
+        label={tl("social.apple")}
+        policyError={tl("errors.policiesRequired")}
+        connectionErrorPrefix={tl("errors.connect")}
+        cancelledMessage={tl("errors.appleUnavailable")}
+        fallbackName={tl("social.appleFallbackName")}
+        redirectTo={`${window.location.origin}/dashboard`}
         onSuccess={async (data) => {
           const user = data?.user;
           if (user) {
