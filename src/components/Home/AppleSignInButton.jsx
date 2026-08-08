@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import CryptoJS from "crypto-js"; // 👈 Importamos la librería
 
 const APPLE_CLIENT_ID = "com.nutrismartcoach.nutrismart";
 
@@ -17,8 +18,6 @@ export function AppleSignInButton({
   redirectTo,
   onBeforeSignIn,
 }) {
-  // Oculta el botón en Android y en entornos Web (Escritorio / Navegadores móviles)
-  // Solo se mostrará en la aplicación nativa de iOS
   if (Capacitor.getPlatform() === "android") {
     return null;
   }
@@ -37,15 +36,9 @@ export function AppleSignInButton({
       if (!Capacitor.isNativePlatform()) {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "apple",
-          options: {
-            redirectTo,
-          },
+          options: { redirectTo },
         });
-
-        if (error) {
-          onError(`${connectionErrorPrefix}${error.message}`);
-        }
-
+        if (error) onError(`${connectionErrorPrefix}${error.message}`);
         return;
       }
 
@@ -54,23 +47,31 @@ export function AppleSignInButton({
         return;
       }
 
-      const nonce = crypto.randomUUID();
+      // 1. Generamos un string aleatorio para el nonce crudo
+      const rawNonce = crypto.randomUUID();
+      
+      // 2. Creamos el hash SHA-256 usando crypto-js de forma síncrona
+      const hashedNonce = CryptoJS.SHA256(rawNonce).toString(CryptoJS.enc.Hex);
+      
       const state = crypto.randomUUID();
+
       const options = {
         clientId: APPLE_CLIENT_ID,
-        redirectURI: "",
+        redirectURI: "", 
         scopes: "name email",
         state,
-        nonce,
+        nonce: hashedNonce, // 👈 Pasamos el HASH a Apple
       };
 
       const result = await SignInWithApple.authorize(options);
 
       if (result.response && result.response.identityToken) {
+        // 3. Enviamos el RAW nonce a Supabase. 
+        // Supabase le aplicará SHA-256 internamente y lo comparará con el de Apple.
         const { data, error: supabaseError } = await supabase.auth.signInWithIdToken({
           provider: "apple",
           token: result.response.identityToken,
-          nonce,
+          nonce: rawNonce, // 👈 Pasamos el texto PLANO a Supabase
         });
 
         if (supabaseError) {
