@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-07-31 — Camara directa para escaner de comidas
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** abrir directamente la camara al iniciar el escaneo de comida, manteniendo una opcion secundaria de galeria y reutilizando el flujo existente de preview y analisis nutricional.
+- **Cambios:** se instalo `@capacitor/camera@8.2.2`, se registro el plugin con Capacitor, se separo la accion principal de camara de la seleccion secundaria de galeria y se centralizo el procesamiento en `processImageFile(file)` para validar, comprimir y generar preview desde ambos origenes. En Android nativo se usa `Camera.takePhoto` con camara trasera y `saveToGallery: false`; en web/PWA se usa `input accept="image/*" capture="environment"`.
+- **Archivos principales:** `src/hooks/food-photo/useFoodPhotoImageUpload.js`, `src/components/food/FoodUploadCard.jsx`, `src/pages/FoodPhoto.jsx`, `src/i18n/es.json`, `src/i18n/en.json`, `package.json`, `package-lock.json`, `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`, `android/app/src/main/assets/capacitor.plugins.json`, `memory-bank/implementation-plans/2026-07-31-food-camera-scanner.md`.
+- **Pruebas automaticas:** `npm run lint` correcto; `npm run build` correcto con warnings existentes de Vite/Rolldown; `npm run cap:sync` correcto; `npx cap sync android` correcto.
+- **Prueba humana:** pendiente en dispositivo/navegador real: entrar en `/foto-comida`, pulsar la accion principal, tomar foto, comprobar preview, descripcion opcional y analisis; cancelar camara/galeria y confirmar que no aparece error grave; elegir imagen desde galeria secundaria.
+- **Pendientes:** validar manualmente en Android fisico o emulador con camara disponible y en navegador/PWA. `npm install` reporto 15 vulnerabilidades de auditoria no tratadas porque `npm audit fix` queda fuera del alcance.
+- **Autor:** Codex
+
 ## 2026-07-25 — Inicio de sesión nativo con Google en Android
 
 - **Área:** frontend | móvil | documentación
