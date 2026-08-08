@@ -21,6 +21,7 @@
     "@capacitor/core": "^8.4.0",
     "@capawesome/capacitor-google-sign-in": "^0.1.2",
     "@supabase/supabase-js": "^2.105.3",
+    "crypto-js": "^4.2.0",
     "framer-motion": "^12.38.0",
     "heic2any": "^0.0.4",
     "i18next": "^26.3.2",
