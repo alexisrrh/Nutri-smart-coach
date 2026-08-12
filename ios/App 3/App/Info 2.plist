@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key> NSCameraUsageDescription</key>
+	<string>NutriSmart Coach necesita acceso a la cámara para tomar fotos de tus platos y calcular tus calorías y macronutrientes al instante.</string>
 	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Esta app necesita acceso a tu galeria para que puedas subir fotos de tus comidas y progreso</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -26,6 +26,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription
+NSPhotoLibraryUsageDescription
+NSPhotoLibraryUsageDescription</key>
+	<string>NutriSmart Coach necesita acceso a tu galería para que puedas subir imágenes de tus comidas y analizarlas con nuestra Inteligencia Artificial.
+NutriSmart Coach necesita acceso a tu galería para que puedas subir imágenes de tus comidas y analizarlas con nuestra Inteligencia Artificial.
+NutriSmart Coach necesita acceso a tu galería para que puedas subir imágenes de tus comidas y analizarlas con nuestra Inteligencia Artificial.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -41,6 +47,13 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
+					<key>NSPhotoLibraryUsageDescription</key>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>NutriSmart Coach necesita acceso a tu galería para que puedas subir imágenes de tus comidas y analizarlas con nuestra Inteligencia Artificial.</string>
+<key>NSCameraUsageDescription</key>
+<string>NutriSmart Coach necesita acceso a la cámara para tomar fotos de tus platos y calcular tus calorías y macronutrientes al instante.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>NutriSmart Coach necesita permiso para guardar imágenes de tus progresos o menús en tu carrete.</string>
 				</dict>
 			</array>
 		</dict>
