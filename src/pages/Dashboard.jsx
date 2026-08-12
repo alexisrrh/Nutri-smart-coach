@@ -712,14 +712,12 @@ function PremiumDashboardCard({ isPremium, onPress }) {
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={onPress}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--app-primary)_28%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_28%,#ffd54d)_0%,color-mix(in_srgb,var(--app-primary)_12%,var(--app-surface))_100%)] px-2.5 py-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[0_9px_14px_rgba(255,215,0,0.12),0_0_12px_var(--app-glow)] transition-all duration-200 ease-out hover:translate-y-[-1px] hover:shadow-[0_10px_16px_rgba(255,215,0,0.15),0_0_14px_var(--app-glow)] active:scale-[0.96] active:translate-y-[1px] active:brightness-95"
-        >
-          {buttonLabel}
-          <Crown size={10} className="text-[#ffd966]" />
-        </button>
+        <span
+  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--app-primary)_28%,var(--app-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-primary)_28%,#ffd54d)_0%,color-mix(in_srgb,var(--app-primary)_12%,var(--app-surface))_100%)] px-2.5 py-4 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--app-text)] shadow-[0_9px_14px_rgba(255,215,0,0.12),0_0_12px_var(--app-glow)] transition-all duration-200 ease-out group-hover:translate-y-[-1px] group-active:scale-[0.96] group-active:translate-y-[1px] group-active:brightness-95"
+>
+  {buttonLabel}
+  <Crown size={10} className="text-[#ffd966]" />
+</span>
       </div>
     </SurfaceCard>
   );
