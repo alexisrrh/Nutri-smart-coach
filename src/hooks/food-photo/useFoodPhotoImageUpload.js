@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-import { Camera, CameraDirection } from "@capacitor/camera";
+import {
+  Camera,
+  CameraDirection,
+  CameraResultType,
+  CameraSource,
+} from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 
 const TARGET_SIZE = 1 * 1024 * 1024;
@@ -88,13 +93,14 @@ export function useFoodPhotoImageUpload({
     if (!Capacitor.isNativePlatform()) return false;
 
     try {
-      const photo = await Camera.takePhoto({
-        cameraDirection: CameraDirection.Rear,
-        includeMetadata: true,
+      const photo = await Camera.getPhoto({
+        direction: CameraDirection.Rear,
+        resultType: CameraResultType.Uri,
         quality: 85,
         saveToGallery: false,
-        targetHeight: 1280,
-        targetWidth: 1280,
+        source: CameraSource.Camera,
+        height: 1280,
+        width: 1280,
       });
 
       const file = await cameraPhotoToFile(photo);
@@ -133,7 +139,8 @@ export function useFoodPhotoImageUpload({
 }
 
 async function cameraPhotoToFile(photo) {
-  const sourcePath = photo.webPath || Capacitor.convertFileSrc(photo.uri || "");
+  const sourcePath =
+    photo.webPath || Capacitor.convertFileSrc(photo.path || photo.uri || "");
 
   if (!sourcePath) {
     throw new Error("La camara no devolvio una imagen valida.");
@@ -187,7 +194,7 @@ function readImageBlobWithRequest(sourcePath, cause) {
 }
 
 function getCameraImageExtension(photo, blob) {
-  const format = String(photo.metadata?.format || "").toLowerCase();
+  const format = String(photo.format || photo.metadata?.format || "").toLowerCase();
   const type = String(blob.type || "").toLowerCase();
 
   if (format === "png" || type === "image/png") return "png";
