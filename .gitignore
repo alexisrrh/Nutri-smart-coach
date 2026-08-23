@@ -24,11 +24,14 @@ dist-ssr
 *.sw?
 
 .vercel
-.env*.local
 .env
 .env.*
 backend/.env
 backend/.env.*
-.env
-.env.*
-.env.localbackend/.env
+*.env
+*.env.*
+.env.local
+.env*.local
+.cursor/.env*
+!.env.example
+!backend/.env.example
