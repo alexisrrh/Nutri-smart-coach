@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
 import { getFileExtension } from "../utils/files.js";
 
+const SIGNED_URL_TTL_SECONDS = 10 * 60;
+
 export async function uploadImageToSupabase({ bucket, userId, file }) {
   if (!process.env.SUPABASE_URL) {
     throw new Error("Falta SUPABASE_URL en Render");
@@ -26,30 +28,38 @@ export async function uploadImageToSupabase({ bucket, userId, file }) {
     });
 
   if (uploadError) {
-    console.error("ERROR STORAGE SUPABASE:", uploadError);
+    console.error("ERROR STORAGE SUPABASE", {
+      bucket,
+      code: uploadError?.code || "STORAGE_UPLOAD_FAILED",
+    });
 
     throw new Error(
       `No se pudo subir imagen al bucket ${bucket}: ${uploadError.message}`
     );
   }
 
-  const { data: publicData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
+  console.log("Imagen subida correctamente en Supabase Storage");
 
-  if (!publicData?.publicUrl) {
-    throw new Error("Supabase no devolvió publicUrl");
-  }
-
-  console.log("Imagen subida correctamente:", publicData.publicUrl);
-
-  return publicData.publicUrl;
+  return filePath;
 }
 
 export function getSupabaseStoragePath({ publicUrl, bucket }) {
+  if (!publicUrl) return null;
+
+  if (!/^https?:\/\//i.test(publicUrl)) {
+    return publicUrl.replace(/^\/+/, "") || null;
+  }
+
   try {
     const url = new URL(publicUrl);
-    const marker = `/storage/v1/object/public/${bucket}/`;
+    const markers = [
+      `/storage/v1/object/public/${bucket}/`,
+      `/storage/v1/object/sign/${bucket}/`,
+    ];
+    const marker = markers.find((item) => url.pathname.includes(item));
+
+    if (!marker) return null;
+
     const markerIndex = url.pathname.indexOf(marker);
 
     if (markerIndex === -1) return null;
@@ -58,4 +68,42 @@ export function getSupabaseStoragePath({ publicUrl, bucket }) {
   } catch {
     return null;
   }
+}
+
+export async function createSignedImageUrl({ bucket, imageUrl }) {
+  const imagePath = getSupabaseStoragePath({ publicUrl: imageUrl, bucket });
+
+  if (!imagePath) return imageUrl || null;
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(imagePath, SIGNED_URL_TTL_SECONDS);
+
+  if (error || !data?.signedUrl) {
+    console.error("Error creando signed URL de imagen:", {
+      bucket,
+      code: error?.code || "SIGNED_URL_FAILED",
+    });
+    return /^https?:\/\//i.test(imageUrl || "") ? imageUrl : null;
+  }
+
+  return data.signedUrl;
+}
+
+export async function signImageUrlFields(records, { bucket }) {
+  if (!Array.isArray(records)) return [];
+
+  return Promise.all(records.map((record) => signImageUrlField(record, { bucket })));
+}
+
+export async function signImageUrlField(record, { bucket }) {
+  if (!record?.image_url) return record;
+
+  return {
+    ...record,
+    image_url: await createSignedImageUrl({
+      bucket,
+      imageUrl: record.image_url,
+    }),
+  };
 }

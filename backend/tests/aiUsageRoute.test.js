@@ -16,6 +16,7 @@ const mockState = vi.hoisted(() => ({
     meal_analyses: 0,
     diet_plans: 0,
     checkins: 0,
+    ai_usage_events: 0,
   },
 }));
 
@@ -50,6 +51,7 @@ describe("GET /ai-usage/:userId", () => {
       meal_analyses: 0,
       diet_plans: 0,
       checkins: 0,
+      ai_usage_events: 0,
     };
   });
 
@@ -77,6 +79,8 @@ describe("GET /ai-usage/:userId", () => {
     expect(response.body.usage.diet_generation.period).toBe("week");
     expect(response.body.usage.checkin_analysis.limit).toBe(1);
     expect(response.body.usage.checkin_analysis.period).toBe("week");
+    expect(response.body.usage.rewrite_meal.limit).toBe(0);
+    expect(response.body.usage.rewrite_meal.period).toBe("day");
   });
 
   it("returns premium food analysis limit 20 for premium users", async () => {
@@ -95,6 +99,8 @@ describe("GET /ai-usage/:userId", () => {
     expect(response.body.usage.food_analysis.limit).toBe(20);
     expect(response.body.usage.food_analysis.period).toBe("day");
     expect(response.body.limits.food_analysis.limit).toBe(20);
+    expect(response.body.usage.rewrite_meal.limit).toBe(12);
+    expect(response.body.usage.rewrite_meal.period).toBe("day");
   });
 });
 

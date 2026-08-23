@@ -17,6 +17,7 @@ import {
   checkDailyAiLimit,
   enforceRateLimit,
   isPremiumProfile,
+  recordAiUsageEvent,
   registerAiUsage,
 } from "../utils/aiUsage.js";
 import { cleanGeminiJson } from "../utils/json.js";
@@ -25,6 +26,7 @@ import { createTimingLogger } from "../utils/timing.js";
 
 const router = Router();
 const DAILY_DIET_GENERATION_LIMIT = AI_USAGE_RULES.diet_generation.freeLimit;
+const DAILY_REWRITE_MEAL_LIMIT = AI_USAGE_RULES.rewrite_meal.premiumLimit;
 const DIET_GENERATION_COOLDOWN_SECONDS = 8;
 
 router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
@@ -141,10 +143,14 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
         week = normalizeGeneratedDiet(data.week, dietConfig);
         timing.mark("normalize");
       } catch (error) {
-        console.error("Error Gemini generate-diet:", error);
+        console.error("Error Gemini generate-diet", {
+          requestId: req.requestId || null,
+          endpoint: "generate-diet",
+          code: error?.code || "DIET_AI_FAILED",
+        });
         week = createFallbackDiet(profile, resolvedPreferences, dietConfig, language);
         usedFallback = true;
-        warning = error.message || "Gemini falló generando dieta";
+        warning = "Gemini falló generando dieta";
         timing.mark("Gemini");
         timing.mark("normalize");
       }
@@ -193,7 +199,11 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
     });
   } catch (error) {
     timing.done({ error: true });
-    console.error("Error generate-diet completo:", error);
+    console.error("Error generate-diet", {
+      requestId: req.requestId || null,
+      endpoint: "generate-diet",
+      code: error?.code || "DIET_GENERATION_FAILED",
+    });
 
     const dietConfig = buildDietConfig(preferences);
     const language = normalizeDietLanguage(
@@ -211,7 +221,7 @@ router.post("/generate-diet", verifySupabaseUser, async (req, res) => {
     return res.json({
       week: createFallbackDiet(profile, resolvedPreferences, dietConfig, language),
       usedFallback: true,
-      warning: error.message,
+      warning: "No se pudo generar la dieta completa.",
       saved: false,
       language,
     });
@@ -238,15 +248,13 @@ router.get("/diet-plans/:userId", verifySupabaseUser, async (req, res) => {
     if (error) {
       return res.status(500).json({
         error: "No se pudieron cargar las dietas",
-        detail: error.message,
       });
     }
 
     return res.json({ diet_plans: data || [] });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error cargando dietas",
-      detail: error.message,
     });
   }
 });
@@ -329,6 +337,34 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
       });
     }
 
+    const limitState = await checkDailyAiLimit({
+      userId,
+      type: "rewrite_meal",
+      limit: DAILY_REWRITE_MEAL_LIMIT,
+      profile: premiumProfile,
+    });
+
+    if (!limitState.allowed) {
+      return res.status(429).json({
+        error: "Has alcanzado tu límite diario de cambios inteligentes de comida.",
+        usage: {
+          rewrite_meal: serializeUsageState("rewrite_meal", limitState),
+        },
+        plan: limitState.plan,
+        upgradeAvailable: limitState.upgradeAvailable,
+      });
+    }
+
+    await recordAiUsageEvent({
+      userId,
+      type: "rewrite_meal",
+      metadata: {
+        diet_plan_id: dietPlanId,
+        day_index: dayIndex,
+        meal_index: mealIndex,
+      },
+    });
+
     const replacementMeal = await rewriteDietMealWithGemini({
       currentMeal: meals[mealIndex],
       reason,
@@ -343,29 +379,13 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
       replacementMeal,
     });
 
-    console.info("rewrite-meal update context", {
+    console.info("rewrite-meal update", {
+      requestId: req.requestId || null,
+      endpoint: "rewrite-meal",
       dietPlanId,
-      userId,
       dayIndex,
       mealIndex,
-      weekType: Array.isArray(week) ? "array" : typeof week,
-      dayType: day ? typeof day : "missing",
-      mealsType: Array.isArray(meals) ? "array" : typeof meals,
-      updatePath: "diet_plans.week",
-      targetDay: day?.day || null,
-      mealId,
-      mealName,
-      mealType,
-      foodName,
-    });
-
-    console.info("rewrite-meal updated day snapshot", {
-      dayIndex,
-      dayLabel: nextWeek?.[dayIndex]?.day || null,
-      mealCount: Array.isArray(nextWeek?.[dayIndex]?.meals)
-        ? nextWeek[dayIndex].meals.length
-        : null,
-      firstMeal: nextWeek?.[dayIndex]?.meals?.[mealIndex] || null,
+      mealCount: Array.isArray(meals) ? meals.length : null,
     });
 
     const updatePayload = {
@@ -390,11 +410,12 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
 
       if (updateError && looksLikeMissingUpdatedAtColumn(updateError)) {
         console.warn("rewrite-meal retrying save without updated_at", {
+          requestId: req.requestId || null,
+          endpoint: "rewrite-meal",
           dietPlanId,
-          userId,
           dayIndex,
           mealIndex,
-          message: updateError.message || String(updateError),
+          code: updateError?.code || "MISSING_UPDATED_AT",
         });
 
         const fallbackUpdate = await supabase
@@ -412,16 +433,15 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
 
     if (updateError) {
       console.error("rewrite-meal Supabase update failed", {
+        requestId: req.requestId || null,
+        endpoint: "rewrite-meal",
         dietPlanId,
-        userId,
         dayIndex,
         mealIndex,
-        updatePayload,
-        error: updateError,
+        code: updateError?.code || "REWRITE_MEAL_UPDATE_FAILED",
       });
       return res.status(500).json({
         error: "No se pudo guardar la comida actualizada.",
-        detail: updateError.message || String(updateError),
       });
     }
 
@@ -431,7 +451,12 @@ router.post("/diet-plans/:dietPlanId/rewrite-meal", verifySupabaseUser, async (r
       diet_plan_id: dietPlanId,
     });
   } catch (error) {
-    console.error("Error cambiando comida de dieta:", error);
+    console.error("Error cambiando comida de dieta", {
+      requestId: req.requestId || null,
+      endpoint: "rewrite-meal",
+      code: error?.code || "REWRITE_MEAL_FAILED",
+      statusCode: error?.statusCode || 500,
+    });
 
     return res.status(error.statusCode || 500).json({
       error: error.expose
@@ -467,17 +492,15 @@ router.get("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
     if (error) {
       return res.status(500).json({
         error: "No se pudo cargar el progreso de la dieta",
-        detail: error.message,
       });
     }
 
     return res.json({
       progress: buildDietProgressMap(data || []),
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error cargando progreso de dieta",
-      detail: error.message,
     });
   }
 });
@@ -522,7 +545,6 @@ router.put("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
     if (error) {
       return res.status(500).json({
         error: "No se pudo guardar el progreso de la dieta",
-        detail: error.message,
       });
     }
 
@@ -530,10 +552,9 @@ router.put("/diet-progress/:userId", verifySupabaseUser, async (req, res) => {
       ok: true,
       meal: data,
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error guardando progreso de dieta",
-      detail: error.message,
     });
   }
 });
@@ -562,7 +583,9 @@ async function saveDietPlan({
     .single();
 
   if (error) {
-    console.error("Error guardando dieta en Supabase:", error);
+    console.error("Error guardando dieta en Supabase", {
+      code: error?.code || "DIET_SAVE_FAILED",
+    });
     return null;
   }
 
@@ -578,7 +601,9 @@ async function getOwnedDietPlan({ dietPlanId, userId }) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error cargando dieta para edición:", error);
+    console.error("Error cargando dieta para edición", {
+      code: error?.code || "DIET_LOAD_FAILED",
+    });
     return null;
   }
 
@@ -604,7 +629,9 @@ async function getPremiumProfile(userId) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error consultando Premium para edición de dieta:", error);
+    console.error("Error consultando Premium para edición de dieta", {
+      code: error?.code || "PREMIUM_LOOKUP_FAILED",
+    });
     return null;
   }
 
@@ -922,7 +949,9 @@ async function upsertUserProfile({ userId, profile, preferences }) {
     .single();
 
   if (error) {
-    console.error("Error guardando perfil en Supabase:", error);
+    console.error("Error guardando perfil en Supabase", {
+      code: error?.code || "PROFILE_SAVE_FAILED",
+    });
     return null;
   }
 

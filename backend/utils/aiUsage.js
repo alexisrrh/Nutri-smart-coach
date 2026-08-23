@@ -22,6 +22,12 @@ export const AI_USAGE_RULES = {
     freePeriod: "week",
     premiumPeriod: "day",
   },
+  rewrite_meal: {
+    freeLimit: 0,
+    premiumLimit: 12,
+    freePeriod: "day",
+    premiumPeriod: "day",
+  },
 };
 
 export class AiUsageError extends Error {
@@ -32,8 +38,8 @@ export class AiUsageError extends Error {
   }
 }
 
-export async function checkDailyAiLimit({ userId, type, limit }) {
-  const usage = await getDailyAiUsage({ userId, type, limit });
+export async function checkDailyAiLimit({ userId, type, limit, profile }) {
+  const usage = await getDailyAiUsage({ userId, type, limit, profile });
 
   return {
     allowed: !usage.isLimitReached,
@@ -72,6 +78,26 @@ export function registerAiUsage({ userId, type }) {
     getUsageKey({ userId, type }),
     Date.now()
   );
+}
+
+export async function recordAiUsageEvent({ userId, type, metadata = {} }) {
+  if (!userId || !type) return;
+
+  const { error } = await supabase
+    .from("ai_usage_events")
+    .insert({
+      user_id: userId,
+      type,
+      metadata,
+    });
+
+  if (error) {
+    console.error("Error registrando uso IA", {
+      type,
+      code: error?.code || "AI_USAGE_EVENT_INSERT_FAILED",
+    });
+    throw new Error("No se pudo registrar el uso de IA");
+  }
 }
 
 export async function getDailyAiUsage({ userId, type, limit, profile }) {
@@ -196,6 +222,17 @@ async function countPeriodUsage({ userId, type, profile }) {
     });
   }
 
+  if (type === "rewrite_meal") {
+    return countRowsInRange({
+      table: "ai_usage_events",
+      userId,
+      period: usageWindow.period,
+      filters: {
+        type,
+      },
+    });
+  }
+
   throw new Error(`Tipo de uso IA no soportado: ${type}`);
 }
 
@@ -249,7 +286,9 @@ async function getUserProfileForAiUsage(userId) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error consultando el perfil para límites IA:", error);
+    console.error("Error consultando el perfil para límites IA", {
+      code: error?.code || "AI_USAGE_PROFILE_FAILED",
+    });
     return null;
   }
 
@@ -266,7 +305,9 @@ async function countDailyFoodAnalysis(userId) {
     .lt("created_at", end);
 
   if (todayError) {
-    console.error("Error contando análisis diarios:", todayError);
+    console.error("Error contando análisis diarios", {
+      code: todayError?.code || "AI_USAGE_DAILY_COUNT_FAILED",
+    });
     throw new Error("No se pudo comprobar el límite de análisis IA");
   }
 
@@ -288,7 +329,9 @@ async function countDailyFoodAnalysis(userId) {
       .lt("created_at", start);
 
     if (previousError) {
-      console.error("Error revisando hashes previos:", previousError);
+      console.error("Error revisando hashes previos", {
+        code: previousError?.code || "AI_USAGE_HASH_LOOKUP_FAILED",
+      });
       throw new Error("No se pudo comprobar el historial de análisis");
     }
 
@@ -307,17 +350,25 @@ async function countDailyFoodAnalysis(userId) {
   return textOnlyCount + newImageAnalysisCount;
 }
 
-async function countRowsInRange({ table, userId, period }) {
+async function countRowsInRange({ table, userId, period, filters = {} }) {
   const { start, end } = getUsageRange(period);
-  const { count, error } = await supabase
+  let query = supabase
     .from(table)
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .gte("created_at", start)
-    .lt("created_at", end);
+    .gte("created_at", start);
+
+  for (const [column, value] of Object.entries(filters)) {
+    query = query.eq(column, value);
+  }
+
+  const { count, error } = await query.lt("created_at", end);
 
   if (error) {
-    console.error(`Error contando uso IA en ${table}:`, error);
+    console.error("Error contando uso IA", {
+      table,
+      code: error?.code || "AI_USAGE_COUNT_FAILED",
+    });
     throw new Error("No se pudo comprobar el límite de uso IA");
   }
 

@@ -40,7 +40,6 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
     if (profileError) {
       return res.status(500).json({
         error: "No se pudo consultar el uso de IA",
-        detail: profileError.message,
       });
     }
 
@@ -51,10 +50,9 @@ router.get("/ai-usage/:userId", verifySupabaseUser, async (req, res) => {
       limits: getAiUsageLimits(profile),
       plan: getAiUsagePlan(profile),
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "No se pudo consultar el uso de IA",
-      detail: error.message,
     });
   }
 });

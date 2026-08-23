@@ -16,6 +16,7 @@ import {
   checkinsRateLimiter,
   generateDietRateLimiter,
   globalRateLimiter,
+  rewriteMealRateLimiter,
 } from "./middleware/rateLimit.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 
@@ -33,6 +34,7 @@ app.use("/creators", creatorsRoutes);
 app.use(["/auth", "/login", "/register", "/reset-password"], authRateLimiter);
 app.use("/analyze-food", analyzeFoodRateLimiter);
 app.use("/generate-diet", generateDietRateLimiter);
+app.use("/diet-plans/:dietPlanId/rewrite-meal", rewriteMealRateLimiter);
 app.use("/checkins", checkinsRateLimiter);
 app.use("/", checkinsRoutes);
 app.use("/", aiUsageRoutes);
