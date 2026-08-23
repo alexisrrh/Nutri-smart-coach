@@ -89,6 +89,13 @@ export const generateDietRateLimiter = createRateLimiter({
   message: "Demasiadas generaciones de dieta en poco tiempo. Inténtalo de nuevo más tarde.",
 });
 
+export const rewriteMealRateLimiter = createRateLimiter({
+  name: "rewrite_meal",
+  windowMs: 60 * 60 * 1000,
+  max: 12,
+  message: "Demasiados cambios de comida en poco tiempo. Inténtalo de nuevo más tarde.",
+});
+
 export const checkinsRateLimiter = createRateLimiter({
   name: "checkins",
   windowMs: 15 * 60 * 1000,

@@ -18,7 +18,6 @@ export function requestLogger(req, res, next) {
         route: getSafeRoute(req),
         statusCode: res.statusCode,
         durationMs: Math.round(durationMs),
-        userId: req.authUser?.id || null,
         client: getSafeClientIdentifier(req),
       })
     );

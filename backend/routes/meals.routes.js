@@ -12,6 +12,8 @@ import { normalizeFoodAnalysis } from "../normalizers/foodAnalysis.normalizer.js
 import { buildFoodAnalysisPrompt } from "../prompts/foodAnalysis.prompt.js";
 import {
   getSupabaseStoragePath,
+  signImageUrlField,
+  signImageUrlFields,
   uploadImageToSupabase,
 } from "../services/storage.service.js";
 import { createImageHash } from "../utils/files.js";
@@ -131,7 +133,12 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
       timing.mark("lookup");
 
       if (existingAnalysis) {
-        let reusedImageUrl = existingAnalysis.image_url || null;
+        let reusedImageUrl = existingAnalysis.image_url
+          ? getSupabaseStoragePath({
+              publicUrl: existingAnalysis.image_url,
+              bucket: "food-photos",
+            })
+          : null;
 
         if (hasImage && !reusedImageUrl) {
           reusedImageUrl = await uploadImageToSupabase({
@@ -158,14 +165,19 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
         timing.mark("insert");
         timing.done({ reused: true });
 
-        return res.json({
-          ...reusedRecord,
-          language: reusedRecord.language || language,
-          image_hash: imageHash,
-          image_url: reusedRecord.image_url || reusedImageUrl || null,
-          reused: true,
-          saved: true,
-        });
+        const signedReusedRecord = await signImageUrlField(
+          {
+            ...reusedRecord,
+            language: reusedRecord.language || language,
+            image_hash: imageHash,
+            image_url: reusedRecord.image_url || reusedImageUrl || null,
+            reused: true,
+            saved: true,
+          },
+          { bucket: "food-photos" }
+        );
+
+        return res.json(signedReusedRecord);
       }
     } else {
       timing.mark("lookup");
@@ -255,11 +267,14 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
     try {
       data = JSON.parse(cleanText);
     } catch {
-      console.error("Gemini no devolvió JSON en analyze-food:", rawText);
+      console.error("Gemini no devolvió JSON en analyze-food", {
+        requestId: req.requestId || null,
+        endpoint: "analyze-food",
+        code: "AI_INVALID_JSON",
+      });
 
       return res.status(500).json({
         error: "La IA no devolvió un análisis válido",
-        detail: rawText.slice(0, 300),
       });
     }
 
@@ -299,21 +314,26 @@ router.post("/analyze-food", verifySupabaseUser, uploadSingleImage("image"), asy
 
     timing.done({ reused: false });
 
-    return res.json({
+    const signedMeal = await signImageUrlField({
       ...(savedRecord || analysis),
       language,
       image_hash: imageHash,
       image_url: imageUrl,
       description: description || (savedRecord || analysis)?.description || "",
       saved: Boolean(savedRecord),
-    });
+    }, { bucket: "food-photos" });
+
+    return res.json(signedMeal);
   } catch (error) {
     timing.done({ error: true });
-    console.error("Error analyze-food completo:", error);
+    console.error("Error analyze-food", {
+      requestId: req.requestId || null,
+      endpoint: "analyze-food",
+      code: error?.code || "ANALYZE_FOOD_FAILED",
+    });
 
     return res.status(500).json({
       error: "Error analizando imagen",
-      detail: error.message,
     });
   }
 });
@@ -338,15 +358,17 @@ router.get("/meal-analyses/:userId", verifySupabaseUser, async (req, res) => {
     if (error) {
       return res.status(500).json({
         error: "No se pudieron cargar los análisis de comida",
-        detail: error.message,
       });
     }
 
-    return res.json({ meal_analyses: data || [] });
-  } catch (error) {
+    return res.json({
+      meal_analyses: await signImageUrlFields(data || [], {
+        bucket: "food-photos",
+      }),
+    });
+  } catch {
     return res.status(500).json({
       error: "Error cargando análisis de comida",
-      detail: error.message,
     });
   }
 });
@@ -374,7 +396,6 @@ router.delete("/meal-analyses/user/:userId", verifySupabaseUser, async (req, res
     if (fetchError) {
       return res.status(500).json({
         error: "No se pudieron cargar los análisis de comida",
-        detail: fetchError.message,
       });
     }
 
@@ -395,7 +416,9 @@ router.delete("/meal-analyses/user/:userId", verifySupabaseUser, async (req, res
         .remove(imagePaths);
 
       if (storageError) {
-        console.error("Error borrando imágenes de comidas:", storageError);
+        console.error("Error borrando imágenes de comidas", {
+          code: storageError?.code || "FOOD_IMAGES_DELETE_FAILED",
+        });
       }
     }
 
@@ -407,15 +430,13 @@ router.delete("/meal-analyses/user/:userId", verifySupabaseUser, async (req, res
     if (deleteError) {
       return res.status(500).json({
         error: "No se pudieron borrar los análisis de comida",
-        detail: deleteError.message,
       });
     }
 
     return res.json({ ok: true, deleted: meals?.length || 0 });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error borrando historial de comidas",
-      detail: error.message,
     });
   }
 });
@@ -450,7 +471,6 @@ router.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => 
     if (fetchError) {
       return res.status(500).json({
         error: "No se pudo cargar el análisis de comida",
-        detail: fetchError.message,
       });
     }
 
@@ -472,7 +492,9 @@ router.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => 
           .remove([imagePath]);
 
         if (storageError) {
-          console.error("Error borrando imagen de comida:", storageError);
+          console.error("Error borrando imagen de comida", {
+            code: storageError?.code || "FOOD_IMAGE_DELETE_FAILED",
+          });
         }
       }
     }
@@ -486,15 +508,13 @@ router.delete("/meal-analyses/:mealId", verifySupabaseUser, async (req, res) => 
     if (deleteError) {
       return res.status(500).json({
         error: "No se pudo borrar el análisis de comida",
-        detail: deleteError.message,
       });
     }
 
     return res.json({ ok: true, deleted_id: mealId });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error borrando análisis de comida",
-      detail: error.message,
     });
   }
 });
@@ -512,7 +532,9 @@ async function findMealAnalysisByImageHash({ userId, imageHash, language = "es" 
     .limit(1);
 
   if (error) {
-    console.error("Error buscando análisis por image_hash:", error);
+    console.error("Error buscando análisis por image_hash", {
+      code: error?.code || "FOOD_HASH_LOOKUP_FAILED",
+    });
     throw new Error("No se pudo comprobar si la imagen ya fue analizada");
   }
 
@@ -563,7 +585,9 @@ async function saveMealAnalysis({
     .single();
 
   if (error) {
-    console.error("Error guardando análisis en Supabase:", error);
+    console.error("Error guardando análisis en Supabase", {
+      code: error?.code || "FOOD_ANALYSIS_SAVE_FAILED",
+    });
     return null;
   }
 

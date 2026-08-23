@@ -179,6 +179,30 @@ describe("AI usage premium limits", () => {
       upgradeAvailable: false,
     });
   });
+
+  it("returns premium rewrite meal limit 12 per day", async () => {
+    mockState.profile = {
+      plan: "premium",
+      is_premium: true,
+      subscription_status: "active",
+    };
+    mockState.count = 11;
+
+    const usage = await getDailyAiUsage({
+      userId: "user-premium-rewrite",
+      type: "rewrite_meal",
+    });
+
+    expect(usage).toMatchObject({
+      limit: 12,
+      plan: "premium",
+      period: "day",
+      remaining: 1,
+      usedToday: 11,
+      upgradeAvailable: false,
+      isLimitReached: false,
+    });
+  });
 });
 
 async function getDailyAiLimitWithExpiredProfile() {

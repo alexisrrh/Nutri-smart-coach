@@ -11,6 +11,9 @@ const mockState = vi.hoisted(() => ({
   profile: null,
   aiText: "",
   updatedPayload: null,
+  aiUsageCount: 0,
+  aiUsageEvents: [],
+  geminiCalls: 0,
 }));
 
 vi.mock("../config/supabase.js", () => ({
@@ -34,6 +37,7 @@ vi.mock("../config/gemini.js", () => ({
   ai: {
     models: {
       async generateContent() {
+        mockState.geminiCalls += 1;
         return { text: mockState.aiText };
       },
     },
@@ -60,6 +64,9 @@ describe("POST /diet-plans/:dietPlanId/rewrite-meal", () => {
       },
     });
     mockState.updatedPayload = null;
+    mockState.aiUsageCount = 0;
+    mockState.aiUsageEvents = [];
+    mockState.geminiCalls = 0;
   });
 
   it("returns 401 without authentication", async () => {
@@ -104,6 +111,16 @@ describe("POST /diet-plans/:dietPlanId/rewrite-meal", () => {
     expect(response.body.week[0].meals[0].food).toBe("Pollo con quinoa y verduras");
     expect(response.body.week[0].meals[1].food).toBe("Yogur con fruta");
     expect(mockState.updatedPayload.week[0].meals[0].food).toBe("Pollo con quinoa y verduras");
+    expect(mockState.aiUsageEvents).toHaveLength(1);
+    expect(mockState.aiUsageEvents[0]).toMatchObject({
+      user_id: "user-1",
+      type: "rewrite_meal",
+      metadata: {
+        diet_plan_id: "plan-1",
+        day_index: 0,
+        meal_index: 0,
+      },
+    });
   });
 
   it("returns 403 when the diet plan does not belong to the user", async () => {
@@ -132,6 +149,31 @@ describe("POST /diet-plans/:dietPlanId/rewrite-meal", () => {
     expect(response.body).toEqual({
       error: "La IA no devolvió una comida válida.",
     });
+    expect(mockState.aiUsageEvents).toHaveLength(1);
+  });
+
+  it("returns 429 without calling Gemini when the daily rewrite limit is reached", async () => {
+    mockState.aiUsageCount = 12;
+
+    const response = await request(app)
+      .post("/diet-plans/plan-1/rewrite-meal")
+      .set("Authorization", "Bearer test-token")
+      .send(buildPayload());
+
+    expect(response.status).toBe(429);
+    expect(response.body).toMatchObject({
+      error: "Has alcanzado tu límite diario de cambios inteligentes de comida.",
+      usage: {
+        rewrite_meal: {
+          usedToday: 12,
+          limit: 12,
+          plan: "premium",
+          isLimitReached: true,
+        },
+      },
+    });
+    expect(mockState.geminiCalls).toBe(0);
+    expect(mockState.aiUsageEvents).toHaveLength(0);
   });
 });
 
@@ -147,6 +189,24 @@ function createQuery(table) {
     update(payload) {
       this.updatePayload = payload;
       return this;
+    },
+    insert(payload) {
+      if (table === "ai_usage_events") {
+        mockState.aiUsageEvents.push(payload);
+        return Promise.resolve({ error: null });
+      }
+
+      return this;
+    },
+    gte() {
+      return this;
+    },
+    async lt() {
+      if (table === "ai_usage_events") {
+        return { count: mockState.aiUsageCount, error: null };
+      }
+
+      return { count: 0, error: null };
     },
     async maybeSingle() {
       if (table === "diet_plans") {

@@ -81,6 +81,7 @@ vi.mock("../middleware/rateLimit.js", () => ({
   authRateLimiter: (_req, _res, next) => next(),
   analyzeFoodRateLimiter: (_req, _res, next) => next(),
   generateDietRateLimiter: (_req, _res, next) => next(),
+  rewriteMealRateLimiter: (_req, _res, next) => next(),
   checkinsRateLimiter: (_req, _res, next) => next(),
   createRateLimiter: () => (_req, _res, next) => next(),
 }));
@@ -104,6 +105,7 @@ vi.mock("../services/storage.service.js", () => ({
 vi.mock("../utils/aiUsage.js", () => ({
   AI_USAGE_RULES: {
     checkin_analysis: { freeLimit: 3 },
+    rewrite_meal: { premiumLimit: 12 },
   },
   checkDailyAiLimit: vi.fn(async () => ({
     allowed: true,
@@ -112,6 +114,7 @@ vi.mock("../utils/aiUsage.js", () => ({
     upgradeAvailable: false,
   })),
   enforceRateLimit: vi.fn(() => ({ allowed: true })),
+  recordAiUsageEvent: vi.fn(),
   registerAiUsage: vi.fn(),
 }));
 

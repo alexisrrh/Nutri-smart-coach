@@ -11,6 +11,8 @@ import { normalizeCheckinAnalysis } from "../normalizers/checkin.normalizer.js";
 import { buildCheckinPrompt } from "../prompts/checkin.prompt.js";
 import {
   getSupabaseStoragePath,
+  signImageUrlField,
+  signImageUrlFields,
   uploadImageToSupabase,
 } from "../services/storage.service.js";
 import {
@@ -129,24 +131,28 @@ router.post("/checkins", verifySupabaseUser, uploadSingleImage("image"), async (
     if (error) {
       return res.status(500).json({
         error: "No se pudo guardar el check-in",
-        detail: error.message,
       });
     }
+
+    const signedCheckin = await signImageUrlField({
+      ...data,
+      language,
+    }, { bucket: "checkins" });
 
     return res.json({
       ok: true,
       language,
-      checkin: {
-        ...data,
-        language,
-      },
+      checkin: signedCheckin,
     });
   } catch (error) {
-    console.error("Error checkins:", error);
+    console.error("Error guardando check-in", {
+      requestId: req.requestId || null,
+      endpoint: "checkins",
+      code: error?.code || "CHECKIN_SAVE_FAILED",
+    });
 
     return res.status(500).json({
       error: "Error guardando check-in",
-      detail: error.message,
     });
   }
 });
@@ -171,15 +177,17 @@ router.get("/checkins/:userId", verifySupabaseUser, async (req, res) => {
     if (error) {
       return res.status(500).json({
         error: "No se pudieron cargar los check-ins",
-        detail: error.message,
       });
     }
 
-    return res.json({ checkins: data || [] });
-  } catch (error) {
+    return res.json({
+      checkins: await signImageUrlFields(data || [], {
+        bucket: "checkins",
+      }),
+    });
+  } catch {
     return res.status(500).json({
       error: "Error cargando check-ins",
-      detail: error.message,
     });
   }
 });
@@ -210,7 +218,6 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
     if (fetchError) {
       return res.status(500).json({
         error: "No se pudo cargar el check-in",
-        detail: fetchError.message,
       });
     }
 
@@ -232,7 +239,9 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
           .remove([imagePath]);
 
         if (storageError) {
-          console.error("Error borrando imagen de check-in:", storageError);
+          console.error("Error borrando imagen de check-in", {
+            code: storageError?.code || "CHECKIN_IMAGE_DELETE_FAILED",
+          });
         }
       }
     }
@@ -247,7 +256,6 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
     if (deleteError) {
       return res.status(500).json({
         error: "No se pudo borrar el check-in",
-        detail: deleteError.message,
       });
     }
 
@@ -258,10 +266,9 @@ router.delete("/checkins/:checkinId", verifySupabaseUser, async (req, res) => {
     }
 
     return res.json({ ok: true, deleted_id: checkinId });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       error: "Error borrando check-in",
-      detail: error.message,
     });
   }
 });
@@ -275,7 +282,9 @@ async function getPreviousCheckins(userId) {
     .limit(2);
 
   if (error) {
-    console.error("Error cargando checkins previos:", error);
+    console.error("Error cargando checkins previos", {
+      code: error?.code || "CHECKINS_PREVIOUS_LOAD_FAILED",
+    });
     return [];
   }
 
@@ -332,7 +341,9 @@ async function analyzeCheckinWithGemini({
 
     return normalizeCheckinAnalysis(data, language);
   } catch (error) {
-    console.error("Error analizando checkin con Gemini:", error);
+    console.error("Error analizando checkin con Gemini", {
+      code: error?.code || "CHECKIN_AI_FAILED",
+    });
     return createFallbackCheckinAnalysis({ weight, previousCheckins, language });
   }
 }
