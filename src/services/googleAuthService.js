@@ -16,6 +16,10 @@ export async function signInWithGoogle({ redirectTo } = {}) {
       return await signInWithGoogleNative();
     }
 
+    if (isIosNative()) {
+      return await signInWithGoogleNative();
+    }
+
     return supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -75,6 +79,10 @@ async function initializeGoogleSignIn() {
 
 function isAndroidNative() {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+}
+
+function isIosNative() {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
 }
 
 function isGoogleSignInCanceled(error) {
