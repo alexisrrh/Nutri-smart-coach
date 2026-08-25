@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-08-25 - Google OAuth preparado para iOS
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** sustituir exclusivamente en iOS el ID token nativo de Google, cuyo nonce no puede entregarse a Supabase, por OAuth implicit de Supabase mediante navegador del sistema.
+- **Cambios:** se instalo `@capacitor/browser@8.0.0`; la rama Google iOS obtiene la URL OAuth con el callback autorizado y `skipBrowserRedirect`, abre Browser, recibe el fragmento mediante un listener temporal de App, valida ambos tokens y establece la sesion con `supabase.auth.setSession`. Se anadio un segundo URL type a `Info.plist` sin alterar el scheme nativo de Google. Los cambios colaterales de `cap sync ios` fueron restaurados y la integracion SwiftPM de Browser queda para Mac.
+- **Archivos principales:** `src/services/googleAuthService.js`, `package.json`, `package-lock.json`, `ios/App/App/Info.plist`, `memory-bank/features/authentication.md`, `memory-bank/implementation-plans/2026-08-25-google-oauth-ios.md`.
+- **Pruebas automaticas:** `npm run build` correcto con el warning existente sobre `src/data/exercises.js`; `npm run lint` correcto; `git diff --check` correcto con avisos de conversion LF/CRLF.
+- **Prueba humana:** pendiente en iPhone real tras registrar Browser desde Mac: completar Google OAuth, comprobar dashboard, cancelar y repetir sin listeners residuales.
+- **Pendientes:** Daniel debe registrar manualmente `CapacitorBrowser` en `ios/App/CapApp-SPM/Package.swift` conservando Capacitor 8.5.0 y anadir `CAPBrowserPlugin` al `packageClassList` generado; despues resolver SwiftPM/compilar desde Mac sin aceptar cambios no relacionados.
+- **Autor:** Codex
+
 ## 2026-08-25 - Camara directa en iOS para el escaner de comidas
 
 - **Area:** frontend | movil | documentacion
