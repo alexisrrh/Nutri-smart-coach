@@ -19,6 +19,17 @@ Este archivo registra cambios funcionales y decisiones relevantes del proyecto. 
 
 ---
 
+## 2026-08-25 - Camara directa en iOS para el escaner de comidas
+
+- **Area:** frontend | movil | documentacion
+- **Objetivo:** abrir directamente la camara en iOS sin exigir `NSPhotoLibraryAddUsageDescription` y sin alterar Android ni web.
+- **Cambios:** `captureFoodPhoto` usa `Camera.takePhoto` exclusivamente cuando `Capacitor.getPlatform()` es `ios`; Android conserva la llamada existente a `Camera.getPhoto` y web mantiene su flujo actual.
+- **Archivos principales:** `src/hooks/food-photo/useFoodPhotoImageUpload.js`.
+- **Pruebas automaticas:** `npm run build` correcto con el warning existente sobre el import dinamico de `src/data/exercises.js`; `npm run lint` correcto; `git diff --check` correcto con avisos de conversion LF/CRLF.
+- **Prueba humana:** pendiente en iPhone real: pulsar "Tomar foto", confirmar apertura de la camara trasera, capturar, volver a la app y comprobar la preview.
+- **Pendientes:** sincronizar el build con el proyecto iOS y validar en dispositivo; Android y web no se han modificado.
+- **Autor:** Codex
+
 ## 2026-08-07 - Ajustes de layout movil en rutinas
 
 - **Area:** frontend | movil | documentacion
