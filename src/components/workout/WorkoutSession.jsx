@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -37,6 +38,8 @@ export function WorkoutSession({
   onFinish,
   onDashboard,
 }) {
+  const isIosNative =
+    Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
   const { i18n } = useTranslation();
   const language = getWorkoutLanguage(i18n.resolvedLanguage || i18n.language);
   const { user } = useAuth();
@@ -339,7 +342,7 @@ export function WorkoutSession({
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-hidden overflow-x-hidden bg-[var(--app-surface)] [scrollbar-width:none] sm:overflow-y-auto sm:overflow-x-hidden [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex h-[100dvh] min-h-0 max-w-[430px] flex-col px-2.5 pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] sm:h-auto sm:min-h-[100dvh] max-sm:pt-[calc(env(safe-area-inset-top)_+_32px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)]">
+      <div className={`mx-auto flex h-[100dvh] min-h-0 max-w-[430px] flex-col pt-2 pb-[calc(env(safe-area-inset-bottom)+92px)] sm:h-auto sm:min-h-[100dvh] max-sm:pt-[calc(env(safe-area-inset-top)_+_32px)] max-sm:pb-[calc(env(safe-area-inset-bottom)_+_8px)] ${isIosNative ? "px-4" : "px-2.5"}`}>
         <header className="flex max-h-[52px] shrink-0 items-center justify-between gap-2">
           <button
             type="button"
