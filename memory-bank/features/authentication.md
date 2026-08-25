@@ -17,9 +17,13 @@ Operativo.
 ### Google Sign-In
 
 - Web mantiene Supabase OAuth mediante `supabase.auth.signInWithOAuth({ provider: "google" })`.
-- Android nativo usa `@capawesome/capacitor-google-sign-in` para obtener un Google ID token con Credential Manager y crea la sesión con `supabase.auth.signInWithIdToken({ provider: "google", token })`.
+- Android nativo usa `@capawesome/capacitor-google-sign-in` para obtener un Google ID token y crea la sesión con `supabase.auth.signInWithIdToken({ provider: "google", token })`.
+- iOS nativo reutiliza el mismo flujo nativo de Google desde `src/services/googleAuthService.js`; no usa el flujo web de Safari cuando `Capacitor.getPlatform() === "ios"`.
 - El Client ID usado por el plugin es público y debe venir de `VITE_GOOGLE_WEB_CLIENT_ID`; no se guarda Client Secret en la app.
+- `VITE_GOOGLE_WEB_CLIENT_ID` debe existir en `.env.local` o en el entorno de build antes de ejecutar `npm run build`; Vite lo inserta en compilación. `.env.local` debe permanecer ignorado por Git y nunca subirse al repositorio.
 - El listener central de `AuthProvider` sigue siendo la única fuente de actualización de sesión.
+- Google Login Android fue validado físicamente en un Redmi tras reconstruir la APK con `VITE_GOOGLE_WEB_CLIENT_ID` presente.
+- Google Login iOS queda pendiente de validación final en iPhone y requiere que la configuración nativa de Google ya exista en el proyecto iOS gestionado por el compañero responsable.
 
 ## 4. Rutas frontend
 Públicas: `/`, `/login`, `/register`, `/registro`, `/join`, `/reset-password`, `/privacy`, `/terms`, `/creator-terms`, `/delete-account`, `/rutina/:shareId`, `/rutinas/semana/:shareId`, `/bodyscannerhome`, `/progresohome`, `/dietahome`.
@@ -29,7 +33,7 @@ Privadas: `/dashboard`, `/premium`, `/foto-comida`, `/resumen`, `/checkin`, `/pe
 ## 5. Frontend implicado
 Páginas: `src/pages/Login.jsx`, `src/pages/Register.jsx`, `src/pages/ResetPassword.jsx`, `src/pages/ProfileSetup.jsx`, `src/pages/settings/*.jsx`.
 
-Componentes/contextos/servicios: `src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/context/useAuth.js`, `src/lib/supabase.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `src/services/legalConsentService.js`, `src/services/referralOnboardingService.js`, `src/services/creatorTrackingService.js`.
+Componentes/contextos/servicios: `src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/context/useAuth.js`, `src/lib/supabase.js`, `src/services/googleAuthService.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `src/services/legalConsentService.js`, `src/services/referralOnboardingService.js`, `src/services/creatorTrackingService.js`.
 
 ## 6. Endpoints backend
 No hay rutas `/auth` propias confirmadas en backend. El backend valida tokens Supabase en endpoints protegidos mediante `verifySupabaseUser`.
@@ -51,6 +55,8 @@ No hay límite free/premium específico para autenticación.
 ## 11. Pruebas
 Backend: `backend/tests/auth-401.test.js`, `backend/tests/auth-hardening.test.js`.
 
+Pruebas manuales confirmadas en Android físico: inicio de sesión con Google correcto tras reconstruir con el Client ID web disponible en el entorno de build.
+
 ## 12. Riesgos y dependencias
 Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_WEB_CLIENT_ID`, `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. Cambiar nombres de campos de `profiles` rompe perfil, onboarding, premium y preferencias.
 
@@ -58,9 +64,13 @@ Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_WEB_CLIEN
 - Las rutas privadas no deben renderizar contenido sin usuario autenticado.
 - Las llamadas API autenticadas deben enviar el token desde `src/services/apiClient.js`.
 - El backend no debe aceptar operaciones con `user_id` distinto al token.
+- Apple Sign-In, email/password, Google Android y Google web no deben modificarse al corregir Google iOS salvo necesidad demostrada.
+- No subir `.env`, `.env.local`, `backend/.env` ni variantes locales al repositorio.
+- No tocar `ios/` desde este flujo de mantenimiento. La carpeta iOS se considera estable y la gestiona el compañero responsable de builds Apple.
 
 ## 14. Pendientes
-No hay endpoints backend de login/register confirmados; la autenticación se apoya en Supabase Auth desde frontend.
+- Validar Google Sign-In nativo en un iPhone con la configuración nativa ya preparada por el responsable de iOS.
+- No modificar `ios/`, credenciales ni variables de entorno para completar esa validación; cualquier ajuste nativo debe coordinarse con el responsable de iOS.
 
 ## 15. Archivos relevantes
 `src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/lib/supabase.js`, `src/services/googleAuthService.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `backend/middleware/auth.js`, `supabase/migrations/002_profile_legal_consent.sql`.

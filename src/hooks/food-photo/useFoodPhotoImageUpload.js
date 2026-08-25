@@ -93,15 +93,25 @@ export function useFoodPhotoImageUpload({
     if (!Capacitor.isNativePlatform()) return false;
 
     try {
-      const photo = await Camera.getPhoto({
-        direction: CameraDirection.Rear,
-        resultType: CameraResultType.Uri,
-        quality: 85,
-        saveToGallery: false,
-        source: CameraSource.Camera,
-        height: 1280,
-        width: 1280,
-      });
+      const photo =
+        Capacitor.getPlatform() === "ios"
+          ? await Camera.takePhoto({
+              cameraDirection: CameraDirection.Rear,
+              includeMetadata: true,
+              quality: 85,
+              saveToGallery: false,
+              targetHeight: 1280,
+              targetWidth: 1280,
+            })
+          : await Camera.getPhoto({
+              direction: CameraDirection.Rear,
+              resultType: CameraResultType.Uri,
+              quality: 85,
+              saveToGallery: false,
+              source: CameraSource.Camera,
+              height: 1280,
+              width: 1280,
+            });
 
       const file = await cameraPhotoToFile(photo);
       await processImageFile(file);
