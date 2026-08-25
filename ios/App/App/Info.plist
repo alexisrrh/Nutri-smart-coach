@@ -12,6 +12,14 @@
                 <string>com.googleusercontent.apps.617284145600-7g6jqueru9qj3v2trhgfno80mgbpbjo4</string>
             </array>
         </dict>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.nutrismartcoach.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.nutrismartcoach.app</string>
+            </array>
+        </dict>
     </array>
     <key>GIDClientID</key>
 	<string>617284145600-7g6jqueru9qj3v2trhgfno80mgbpbjo4.apps.googleusercontent.com</string>

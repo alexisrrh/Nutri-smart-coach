@@ -18,12 +18,12 @@ Operativo.
 
 - Web mantiene Supabase OAuth mediante `supabase.auth.signInWithOAuth({ provider: "google" })`.
 - Android nativo usa `@capawesome/capacitor-google-sign-in` para obtener un Google ID token y crea la sesión con `supabase.auth.signInWithIdToken({ provider: "google", token })`.
-- iOS nativo reutiliza el mismo flujo nativo de Google desde `src/services/googleAuthService.js`; no usa el flujo web de Safari cuando `Capacitor.getPlatform() === "ios"`.
+- iOS nativo usa Supabase OAuth implicit desde `src/services/googleAuthService.js`: obtiene la URL con `skipBrowserRedirect`, la abre mediante `@capacitor/browser`, recibe el custom scheme con `@capacitor/app` y establece la sesión mediante `supabase.auth.setSession`.
 - El Client ID usado por el plugin es público y debe venir de `VITE_GOOGLE_WEB_CLIENT_ID`; no se guarda Client Secret en la app.
 - `VITE_GOOGLE_WEB_CLIENT_ID` debe existir en `.env.local` o en el entorno de build antes de ejecutar `npm run build`; Vite lo inserta en compilación. `.env.local` debe permanecer ignorado por Git y nunca subirse al repositorio.
 - El listener central de `AuthProvider` sigue siendo la única fuente de actualización de sesión.
 - Google Login Android fue validado físicamente en un Redmi tras reconstruir la APK con `VITE_GOOGLE_WEB_CLIENT_ID` presente.
-- Google Login iOS queda pendiente de validación final en iPhone y requiere que la configuración nativa de Google ya exista en el proyecto iOS gestionado por el compañero responsable.
+- Google Login iOS queda pendiente de que el responsable de iOS registre `@capacitor/browser` en SwiftPM desde Mac y valide el flujo completo en un iPhone.
 
 ## 4. Rutas frontend
 Públicas: `/`, `/login`, `/register`, `/registro`, `/join`, `/reset-password`, `/privacy`, `/terms`, `/creator-terms`, `/delete-account`, `/rutina/:shareId`, `/rutinas/semana/:shareId`, `/bodyscannerhome`, `/progresohome`, `/dietahome`.
@@ -66,11 +66,11 @@ Depende de `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_WEB_CLIEN
 - El backend no debe aceptar operaciones con `user_id` distinto al token.
 - Apple Sign-In, email/password, Google Android y Google web no deben modificarse al corregir Google iOS salvo necesidad demostrada.
 - No subir `.env`, `.env.local`, `backend/.env` ni variantes locales al repositorio.
-- No tocar `ios/` desde este flujo de mantenimiento. La carpeta iOS se considera estable y la gestiona el compañero responsable de builds Apple.
+- No modificar archivos iOS generados o configuración Xcode desde Windows. La integración SwiftPM de nuevos plugins debe completarse y validarse desde Mac por el responsable de builds Apple.
 
 ## 14. Pendientes
-- Validar Google Sign-In nativo en un iPhone con la configuración nativa ya preparada por el responsable de iOS.
-- No modificar `ios/`, credenciales ni variables de entorno para completar esa validación; cualquier ajuste nativo debe coordinarse con el responsable de iOS.
+- Registrar `CapacitorBrowser` y `CAPBrowserPlugin` desde Mac conservando Capacitor SwiftPM 8.5.0 y la configuración iOS existente.
+- Validar Google OAuth en un iPhone, incluyendo éxito, cancelación y repetición sin listeners residuales.
 
 ## 15. Archivos relevantes
 `src/App.jsx`, `src/main.jsx`, `src/context/AuthContext.jsx`, `src/lib/supabase.js`, `src/services/googleAuthService.js`, `src/services/apiClient.js`, `src/services/profileService.js`, `backend/middleware/auth.js`, `supabase/migrations/002_profile_legal_consent.sql`.
