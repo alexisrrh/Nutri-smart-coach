@@ -314,7 +314,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = JP9U9WUSKF;
 				INFOPLIST_FILE = App/Info.plist;
@@ -353,7 +353,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = JP9U9WUSKF;
 				INFOPLIST_FILE = App/Info.plist;
