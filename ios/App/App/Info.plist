@@ -4,8 +4,21 @@
 <dict>
 	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.617284145600-7g6jqueru9qj3v2trhgfno80mgbpbjo4</string>
+            </array>
+        </dict>
+    </array>
+    <key>GIDClientID</key>
+	<string>617284145600-7g6jqueru9qj3v2trhgfno80mgbpbjo4.apps.googleusercontent.com</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Esta app necesita acceso a tu galeria para que puedas subir fotos de tus comidas y progreso</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Esta app necesita acceso a la cámara para que puedas fotografiar y analizar tus comidas.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
