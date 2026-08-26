@@ -16,7 +16,8 @@ let package = Package(
         .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
         .package(name: "CapacitorCamera", path: "../../../node_modules/@capacitor/camera"),
         .package(name: "CapawesomeCapacitorAppleSignIn", path: "../../../node_modules/@capawesome/capacitor-apple-sign-in"),
-        .package(name: "CapawesomeCapacitorGoogleSignIn", path: "../../../node_modules/@capawesome/capacitor-google-sign-in")
+        .package(name: "CapawesomeCapacitorGoogleSignIn", path: "../../../node_modules/@capawesome/capacitor-google-sign-in"),
+        .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser")
     ],
     targets: [
         .target(
@@ -28,7 +29,8 @@ let package = Package(
                 .product(name: "CapacitorApp", package: "CapacitorApp"),
                 .product(name: "CapacitorCamera", package: "CapacitorCamera"),
                 .product(name: "CapawesomeCapacitorAppleSignIn", package: "CapawesomeCapacitorAppleSignIn"),
-                .product(name: "CapawesomeCapacitorGoogleSignIn", package: "CapawesomeCapacitorGoogleSignIn")
+                .product(name: "CapawesomeCapacitorGoogleSignIn", package: "CapawesomeCapacitorGoogleSignIn"),
+                .product(name: "CapacitorBrowser", package: "CapacitorBrowser")
             ]
         )
     ]
