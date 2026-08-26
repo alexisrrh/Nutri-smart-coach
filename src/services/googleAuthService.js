@@ -16,14 +16,19 @@ let googleSignInInitializationPromise = null;
 
 export async function signInWithGoogle({ redirectTo } = {}) {
   try {
+    console.log(`[GoogleAuth] platform=${Capacitor.getPlatform()}`);
+
     if (isAndroidNative()) {
+      console.log("[GoogleAuth] branch=android-native");
       return await signInWithGoogleNative();
     }
 
     if (isIosNative()) {
+      console.log("[GoogleAuth] branch=ios-oauth");
       return await signInWithGoogleIosOAuth();
     }
 
+    console.log("[GoogleAuth] branch=web-oauth");
     return supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
