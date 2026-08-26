@@ -12,6 +12,7 @@
 	"packageClassList": [
 		"SignInWithApple",
 		"AppPlugin",
+		"CAPBrowserPlugin",
 		"CAPCameraPlugin",
 		"AppleSignInPlugin",
 		"GoogleSignInPlugin"
